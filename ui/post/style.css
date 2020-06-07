@@ -1,0 +1,225 @@
+/*https://www.youtube.com/watch?v=4I-b6tIg52w*/
+*{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box; /*Total width = width-padding+boder, but with content-box total width = width + boder + padding*/
+    /*https://developer.mozilla.org/en-US/docs/Web/CSS/box-sizing*/
+}
+
+/*selects root and declares custom property to use everywhere*/
+:root{
+    /*custom property*/
+                                     /*direction*/     /*colors(rgb) alpha(a) for transparency*/
+    --gradient-color: linear-gradient(to right bottom, rgba(255, 119, 48, 0.8), rgba(255, 185, 0, 0.8));
+}
+
+html{
+    font-size: 10px;
+}
+
+a{
+    text-decoration: none;
+    color: inherit;
+}
+
+body{
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1.6rem;
+    color: #333;
+    background-color: #eee;
+    width: 100%;
+    /*height: 100vh;*/
+
+    /*this part is optional to display card in center*/
+    display: flex;
+    align-items: center; /*vertical alighnment*/
+    justify-content: center; /*horizonal alignment*/
+    padding: 1.5rem;/*1.5rem left and right padding*/
+    /*end of optional block*/
+}
+
+.card{
+    display: flex;
+    flex-direction: column; /*default is row - aligns every item in one row, we want author and title and description to be one on top of other in 1coulumn,  so column*/
+    background-color: #fff;
+    box-shadow: 2px 0.8rem 1rem rgba(0, 0, 0, 0.05);
+}
+
+.image-data{
+    height: 25rem;
+    position: relative; /*here we set pos as rel becz we will put some elemets inside it as pos abs*/
+    z-index: 1; /*so that we can move items around it freely either forward or backward*/
+    overflow: hidden; /*this will stop the overflow of image when we hover on it*/
+}
+
+.background-image{
+    width: 100%;
+    height: 100%; /*100% will be 25rem becz parent(image-data) has 25rem*/
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: url("./cover.jpg") center no-repeat;
+    background-size: cover; /*	Resize the background image to cover the entire container, even if it has to stretch the image 
+    or cut a little bit off one of the edges https://www.w3schools.com/cssref/css3_pr_background-size.asp*/
+    z-index: -1; /*setting this value will bring the author text above and push the image to background*/
+    transition: transform 5s; /*after smooth transition of 5s to the zoom transformation*/
+}
+
+/*when there is a hover on the card select the background image*/
+.card:hover .background-image{
+    transform: scale(1.5); /*transform zoom to 150% on hover on the image*/
+}
+
+/*now target/select the publication-details*/
+.publication-details{
+    width: 100%;
+    height: 100%;
+    background: var(--gradient-color); /*call the custom variable created above*/
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #fff;
+    position: absolute; /*setting this absolute will help us animate the author details*/
+    top: 0;
+    left: 0;
+    padding: 1rem;
+}
+
+.publication-details i{
+    margin-right: 1rem; /*sets space between icons and texts*/
+}
+
+.author{
+    display: inline-block;/*this will take space for width and will allow us to provide margin bottom*/
+    margin-bottom: .5rem;
+    transition: all .5s; /*little animation on author text(animation of .5s on all property)*/
+}
+
+.author:hover{
+    color: rgb(255, 255, 255, .75);
+}
+
+.date{
+    display: block;
+}
+
+.post-data{
+    background-color: #fff; /*Incase we want to change the color of the card in future*/
+    padding: 2rem 3rem; /*top and bottom 2rem + right and left 3rem*/
+    position: relative; /*so that we can place some item inside it with position absolute*/
+}
+
+.title{
+    font-size: 3rem;
+    line-height: 1;
+}
+
+.subtitle{
+    font-size: 1.2rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    color: #a2a2a2;
+    margin: 1rem 0 1.5rem 0;
+}
+
+.description{
+    position: relative; /*becz we will use pos abs to place a color line in 1st char place*/
+}
+
+/*select the 1st letter*/
+.description::first-letter{
+    margin-left: 1rem;
+}
+
+/*create a psuedo element for the line on 1st letter*/
+.description::before{
+    content: ''; /*it will show the line by creating something as placeholder for line*/
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: .5rem;
+    height: 2.4rem;
+    background: var(--gradient-color);
+    border-radius: 2rem;
+}
+
+.cta{
+    text-align: right;
+    font-weight: bolder;
+    margin-top: 1rem;
+}
+
+.cta a{
+    background: var(--gradient-color);
+    -webkit-background-clip: text; /*we wanted to only apply background color to the text and see through the text(called gradient text),-webkit is used so that chrome should pick this property
+    background clip - Specify how far the background should extend within an element -https://www.w3schools.com/cssref/css3_pr_background-clip.asp*/
+    color: transparent;/* we wanted to see through the text*/
+    position: relative; /*we will create an absolute underline for Read more text hence this element should have relative pos*/
+}
+
+/*create a psuedo element for the line under Read more text*/
+.cta a::before{
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -.5rem;
+    width: 100%;
+    height: 3px;
+    background: var(--gradient-color);
+    transform: scaleX(0); /*we want to hide the underline initially so that later on we can apply animation*/
+    transition: transform .5s;
+    transform-origin: left; /*this will make the underline to start from left with transition*/
+}
+
+.cta a:hover::before{
+    transform: scaleX(1); /*set the underline back in place on hover on the anchor tag than apply transition in line 169*/
+}
+
+/*Make it responsive*/
+                  /*as its mobile 1st approach so min width*/
+@media screen and (min-width: 600px){
+    .card{
+        flex-direction: row;
+        max-width: 75rem;
+    }
+    .image-data{
+        flex-basis: 40%;/*at least it will now show the image befor the card*/
+        height: unset; /*it will reset the height and will no more be 25rem as provided above initially*/
+    }
+    .publication-details{
+        transform: translateX(-100%);/*this will hide the author and date*/
+        transition: transform 0.5s;/*this will apply a slidin animation*/
+    }
+    .card:hover .publication-details{
+        transform: translateX(0);/*this will bring back the author and date on hover*/
+    }
+    .author{
+        transform: translateY(-3rem);/*we dont want to show the author initially so displace it*/
+        opacity: 0;/*this will hide the text*/
+        transition-delay: 0.3s;
+    }
+    .date{
+        transform: translateY(3rem);
+        opacity: 0;
+        transition: all .5s .3s;/*apply animation when hovered (hover effect is written below (animation of .5s with delay of .3s)*/
+    }
+    .card:hover .author,
+    .card:hover .date{
+        transform: translateY(0); /*bring back the author and date to their initial position on hover*/
+        opacity: 1; /*show the author and date*/
+    }
+    .post-data{
+        flex-basis: 60%;/*so that card occupies the remaining 60%*/
+    }
+    /*create a pseudo element to blend the image and post text*/
+    .post-data::before{
+        content: '';
+        position: absolute;
+        width: 2.8rem;
+        height: 100%;
+        background-color: #fff;
+        top: 0;
+        left: -1.5rem;
+        z-index: 10; /*to bring the blender section on top*/
+        transform: skewX(-5deg);/*bends the blending section by -5 degrees along x axis*/
+    }
+}
