@@ -125,6 +125,7 @@ a:hover{
     transform: translateX(-30rem); /*this will keep the sidebar out of the screen*/
     background: #f0f0f0;
     height: 100%;
+	transition: all .6s;
 }
 .open{
     transform: translateX(0); /*when open class gets applied to the sidebar than sidebar will be shown to the user with translatex=0*/
