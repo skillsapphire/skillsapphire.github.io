@@ -1,0 +1,144 @@
+/*Alt + Shift + Down arrow -> duplicate line , https://www.youtube.com/watch?v=Fy9SdZLBTOo*/
+html{
+    font-size: 62.5%; /* (default font size in browser is 16px)16px * 62.5 = 10px = 1rem - rem is good for different size of browsers*/
+    box-sizing: border-box;/*helps us to style boxes(like div) in a better way by providing width, padding and margin(tw = w+p+b+m)*/
+}
+body{
+    font: 1.6rem Helvetica; /*1.6rem = 16px*/
+    height: 100vh; /*height is equal to 100 view port height*/
+    margin: 0;/*set margin to 0 becz by default browsers set some margin*/
+}
+/*selects root and declares custom property to use everywhere*/
+:root{
+    /*custom property*/
+    --primary-color: #ff8000;
+    --nav-color: #203040;
+}
+a{
+    text-decoration: none;/*make all link non underlined*/
+}
+a:hover{
+    color: var(--primary-color);/*using custom property*/
+}
+.grid-container{
+    display: grid;
+    grid-template-areas: "header" "main" "footer";
+    grid-template-columns: 1fr; /*this will set 1fragment as we want only 1 column*/
+    grid-template-rows: 5rem 1fr 5rem;/*here we have 3 rows, header 5rem, main 1fragment, footer 5rem*/
+    height: 100%;
+    /*this will make header take 50px from top, footer take 50px from bottom and rest of the space is always used by main*/
+}
+.header{
+    grid-area: header;
+    background-color: var(--nav-color);/*using custom property*/
+    color: #fff;
+    display: flex;
+    justify-content: space-between;/*becz we want to keep some things on left and other things on right, brand on left and signin and cart on right*/
+    align-items: center;/*vertically center align the brand and header links*/
+    padding: 0.5rem;/*adds padding from all sides*/
+}
+.brand a{
+    text-decoration: none; /*removes the underline from the link*/
+    color: #fff;
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+.brand a:hover{
+    color: var(--primary-color);
+}
+.header-links a{
+    text-decoration: none; /*removes the underline from the link*/
+    color: #fff;
+}
+.header-links a:hover{
+    color: var(--primary-color);/*using custom property, on hover on links we want to change their color*/
+}
+.main{
+    grid-area: main;
+}
+.footer{
+    grid-area: footer;
+    background-color: var(--nav-color);/*using custom property*/
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/*Product styling section*/
+
+.products{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;/*this will wrap the products automatically based on device if there are more products that the total device width*/
+}
+.products li{
+    list-style-type: none;/*removes the default dot of li tag*/
+    padding: 0;
+    /*flex grow 0(default) flex shrink 1 flex width 34rem, Make the third flex item not growable (0), let the li flex item shrink(default 1) as much as the other flex items:*/
+        /*grow shrink basis https://www.w3schools.com/css/css3_flexbox.asp*/
+    flex: 0 1 34rem;/*neither grow nor shrink always every li should always be 34rem width = 10px * 34 = 340px */
+    margin: 1rem;
+    height: 50rem;
+    border-bottom: .1rem #c0c0c0 solid;
+}
+.product{
+    display: flex;
+    flex-direction: column;/*this will place items one below another*/
+    justify-content: space-around;/*this will put space one below another*/
+    height: 100%;
+}
+.product-image{
+    max-width: 34rem;
+    max-height: 34rem;
+}
+.product-name{
+    font-size: 2rem;
+    font-weight: bold;
+}
+.product-brand{
+    font-size: 1.2rem;
+    color: #808080;
+}
+.product-price{
+    font-size: 2rem;
+    font-weight: bold;
+}
+.product-rating{
+    margin-bottom: 1rem;
+}
+
+/*Sidebar styling*/
+
+.brand button{
+    font-size: 3rem;
+    padding: .5rem;
+    border: none;
+    background: none;
+    color: #fff;
+    cursor: pointer;
+}
+.sidebar{
+    position: fixed;
+    width: 30rem;
+    transform: translateX(-30rem); /*this will keep the sidebar out of the screen*/
+    background: #f0f0f0;
+    height: 100%;
+}
+.open{
+    transform: translateX(0); /*when open class gets applied to the sidebar than sidebar will be shown to the user with translatex=0*/
+}
+.sidebar-close-button{
+    cursor: pointer;
+    border-radius: 50%;
+    border: 0.1rem solid #000;
+    width: 3rem;
+    height: 3rem;
+    font-size: 2rem;
+    padding: .5rem;
+    padding-top: .1rem;
+    position: absolute;/*this along with below style will position the cross button to right (as sidebar is position fixed*/
+    right: .5rem;
+    top: 1.5rem;
+}

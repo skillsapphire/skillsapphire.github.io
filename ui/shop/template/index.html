@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amaze One</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="grid-container">
+        <header class="header">
+            <div class="brand">
+                <button onclick="openSidebar()">
+                    &#9776; <!--Ascii code for hamburger menu-->
+                </button>
+                <a href="index.html">amazeone</a>
+            </div>
+            <div class="header-links">
+                <a href="signin.html">Sign In</a>
+                <a href="cart.html">Cart</a>
+            </div>
+        </header>
+        <aside class="sidebar">
+            <h3>Shopping Categories</h3>
+            <button class="sidebar-close-button" onclick="closeSidebar()">x</button>
+            <ul>
+                <li>
+                    <a href="index.html">Shirts</a>
+                </li>
+                <li>
+                    <a href="index.html">Trousers</a>
+                </li>
+            </ul>
+        </aside>
+        <main class="main">
+            <div class="content">
+                <ul class="products">
+                    <li>
+                        <div class="product">
+                            <img class="product-image" src="../images/d1.jpg" alt="product" >
+                            <div class="product-name">
+                                <a href="product.html" class="product-link">Slim Shirt</a>
+                            </div>
+                            <div class="product-brand">Nike</div>
+                            <div class="product-price">$80</div>
+                            <div class="product-rating">4.8 Stars (12 Reviews)</div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="product">
+                            <img class="product-image" src="../images/d2.jpg" alt="product" >
+                            <div class="product-name">
+                                <a href="product.html" class="product-link">Slim Shirt</a>
+                            </div>
+                            <div class="product-brand">Adydas</div>
+                            <div class="product-price">$90</div>
+                            <div class="product-rating">4.5 Stars (10 Reviews)</div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="product">
+                            <img class="product-image" src="../images/d1.jpg" alt="product" >
+                            <div class="product-name">
+                                <a href="product.html" class="product-link">Slim Shirt</a>
+                            </div>
+                            <div class="product-brand">Nike</div>
+                            <div class="product-price">$80</div>
+                            <div class="product-rating">4.8 Stars (12 Reviews)</div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="product">
+                            <img class="product-image" src="../images/d2.jpg" alt="product" >
+                            <div class="product-name">
+                                <a href="product.html" class="product-link">Slim Shirt</a>
+                            </div>
+                            <div class="product-brand">Adydas</div>
+                            <div class="product-price">$75</div>
+                            <div class="product-rating">4.8 Stars (12 Reviews)</div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="product">
+                            <img class="product-image" src="../images/d1.jpg" alt="product" >
+                            <div class="product-name">
+                                <a href="product.html" class="product-link">Slim Shirt</a>
+                            </div>
+                            <div class="product-brand">Nike</div>
+                            <div class="product-price">$80</div>
+                            <div class="product-rating">4.8 Stars (12 Reviews)</div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="product">
+                            <img class="product-image" src="../images/d2.jpg" alt="product" >
+                            <div class="product-name">
+                                <a href="product.html" class="product-link">Slim Shirt</a>
+                            </div>
+                            <div class="product-brand">Adydas</div>
+                            <div class="product-price">$110</div>
+                            <div class="product-rating">4.8 Stars (12 Reviews)</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </main>
+        <footer class="footer">All rights reserved.</footer>
+    </div>
+    <script type="text/javascript">
+        function openSidebar(){
+            document.querySelector(".sidebar").classList.add("open");/*selects sidebar and adds class open to it*/
+        }
+        function closeSidebar(){
+            document.querySelector(".sidebar").classList.remove("open");/*selects sidebar and adds class open to it*/
+        }
+    </script>
+</body>
+</html>
