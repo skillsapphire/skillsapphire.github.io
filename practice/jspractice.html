@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<style>
+		.btn-red{
+			color: #fff;
+			background-color: red;
+		}
+		.animate-test-class {
+		  width: 100px;
+		  height: 100px;
+		  background-color: red;
+		  animation-name: example;
+		  animation-duration: 4s;
+		}
+
+		@keyframes example {
+		  from {background-color: red;}
+		  to {background-color: yellow;}
+		}
+	</style>
+</head>
+<body>
+
+<div id="resultDiv" style="display:none;">Result is: <span id="resultSpan"></span></div>
+
+<div id="calculator">
+	<input type="text" id="num1" placeholder="Enter number 1">
+	<input type="text" id="num2" placeholder="Enter number 2">
+	<button id="btnAdd" onclick="add()">Add</button>
+</div>
+<br>
+<div>
+	<div id="msg" style="display:none; color: #fff; background-color: green; padding: 10px;"></div>
+	<br>
+	<input type="hidden" id="rowNum">
+	<input type="text" id="name" placeholder="Enter your name">
+	<input type="text" id="age" placeholder="Enter your age">
+	<input type="text" id="salary" placeholder="Enter your salary">
+	
+	<button id="btnAddEmp" onclick="addEmp()">Add Employee</button>
+	<button id="btnUpdateEmp" onclick="updateEmp()" style="display: none;">Update Employee</button>
+	<button id="btnResetEmp" onclick="reset()" style="display: none;">Reset</button>
+	<button id="btnAllEmp" onclick="showAllEmployees()" >Show All Employees</button>
+	
+	<div id="tableContainer" style="display: none;">
+		<table border="1" width="100%">
+			<tr>
+				<th>#</th>
+				<th>Emp Name</th>
+				<th>Emp Age</th>
+				<th>Emp Salary</th>
+			</tr>
+			<tbody id="tbodyValues">
+			
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<script>
+	
+	var empList = [];
+	
+	var addEmp = function(){
+		var n = document.getElementById('name').value;
+		var a = document.getElementById('age').value;
+		var s = document.getElementById('salary').value;
+		
+		var empObj = {'empName': n, 'empAge': a, 'empSalary': s};
+		empList.push(empObj);
+		document.getElementById('msg').innerHTML = empList.length+' Employee added successfully';
+		document.getElementById('msg').style.display = 'block';
+		document.getElementById('btnResetEmp').style.display = 'block';
+		
+		//logic to reset
+		document.getElementById('name').value = '';
+		document.getElementById('age').value = '';
+		document.getElementById('salary').value = '';
+		showAllEmployees();
+		//reset();
+	}
+	
+	function reset(){
+		document.getElementById('msg').style.display = 'none';
+		document.getElementById('name').value = '';
+		document.getElementById('age').value = '';
+		document.getElementById('salary').value = '';
+	}
+
+	function showAllEmployees(){
+	
+		if(empList.length > 0){
+			var innerHTMLstr = '';
+			for(var i = 0; i<empList.length; i++){
+				innerHTMLstr = innerHTMLstr + '<tr> <td>' + (i+1) + '</td><td>'+ empList[i].empName + '</td>' + '<td>' + empList[i]['empAge'] + '</td>' + '<td>' + empList[i]['empSalary'] + '</td>'+ '<td> <button onclick="deleteEmp('+ i +')"> Delete</button> </td>' + '<td> <button onclick="editEmp('+ i +')"> Edit</button> </td>' +'</tr>';
+			}
+			document.getElementById('tbodyValues').innerHTML = innerHTMLstr;
+			document.getElementById('tableContainer').style.display = 'block';
+		}else{
+			document.getElementById('msg').innerHTML = 'No records found please add an employee first';
+			document.getElementById('msg').style.display = 'block'
+		}
+	}
+	function updateEmp(){
+		var indexTobeUpdated = document.getElementById('rowNum').value;
+		empList.splice(indexTobeUpdated, 1);
+		
+		var n = document.getElementById('name').value;
+		var a = document.getElementById('age').value;
+		var s = document.getElementById('salary').value;
+		
+		var empObj = {'empName': n, 'empAge': a, 'empSalary': s};
+		empList.splice(indexTobeUpdated,0,empObj);
+		showAllEmployees();
+	}
+	function editEmp(itemIndex){
+		var empTobeUpdated = empList[itemIndex];
+		document.getElementById('rowNum').value = itemIndex;
+		document.getElementById('name').value = empTobeUpdated.empName;
+		document.getElementById('age').value = empTobeUpdated.empAge;
+		document.getElementById('salary').value = empTobeUpdated.empSalary;
+		document.getElementById('btnUpdateEmp').style.display = 'block';
+	}
+	function deleteEmp(itemIndex){
+		//var empTobeDeleted = empList[itemIndex];
+		var empDeleted=empList.splice(itemIndex, 1); //remove 1 element from i index
+		showAllEmployees();
+		document.getElementById('msg').style.display = 'block';
+		document.getElementById('msg').innerHTML = 'Employee with name ' + empDeleted[0].empName + ' has been deleted';
+	}
+	//testFn();
+	//add(5, 7);
+	//add('5', '7');
+	function testFn(){
+		//alert("hello");
+		console.log("hello");
+	}
+	
+	function add(){
+		//debugger;
+		var a = document.getElementById('num1').value;
+		var b = document.getElementById('num2').value;
+		
+		if(a===''){
+			alert("Num 1 cannot be empty");
+			return false;
+		}
+		if(b===''){
+			alert("Num 2 cannot be empty");
+			return false;
+		}
+		var result = parseInt(a)+parseInt(b);
+		console.log(result);
+		document.getElementById('resultSpan').innerHTML = '<strong>'+result+'</strong>';
+		document.getElementById('resultDiv').style.display = 'block';
+		document.getElementById('btnAdd').className = 'animate-test-class';
+		document.getElementsByTagName('body')[0].className = 'btn-red';
+		//testFn();
+	}
+</script>
+
+</body>
+</html>
