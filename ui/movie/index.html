@@ -1,0 +1,33 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MoviesDekho</title>
+ <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+ <link rel="stylesheet" type="text/css" href="css/style.css">
+</head>
+<body>
+    <nav class="navbar navbar default">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand bg-primary p-2 text-white font-weight-bolder" href="index.html">MoviesDekho</a>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="jumbotron bg-dark text-center shadow-lg">
+            <div class="spinner-border text-primary d-none" id="moviesSpinner"></div>
+            <h3 class="text-center mb-2 text-white">Search for any movie</h3>
+            <form id="searchForm">
+                <input type="text" id="searchText" class="form-control" placeholder="Enter movie name">
+                <button type="submit" class="btn btn-primary font-weight-bolder mt-3">Search</button>
+            </form>
+        </div>
+    </div>
+    <div class="container"> 
+        <div id="movies" class="row"></div>
+    </div>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/main.js"></script>
+
+</body>
+</html>

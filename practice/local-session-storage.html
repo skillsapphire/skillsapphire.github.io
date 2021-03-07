@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<div id="result"></div>
+<div id="allemployees"></div>
+
+<script>
+// Check browser support
+if (typeof(Storage) !== "undefined") {
+  // Store
+  var emp = {"empId": 111, "empName": "Ram"};
+  var empList = [];
+  empList.push(emp);
+  emp = {"empId": 222, "empName": "Shyam"};
+  empList.push(emp);
+  emp = {"empId": 333, "empName": "Raghav"};
+  empList.push(emp);
+  localStorage.setItem("empObjectList", JSON.stringify(empList));
+  localStorage.setItem("empObje", JSON.stringify(emp));
+  localStorage.setItem("lastname", "Smith");
+  localStorage.setItem("fname", "John");
+  sessionStorage.setItem("fname", "John");
+  // Retrieve
+  document.getElementById("result").innerHTML = localStorage.getItem("lastname");
+  var empListAsString = localStorage.getItem("empObjectList");
+  var empListJsonArray = JSON.parse(empListAsString);
+  
+  var htmlString = '';
+  for(var i=0; i<empListJsonArray.length; i++){
+  //debugger;
+	console.log(empListJsonArray[i]);
+	htmlString = htmlString + `<div>Emp Id is ${empListJsonArray[i].empId} and Emp Name is ${empListJsonArray[i].empName} </div>`;
+  }
+  
+  document.getElementById("allemployees").innerHTML = htmlString;
+  
+} else {
+  document.getElementById("result").innerHTML = "Sorry, your browser does not support Web Storage...";
+}
+var empObject = JSON.parse(localStorage.getItem("empObje"));
+//alert(empObject["empId"]);
+//alert(empObject.empName);
+</script>
+
+</body>
+</html>
