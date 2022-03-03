@@ -1,0 +1,235 @@
+{
+  "data": {
+    "EFiledlist": [
+      {
+        "valid": "Y",
+        "mof": "ONLINE",
+        "dof": "20-03-2021",
+        "rtntype": "GSTR3B",
+        "ret_prd": "022021",
+        "arn": "AA2102211988665",
+        "status": "Filed"
+      },
+      {
+        "valid": "Y",
+        "mof": "ONLINE",
+        "dof": "11-03-2021",
+        "rtntype": "GSTR1",
+        "ret_prd": "122020",
+        "arn": "AA2112204470234",
+        "status": "Filed"
+      },
+      {
+        "valid": "Y",
+        "mof": "ONLINE",
+        "dof": "11-03-2021",
+        "rtntype": "GSTR1",
+        "ret_prd": "022021",
+        "arn": "AA2102210833310",
+        "status": "Filed"
+      },
+      {
+        "valid": "Y",
+        "mof": "ONLINE",
+        "dof": "11-03-2021",
+        "rtntype": "GSTR1",
+        "ret_prd": "012021",
+        "arn": "AA210121212012L",
+        "status": "Filed"
+      },
+      {
+        "valid": "Y",
+        "mof": "ONLINE",
+        "dof": "11-03-2021",
+        "rtntype": "GSTR1",
+        "ret_prd": "112020",
+        "arn": "AA211120330585W",
+        "status": "Filed"
+      },
+      {
+        "valid": "Y",
+        "mof": "ONLINE",
+        "dof": "11-03-2021",
+        "rtntype": "GSTR1",
+        "ret_prd": "102020",
+        "arn": "AA211020333161D",
+        "status": "Filed"
+      },
+      {
+        "valid": "Y",
+        "mof": "ONLINE",
+        "dof": "20-02-2021",
+        "rtntype": "GSTR3B",
+        "ret_prd": "012021",
+        "arn": "AA210121162150A",
+        "status": "Filed"
+      },
+      {
+        "valid": "Y",
+        "mof": "ONLINE",
+        "dof": "22-01-2021",
+        "rtntype": "GSTR3B",
+        "ret_prd": "122020",
+        "arn": "AA2112203024248",
+        "status": "Filed"
+      },
+      {
+        "valid": "Y",
+        "mof": "ONLINE",
+        "dof": "19-01-2021",
+        "rtntype": "GSTR1",
+        "ret_prd": "092020",
+        "arn": "AA210920433369B",
+        "status": "Filed"
+      },
+      {
+        "valid": "Y",
+        "mof": "ONLINE",
+        "dof": "19-01-2021",
+        "rtntype": "GSTR1",
+        "ret_prd": "082020",
+        "arn": "AA210820049959Y",
+        "status": "Filed"
+      },
+      {
+        "valid": "Y",
+        "mof": "ONLINE",
+        "dof": "19-01-2021",
+        "rtntype": "GSTR1",
+        "ret_prd": "072020",
+        "arn": "AA210720031953M",
+        "status": "Filed"
+      },
+      {
+        "valid": "Y",
+        "mof": "ONLINE",
+        "dof": "23-12-2020",
+        "rtntype": "GSTR3B",
+        "ret_prd": "112020",
+        "arn": "AA211120236099S",
+        "status": "Filed"
+      },
+      {
+        "valid": "Y",
+        "mof": "ONLINE",
+        "dof": "25-11-2020",
+        "rtntype": "GSTR3B",
+        "ret_prd": "102020",
+        "arn": "AA211020258978A",
+        "status": "Filed"
+      },
+      {
+        "valid": "Y",
+        "mof": "ONLINE",
+        "dof": "22-10-2020",
+        "rtntype": "GSTR3B",
+        "ret_prd": "092020",
+        "arn": "AA210920246028K",
+        "status": "Filed"
+      },
+      {
+        "valid": "Y",
+        "mof": "ONLINE",
+        "dof": "09-10-2020",
+        "rtntype": "GSTR3B",
+        "ret_prd": "082020",
+        "arn": "AA2108202574786",
+        "status": "Filed"
+      },
+      {
+        "valid": "Y",
+        "mof": "ONLINE",
+        "dof": "29-09-2020",
+        "rtntype": "GSTR3B",
+        "ret_prd": "072020",
+        "arn": "AA210720258545E",
+        "status": "Filed"
+      },
+      {
+        "valid": "Y",
+        "mof": "ONLINE",
+        "dof": "09-09-2020",
+        "rtntype": "GSTR1",
+        "ret_prd": "062020",
+        "arn": "AA210620294804C",
+        "status": "Filed"
+      },
+      {
+        "valid": "Y",
+        "mof": "ONLINE",
+        "dof": "04-09-2020",
+        "rtntype": "GSTR3B",
+        "ret_prd": "062020",
+        "arn": "AA2106202302226",
+        "status": "Filed"
+      },
+      {
+        "valid": "Y",
+        "mof": "ONLINE",
+        "dof": "30-07-2020",
+        "rtntype": "GSTR1",
+        "ret_prd": "042020",
+        "arn": "AA210420224818L",
+        "status": "Filed"
+      },
+      {
+        "valid": "Y",
+        "mof": "ONLINE",
+        "dof": "20-07-2020",
+        "rtntype": "GSTR1",
+        "ret_prd": "032020",
+        "arn": "AA210320260904Q",
+        "status": "Filed"
+      },
+      {
+        "valid": "Y",
+        "mof": "ONLINE",
+        "dof": "16-07-2020",
+        "rtntype": "GSTR3B",
+        "ret_prd": "052020",
+        "arn": "AA210520183156N",
+        "status": "Filed"
+      },
+      {
+        "valid": "Y",
+        "mof": "ONLINE",
+        "dof": "16-07-2020",
+        "rtntype": "GSTR1",
+        "ret_prd": "052020",
+        "arn": "AA210520183178H",
+        "status": "Filed"
+      },
+      {
+        "valid": "Y",
+        "mof": "ONLINE",
+        "dof": "04-07-2020",
+        "rtntype": "GSTR3B",
+        "ret_prd": "042020",
+        "arn": "AA210420146446P",
+        "status": "Filed"
+      },
+      {
+        "valid": "Y",
+        "mof": "ONLINE",
+        "dof": "27-06-2020",
+        "rtntype": "GSTR3B",
+        "ret_prd": "032020",
+        "arn": "AA210320260883M",
+        "status": "Filed"
+      }
+    ]
+  },
+  "status_cd": "1",
+  "status_desc": "GSTR request succeeds",
+  "header": {
+    "sec-ch-ua": "\" Not A;Brand\";v=\"99\", \"Chromium\";v=\"98\", \"Google Chrome\";v=\"98\"",
+    "client_id": "76767",
+    "sec-ch-ua-mobile": "?0",
+    "client_secret": "78787",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-site": "same-site",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-dest": "empty",
+    "gstin": "21ACJPT7069G1ZZ"
+  }
+}
