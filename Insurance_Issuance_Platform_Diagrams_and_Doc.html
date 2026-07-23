@@ -1,0 +1,3407 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Insurance Issuance Platform - Design Document</title>
+<style>
+@page { size: A4; margin: 18mm 15mm 18mm 15mm; }
+body { font-family: "DejaVu Sans", "Helvetica Neue", Arial, sans-serif;
+       font-size: 10.2pt; line-height: 1.5; color: #1c2430; margin: 0; }
+h1 { font-size: 19pt; color: #0f2d4a; border-bottom: 3px solid #0f6fbe;
+     padding-bottom: 6px; margin-top: 26px; page-break-after: avoid; }
+h1:not(:first-of-type) { page-break-before: always; }
+h2 { font-size: 14.5pt; color: #0f2d4a; margin-top: 22px; border-left: 5px solid #0f6fbe;
+     padding-left: 9px; page-break-after: avoid; }
+h3 { font-size: 12pt; color: #17436b; margin-top: 16px; page-break-after: avoid; }
+h4 { font-size: 10.8pt; color: #17436b; page-break-after: avoid; }
+p { margin: 7px 0; text-align: justify; }
+table { border-collapse: collapse; width: 100%; margin: 10px 0; font-size: 8.9pt;
+        page-break-inside: avoid; }
+th { background: #0f2d4a; color: #fff; text-align: left; padding: 6px 7px;
+     border: 1px solid #0f2d4a; font-weight: 600; }
+td { border: 1px solid #c9d4e0; padding: 5px 7px; vertical-align: top; }
+tr:nth-child(even) td { background: #f4f8fc; }
+code { font-family: "DejaVu Sans Mono", Consolas, monospace; font-size: 8.6pt;
+       background: #eef3f8; padding: 1px 3px; border-radius: 3px; color: #1b3a57; }
+pre { background: #f7f9fc; border: 1px solid #d3dfeb; border-left: 4px solid #0f6fbe;
+      padding: 9px 11px; border-radius: 4px; overflow-x: auto;
+      white-space: pre-wrap; word-wrap: break-word; page-break-inside: auto; }
+pre code { background: none; padding: 0; font-size: 8.1pt; line-height: 1.35; color: #16324d; }
+pre.mermaid { border-left-color: #7a4fd0; background: #faf7ff; }
+blockquote { border-left: 4px solid #f0a500; background: #fffaf0; margin: 10px 0;
+             padding: 7px 12px; }
+ul, ol { margin: 6px 0 6px 18px; padding-left: 8px; }
+li { margin: 3px 0; }
+hr { border: none; border-top: 1px solid #d3dfeb; margin: 22px 0; }
+strong { color: #0f2d4a; }
+.cover { text-align: center; padding-top: 55mm; page-break-after: always; }
+.cover h1 { border: none; font-size: 27pt; color: #0f2d4a; page-break-before: auto; }
+.cover .sub { font-size: 13pt; color: #486684; margin-top: 8px; }
+.cover .meta { margin-top: 42mm; font-size: 10pt; color: #5c7a99; }
+</style>
+<style>
+ body { max-width: 1180px; margin: 0 auto; padding: 30px 40px; }
+ pre.mermaid { background:#fff; border:1px solid #d3dfeb; border-left:4px solid #7a4fd0;
+               text-align:center; overflow-x:auto; padding:16px; }
+ h1 { page-break-before: auto; }
+</style>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'neutral', securityLevel: 'loose',
+                       flowchart: { useMaxWidth: true, htmlLabels: true },
+                       sequence: { useMaxWidth: true, wrap: true } });
+</script>
+
+</head><body><h1 id="insurance-issuance--policy-registration-platform">Insurance
+Issuance &amp; Policy Registration Platform</h1>
+<h2 id="functional-and-technical-design-document">Functional and
+Technical Design Document</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Document title</td>
+<td>Insurance Issuance &amp; Policy Registration Platform — FSD +
+TSD</td>
+</tr>
+<tr class="even">
+<td>Version</td>
+<td>1.0</td>
+</tr>
+<tr class="odd">
+<td>Status</td>
+<td>Baseline for build</td>
+</tr>
+<tr class="even">
+<td>Platform</td>
+<td>Java 17 / Spring Boot 3.x</td>
+</tr>
+<tr class="odd">
+<td>Persistence</td>
+<td>Spring Data JPA (PostgreSQL)</td>
+</tr>
+<tr class="even">
+<td>Integration style</td>
+<td>OpenFeign (declarative HTTP), Azure SDK for Blob</td>
+</tr>
+<tr class="odd">
+<td>Audience</td>
+<td>Product owners, business analysts, solution architects, developers,
+QA, operations</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 id="part-a--functional-specification">PART A — FUNCTIONAL
+SPECIFICATION</h1>
+<h2 id="a1-purpose-and-scope">A1. Purpose and Scope</h2>
+<p>The platform digitises the end-to-end issuance of an insurance policy
+that is sold and captured by field/branch employees on behalf of a
+customer (typically a farmer, given the Farmer Card verification
+requirement).</p>
+<p>The system covers:</p>
+<ol type="1">
+<li>Role-based login for two personas — <strong>Employee
+(maker)</strong> and <strong>Supervisor (checker)</strong>.</li>
+<li>Retrieval of <strong>eligibility rules</strong> from a Drupal
+Content Management System so that business/underwriting teams can change
+eligibility wording and criteria without a code release.</li>
+<li><strong>Outbound sharing</strong> of eligibility terms to the
+customer over <strong>SMS or WhatsApp</strong> through Twilio.</li>
+<li>Capture of the <strong>insurance issuance form</strong> and upload
+of <strong>KYC documents</strong> to <strong>Azure Blob
+Storage</strong>.</li>
+<li>Automated <strong>identity verification</strong> against Protean
+(Aadhaar, PAN) and a Farmer Card verification service, with an
+independently persisted status per document type.</li>
+<li>A <strong>maker–checker review workflow</strong>: applications sit
+in <code>REVIEW</code> until a supervisor either requests more
+information (with comments) or approves.</li>
+<li>On approval, <strong>hand-off to the Risk Assessment team</strong>
+with the complete registration payload.</li>
+<li>A <strong>scheduled poller</strong> that follows up with the Risk
+Assessment service every 24 hours until a policy decision and policy
+document URL are returned.</li>
+<li>Delivery of the <strong>issued policy document</strong> back to the
+originating employee for download and onward sharing with the
+customer.</li>
+</ol>
+<p><strong>Out of scope for v1.0:</strong> premium computation engine,
+payment collection/reconciliation, claims, renewals, customer
+self-service portal, and the internal implementation of the Risk
+Assessment team's own scoring engine.</p>
+<h2 id="a2-actors-and-roles">A2. Actors and Roles</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Actor</th>
+<th>Type</th>
+<th>Responsibilities</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Employee</strong> (<code>ROLE_EMPLOYEE</code>)</td>
+<td>Human, internal</td>
+<td>Starts registration, reads eligibility rules to the customer, shares
+rules over SMS/WhatsApp, fills the issuance form, uploads KYC documents,
+submits for review, acts on supervisor comments, downloads and forwards
+the issued policy.</td>
+</tr>
+<tr class="even">
+<td><strong>Supervisor</strong> (<code>ROLE_SUPERVISOR</code>)</td>
+<td>Human, internal</td>
+<td>Views the queue of <code>REVIEW</code> applications, inspects form
+data, KYC documents and verification statuses, either returns the
+application with comments or approves it for risk assessment.</td>
+</tr>
+<tr class="odd">
+<td><strong>Drupal CMS</strong></td>
+<td>External system</td>
+<td>System of record for eligibility rule content, versioned and
+locale-aware.</td>
+</tr>
+<tr class="even">
+<td><strong>Twilio</strong></td>
+<td>External system</td>
+<td>SMS and WhatsApp message delivery.</td>
+</tr>
+<tr class="odd">
+<td><strong>Azure Blob Storage</strong></td>
+<td>External system</td>
+<td>Durable, encrypted object store for KYC documents and issued policy
+PDFs.</td>
+</tr>
+<tr class="even">
+<td><strong>Protean KYC APIs</strong></td>
+<td>External system</td>
+<td>Aadhaar and PAN verification.</td>
+</tr>
+<tr class="odd">
+<td><strong>Farmer Card Verification API</strong></td>
+<td>External system</td>
+<td>State/agri-department farmer identity verification.</td>
+</tr>
+<tr class="even">
+<td><strong>Risk Assessment Service</strong></td>
+<td>External system</td>
+<td>Underwriting decision — approve/reject — and issuance of the policy
+document.</td>
+</tr>
+<tr class="odd">
+<td><strong>Scheduler</strong></td>
+<td>Internal automation</td>
+<td>Submits pending risk requests and polls for risk outcomes on a
+24-hour cadence.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Segregation of duty rule:</strong> a supervisor may not
+approve an application that they themselves created. An employee cannot
+see another employee's applications. A supervisor sees only applications
+belonging to their branch/region hierarchy.</p>
+<h2 id="a3-end-to-end-business-narrative">A3. End-to-End Business
+Narrative</h2>
+<p><strong>Step 1 — Login.</strong> The employee authenticates. The
+platform issues a JWT that carries the employee id, branch code and
+role. The landing dashboard is driven by role: an employee sees <em>My
+Applications</em> + <em>Start Registration</em>; a supervisor sees the
+<em>Review Queue</em>.</p>
+<p><strong>Step 2 — Start Registration.</strong> The employee clicks
+<strong>Start Registration</strong>. A <code>DRAFT</code> application
+shell is created and an application number is reserved. In the same call
+the backend fetches the current eligibility rule set from Drupal and
+returns it with the application.</p>
+<p><strong>Step 3 — Eligibility rules.</strong> The rules are rendered
+on screen for the employee to walk the customer through. The rule set
+carries a <code>version</code>; whichever version was shown is stamped
+onto the application for audit, so that a dispute two years later can be
+resolved against the exact wording presented on that day.</p>
+<p><strong>Step 4 — Share the rules (optional, repeatable).</strong> The
+employee may push the rules to the customer's mobile number as an SMS or
+a WhatsApp message. Each attempt is written to a notification log with
+the Twilio message SID and delivery status, so failures are visible and
+re-sendable.</p>
+<p><strong>Step 5 — Proceed.</strong> The customer accepts the terms.
+The employee clicks <strong>Proceed</strong>; the application moves to
+<code>ELIGIBILITY_ACCEPTED</code> and the form unlocks. Until this point
+the form is not editable — this is deliberate, so that terms are always
+presented before data capture.</p>
+<p><strong>Step 6 — Fill the form.</strong> Customer demographics,
+contact details, address, land/crop details, nominee, sum insured and
+the requested cover period are captured. The form auto-saves as a draft
+so a dropped network connection does not lose work.</p>
+<p><strong>Step 7 — Upload KYC documents.</strong> Aadhaar, PAN and
+Farmer Card images/PDFs are uploaded. Files are validated (type, size,
+virus scan hook) and streamed to Azure Blob Storage. Only the container
++ blob path is persisted in the database; the application never stores a
+permanently public URL. Read access is granted later through short-lived
+SAS URLs.</p>
+<p><strong>Step 8 — Verification.</strong> On submit, the platform calls
+Protean for Aadhaar, Protean for PAN, and the Farmer Card verification
+API. Each result is written to its <strong>own column</strong> on the
+application (<code>aadhaar_verification_status</code>,
+<code>pan_verification_status</code>,
+<code>farmer_card_verification_status</code>) plus a detailed row in
+<code>verification_result</code> holding the provider reference id,
+response code and attempt count.</p>
+<p><strong>Step 9 — Review.</strong> Regardless of individual
+verification outcomes, the application lands in <code>REVIEW</code>. A
+failed verification does not auto-reject: a human supervisor decides,
+because a legitimate mismatch (a name spelling difference, a stale
+farmer card) is common in the field.</p>
+<p><strong>Step 10 — Supervisor decision.</strong></p>
+<ul>
+<li><em>Needs more information</em>: the supervisor adds a comment.
+Status becomes <code>NEEDS_MORE_INFO</code>. The application reappears
+on the employee's dashboard with the comment thread; the employee edits,
+re-uploads and re-submits, returning it to <code>REVIEW</code>.</li>
+<li><em>Reject</em>: terminal status <code>REJECTED</code> with a
+mandatory reason.</li>
+<li><em>Approve</em>: status becomes
+<code>APPROVED_SENDFORRISK</code>.</li>
+</ul>
+<p><strong>Step 11 — Risk hand-off.</strong> On approval an asynchronous
+job assembles the complete registration payload — form data,
+verification statuses, document SAS URLs, supervisor decision trail —
+and posts it to the Risk Assessment service. The returned
+<code>riskRefId</code> is persisted and the status becomes
+<code>RISK_IN_PROGRESS</code>. If the hand-off call fails, the
+application stays at <code>APPROVED_SENDFORRISK</code> and is retried by
+the submitter job; nothing is lost.</p>
+<p><strong>Step 12 — Polling.</strong> A scheduler runs daily. For every
+application in <code>APPROVED_SENDFORRISK</code> (submission still
+pending) it retries submission; for every application in
+<code>RISK_IN_PROGRESS</code> whose <code>next_poll_at</code> has
+elapsed it calls the risk status endpoint. While the answer is
+<code>IN_PROGRESS</code>, <code>next_poll_at</code> is pushed 24 hours
+forward.</p>
+<p><strong>Step 13 — Policy issued.</strong> When risk returns
+<code>APPROVED</code>, the response carries the policy number and a
+policy document URL. The platform copies that document into its own
+Azure container (so the platform is not dependent on the risk team's
+link lifetime), sets status to <code>POLICY_ISSUED</code>, and raises a
+dashboard notification for the originating employee. The employee
+downloads the policy and forwards it to the customer. If risk returns
+<code>REJECTED</code>, status becomes <code>POLICY_REJECTED</code> with
+the rejection reason and the employee is notified.</p>
+<h2 id="a4-application-status-lifecycle">A4. Application Status
+Lifecycle</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Status</th>
+<th>Meaning</th>
+<th>Set by</th>
+<th>Visible to</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>DRAFT</code></td>
+<td>Shell created, eligibility not yet accepted</td>
+<td>System on Start Registration</td>
+<td>Employee</td>
+</tr>
+<tr class="even">
+<td><code>ELIGIBILITY_ACCEPTED</code></td>
+<td>Terms shown and accepted; form editable</td>
+<td>Employee action</td>
+<td>Employee</td>
+</tr>
+<tr class="odd">
+<td><code>DOCUMENTS_UPLOADED</code></td>
+<td>At least the mandatory KYC set is present</td>
+<td>System</td>
+<td>Employee</td>
+</tr>
+<tr class="even">
+<td><code>KYC_IN_PROGRESS</code></td>
+<td>Verification calls dispatched</td>
+<td>System</td>
+<td>Employee</td>
+</tr>
+<tr class="odd">
+<td><code>REVIEW</code></td>
+<td>Awaiting supervisor decision</td>
+<td>System on submit</td>
+<td>Employee (read-only), Supervisor</td>
+</tr>
+<tr class="even">
+<td><code>NEEDS_MORE_INFO</code></td>
+<td>Returned to employee with comments</td>
+<td>Supervisor</td>
+<td>Employee, Supervisor</td>
+</tr>
+<tr class="odd">
+<td><code>APPROVED_SENDFORRISK</code></td>
+<td>Approved; awaiting/undergoing hand-off to risk</td>
+<td>Supervisor</td>
+<td>Supervisor, Ops</td>
+</tr>
+<tr class="even">
+<td><code>RISK_IN_PROGRESS</code></td>
+<td>Accepted by risk team, decision pending</td>
+<td>System (after successful hand-off)</td>
+<td>Supervisor, Ops</td>
+</tr>
+<tr class="odd">
+<td><code>POLICY_ISSUED</code></td>
+<td>Policy approved, document available</td>
+<td>Scheduler</td>
+<td>Employee, Supervisor</td>
+</tr>
+<tr class="even">
+<td><code>POLICY_REJECTED</code></td>
+<td>Underwriting declined</td>
+<td>Scheduler</td>
+<td>Employee, Supervisor</td>
+</tr>
+<tr class="odd">
+<td><code>REJECTED</code></td>
+<td>Declined by supervisor</td>
+<td>Supervisor</td>
+<td>Employee, Supervisor</td>
+</tr>
+<tr class="even">
+<td><code>EXPIRED</code></td>
+<td>Draft abandoned beyond retention window</td>
+<td>Housekeeping job</td>
+<td>Ops</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Naming note.</strong> The requirement text spells the
+approved status as <code>APRROVED_SENDFORRISK</code>. This document
+standardises on the correctly spelled constant
+<strong><code>APPROVED_SENDFORRISK</code></strong>. If the misspelling
+already exists in a live database, keep the DB literal and map it in the
+enum via <code>@Enumerated(EnumType.STRING)</code> with an explicit
+converter rather than propagating the typo into new code.</p>
+</blockquote>
+<h2 id="a5-functional-requirements">A5. Functional Requirements</h2>
+<h3 id="a51-authentication-and-authorisation">A5.1 Authentication and
+authorisation</h3>
+<table>
+<thead>
+<tr class="header">
+<th>ID</th>
+<th>Requirement</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>FR-A-01</td>
+<td>The system shall authenticate employees against the corporate
+identity provider (OIDC) or an internal credential store, and issue a
+signed JWT valid for 60 minutes with a refresh token valid for 8
+hours.</td>
+<td>Must</td>
+</tr>
+<tr class="even">
+<td>FR-A-02</td>
+<td>The JWT shall carry <code>employeeId</code>, <code>empCode</code>,
+<code>branchCode</code>, and exactly one of <code>ROLE_EMPLOYEE</code> /
+<code>ROLE_SUPERVISOR</code>.</td>
+<td>Must</td>
+</tr>
+<tr class="odd">
+<td>FR-A-03</td>
+<td>All <code>/api/v1/supervisor/**</code> endpoints shall be restricted
+to <code>ROLE_SUPERVISOR</code>; all application-authoring endpoints
+shall be restricted to <code>ROLE_EMPLOYEE</code>.</td>
+<td>Must</td>
+</tr>
+<tr class="even">
+<td>FR-A-04</td>
+<td>An employee shall be able to read/modify only applications where
+<code>created_by_employee_id</code> equals their own id, enforced in the
+repository layer, not only in the UI.</td>
+<td>Must</td>
+</tr>
+<tr class="odd">
+<td>FR-A-05</td>
+<td>A supervisor shall not be able to approve an application they
+created.</td>
+<td>Must</td>
+</tr>
+</tbody>
+</table>
+<h3 id="a52-eligibility-rules">A5.2 Eligibility rules</h3>
+<table>
+<thead>
+<tr class="header">
+<th>ID</th>
+<th>Requirement</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>FR-E-01</td>
+<td>On Start Registration the system shall create a <code>DRAFT</code>
+application and fetch the active eligibility rule set for the selected
+product from the Drupal CMS.</td>
+<td>Must</td>
+</tr>
+<tr class="even">
+<td>FR-E-02</td>
+<td>The rule set shall be cached in-process (Caffeine) and in the
+database with a configurable TTL, default 30 minutes.</td>
+<td>Must</td>
+</tr>
+<tr class="odd">
+<td>FR-E-03</td>
+<td>If Drupal is unavailable, the system shall serve the last
+successfully cached rule set and mark the response
+<code>stale=true</code>; the UI shall display a non-blocking banner. If
+no cached copy exists, registration shall be blocked with a clear
+error.</td>
+<td>Must</td>
+</tr>
+<tr class="even">
+<td>FR-E-04</td>
+<td>The <code>ruleSetVersion</code> presented to the customer shall be
+persisted on the application.</td>
+<td>Must</td>
+</tr>
+<tr class="odd">
+<td>FR-E-05</td>
+<td>The employee shall be able to send the rule summary to a mobile
+number over SMS or WhatsApp; the channel, recipient, template id,
+provider message SID and delivery status shall be logged.</td>
+<td>Must</td>
+</tr>
+<tr class="even">
+<td>FR-E-06</td>
+<td>Resending shall be permitted, rate-limited to 5 sends per
+application per hour.</td>
+<td>Should</td>
+</tr>
+<tr class="odd">
+<td>FR-E-07</td>
+<td>The form shall remain read-only until the employee explicitly
+records acceptance of the terms.</td>
+<td>Must</td>
+</tr>
+</tbody>
+</table>
+<h3 id="a53-application-form-and-documents">A5.3 Application form and
+documents</h3>
+<table>
+<thead>
+<tr class="header">
+<th>ID</th>
+<th>Requirement</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>FR-F-01</td>
+<td>The form shall capture customer identity, contact, address,
+land/crop, nominee and cover details, with server-side validation
+mirroring client-side validation.</td>
+<td>Must</td>
+</tr>
+<tr class="even">
+<td>FR-F-02</td>
+<td>The form shall support draft auto-save without triggering status
+transitions.</td>
+<td>Should</td>
+</tr>
+<tr class="odd">
+<td>FR-F-03</td>
+<td>Uploads shall accept PDF, JPEG and PNG only, maximum 5 MB per file
+and 25 MB per application.</td>
+<td>Must</td>
+</tr>
+<tr class="even">
+<td>FR-F-04</td>
+<td>Files shall be streamed to Azure Blob Storage under the path
+<code>{container}/{yyyy}/{MM}/{applicationNumber}/{docType}/{uuid}.{ext}</code>;
+only the relative path is persisted.</td>
+<td>Must</td>
+</tr>
+<tr class="odd">
+<td>FR-F-05</td>
+<td>Every uploaded file shall have a SHA-256 checksum stored to allow
+duplicate detection and tamper evidence.</td>
+<td>Should</td>
+</tr>
+<tr class="even">
+<td>FR-F-06</td>
+<td>Document download shall be served via a SAS URL valid for 10
+minutes, generated on demand and never persisted.</td>
+<td>Must</td>
+</tr>
+<tr class="odd">
+<td>FR-F-07</td>
+<td>Aadhaar, PAN and Farmer Card documents shall be mandatory before
+submit; the system shall block submission otherwise.</td>
+<td>Must</td>
+</tr>
+</tbody>
+</table>
+<h3 id="a54-kyc-verification">A5.4 KYC verification</h3>
+<table>
+<thead>
+<tr class="header">
+<th>ID</th>
+<th>Requirement</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>FR-K-01</td>
+<td>On submit the system shall invoke Protean Aadhaar verification,
+Protean PAN verification and Farmer Card verification.</td>
+<td>Must</td>
+</tr>
+<tr class="even">
+<td>FR-K-02</td>
+<td>The three calls shall be executed concurrently and shall be
+independent — the failure of one shall not prevent the others from
+completing or the application from reaching <code>REVIEW</code>.</td>
+<td>Must</td>
+</tr>
+<tr class="odd">
+<td>FR-K-03</td>
+<td>Each verification shall persist a discrete status on the application
+(<code>VERIFIED</code>, <code>FAILED</code>, <code>PENDING</code>,
+<code>MANUAL_REVIEW</code>, <code>NOT_APPLICABLE</code>) and a detail
+row with provider reference and response code.</td>
+<td>Must</td>
+</tr>
+<tr class="even">
+<td>FR-K-04</td>
+<td>Verification calls shall be idempotent per application per type,
+keyed by an idempotency token, so a retry never double-charges the
+provider.</td>
+<td>Must</td>
+</tr>
+<tr class="odd">
+<td>FR-K-05</td>
+<td>Aadhaar numbers shall never be stored in plain text; only the last 4
+digits shall be retained for display, with the full value held encrypted
+for the verification call and purged after the outcome is recorded.</td>
+<td>Must</td>
+</tr>
+<tr class="even">
+<td>FR-K-06</td>
+<td>A supervisor shall be able to trigger re-verification of a single
+failed check.</td>
+<td>Should</td>
+</tr>
+</tbody>
+</table>
+<h3 id="a55-supervisor-review">A5.5 Supervisor review</h3>
+<table>
+<thead>
+<tr class="header">
+<th>ID</th>
+<th>Requirement</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>FR-S-01</td>
+<td>The supervisor dashboard shall list all applications in
+<code>REVIEW</code> (and optionally <code>NEEDS_MORE_INFO</code>) within
+the supervisor's branch scope, sortable by ageing, filterable by
+employee, product and verification outcome.</td>
+<td>Must</td>
+</tr>
+<tr class="even">
+<td>FR-S-02</td>
+<td>The detail view shall show form data, all documents (via SAS
+preview), the three verification statuses and the full status
+history.</td>
+<td>Must</td>
+</tr>
+<tr class="odd">
+<td>FR-S-03</td>
+<td>"Request more information" shall require a comment of at least 10
+characters and shall move the status to
+<code>NEEDS_MORE_INFO</code>.</td>
+<td>Must</td>
+</tr>
+<tr class="even">
+<td>FR-S-04</td>
+<td>Comments shall be threaded and immutable once saved; the employee's
+response shall be a new comment, not an edit.</td>
+<td>Must</td>
+</tr>
+<tr class="odd">
+<td>FR-S-05</td>
+<td>"Approve" shall move the status to <code>APPROVED_SENDFORRISK</code>
+and enqueue the risk hand-off.</td>
+<td>Must</td>
+</tr>
+<tr class="even">
+<td>FR-S-06</td>
+<td>"Reject" shall require a reason code and free-text remark and shall
+be terminal.</td>
+<td>Must</td>
+</tr>
+<tr class="odd">
+<td>FR-S-07</td>
+<td>Every supervisor decision shall be written to the status history
+with the actor, timestamp and remark.</td>
+<td>Must</td>
+</tr>
+</tbody>
+</table>
+<h3 id="a56-risk-assessment-hand-off-and-polling">A5.6 Risk assessment
+hand-off and polling</h3>
+<table>
+<thead>
+<tr class="header">
+<th>ID</th>
+<th>Requirement</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>FR-R-01</td>
+<td>On approval the system shall assemble the complete registration
+payload and POST it to the Risk Assessment service.</td>
+<td>Must</td>
+</tr>
+<tr class="even">
+<td>FR-R-02</td>
+<td>The hand-off shall be asynchronous and retried; a failure shall
+leave the application in <code>APPROVED_SENDFORRISK</code> for the
+submitter job to pick up.</td>
+<td>Must</td>
+</tr>
+<tr class="odd">
+<td>FR-R-03</td>
+<td>The <code>riskRefId</code> returned shall be persisted and the
+status moved to <code>RISK_IN_PROGRESS</code>.</td>
+<td>Must</td>
+</tr>
+<tr class="even">
+<td>FR-R-04</td>
+<td>A scheduler shall run daily and poll the risk status endpoint for
+every application whose <code>next_poll_at</code> has elapsed.</td>
+<td>Must</td>
+</tr>
+<tr class="odd">
+<td>FR-R-05</td>
+<td>The polling interval shall be 24 hours, configurable, with a maximum
+attempt ceiling (default 30) after which the application is flagged
+<code>RISK_SLA_BREACH</code> for operations follow-up without changing
+the business status.</td>
+<td>Must</td>
+</tr>
+<tr class="even">
+<td>FR-R-06</td>
+<td>On <code>APPROVED</code>, the system shall store the policy number,
+copy the policy document into its own blob container, set
+<code>POLICY_ISSUED</code> and notify the employee.</td>
+<td>Must</td>
+</tr>
+<tr class="odd">
+<td>FR-R-07</td>
+<td>On <code>REJECTED</code>, the system shall store the rejection
+reason, set <code>POLICY_REJECTED</code> and notify the employee.</td>
+<td>Must</td>
+</tr>
+<tr class="even">
+<td>FR-R-08</td>
+<td>The scheduler shall be safe to run on multiple instances — only one
+node may process a given application at a time.</td>
+<td>Must</td>
+</tr>
+<tr class="odd">
+<td>FR-R-09</td>
+<td>The employee dashboard shall surface a "New policy available"
+indicator and a download action for <code>POLICY_ISSUED</code>
+applications.</td>
+<td>Must</td>
+</tr>
+</tbody>
+</table>
+<h2 id="a6-business-rules">A6. Business Rules</h2>
+<table>
+<thead>
+<tr class="header">
+<th>ID</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>BR-01</td>
+<td>An application cannot move from <code>DRAFT</code> directly to
+<code>REVIEW</code>; eligibility acceptance is mandatory.</td>
+</tr>
+<tr class="even">
+<td>BR-02</td>
+<td>All three KYC documents must be uploaded before submission,
+irrespective of verification outcome.</td>
+</tr>
+<tr class="odd">
+<td>BR-03</td>
+<td>A supervisor decision is required even when all three verifications
+pass — there is no straight-through processing in v1.0.</td>
+</tr>
+<tr class="even">
+<td>BR-04</td>
+<td><code>NEEDS_MORE_INFO</code> may recur any number of times; each
+cycle is retained in history.</td>
+</tr>
+<tr class="odd">
+<td>BR-05</td>
+<td><code>REJECTED</code>, <code>POLICY_ISSUED</code> and
+<code>POLICY_REJECTED</code> are terminal; no further edits are
+allowed.</td>
+</tr>
+<tr class="even">
+<td>BR-06</td>
+<td>Polling stops permanently once a terminal risk outcome is
+received.</td>
+</tr>
+<tr class="odd">
+<td>BR-07</td>
+<td>A rule set version once stamped on an application is never
+overwritten, even if the CMS content changes mid-flow.</td>
+</tr>
+<tr class="even">
+<td>BR-08</td>
+<td>Documents are retained for 7 years from policy issuance or 90 days
+from rejection, whichever applies.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="a7-notification-matrix">A7. Notification Matrix</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Event</th>
+<th>Channel</th>
+<th>Recipient</th>
+<th>Template</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Eligibility rules shared</td>
+<td>SMS / WhatsApp (Twilio)</td>
+<td>Customer mobile</td>
+<td><code>ELIG_RULES_V1</code></td>
+</tr>
+<tr class="even">
+<td>Application returned for more info</td>
+<td>In-app + email</td>
+<td>Originating employee</td>
+<td><code>APP_NEEDS_INFO</code></td>
+</tr>
+<tr class="odd">
+<td>Application approved by supervisor</td>
+<td>In-app</td>
+<td>Originating employee</td>
+<td><code>APP_APPROVED</code></td>
+</tr>
+<tr class="even">
+<td>Policy issued</td>
+<td>In-app + email, optional WhatsApp to customer</td>
+<td>Employee, then customer</td>
+<td><code>POLICY_ISSUED</code></td>
+</tr>
+<tr class="odd">
+<td>Policy rejected</td>
+<td>In-app + email</td>
+<td>Employee</td>
+<td><code>POLICY_REJECTED</code></td>
+</tr>
+<tr class="even">
+<td>Risk SLA breach</td>
+<td>Email</td>
+<td>Operations distribution list</td>
+<td><code>RISK_SLA_BREACH</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 id="part-b--technical-specification">PART B — TECHNICAL
+SPECIFICATION</h1>
+<h2 id="b1-technology-stack">B1. Technology Stack</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Layer</th>
+<th>Choice</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Language / runtime</td>
+<td>Java 17 (LTS)</td>
+<td>Records, sealed types, pattern matching</td>
+</tr>
+<tr class="even">
+<td>Framework</td>
+<td>Spring Boot 3.2.x</td>
+<td>Jakarta namespace</td>
+</tr>
+<tr class="odd">
+<td>Web</td>
+<td>Spring MVC (<code>spring-boot-starter-web</code>)</td>
+<td>Servlet stack; virtual threads enabled for blocking I/O fan-out</td>
+</tr>
+<tr class="even">
+<td>Persistence</td>
+<td>Spring Data JPA + Hibernate 6</td>
+<td>PostgreSQL 15</td>
+</tr>
+<tr class="odd">
+<td>Migrations</td>
+<td>Flyway</td>
+<td>Versioned SQL under <code>db/migration</code></td>
+</tr>
+<tr class="even">
+<td>HTTP integration</td>
+<td>Spring Cloud OpenFeign 4.x</td>
+<td>CMS, Twilio, Protean, Farmer Card, Risk</td>
+</tr>
+<tr class="odd">
+<td>Resilience</td>
+<td>Resilience4j</td>
+<td>Retry, circuit breaker, bulkhead, time limiter per client</td>
+</tr>
+<tr class="even">
+<td>Object storage</td>
+<td><code>azure-storage-blob</code> SDK 12.x</td>
+<td>Not Feign — use the SDK for streaming and SAS</td>
+</tr>
+<tr class="odd">
+<td>Scheduling</td>
+<td>Spring <code>@Scheduled</code> + ShedLock (JDBC)</td>
+<td>Cluster-safe locking</td>
+</tr>
+<tr class="even">
+<td>Security</td>
+<td>Spring Security 6 + JWT (<code>nimbus-jose-jwt</code>)</td>
+<td>Method-level <code>@PreAuthorize</code></td>
+</tr>
+<tr class="odd">
+<td>Caching</td>
+<td>Caffeine (L1) + DB-backed rule cache (L2)</td>
+<td>CMS rule sets</td>
+</tr>
+<tr class="even">
+<td>API docs</td>
+<td>springdoc-openapi 2.x</td>
+<td><code>/swagger-ui.html</code></td>
+</tr>
+<tr class="odd">
+<td>Mapping</td>
+<td>MapStruct</td>
+<td>Entity ↔︎ DTO</td>
+</tr>
+<tr class="even">
+<td>Observability</td>
+<td>Micrometer → Prometheus, OpenTelemetry traces, Logback JSON</td>
+<td>Correlation id propagated through Feign</td>
+</tr>
+<tr class="odd">
+<td>Testing</td>
+<td>JUnit 5, Testcontainers, WireMock, ArchUnit</td>
+<td>Contract tests for every external client</td>
+</tr>
+<tr class="even">
+<td>Build</td>
+<td>Maven, Docker multi-stage, deployed to AKS</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="why-feign-for-some-integrations-and-not-others">Why Feign for
+some integrations and not others</h3>
+<p>Feign is a declarative HTTP client and is a natural fit for the JSON
+REST APIs — Drupal CMS, Protean, Farmer Card and the Risk Assessment
+service. Azure Blob is deliberately <strong>not</strong> accessed
+through Feign: blob upload/download needs streaming, chunked transfer,
+SAS signing and retry semantics that the Azure SDK already implements
+correctly. For Twilio, either the official <code>twilio-java</code> SDK
+or a Feign client against the Twilio REST API is acceptable; this design
+uses a <strong>Feign client</strong> to keep all outbound HTTP under one
+interceptor/observability regime, with Basic auth built from the Account
+SID and Auth Token.</p>
+<h2 id="b2-logical-architecture">B2. Logical Architecture</h2>
+<p>The system is delivered as a <strong>modular monolith</strong> — one
+deployable Spring Boot service with strictly separated packages —
+because the workflow is transactionally cohesive and the volume does not
+justify distributed complexity in v1.0. Module boundaries are enforced
+with ArchUnit so that a later split into microservices (notification,
+document, integration-gateway) is a refactor and not a rewrite.</p>
+<pre><code>com.acme.insurance
+├── config              # Security, Feign, Azure, Resilience4j, Async, Scheduler config
+├── security            # JwtAuthFilter, EmployeePrincipal, RBAC annotations
+├── employee            # Employee entity, repository, login
+├── application         # Core aggregate: InsuranceApplication, form, status machine
+│   ├── api             # Controllers + DTOs
+│   ├── domain          # Entities, enums, ApplicationStateMachine
+│   ├── repository      # Spring Data JPA repositories + specifications
+│   └── service         # ApplicationService, SubmissionService
+├── eligibility         # CMS rule fetch, cache, versioning
+├── notification        # Twilio dispatch, NotificationLog
+├── document            # Azure Blob upload/download, SAS, checksum, validation
+├── kyc                 # Aadhaar / PAN / Farmer Card orchestration
+├── review              # Supervisor queue, comments, decisions
+├── risk                # Risk hand-off, polling scheduler, policy ingestion
+├── integration         # All Feign clients, request/response models, error decoders
+└── common              # Exceptions, audit, correlation, pagination, mappers</code></pre>
+<h3 id="deployment-view">Deployment view</h3>
+<ul>
+<li>Two or more stateless pods behind an ingress; sticky sessions not
+required (JWT).</li>
+<li>PostgreSQL with read replica for the supervisor queue and
+reporting.</li>
+<li>ShedLock table in the same database guarantees single-node scheduler
+execution.</li>
+<li>Azure Blob with private endpoints; the application authenticates
+with a Managed Identity in production and a connection string only in
+local development.</li>
+<li>All secrets (Twilio auth token, Protean API key, CMS token, risk
+client secret) held in Azure Key Vault and injected as environment
+variables.</li>
+</ul>
+<h2 id="b3-external-integrations">B3. External Integrations</h2>
+<table>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>System</th>
+<th>Protocol</th>
+<th>Client</th>
+<th>Auth</th>
+<th>Timeouts (conn/read)</th>
+<th>Resilience</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Drupal CMS</td>
+<td>REST/JSON</td>
+<td><code>CmsFeignClient</code></td>
+<td>Bearer token</td>
+<td>2s / 5s</td>
+<td>Retry 2x, circuit breaker, cache fallback</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Twilio</td>
+<td>REST/form-encoded</td>
+<td><code>TwilioFeignClient</code></td>
+<td>HTTP Basic (SID/token)</td>
+<td>2s / 8s</td>
+<td>Retry 1x on 5xx only, never on 4xx</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>Azure Blob</td>
+<td>HTTPS SDK</td>
+<td><code>BlobStorageAdapter</code></td>
+<td>Managed Identity / SAS</td>
+<td>SDK default + 30s</td>
+<td>SDK retry policy, exponential</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Protean Aadhaar</td>
+<td>REST/JSON</td>
+<td><code>ProteanKycFeignClient</code></td>
+<td>API key + mTLS</td>
+<td>3s / 15s</td>
+<td>Retry 1x, idempotency key, circuit breaker</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>Protean PAN</td>
+<td>REST/JSON</td>
+<td><code>ProteanKycFeignClient</code></td>
+<td>API key + mTLS</td>
+<td>3s / 10s</td>
+<td>as above</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>Farmer Card</td>
+<td>REST/JSON</td>
+<td><code>FarmerCardFeignClient</code></td>
+<td>OAuth2 client credentials</td>
+<td>3s / 15s</td>
+<td>Retry 1x, circuit breaker</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>Risk Assessment</td>
+<td>REST/JSON</td>
+<td><code>RiskAssessmentFeignClient</code></td>
+<td>OAuth2 client credentials</td>
+<td>3s / 20s</td>
+<td>Retry 3x with backoff on submit; no retry on poll</td>
+</tr>
+</tbody>
+</table>
+<h3 id="b31-feign-configuration-pattern">B3.1 Feign configuration
+pattern</h3>
+<pre class="java"><code>@FeignClient(
+    name = &quot;cms-client&quot;,
+    url  = &quot;${integration.cms.base-url}&quot;,
+    configuration = CmsFeignConfig.class,
+    fallbackFactory = CmsFallbackFactory.class
+)
+public interface CmsFeignClient {
+
+    @GetMapping(&quot;/api/v1/eligibility-rules&quot;)
+    CmsEligibilityResponse fetchEligibilityRules(
+            @RequestParam(&quot;product&quot;) String productCode,
+            @RequestParam(&quot;locale&quot;)  String locale);
+}</code></pre>
+<pre class="java"><code>public class CmsFeignConfig {
+
+    @Bean
+    RequestInterceptor cmsAuthInterceptor(@Value(&quot;${integration.cms.token}&quot;) String token) {
+        return template -&gt; {
+            template.header(HttpHeaders.AUTHORIZATION, &quot;Bearer &quot; + token);
+            template.header(&quot;X-Correlation-Id&quot;, CorrelationContext.get());
+        };
+    }
+
+    @Bean
+    Request.Options options() {
+        return new Request.Options(2, SECONDS, 5, SECONDS, true);
+    }
+
+    @Bean
+    ErrorDecoder errorDecoder() {
+        return new CmsErrorDecoder();   // maps 4xx -&gt; non-retryable, 5xx -&gt; RetryableException
+    }
+}</code></pre>
+<p>Resilience4j is applied declaratively:</p>
+<pre class="yaml"><code>resilience4j:
+  circuitbreaker:
+    instances:
+      cms-client:
+        slidingWindowSize: 20
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+      protean-client:
+        slidingWindowSize: 50
+        failureRateThreshold: 40
+        waitDurationInOpenState: 60s
+  retry:
+    instances:
+      risk-submit:
+        maxAttempts: 3
+        waitDuration: 2s
+        exponentialBackoffMultiplier: 2</code></pre>
+<h3 id="b32-idempotency">B3.2 Idempotency</h3>
+<p>Every outbound call that has a side effect or a per-call cost carries
+an idempotency key:</p>
+<ul>
+<li>KYC:
+<code>SHA-256(applicationId + verificationType + attemptNumber)</code></li>
+<li>Risk submit: <code>applicationNumber</code> itself — the risk
+service must treat a repeat submit as a lookup and return the existing
+<code>riskRefId</code>.</li>
+<li>Twilio: a client-generated <code>notificationId</code> stored before
+the call; if the process dies mid-call, the reconciliation job queries
+Twilio by that reference before re-sending.</li>
+</ul>
+<h2 id="b4-data-model">B4. Data Model</h2>
+<h3 id="b41-entity-relationships">B4.1 Entity relationships</h3>
+<ul>
+<li><code>employee</code> 1 —— * <code>insurance_application</code>
+(creator)</li>
+<li><code>employee</code> 1 —— * <code>review_comment</code> (supervisor
+author)</li>
+<li><code>insurance_application</code> 1 —— *
+<code>kyc_document</code></li>
+<li><code>insurance_application</code> 1 —— *
+<code>verification_result</code></li>
+<li><code>insurance_application</code> 1 —— *
+<code>review_comment</code></li>
+<li><code>insurance_application</code> 1 —— *
+<code>application_status_history</code></li>
+<li><code>insurance_application</code> 1 —— *
+<code>notification_log</code></li>
+<li><code>insurance_application</code> 1 —— 0..1
+<code>risk_assessment_tracking</code></li>
+<li><code>eligibility_rule_cache</code> is standalone, keyed by product
++ version</li>
+</ul>
+<h3 id="b42-core-ddl-postgresql-abbreviated">B4.2 Core DDL (PostgreSQL,
+abbreviated)</h3>
+<pre class="sql"><code>CREATE TABLE employee (
+    id                BIGSERIAL PRIMARY KEY,
+    emp_code          VARCHAR(20)  NOT NULL UNIQUE,
+    full_name         VARCHAR(120) NOT NULL,
+    email             VARCHAR(150) NOT NULL UNIQUE,
+    mobile            VARCHAR(15)  NOT NULL,
+    role              VARCHAR(20)  NOT NULL CHECK (role IN (&#39;EMPLOYEE&#39;,&#39;SUPERVISOR&#39;)),
+    branch_code       VARCHAR(20)  NOT NULL,
+    reporting_to_id   BIGINT REFERENCES employee(id),
+    active            BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at        TIMESTAMPTZ  NOT NULL DEFAULT now()
+);
+
+CREATE TABLE insurance_application (
+    id                            BIGSERIAL PRIMARY KEY,
+    application_number            VARCHAR(30)  NOT NULL UNIQUE,
+    created_by_employee_id        BIGINT       NOT NULL REFERENCES employee(id),
+    reviewed_by_supervisor_id     BIGINT       REFERENCES employee(id),
+    branch_code                   VARCHAR(20)  NOT NULL,
+    product_code                  VARCHAR(30)  NOT NULL,
+    status                        VARCHAR(30)  NOT NULL,
+
+    -- eligibility
+    eligibility_rule_version      VARCHAR(20),
+    eligibility_accepted_at       TIMESTAMPTZ,
+
+    -- customer
+    customer_name                 VARCHAR(120),
+    customer_dob                  DATE,
+    customer_gender               VARCHAR(10),
+    customer_mobile               VARCHAR(15),
+    customer_email                VARCHAR(150),
+    address_line1                 VARCHAR(200),
+    address_line2                 VARCHAR(200),
+    district                      VARCHAR(80),
+    state                         VARCHAR(80),
+    pincode                       VARCHAR(10),
+
+    -- identifiers (masked / encrypted at rest)
+    aadhaar_last4                 VARCHAR(4),
+    aadhaar_ref                   VARCHAR(128),      -- tokenised reference, never the raw number
+    pan_number                    VARCHAR(10),
+    farmer_card_number            VARCHAR(40),
+
+    -- cover
+    land_area_acres               NUMERIC(10,2),
+    crop_type                     VARCHAR(60),
+    sum_insured                   NUMERIC(15,2),
+    premium_amount                NUMERIC(15,2),
+    cover_start_date              DATE,
+    cover_end_date                DATE,
+    nominee_name                  VARCHAR(120),
+    nominee_relation              VARCHAR(40),
+
+    -- verification statuses (one column per check, per requirement)
+    aadhaar_verification_status     VARCHAR(20) NOT NULL DEFAULT &#39;PENDING&#39;,
+    pan_verification_status         VARCHAR(20) NOT NULL DEFAULT &#39;PENDING&#39;,
+    farmer_card_verification_status VARCHAR(20) NOT NULL DEFAULT &#39;PENDING&#39;,
+    kyc_completed_at                TIMESTAMPTZ,
+
+    -- risk / policy
+    risk_ref_id                   VARCHAR(64),
+    risk_submitted_at             TIMESTAMPTZ,
+    risk_last_polled_at           TIMESTAMPTZ,
+    risk_poll_attempts            INT          NOT NULL DEFAULT 0,
+    next_poll_at                  TIMESTAMPTZ,
+    policy_number                 VARCHAR(50),
+    policy_document_url           VARCHAR(500),
+    policy_blob_path              VARCHAR(500),
+    policy_issued_at              TIMESTAMPTZ,
+    rejection_reason              VARCHAR(500),
+
+    created_at                    TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at                    TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version                       BIGINT      NOT NULL DEFAULT 0   -- optimistic locking
+);
+
+CREATE INDEX idx_app_status            ON insurance_application(status);
+CREATE INDEX idx_app_creator           ON insurance_application(created_by_employee_id, status);
+CREATE INDEX idx_app_branch_status     ON insurance_application(branch_code, status);
+CREATE INDEX idx_app_poll              ON insurance_application(status, next_poll_at)
+                                        WHERE status IN (&#39;APPROVED_SENDFORRISK&#39;,&#39;RISK_IN_PROGRESS&#39;);
+
+CREATE TABLE kyc_document (
+    id              BIGSERIAL PRIMARY KEY,
+    application_id  BIGINT NOT NULL REFERENCES insurance_application(id) ON DELETE CASCADE,
+    document_type   VARCHAR(30) NOT NULL,   -- AADHAAR, PAN, FARMER_CARD, PHOTO, OTHER
+    file_name       VARCHAR(255) NOT NULL,
+    content_type    VARCHAR(100) NOT NULL,
+    size_bytes      BIGINT NOT NULL,
+    blob_container  VARCHAR(80) NOT NULL,
+    blob_path       VARCHAR(500) NOT NULL,
+    checksum_sha256 VARCHAR(64),
+    uploaded_by     BIGINT NOT NULL REFERENCES employee(id),
+    uploaded_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+    active          BOOLEAN NOT NULL DEFAULT TRUE
+);
+CREATE UNIQUE INDEX uq_doc_active ON kyc_document(application_id, document_type) WHERE active;
+
+CREATE TABLE verification_result (
+    id                 BIGSERIAL PRIMARY KEY,
+    application_id     BIGINT NOT NULL REFERENCES insurance_application(id) ON DELETE CASCADE,
+    verification_type  VARCHAR(30) NOT NULL,   -- AADHAAR, PAN, FARMER_CARD
+    status             VARCHAR(20) NOT NULL,   -- PENDING, VERIFIED, FAILED, MANUAL_REVIEW
+    provider           VARCHAR(40) NOT NULL,   -- PROTEAN, AGRI_DEPT
+    provider_ref_id    VARCHAR(80),
+    response_code      VARCHAR(20),
+    message            VARCHAR(500),
+    attempt_count      INT NOT NULL DEFAULT 1,
+    idempotency_key    VARCHAR(80) NOT NULL,
+    verified_at        TIMESTAMPTZ,
+    created_at         TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE UNIQUE INDEX uq_verif_idem ON verification_result(idempotency_key);
+
+CREATE TABLE review_comment (
+    id                BIGSERIAL PRIMARY KEY,
+    application_id    BIGINT NOT NULL REFERENCES insurance_application(id) ON DELETE CASCADE,
+    author_employee_id BIGINT NOT NULL REFERENCES employee(id),
+    author_role       VARCHAR(20) NOT NULL,
+    comment_text      TEXT NOT NULL,
+    action            VARCHAR(30),           -- NEEDS_MORE_INFO, APPROVED, REJECTED, EMPLOYEE_RESPONSE
+    resolved          BOOLEAN NOT NULL DEFAULT FALSE,
+    resolved_at       TIMESTAMPTZ,
+    created_at        TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE application_status_history (
+    id              BIGSERIAL PRIMARY KEY,
+    application_id  BIGINT NOT NULL REFERENCES insurance_application(id) ON DELETE CASCADE,
+    from_status     VARCHAR(30),
+    to_status       VARCHAR(30) NOT NULL,
+    changed_by      BIGINT REFERENCES employee(id),
+    changed_by_system BOOLEAN NOT NULL DEFAULT FALSE,
+    remarks         VARCHAR(500),
+    changed_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE notification_log (
+    id                  BIGSERIAL PRIMARY KEY,
+    application_id      BIGINT REFERENCES insurance_application(id),
+    channel             VARCHAR(20) NOT NULL,     -- SMS, WHATSAPP, EMAIL, IN_APP
+    recipient           VARCHAR(120) NOT NULL,
+    template_code       VARCHAR(50) NOT NULL,
+    provider            VARCHAR(30),              -- TWILIO
+    provider_message_id VARCHAR(80),
+    status              VARCHAR(20) NOT NULL,     -- QUEUED, SENT, DELIVERED, FAILED
+    error_code          VARCHAR(30),
+    sent_by             BIGINT REFERENCES employee(id),
+    sent_at             TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE eligibility_rule_cache (
+    id            BIGSERIAL PRIMARY KEY,
+    product_code  VARCHAR(30) NOT NULL,
+    locale        VARCHAR(10) NOT NULL DEFAULT &#39;en&#39;,
+    rule_version  VARCHAR(20) NOT NULL,
+    content_json  JSONB NOT NULL,
+    fetched_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+    active        BOOLEAN NOT NULL DEFAULT TRUE
+);
+CREATE UNIQUE INDEX uq_rule ON eligibility_rule_cache(product_code, locale, rule_version);
+
+CREATE TABLE shedlock (
+    name       VARCHAR(64)  PRIMARY KEY,
+    lock_until TIMESTAMPTZ  NOT NULL,
+    locked_at  TIMESTAMPTZ  NOT NULL,
+    locked_by  VARCHAR(255) NOT NULL
+);</code></pre>
+<h3 id="b43-representative-jpa-entity">B4.3 Representative JPA
+entity</h3>
+<pre class="java"><code>@Entity
+@Table(name = &quot;insurance_application&quot;)
+@Getter @Setter
+public class InsuranceApplication extends Auditable {
+
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = &quot;application_number&quot;, nullable = false, unique = true, updatable = false)
+    private String applicationNumber;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = &quot;created_by_employee_id&quot;)
+    private Employee createdBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;reviewed_by_supervisor_id&quot;)
+    private Employee reviewedBy;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private ApplicationStatus status = ApplicationStatus.DRAFT;
+
+    @Embedded
+    private CustomerDetails customer;
+
+    @Embedded
+    private CoverDetails cover;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = &quot;aadhaar_verification_status&quot;, nullable = false, length = 20)
+    private VerificationStatus aadhaarVerificationStatus = VerificationStatus.PENDING;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = &quot;pan_verification_status&quot;, nullable = false, length = 20)
+    private VerificationStatus panVerificationStatus = VerificationStatus.PENDING;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = &quot;farmer_card_verification_status&quot;, nullable = false, length = 20)
+    private VerificationStatus farmerCardVerificationStatus = VerificationStatus.PENDING;
+
+    @Column(name = &quot;risk_ref_id&quot;)           private String riskRefId;
+    @Column(name = &quot;next_poll_at&quot;)          private OffsetDateTime nextPollAt;
+    @Column(name = &quot;risk_poll_attempts&quot;)    private int riskPollAttempts;
+    @Column(name = &quot;policy_number&quot;)         private String policyNumber;
+    @Column(name = &quot;policy_document_url&quot;)   private String policyDocumentUrl;
+
+    @OneToMany(mappedBy = &quot;application&quot;, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List&lt;KycDocument&gt; documents = new ArrayList&lt;&gt;();
+
+    @OneToMany(mappedBy = &quot;application&quot;, cascade = CascadeType.ALL)
+    private List&lt;VerificationResult&gt; verifications = new ArrayList&lt;&gt;();
+
+    @OneToMany(mappedBy = &quot;application&quot;, cascade = CascadeType.ALL)
+    @OrderBy(&quot;createdAt ASC&quot;)
+    private List&lt;ReviewComment&gt; comments = new ArrayList&lt;&gt;();
+
+    @Version
+    private Long version;
+
+    public void transitionTo(ApplicationStatus target, Employee actor, String remark) {
+        ApplicationStateMachine.assertAllowed(this.status, target);
+        this.status = target;
+        // status history row appended by an entity listener
+    }
+}</code></pre>
+<h3 id="b44-enums">B4.4 Enums</h3>
+<pre class="java"><code>public enum ApplicationStatus {
+    DRAFT, ELIGIBILITY_ACCEPTED, DOCUMENTS_UPLOADED, KYC_IN_PROGRESS,
+    REVIEW, NEEDS_MORE_INFO, APPROVED_SENDFORRISK, RISK_IN_PROGRESS,
+    POLICY_ISSUED, POLICY_REJECTED, REJECTED, EXPIRED;
+
+    public boolean isTerminal() {
+        return this == POLICY_ISSUED || this == POLICY_REJECTED
+            || this == REJECTED || this == EXPIRED;
+    }
+}
+
+public enum VerificationStatus { PENDING, IN_PROGRESS, VERIFIED, FAILED, MANUAL_REVIEW, NOT_APPLICABLE }
+public enum VerificationType   { AADHAAR, PAN, FARMER_CARD }
+public enum DocumentType       { AADHAAR, PAN, FARMER_CARD, PHOTO, LAND_RECORD, OTHER }
+public enum NotificationChannel{ SMS, WHATSAPP, EMAIL, IN_APP }
+public enum EmployeeRole       { EMPLOYEE, SUPERVISOR }</code></pre>
+<h2 id="b5-rest-api-contract">B5. REST API Contract</h2>
+<p>Base path <code>/api/v1</code>. All endpoints require
+<code>Authorization: Bearer &lt;jwt&gt;</code> except login.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Method</th>
+<th>Path</th>
+<th>Role</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>POST</td>
+<td><code>/auth/login</code></td>
+<td>—</td>
+<td>Authenticate, return JWT + refresh token</td>
+</tr>
+<tr class="even">
+<td>POST</td>
+<td><code>/applications/start-registration</code></td>
+<td>EMPLOYEE</td>
+<td>Create <code>DRAFT</code> and return eligibility rules</td>
+</tr>
+<tr class="odd">
+<td>GET</td>
+<td><code>/eligibility-rules</code></td>
+<td>EMPLOYEE</td>
+<td>Fetch/refresh rules for a product</td>
+</tr>
+<tr class="even">
+<td>POST</td>
+<td><code>/applications/{id}/eligibility/share</code></td>
+<td>EMPLOYEE</td>
+<td>Send rules via SMS or WhatsApp</td>
+</tr>
+<tr class="odd">
+<td>POST</td>
+<td><code>/applications/{id}/eligibility/accept</code></td>
+<td>EMPLOYEE</td>
+<td>Record acceptance, unlock form</td>
+</tr>
+<tr class="even">
+<td>PUT</td>
+<td><code>/applications/{id}/form</code></td>
+<td>EMPLOYEE</td>
+<td>Save/update form (draft-safe)</td>
+</tr>
+<tr class="odd">
+<td>POST</td>
+<td><code>/applications/{id}/documents</code></td>
+<td>EMPLOYEE</td>
+<td>Multipart upload to Azure Blob</td>
+</tr>
+<tr class="even">
+<td>GET</td>
+<td><code>/applications/{id}/documents</code></td>
+<td>EMPLOYEE, SUPERVISOR</td>
+<td>List documents</td>
+</tr>
+<tr class="odd">
+<td>GET</td>
+<td><code>/applications/{id}/documents/{docId}/url</code></td>
+<td>EMPLOYEE, SUPERVISOR</td>
+<td>Short-lived SAS URL</td>
+</tr>
+<tr class="even">
+<td>DELETE</td>
+<td><code>/applications/{id}/documents/{docId}</code></td>
+<td>EMPLOYEE</td>
+<td>Soft-delete before submit</td>
+</tr>
+<tr class="odd">
+<td>POST</td>
+<td><code>/applications/{id}/submit</code></td>
+<td>EMPLOYEE</td>
+<td>Trigger KYC, move to <code>REVIEW</code></td>
+</tr>
+<tr class="even">
+<td>GET</td>
+<td><code>/applications/my</code></td>
+<td>EMPLOYEE</td>
+<td>Own applications, filter by status</td>
+</tr>
+<tr class="odd">
+<td>GET</td>
+<td><code>/applications/{id}</code></td>
+<td>EMPLOYEE, SUPERVISOR</td>
+<td>Full detail incl. comments + history</td>
+</tr>
+<tr class="even">
+<td>GET</td>
+<td><code>/applications/{id}/policy</code></td>
+<td>EMPLOYEE</td>
+<td>Download issued policy</td>
+</tr>
+<tr class="odd">
+<td>GET</td>
+<td><code>/supervisor/applications</code></td>
+<td>SUPERVISOR</td>
+<td>Review queue (<code>REVIEW</code> by default)</td>
+</tr>
+<tr class="even">
+<td>POST</td>
+<td><code>/supervisor/applications/{id}/request-info</code></td>
+<td>SUPERVISOR</td>
+<td>Add comment, set <code>NEEDS_MORE_INFO</code></td>
+</tr>
+<tr class="odd">
+<td>POST</td>
+<td><code>/supervisor/applications/{id}/approve</code></td>
+<td>SUPERVISOR</td>
+<td>Set <code>APPROVED_SENDFORRISK</code>, enqueue hand-off</td>
+</tr>
+<tr class="even">
+<td>POST</td>
+<td><code>/supervisor/applications/{id}/reject</code></td>
+<td>SUPERVISOR</td>
+<td>Terminal rejection</td>
+</tr>
+<tr class="odd">
+<td>POST</td>
+<td><code>/applications/{id}/comments</code></td>
+<td>EMPLOYEE</td>
+<td>Reply to supervisor comment</td>
+</tr>
+<tr class="even">
+<td>POST</td>
+<td><code>/webhooks/twilio/status</code></td>
+<td>— (signature-verified)</td>
+<td>Twilio delivery callback</td>
+</tr>
+</tbody>
+</table>
+<h3 id="b51-sample-payloads">B5.1 Sample payloads</h3>
+<p><strong>POST
+<code>/applications/start-registration</code></strong></p>
+<pre class="json"><code>{ &quot;productCode&quot;: &quot;CROP_SHIELD_2026&quot;, &quot;locale&quot;: &quot;en&quot; }</code></pre>
+<p>Response <code>201</code>:</p>
+<pre class="json"><code>{
+  &quot;applicationId&quot;: 90114,
+  &quot;applicationNumber&quot;: &quot;APP-2026-000090114&quot;,
+  &quot;status&quot;: &quot;DRAFT&quot;,
+  &quot;eligibility&quot;: {
+    &quot;ruleVersion&quot;: &quot;v12&quot;,
+    &quot;stale&quot;: false,
+    &quot;title&quot;: &quot;Crop Shield 2026 — Eligibility&quot;,
+    &quot;sections&quot;: [
+      { &quot;heading&quot;: &quot;Who can apply&quot;,
+        &quot;points&quot;: [&quot;Land holding between 0.5 and 10 acres&quot;,
+                   &quot;Valid farmer card issued by the state agriculture department&quot;,
+                   &quot;Age between 18 and 70 as on cover start date&quot;] },
+      { &quot;heading&quot;: &quot;Documents required&quot;,
+        &quot;points&quot;: [&quot;Aadhaar&quot;, &quot;PAN&quot;, &quot;Farmer card&quot;] }
+    ]
+  }
+}</code></pre>
+<p><strong>POST
+<code>/applications/{id}/eligibility/share</code></strong></p>
+<pre class="json"><code>{ &quot;channel&quot;: &quot;WHATSAPP&quot;, &quot;mobile&quot;: &quot;+919812345678&quot; }</code></pre>
+<p>Response <code>202</code>:</p>
+<pre class="json"><code>{ &quot;notificationId&quot;: 55210, &quot;channel&quot;: &quot;WHATSAPP&quot;,
+  &quot;providerMessageId&quot;: &quot;SM7f1e...&quot;, &quot;status&quot;: &quot;QUEUED&quot; }</code></pre>
+<p><strong>POST <code>/applications/{id}/submit</code></strong> →
+Response <code>200</code>:</p>
+<pre class="json"><code>{
+  &quot;applicationNumber&quot;: &quot;APP-2026-000090114&quot;,
+  &quot;status&quot;: &quot;REVIEW&quot;,
+  &quot;verification&quot;: {
+    &quot;aadhaar&quot;:    { &quot;status&quot;: &quot;VERIFIED&quot;,      &quot;refId&quot;: &quot;PRT-AAD-88213&quot; },
+    &quot;pan&quot;:        { &quot;status&quot;: &quot;VERIFIED&quot;,      &quot;refId&quot;: &quot;PRT-PAN-77120&quot; },
+    &quot;farmerCard&quot;: { &quot;status&quot;: &quot;MANUAL_REVIEW&quot;, &quot;responseCode&quot;: &quot;FC-204&quot;,
+                    &quot;message&quot;: &quot;Name mismatch with land record&quot; }
+  }
+}</code></pre>
+<p><strong>POST
+<code>/supervisor/applications/{id}/approve</code></strong> → Response
+<code>200</code>:</p>
+<pre class="json"><code>{ &quot;applicationNumber&quot;: &quot;APP-2026-000090114&quot;,
+  &quot;status&quot;: &quot;APPROVED_SENDFORRISK&quot;,
+  &quot;riskHandoff&quot;: &quot;QUEUED&quot; }</code></pre>
+<p><strong>Risk submit request (outbound to the risk team)</strong></p>
+<pre class="json"><code>{
+  &quot;applicationNumber&quot;: &quot;APP-2026-000090114&quot;,
+  &quot;productCode&quot;: &quot;CROP_SHIELD_2026&quot;,
+  &quot;submittedBy&quot;: { &quot;empCode&quot;: &quot;SUP-2231&quot;, &quot;branchCode&quot;: &quot;BR-014&quot; },
+  &quot;customer&quot;: { &quot;name&quot;: &quot;...&quot;, &quot;dob&quot;: &quot;1979-04-11&quot;, &quot;mobile&quot;: &quot;+91...&quot;,
+                &quot;address&quot;: { &quot;district&quot;: &quot;Cuttack&quot;, &quot;state&quot;: &quot;Odisha&quot;, &quot;pincode&quot;: &quot;753001&quot; } },
+  &quot;cover&quot;: { &quot;sumInsured&quot;: 250000, &quot;landAreaAcres&quot;: 3.5, &quot;cropType&quot;: &quot;PADDY&quot;,
+             &quot;coverStartDate&quot;: &quot;2026-08-01&quot;, &quot;coverEndDate&quot;: &quot;2027-07-31&quot; },
+  &quot;kyc&quot;: { &quot;aadhaar&quot;: &quot;VERIFIED&quot;, &quot;pan&quot;: &quot;VERIFIED&quot;, &quot;farmerCard&quot;: &quot;MANUAL_REVIEW&quot; },
+  &quot;documents&quot;: [ { &quot;type&quot;: &quot;AADHAAR&quot;, &quot;url&quot;: &quot;https://&lt;sas-url&gt;&quot;, &quot;expiresAt&quot;: &quot;...&quot; } ],
+  &quot;reviewTrail&quot;: [ { &quot;by&quot;: &quot;SUP-2231&quot;, &quot;action&quot;: &quot;APPROVED&quot;, &quot;at&quot;: &quot;2026-07-20T10:14:00Z&quot; } ]
+}</code></pre>
+<p>Response:</p>
+<pre class="json"><code>{ &quot;riskRefId&quot;: &quot;RSK-2026-41182&quot;, &quot;status&quot;: &quot;ACCEPTED&quot;, &quot;expectedTat&quot;: &quot;P3D&quot; }</code></pre>
+<p><strong>Risk poll response (terminal, approved)</strong></p>
+<pre class="json"><code>{
+  &quot;riskRefId&quot;: &quot;RSK-2026-41182&quot;,
+  &quot;status&quot;: &quot;APPROVED&quot;,
+  &quot;policyNumber&quot;: &quot;POL-CS-2026-778120&quot;,
+  &quot;policyDocumentUrl&quot;: &quot;https://risk.acme.com/docs/POL-CS-2026-778120.pdf&quot;,
+  &quot;decidedAt&quot;: &quot;2026-07-23T06:02:11Z&quot;
+}</code></pre>
+<h3 id="b52-standard-error-envelope">B5.2 Standard error envelope</h3>
+<pre class="json"><code>{
+  &quot;timestamp&quot;: &quot;2026-07-23T09:12:44Z&quot;,
+  &quot;correlationId&quot;: &quot;c1f3a9e2-...&quot;,
+  &quot;status&quot;: 422,
+  &quot;errorCode&quot;: &quot;APP_INVALID_TRANSITION&quot;,
+  &quot;message&quot;: &quot;Cannot submit an application that has not accepted eligibility terms&quot;,
+  &quot;path&quot;: &quot;/api/v1/applications/90114/submit&quot;,
+  &quot;fieldErrors&quot;: []
+}</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th>errorCode</th>
+<th>HTTP</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>AUTH_INVALID_CREDENTIALS</code></td>
+<td>401</td>
+<td>Login failed</td>
+</tr>
+<tr class="even">
+<td><code>AUTH_FORBIDDEN_SCOPE</code></td>
+<td>403</td>
+<td>Role or ownership violation</td>
+</tr>
+<tr class="odd">
+<td><code>APP_NOT_FOUND</code></td>
+<td>404</td>
+<td>Unknown application</td>
+</tr>
+<tr class="even">
+<td><code>APP_INVALID_TRANSITION</code></td>
+<td>422</td>
+<td>State machine rejected the change</td>
+</tr>
+<tr class="odd">
+<td><code>DOC_TYPE_NOT_ALLOWED</code></td>
+<td>415</td>
+<td>Unsupported file type</td>
+</tr>
+<tr class="even">
+<td><code>DOC_SIZE_EXCEEDED</code></td>
+<td>413</td>
+<td>File or application quota exceeded</td>
+</tr>
+<tr class="odd">
+<td><code>CMS_UNAVAILABLE_NO_CACHE</code></td>
+<td>503</td>
+<td>Rules unavailable and nothing cached</td>
+</tr>
+<tr class="even">
+<td><code>KYC_PROVIDER_ERROR</code></td>
+<td>502</td>
+<td>Upstream verification failure</td>
+</tr>
+<tr class="odd">
+<td><code>RISK_SUBMIT_FAILED</code></td>
+<td>502</td>
+<td>Hand-off failed, will be retried</td>
+</tr>
+<tr class="even">
+<td><code>RATE_LIMITED</code></td>
+<td>429</td>
+<td>Notification resend limit hit</td>
+</tr>
+</tbody>
+</table>
+<h2 id="b6-key-component-behaviour">B6. Key Component Behaviour</h2>
+<h3 id="b61-eligibility-service-with-layered-cache-and-fallback">B6.1
+Eligibility service with layered cache and fallback</h3>
+<pre class="java"><code>@Service
+@RequiredArgsConstructor
+public class EligibilityService {
+
+    private final CmsFeignClient cmsClient;
+    private final EligibilityRuleCacheRepository cacheRepo;
+
+    @Cacheable(cacheNames = &quot;eligibilityRules&quot;, key = &quot;#product + &#39;:&#39; + #locale&quot;)
+    @CircuitBreaker(name = &quot;cms-client&quot;, fallbackMethod = &quot;fromDatabase&quot;)
+    public EligibilityRuleSet getRules(String product, String locale) {
+        CmsEligibilityResponse res = cmsClient.fetchEligibilityRules(product, locale);
+        cacheRepo.upsert(product, locale, res.version(), res.contentJson());
+        return EligibilityRuleSet.of(res, false);
+    }
+
+    private EligibilityRuleSet fromDatabase(String product, String locale, Throwable t) {
+        return cacheRepo.findLatestActive(product, locale)
+            .map(e -&gt; EligibilityRuleSet.of(e, true))          // stale = true
+            .orElseThrow(() -&gt; new CmsUnavailableException(product, t));
+    }
+}</code></pre>
+<h3 id="b62-document-upload-to-azure-blob">B6.2 Document upload to Azure
+Blob</h3>
+<pre class="java"><code>@Component
+@RequiredArgsConstructor
+public class BlobStorageAdapter {
+
+    private final BlobServiceClient blobServiceClient;
+
+    @Value(&quot;${azure.storage.container.kyc}&quot;)   private String kycContainer;
+    @Value(&quot;${azure.storage.sas-ttl-minutes}&quot;) private int sasTtlMinutes;
+
+    public BlobRef upload(String applicationNumber, DocumentType type, MultipartFile file) {
+        String path = &quot;%s/%s/%s/%s%s&quot;.formatted(
+                YearMonth.now(), applicationNumber, type,
+                UUID.randomUUID(), FilenameUtils.getExtensionWithDot(file));
+
+        BlobClient blob = blobServiceClient
+                .getBlobContainerClient(kycContainer)
+                .getBlobClient(path);
+
+        try (InputStream in = file.getInputStream()) {
+            blob.upload(BinaryData.fromStream(in, file.getSize()), false);
+            blob.setHttpHeaders(new BlobHttpHeaders()
+                    .setContentType(file.getContentType()));
+        } catch (IOException e) {
+            throw new DocumentUploadException(path, e);
+        }
+        return new BlobRef(kycContainer, path, DigestUtils.sha256Hex(file.getBytes()));
+    }
+
+    public String generateReadSasUrl(String container, String path) {
+        BlobClient blob = blobServiceClient.getBlobContainerClient(container).getBlobClient(path);
+        BlobServiceSasSignatureValues values = new BlobServiceSasSignatureValues(
+                OffsetDateTime.now().plusMinutes(sasTtlMinutes),
+                new BlobSasPermission().setReadPermission(true));
+        return blob.getBlobUrl() + &quot;?&quot; + blob.generateSas(values);
+    }
+}</code></pre>
+<p>Notes:</p>
+<ul>
+<li>Upload happens <strong>before</strong> the database row is committed
+to the point of no return; the <code>kyc_document</code> row is written
+in the same transaction as the metadata, and an orphan-blob reaper job
+removes blobs with no matching row after 24 hours.</li>
+<li>Antivirus scanning is delegated to Microsoft Defender for Storage;
+the <code>active</code> flag is only set once the scan callback reports
+clean, when that integration is enabled.</li>
+</ul>
+<h3 id="b63-parallel-kyc-orchestration">B6.3 Parallel KYC
+orchestration</h3>
+<pre class="java"><code>@Service
+@RequiredArgsConstructor
+public class KycVerificationService {
+
+    private final ProteanKycFeignClient protean;
+    private final FarmerCardFeignClient farmerCard;
+    private final VerificationResultRepository resultRepo;
+
+    /** Runs the three checks concurrently; never throws for a single provider failure. */
+    public KycOutcome verifyAll(InsuranceApplication app) {
+
+        var aadhaar    = supplyAsync(() -&gt; verifyAadhaar(app),   kycExecutor);
+        var pan        = supplyAsync(() -&gt; verifyPan(app),       kycExecutor);
+        var farmerCard = supplyAsync(() -&gt; verifyFarmerCard(app),kycExecutor);
+
+        CompletableFuture.allOf(aadhaar, pan, farmerCard)
+                         .orTimeout(20, SECONDS)
+                         .exceptionally(t -&gt; null)      // partial results are acceptable
+                         .join();
+
+        app.setAadhaarVerificationStatus(resolve(aadhaar));
+        app.setPanVerificationStatus(resolve(pan));
+        app.setFarmerCardVerificationStatus(resolve(farmerCard));
+        app.setKycCompletedAt(OffsetDateTime.now());
+
+        return new KycOutcome(app.getAadhaarVerificationStatus(),
+                              app.getPanVerificationStatus(),
+                              app.getFarmerCardVerificationStatus());
+    }
+
+    private VerificationStatus resolve(CompletableFuture&lt;VerificationStatus&gt; f) {
+        return f.isCompletedExceptionally() || !f.isDone()
+             ? VerificationStatus.MANUAL_REVIEW
+             : f.join();
+    }
+}</code></pre>
+<p>A dedicated bounded <code>ThreadPoolTaskExecutor</code>
+(<code>kycExecutor</code>, core 10 / max 30 / queue 200) isolates KYC
+fan-out from the servlet pool. On Java 21 this can be replaced by
+virtual threads with no code change to the orchestration.</p>
+<h3 id="b64-state-machine-guard">B6.4 State machine guard</h3>
+<pre class="java"><code>public final class ApplicationStateMachine {
+
+    private static final Map&lt;ApplicationStatus, Set&lt;ApplicationStatus&gt;&gt; ALLOWED = Map.of(
+        DRAFT,                 EnumSet.of(ELIGIBILITY_ACCEPTED, EXPIRED),
+        ELIGIBILITY_ACCEPTED,  EnumSet.of(DOCUMENTS_UPLOADED, EXPIRED),
+        DOCUMENTS_UPLOADED,    EnumSet.of(KYC_IN_PROGRESS),
+        KYC_IN_PROGRESS,       EnumSet.of(REVIEW),
+        REVIEW,                EnumSet.of(NEEDS_MORE_INFO, APPROVED_SENDFORRISK, REJECTED),
+        NEEDS_MORE_INFO,       EnumSet.of(REVIEW),
+        APPROVED_SENDFORRISK,  EnumSet.of(RISK_IN_PROGRESS),
+        RISK_IN_PROGRESS,      EnumSet.of(POLICY_ISSUED, POLICY_REJECTED)
+    );
+
+    public static void assertAllowed(ApplicationStatus from, ApplicationStatus to) {
+        if (!ALLOWED.getOrDefault(from, Set.of()).contains(to)) {
+            throw new InvalidTransitionException(from, to);
+        }
+    }
+}</code></pre>
+<h3 id="b65-supervisor-approval-and-asynchronous-risk-hand-off">B6.5
+Supervisor approval and asynchronous risk hand-off</h3>
+<pre class="java"><code>@Service
+@RequiredArgsConstructor
+public class ReviewService {
+
+    private final InsuranceApplicationRepository repo;
+    private final ApplicationEventPublisher events;
+
+    @Transactional
+    @PreAuthorize(&quot;hasRole(&#39;SUPERVISOR&#39;)&quot;)
+    public void approve(Long applicationId, Long supervisorId, String remark) {
+        InsuranceApplication app = repo.findByIdForUpdate(applicationId)
+                .orElseThrow(() -&gt; new ApplicationNotFoundException(applicationId));
+
+        if (app.getCreatedBy().getId().equals(supervisorId)) {
+            throw new SegregationOfDutyException(applicationId);
+        }
+        app.transitionTo(APPROVED_SENDFORRISK, supervisorId, remark);
+        app.setNextPollAt(OffsetDateTime.now());   // submitter picks it up immediately
+
+        events.publishEvent(new ApplicationApprovedEvent(app.getId()));
+    }
+}
+
+@Component
+@RequiredArgsConstructor
+public class RiskHandoffListener {
+
+    private final RiskAssessmentService riskService;
+
+    /** Fires only after the approval transaction commits — never on rollback. */
+    @Async(&quot;integrationExecutor&quot;)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void on(ApplicationApprovedEvent event) {
+        riskService.submit(event.applicationId());   // failure leaves status for the scheduler
+    }
+}</code></pre>
+<h3 id="b66-the-24-hour-risk-polling-scheduler">B6.6 The 24-hour risk
+polling scheduler</h3>
+<p>Two jobs, both cluster-safe via ShedLock:</p>
+<pre class="java"><code>@Component
+@RequiredArgsConstructor
+@Slf4j
+public class RiskAssessmentScheduler {
+
+    private final InsuranceApplicationRepository repo;
+    private final RiskAssessmentService riskService;
+
+    /** Retries hand-offs that never reached the risk team. Every 30 minutes. */
+    @Scheduled(cron = &quot;${scheduler.risk-submit.cron:0 */30 * * * *}&quot;)
+    @SchedulerLock(name = &quot;riskSubmitJob&quot;, lockAtMostFor = &quot;PT25M&quot;, lockAtLeastFor = &quot;PT1M&quot;)
+    public void submitPendingApplications() {
+        repo.findByStatusAndRiskRefIdIsNull(APPROVED_SENDFORRISK, PageRequest.of(0, 100))
+            .forEach(app -&gt; safely(() -&gt; riskService.submit(app.getId()), app));
+    }
+
+    /** Polls risk outcomes. Runs daily; each application is polled at most every 24h. */
+    @Scheduled(cron = &quot;${scheduler.risk-poll.cron:0 0 2 * * *}&quot;)
+    @SchedulerLock(name = &quot;riskPollJob&quot;, lockAtMostFor = &quot;PT2H&quot;, lockAtLeastFor = &quot;PT5M&quot;)
+    public void pollRiskDecisions() {
+        List&lt;InsuranceApplication&gt; due =
+            repo.findDueForPolling(List.of(RISK_IN_PROGRESS), OffsetDateTime.now(), 500);
+
+        log.info(&quot;Risk polling cycle started, candidates={}&quot;, due.size());
+        for (InsuranceApplication app : due) {
+            safely(() -&gt; riskService.pollAndApply(app.getId()), app);
+        }
+    }
+}</code></pre>
+<pre class="java"><code>@Service
+@RequiredArgsConstructor
+public class RiskAssessmentService {
+
+    private final RiskAssessmentFeignClient riskClient;
+    private final InsuranceApplicationRepository repo;
+    private final BlobStorageAdapter blob;
+    private final NotificationService notifications;
+
+    @Value(&quot;${risk.poll-interval-hours:24}&quot;) private int pollIntervalHours;
+    @Value(&quot;${risk.max-poll-attempts:30}&quot;)   private int maxAttempts;
+
+    @Transactional
+    public void submit(Long applicationId) {
+        InsuranceApplication app = repo.findByIdForUpdate(applicationId).orElseThrow();
+        if (app.getRiskRefId() != null) return;                 // already submitted
+
+        RiskSubmitResponse res = riskClient.submit(
+                RiskPayloadAssembler.assemble(app),
+                app.getApplicationNumber());                    // idempotency key header
+
+        app.setRiskRefId(res.riskRefId());
+        app.setRiskSubmittedAt(OffsetDateTime.now());
+        app.setNextPollAt(OffsetDateTime.now().plusHours(pollIntervalHours));
+        app.transitionTo(RISK_IN_PROGRESS, null, &quot;Submitted to risk: &quot; + res.riskRefId());
+    }
+
+    @Transactional
+    public void pollAndApply(Long applicationId) {
+        InsuranceApplication app = repo.findByIdForUpdate(applicationId).orElseThrow();
+
+        RiskStatusResponse res = riskClient.getStatus(app.getRiskRefId());
+        app.setRiskLastPolledAt(OffsetDateTime.now());
+        app.setRiskPollAttempts(app.getRiskPollAttempts() + 1);
+
+        switch (res.status()) {
+            case APPROVED -&gt; {
+                String blobPath = blob.copyFromExternalUrl(
+                        res.policyDocumentUrl(), app.getApplicationNumber());
+                app.setPolicyNumber(res.policyNumber());
+                app.setPolicyDocumentUrl(res.policyDocumentUrl());
+                app.setPolicyBlobPath(blobPath);
+                app.setPolicyIssuedAt(OffsetDateTime.now());
+                app.setNextPollAt(null);
+                app.transitionTo(POLICY_ISSUED, null, &quot;Policy &quot; + res.policyNumber());
+                notifications.notifyPolicyIssued(app);
+            }
+            case REJECTED -&gt; {
+                app.setRejectionReason(res.reason());
+                app.setNextPollAt(null);
+                app.transitionTo(POLICY_REJECTED, null, res.reason());
+                notifications.notifyPolicyRejected(app);
+            }
+            default -&gt; {   // IN_PROGRESS / PENDING
+                app.setNextPollAt(OffsetDateTime.now().plusHours(pollIntervalHours));
+                if (app.getRiskPollAttempts() &gt;= maxAttempts) {
+                    notifications.raiseSlaBreach(app);   // ops alert, status unchanged
+                }
+            }
+        }
+    }
+}</code></pre>
+<p>Repository query used by the poller:</p>
+<pre class="java"><code>@Query(&quot;&quot;&quot;
+       SELECT a FROM InsuranceApplication a
+       WHERE a.status IN :statuses
+         AND a.nextPollAt IS NOT NULL
+         AND a.nextPollAt &lt;= :now
+       ORDER BY a.nextPollAt ASC
+       &quot;&quot;&quot;)
+List&lt;InsuranceApplication&gt; findDueForPolling(@Param(&quot;statuses&quot;) List&lt;ApplicationStatus&gt; statuses,
+                                             @Param(&quot;now&quot;) OffsetDateTime now,
+                                             Pageable pageable);</code></pre>
+<p><code>findByIdForUpdate</code> uses
+<code>@Lock(LockModeType.PESSIMISTIC_WRITE)</code> so a scheduler node
+and a user request can never write the same application concurrently;
+the <code>@Version</code> column additionally protects the optimistic
+paths.</p>
+<h3 id="b67-notification-service-twilio">B6.7 Notification service
+(Twilio)</h3>
+<pre class="java"><code>@FeignClient(name = &quot;twilio-client&quot;, url = &quot;${integration.twilio.base-url}&quot;,
+             configuration = TwilioFeignConfig.class)
+public interface TwilioFeignClient {
+
+    @PostMapping(value = &quot;/2010-04-01/Accounts/{sid}/Messages.json&quot;,
+                 consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    TwilioMessageResponse sendMessage(@PathVariable(&quot;sid&quot;) String accountSid,
+                                      @RequestBody Map&lt;String, ?&gt; form);
+}</code></pre>
+<pre class="java"><code>public NotificationLog send(InsuranceApplication app, NotificationChannel channel, String mobile) {
+    String to   = channel == WHATSAPP ? &quot;whatsapp:&quot; + mobile : mobile;
+    String from = channel == WHATSAPP ? whatsappFrom : smsFrom;
+
+    NotificationLog log = repo.save(NotificationLog.queued(app, channel, mobile, &quot;ELIG_RULES_V1&quot;));
+    try {
+        var res = twilio.sendMessage(accountSid, Map.of(
+                &quot;To&quot;, to, &quot;From&quot;, from,
+                &quot;Body&quot;, templateRenderer.render(&quot;ELIG_RULES_V1&quot;, app)));
+        log.markSent(res.sid(), res.status());
+    } catch (FeignException e) {
+        log.markFailed(String.valueOf(e.status()));
+    }
+    return repo.save(log);
+}</code></pre>
+<p>Delivery receipts arrive on
+<code>POST /webhooks/twilio/status</code>; the handler verifies the
+<code>X-Twilio-Signature</code> HMAC before updating
+<code>notification_log.status</code>.</p>
+<h2 id="b7-security-and-compliance">B7. Security and Compliance</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Concern</th>
+<th>Control</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Authentication</td>
+<td>JWT (RS256) issued after OIDC/credential validation; refresh token
+rotation; token revocation list in Redis</td>
+</tr>
+<tr class="even">
+<td>Authorisation</td>
+<td><code>@PreAuthorize</code> on every controller method plus ownership
+predicate injected into JPA specifications</td>
+</tr>
+<tr class="odd">
+<td>Transport</td>
+<td>TLS 1.2+ everywhere; mTLS to Protean</td>
+</tr>
+<tr class="even">
+<td>Secrets</td>
+<td>Azure Key Vault; no secret in <code>application.yml</code>, only
+property placeholders</td>
+</tr>
+<tr class="odd">
+<td>PII at rest</td>
+<td>Aadhaar never persisted in full — tokenised reference plus last 4
+digits; PAN and farmer card encrypted with a Key Vault–backed AES key
+via a JPA <code>AttributeConverter</code></td>
+</tr>
+<tr class="even">
+<td>PII in logs</td>
+<td>Logback masking converter redacts Aadhaar, PAN, mobile, email
+patterns; request/response logging of KYC clients is disabled in
+production</td>
+</tr>
+<tr class="odd">
+<td>Document access</td>
+<td>No public blob access; time-boxed SAS only, minimum 10-minute TTL,
+read-only permission, logged in the audit trail</td>
+</tr>
+<tr class="even">
+<td>Audit</td>
+<td><code>application_status_history</code> plus a generic
+<code>audit_log</code> capturing actor, action, entity, before/after
+hash, IP and correlation id</td>
+</tr>
+<tr class="odd">
+<td>File safety</td>
+<td>MIME sniffing (not just extension), size caps, Defender for Storage
+scanning</td>
+</tr>
+<tr class="even">
+<td>Webhooks</td>
+<td>Signature verification for Twilio; IP allowlist for the risk team's
+callbacks if they are ever enabled</td>
+</tr>
+<tr class="odd">
+<td>Data retention</td>
+<td>7 years post-issuance, 90 days for rejected drafts; purge job with
+legal-hold override</td>
+</tr>
+</tbody>
+</table>
+<h2 id="b8-non-functional-requirements">B8. Non-Functional
+Requirements</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Category</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Availability</td>
+<td>99.5% during business hours (06:00–22:00 IST)</td>
+</tr>
+<tr class="even">
+<td>API latency</td>
+<td>p95 &lt; 800 ms for CRUD endpoints; submit endpoint p95 &lt; 3 s
+including KYC fan-out</td>
+</tr>
+<tr class="odd">
+<td>Throughput</td>
+<td>500 concurrent employees, 5,000 applications/day peak</td>
+</tr>
+<tr class="even">
+<td>Document upload</td>
+<td>5 MB in under 6 s on a 4G connection</td>
+</tr>
+<tr class="odd">
+<td>Scheduler window</td>
+<td>Full polling cycle for 50,000 open applications within 2 hours</td>
+</tr>
+<tr class="even">
+<td>RPO / RTO</td>
+<td>RPO 15 min (PITR), RTO 1 hour</td>
+</tr>
+<tr class="odd">
+<td>Browser support</td>
+<td>Latest two versions of Chrome, Edge, Safari; responsive down to 360
+px</td>
+</tr>
+<tr class="even">
+<td>Localisation</td>
+<td>English + Odia/Hindi content driven from Drupal</td>
+</tr>
+</tbody>
+</table>
+<h2 id="b9-observability">B9. Observability</h2>
+<ul>
+<li><strong>Metrics</strong>: <code>application_submitted_total</code>,
+<code>kyc_verification_seconds{type}</code>,
+<code>kyc_failure_total{type,code}</code>,
+<code>risk_poll_total{outcome}</code>,
+<code>risk_pending_age_hours</code> (gauge),
+<code>notification_sent_total{channel,status}</code>, Feign client
+latency and circuit-breaker state.</li>
+<li><strong>Dashboards</strong>: application funnel by status, review
+queue ageing, verification success rate by provider, risk turnaround
+distribution.</li>
+<li><strong>Alerts</strong>: circuit breaker open &gt; 5 min; review
+queue older than 48 h; any application with
+<code>risk_poll_attempts &gt; 25</code>; blob upload failure rate &gt;
+1%; scheduler missed run.</li>
+<li><strong>Tracing</strong>: one trace id from the browser through the
+controller, Feign clients and the scheduler; the correlation id is
+stamped on every log line and returned in the error envelope so support
+can find a request from a screenshot.</li>
+</ul>
+<h2 id="b10-testing-strategy">B10. Testing Strategy</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Level</th>
+<th>Coverage</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Unit</td>
+<td>State machine transitions (positive and negative matrix), payload
+assembler, SAS URL generation, template rendering</td>
+</tr>
+<tr class="even">
+<td>Repository</td>
+<td>Testcontainers PostgreSQL — polling query, partial indexes,
+pessimistic lock behaviour</td>
+</tr>
+<tr class="odd">
+<td>Integration</td>
+<td>WireMock stubs for CMS, Twilio, Protean, Farmer Card and Risk;
+Azurite for Blob</td>
+</tr>
+<tr class="even">
+<td>Contract</td>
+<td>Spring Cloud Contract or Pact for the risk service interface, which
+is the highest-churn dependency</td>
+</tr>
+<tr class="odd">
+<td>Scheduler</td>
+<td>Time-shifted tests asserting a single application is polled exactly
+once per 24 h and stops at terminal status; two-node ShedLock test</td>
+</tr>
+<tr class="even">
+<td>Security</td>
+<td>Ownership tests — employee A cannot read employee B's application;
+supervisor cannot approve own; expired JWT rejected</td>
+</tr>
+<tr class="odd">
+<td>Resilience</td>
+<td>Chaos tests: CMS down (fallback to cache), Protean timeout
+(<code>MANUAL_REVIEW</code>, application still reaches
+<code>REVIEW</code>), risk 500 (stays <code>APPROVED_SENDFORRISK</code>,
+retried)</td>
+</tr>
+<tr class="even">
+<td>Performance</td>
+<td>JMeter: 500 concurrent submits, 5 MB uploads, polling 50k rows</td>
+</tr>
+</tbody>
+</table>
+<h3 id="key-test-scenarios">Key test scenarios</h3>
+<ol type="1">
+<li>CMS unreachable on the very first registration of the day, no cache
+→ registration blocked with <code>CMS_UNAVAILABLE_NO_CACHE</code>.</li>
+<li>WhatsApp send fails with Twilio 21610 (opt-out) → logged
+<code>FAILED</code>, employee offered SMS instead, application
+unaffected.</li>
+<li>Aadhaar <code>VERIFIED</code>, PAN <code>VERIFIED</code>, farmer
+card timeout → application still reaches <code>REVIEW</code> with farmer
+card <code>MANUAL_REVIEW</code>.</li>
+<li>Supervisor requests more info twice; both comment threads visible,
+history shows
+<code>REVIEW → NEEDS_MORE_INFO → REVIEW → NEEDS_MORE_INFO → REVIEW</code>.</li>
+<li>Approval succeeds but risk submit returns 503 → status stays
+<code>APPROVED_SENDFORRISK</code>, submitter job succeeds 30 minutes
+later, <code>riskRefId</code> stored once (no duplicate
+submission).</li>
+<li>Risk returns <code>IN_PROGRESS</code> for four consecutive days then
+<code>APPROVED</code> → exactly four poll rows,
+<code>next_poll_at</code> cleared, policy copied to blob, employee
+notified.</li>
+<li>Two scheduler pods start simultaneously → ShedLock ensures a single
+execution; no duplicate Twilio message or duplicate risk
+submission.</li>
+</ol>
+<h2 id="b11-delivery-plan-indicative">B11. Delivery Plan
+(indicative)</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Sprint</th>
+<th>Deliverable</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Skeleton, security, employee model, login, CI/CD, Flyway
+baseline</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Start registration, CMS Feign client, rule caching and fallback</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>Twilio notification module, share-rules flow, webhook</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Application form, draft save, validation, Azure Blob upload/SAS</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>KYC orchestration (Protean + farmer card), verification columns,
+submit to <code>REVIEW</code></td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>Supervisor queue, comments, request-info/approve/reject, status
+history</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>Risk hand-off, payload assembler, submitter job</td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td>Polling scheduler, policy ingestion, employee download,
+notifications</td>
+</tr>
+<tr class="odd">
+<td>9</td>
+<td>Observability, performance tuning, security review, UAT</td>
+</tr>
+</tbody>
+</table>
+<h2 id="b12-risks-and-mitigations">B12. Risks and Mitigations</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Risk</th>
+<th>Impact</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Risk team's API contract changes without notice</td>
+<td>Hand-off breaks silently</td>
+<td>Consumer-driven contract tests in the risk team's pipeline; version
+the endpoint</td>
+</tr>
+<tr class="even">
+<td>Drupal editors publish malformed rule JSON</td>
+<td>Registration blocked</td>
+<td>Schema validation on read; reject and fall back to last good
+version</td>
+</tr>
+<tr class="odd">
+<td>Protean rate limits during month-end surge</td>
+<td>KYC failures spike</td>
+<td>Bulkhead + queue, retry with jitter, degrade to
+<code>MANUAL_REVIEW</code> rather than failing submit</td>
+</tr>
+<tr class="even">
+<td>SAS URLs forwarded outside the organisation</td>
+<td>PII leakage</td>
+<td>10-minute TTL, read-only, download audit, watermarking of preview
+renders</td>
+</tr>
+<tr class="odd">
+<td>24-hour polling too slow for the business</td>
+<td>Poor customer experience</td>
+<td>Interval is configuration-driven; add a webhook from the risk team
+in v1.1 and keep polling only as a safety net</td>
+</tr>
+<tr class="even">
+<td>Long-lived <code>REVIEW</code> backlog</td>
+<td>SLA breach</td>
+<td>Queue ageing dashboard and escalation email at 48 hours</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 id="part-c--diagrams-mermaid">PART C — DIAGRAMS (MERMAID)</h1>
+<p>All diagrams below are valid Mermaid source. They render in
+GitHub/GitLab markdown, IntelliJ, VS Code (Markdown Preview Mermaid
+Support), Confluence with the Mermaid macro, or at
+<code>mermaid.live</code>. The accompanying
+<code>insurance-platform-diagrams.html</code> file renders all of them
+in a browser.</p>
+<h2 id="c1-flow-diagram--end-to-end-business-process">C1. Flow Diagram —
+End-to-End Business Process</h2>
+<pre class="mermaid">flowchart TD
+    START([&quot;Employee opens the portal&quot;]) --&gt; LOGIN[&quot;Login&lt;br/&gt;POST /api/v1/auth/login&quot;]
+    LOGIN --&gt; ROLE{&quot;Role in JWT&quot;}
+
+    %% ---------------- EMPLOYEE JOURNEY ----------------
+    ROLE --&gt;|ROLE_EMPLOYEE| DASH[&quot;Employee dashboard&quot;]
+    DASH --&gt; PEND{&quot;Any application in&lt;br/&gt;NEEDS_MORE_INFO or POLICY_ISSUED?&quot;}
+    PEND --&gt;|&quot;POLICY_ISSUED&quot;| DL[&quot;Download policy PDF&lt;br/&gt;and share with customer&quot;]
+    DL --&gt; DONE([&quot;Journey complete&quot;])
+    PEND --&gt;|&quot;NEEDS_MORE_INFO&quot;| CMT[&quot;Open application&lt;br/&gt;read supervisor comments&quot;]
+    CMT --&gt; FORM
+    PEND --&gt;|&quot;No, start fresh&quot;| SREG[&quot;Click Start Registration&quot;]
+
+    SREG --&gt; APICALL[&quot;POST /applications/start-registration&lt;br/&gt;creates DRAFT application&quot;]
+    APICALL --&gt; CMS[&quot;Feign call to Drupal CMS&lt;br/&gt;GET /api/v1/eligibility-rules&quot;]
+    CMS --&gt; CMSOK{&quot;CMS reachable?&quot;}
+    CMSOK --&gt;|Yes| CACHE[&quot;Cache rule set&lt;br/&gt;stamp ruleVersion on application&quot;]
+    CMSOK --&gt;|No| FALLBACK{&quot;Cached rule set exists?&quot;}
+    FALLBACK --&gt;|Yes| STALE[&quot;Serve cached rules&lt;br/&gt;flag stale = true&quot;]
+    FALLBACK --&gt;|No| BLOCK[&quot;HTTP 503 CMS_UNAVAILABLE_NO_CACHE&lt;br/&gt;registration blocked&quot;]
+    BLOCK --&gt; DONE
+
+    CACHE --&gt; SHOW[&quot;Display eligibility rules to employee&quot;]
+    STALE --&gt; SHOW
+    SHOW --&gt; SHARE{&quot;Share rules with customer?&quot;}
+    SHARE --&gt;|Yes| CH{&quot;Channel&quot;}
+    CH --&gt;|SMS| TW[&quot;Feign call to Twilio&lt;br/&gt;POST Messages.json&quot;]
+    CH --&gt;|WhatsApp| TW
+    TW --&gt; NLOG[&quot;Write notification_log&lt;br/&gt;store Twilio message SID&quot;]
+    NLOG --&gt; SHOW
+    SHARE --&gt;|No| PROCEED{&quot;Customer accepts terms?&quot;}
+    SHOW --&gt; PROCEED
+    PROCEED --&gt;|No| ABORT([&quot;Application stays DRAFT&lt;br/&gt;expires after 30 days&quot;])
+    PROCEED --&gt;|Yes| ACC[&quot;Status = ELIGIBILITY_ACCEPTED&lt;br/&gt;form unlocked&quot;]
+
+    ACC --&gt; FORM[&quot;Fill insurance issuance form&lt;br/&gt;customer, address, cover, nominee&quot;]
+    FORM --&gt; SAVE[&quot;PUT /applications/:id/form&lt;br/&gt;draft auto-save&quot;]
+    SAVE --&gt; UPL[&quot;Upload KYC documents&lt;br/&gt;Aadhaar, PAN, Farmer Card&quot;]
+    UPL --&gt; VAL{&quot;Type, size and&lt;br/&gt;MIME checks pass?&quot;}
+    VAL --&gt;|No| UERR[&quot;Reject file&lt;br/&gt;DOC_TYPE_NOT_ALLOWED or DOC_SIZE_EXCEEDED&quot;]
+    UERR --&gt; UPL
+    VAL --&gt;|Yes| BLOB[&quot;Stream to Azure Blob Storage&lt;br/&gt;persist container + blob path + checksum&quot;]
+    BLOB --&gt; ALLDOC{&quot;All mandatory&lt;br/&gt;documents present?&quot;}
+    ALLDOC --&gt;|No| UPL
+    ALLDOC --&gt;|Yes| SUBMIT[&quot;POST /applications/:id/submit&lt;br/&gt;status = KYC_IN_PROGRESS&quot;]
+
+    SUBMIT --&gt; KYC[&quot;Dispatch three verifications in parallel&quot;]
+    KYC --&gt; K1[&quot;Protean Aadhaar API&quot;]
+    KYC --&gt; K2[&quot;Protean PAN API&quot;]
+    KYC --&gt; K3[&quot;Farmer Card Verification API&quot;]
+    K1 --&gt; S1[&quot;Persist aadhaar_verification_status&quot;]
+    K2 --&gt; S2[&quot;Persist pan_verification_status&quot;]
+    K3 --&gt; S3[&quot;Persist farmer_card_verification_status&quot;]
+    S1 --&gt; REV
+    S2 --&gt; REV
+    S3 --&gt; REV[&quot;Status = REVIEW&lt;br/&gt;regardless of individual outcomes&quot;]
+    REV --&gt; QUEUE[&quot;Application appears in&lt;br/&gt;supervisor review queue&quot;]
+
+    %% ---------------- SUPERVISOR JOURNEY ----------------
+    ROLE --&gt;|ROLE_SUPERVISOR| SQ[&quot;Supervisor dashboard&lt;br/&gt;GET /supervisor/applications?status=REVIEW&quot;]
+    QUEUE --&gt; SQ
+    SQ --&gt; INSPECT[&quot;Inspect form data, documents via SAS URL,&lt;br/&gt;three verification statuses, history&quot;]
+    INSPECT --&gt; SOD{&quot;Created by this supervisor?&quot;}
+    SOD --&gt;|Yes| DENY[&quot;403 SegregationOfDuty&lt;br/&gt;route to another supervisor&quot;]
+    DENY --&gt; SQ
+    SOD --&gt;|No| DEC{&quot;Supervisor decision&quot;}
+
+    DEC --&gt;|Needs more information| NMI[&quot;Add comment - minimum 10 chars&lt;br/&gt;status = NEEDS_MORE_INFO&quot;]
+    NMI --&gt; NOTIFY1[&quot;Notify originating employee&quot;]
+    NOTIFY1 --&gt; DASH
+
+    DEC --&gt;|Reject| REJ([&quot;Status = REJECTED - terminal&quot;])
+
+    DEC --&gt;|Approve| APR[&quot;Status = APPROVED_SENDFORRISK&lt;br/&gt;publish ApplicationApprovedEvent&quot;]
+    APR --&gt; ASYNC[&quot;After commit, async hand-off&quot;]
+    ASYNC --&gt; RSUB[&quot;POST to Risk Assessment API&lt;br/&gt;complete registration payload&quot;]
+    RSUB --&gt; RSOK{&quot;Submit succeeded?&quot;}
+    RSOK --&gt;|No| RETRY[&quot;Stays APPROVED_SENDFORRISK&lt;br/&gt;submitter job retries every 30 min&quot;]
+    RETRY --&gt; RSUB
+    RSOK --&gt;|Yes| RIP[&quot;Store riskRefId&lt;br/&gt;status = RISK_IN_PROGRESS&lt;br/&gt;next_poll_at = now + 24h&quot;]
+
+    %% ---------------- SCHEDULER ----------------
+    RIP --&gt; SCHED[&quot;Daily scheduler with ShedLock&lt;br/&gt;selects rows whose next poll time is due&quot;]
+    SCHED --&gt; POLL[&quot;GET risk status by riskRefId&quot;]
+    POLL --&gt; ROUT{&quot;Risk outcome&quot;}
+    ROUT --&gt;|IN_PROGRESS| PUSH[&quot;next_poll_at = now + 24h&lt;br/&gt;increment attempt counter&quot;]
+    PUSH --&gt; ATT{&quot;Attempt count at the ceiling of 30?&quot;}
+    ATT --&gt;|Yes| SLA[&quot;Raise RISK_SLA_BREACH alert to ops&lt;br/&gt;business status unchanged&quot;]
+    ATT --&gt;|No| SCHED
+    SLA --&gt; SCHED
+    ROUT --&gt;|APPROVED| POLICY[&quot;Copy policy PDF into own blob container&lt;br/&gt;store policy number and URL&lt;br/&gt;status = POLICY_ISSUED&quot;]
+    ROUT --&gt;|REJECTED| PREJ([&quot;Store reason&lt;br/&gt;status = POLICY_REJECTED&lt;br/&gt;notify employee&quot;])
+    POLICY --&gt; NOTIFY2[&quot;Notify employee - New policy available&quot;]
+    NOTIFY2 --&gt; DASH</pre>
+<h2
+id="c2-sequence-diagram-1--login-start-registration-and-eligibility-sharing">C2.
+Sequence Diagram 1 — Login, Start Registration and Eligibility
+Sharing</h2>
+<pre class="mermaid">sequenceDiagram
+    autonumber
+    actor EMP as Employee
+    participant UI as Web UI
+    participant AUTH as AuthController
+    participant AC as ApplicationController
+    participant AS as ApplicationService
+    participant ES as EligibilityService
+    participant CMS as CmsFeignClient
+    participant DRUPAL as Drupal CMS
+    participant NS as NotificationService
+    participant TW as TwilioFeignClient
+    participant TWILIO as Twilio
+    participant DB as PostgreSQL
+
+    EMP-&gt;&gt;UI: Enter credentials
+    UI-&gt;&gt;AUTH: POST /api/v1/auth/login
+    AUTH-&gt;&gt;DB: Load employee by empCode
+    DB--&gt;&gt;AUTH: Employee, role = EMPLOYEE
+    AUTH--&gt;&gt;UI: 200 JWT + refresh token
+    UI--&gt;&gt;EMP: Employee dashboard
+
+    EMP-&gt;&gt;UI: Click Start Registration
+    UI-&gt;&gt;AC: POST /applications/start-registration
+    AC-&gt;&gt;AS: startRegistration(empId, productCode)
+    AS-&gt;&gt;DB: INSERT insurance_application (status = DRAFT)
+    DB--&gt;&gt;AS: applicationId, applicationNumber
+    AS-&gt;&gt;ES: getRules(productCode, locale)
+
+    alt Rules in Caffeine cache and not expired
+        ES--&gt;&gt;AS: Cached rule set, stale = false
+    else Cache miss
+        ES-&gt;&gt;CMS: fetchEligibilityRules(product, locale)
+        CMS-&gt;&gt;DRUPAL: GET /api/v1/eligibility-rules
+        alt Drupal responds 200
+            DRUPAL--&gt;&gt;CMS: Rule set JSON, version v12
+            CMS--&gt;&gt;ES: CmsEligibilityResponse
+            ES-&gt;&gt;DB: UPSERT eligibility_rule_cache
+            ES--&gt;&gt;AS: Rule set, stale = false
+        else Drupal unavailable or timeout
+            CMS--&gt;&gt;ES: FeignException, circuit breaker opens
+            ES-&gt;&gt;DB: SELECT latest active cached rule set
+            alt Cached copy found
+                DB--&gt;&gt;ES: Rule set v11
+                ES--&gt;&gt;AS: Rule set, stale = true
+            else No cached copy
+                ES--&gt;&gt;AS: CmsUnavailableException
+                AS--&gt;&gt;AC: 503 CMS_UNAVAILABLE_NO_CACHE
+            end
+        end
+    end
+
+    AS-&gt;&gt;DB: UPDATE application SET eligibility_rule_version = v12
+    AS--&gt;&gt;AC: StartRegistrationResponse
+    AC--&gt;&gt;UI: 201 application + eligibility rules
+    UI--&gt;&gt;EMP: Rules displayed on screen
+
+    opt Employee shares rules with the customer
+        EMP-&gt;&gt;UI: Choose SMS or WhatsApp, enter mobile
+        UI-&gt;&gt;AC: POST /applications/{id}/eligibility/share
+        AC-&gt;&gt;NS: send(app, channel, mobile)
+        NS-&gt;&gt;DB: INSERT notification_log (status = QUEUED)
+        NS-&gt;&gt;TW: sendMessage(accountSid, form)
+        TW-&gt;&gt;TWILIO: POST /2010-04-01/Accounts/{sid}/Messages.json
+        alt Accepted by Twilio
+            TWILIO--&gt;&gt;TW: 201 sid = SM7f1e..., status = queued
+            TW--&gt;&gt;NS: TwilioMessageResponse
+            NS-&gt;&gt;DB: UPDATE notification_log SET status = SENT
+            NS--&gt;&gt;AC: 202 Accepted
+        else Twilio error
+            TWILIO--&gt;&gt;TW: 4xx or 5xx
+            NS-&gt;&gt;DB: UPDATE notification_log SET status = FAILED
+            NS--&gt;&gt;AC: 502 with retry guidance
+        end
+        AC--&gt;&gt;UI: Delivery acknowledgement
+    end
+
+    Note over TWILIO,NS: Delivery receipt arrives later on&lt;br/&gt;POST /webhooks/twilio/status (signature verified)
+
+    EMP-&gt;&gt;UI: Customer accepts terms, click Proceed
+    UI-&gt;&gt;AC: POST /applications/{id}/eligibility/accept
+    AC-&gt;&gt;AS: acceptEligibility(appId)
+    AS-&gt;&gt;DB: status = ELIGIBILITY_ACCEPTED, accepted_at = now
+    AS--&gt;&gt;UI: 200 form unlocked</pre>
+<h2
+id="c3-sequence-diagram-2--form-capture-azure-blob-upload-and-kyc-verification">C3.
+Sequence Diagram 2 — Form Capture, Azure Blob Upload and KYC
+Verification</h2>
+<pre class="mermaid">sequenceDiagram
+    autonumber
+    actor EMP as Employee
+    participant UI as Web UI
+    participant AC as ApplicationController
+    participant DS as DocumentService
+    participant BLOB as BlobStorageAdapter
+    participant AZ as Azure Blob Storage
+    participant SS as SubmissionService
+    participant KS as KycVerificationService
+    participant PRT as ProteanKycFeignClient
+    participant PROTEAN as Protean KYC APIs
+    participant FCC as FarmerCardFeignClient
+    participant FARMER as Farmer Card API
+    participant DB as PostgreSQL
+
+    EMP-&gt;&gt;UI: Fill issuance form
+    UI-&gt;&gt;AC: PUT /applications/{id}/form
+    AC-&gt;&gt;DB: UPDATE application (customer, cover, nominee)
+    AC--&gt;&gt;UI: 200 draft saved
+
+    loop For each KYC document (Aadhaar, PAN, Farmer Card)
+        EMP-&gt;&gt;UI: Select file
+        UI-&gt;&gt;AC: POST /applications/{id}/documents (multipart)
+        AC-&gt;&gt;DS: upload(appId, docType, file)
+        DS-&gt;&gt;DS: Validate MIME, size within 5 MB, compute SHA-256
+        alt Validation fails
+            DS--&gt;&gt;AC: 415 DOC_TYPE_NOT_ALLOWED or 413 DOC_SIZE_EXCEEDED
+        else Validation passes
+            DS-&gt;&gt;BLOB: upload(applicationNumber, docType, file)
+            BLOB-&gt;&gt;AZ: PUT blob {container}/{yyyy-MM}/{appNo}/{type}/{uuid}.pdf
+            AZ--&gt;&gt;BLOB: 201 Created, ETag
+            BLOB--&gt;&gt;DS: BlobRef(container, path, checksum)
+            DS-&gt;&gt;DB: INSERT kyc_document (blob_path, checksum, active = true)
+            DS--&gt;&gt;AC: 201 documentId
+        end
+        AC--&gt;&gt;UI: Upload result
+    end
+
+    EMP-&gt;&gt;UI: Click Submit
+    UI-&gt;&gt;AC: POST /applications/{id}/submit
+    AC-&gt;&gt;SS: submit(appId, empId)
+    SS-&gt;&gt;DB: Assert all mandatory documents present
+    SS-&gt;&gt;DB: status = KYC_IN_PROGRESS
+    SS-&gt;&gt;KS: verifyAll(application)
+
+    par Aadhaar verification
+        KS-&gt;&gt;PRT: verifyAadhaar(request, idempotencyKey)
+        PRT-&gt;&gt;PROTEAN: POST /kyc/aadhaar/verify
+        PROTEAN--&gt;&gt;PRT: 200 VERIFIED, ref PRT-AAD-88213
+        PRT--&gt;&gt;KS: AadhaarVerificationResponse
+        KS-&gt;&gt;DB: INSERT verification_result (AADHAAR, VERIFIED)
+    and PAN verification
+        KS-&gt;&gt;PRT: verifyPan(request, idempotencyKey)
+        PRT-&gt;&gt;PROTEAN: POST /kyc/pan/verify
+        PROTEAN--&gt;&gt;PRT: 200 VERIFIED, ref PRT-PAN-77120
+        PRT--&gt;&gt;KS: PanVerificationResponse
+        KS-&gt;&gt;DB: INSERT verification_result (PAN, VERIFIED)
+    and Farmer card verification
+        KS-&gt;&gt;FCC: verifyFarmerCard(request, idempotencyKey)
+        FCC-&gt;&gt;FARMER: POST /farmer-card/verify
+        alt Provider responds
+            FARMER--&gt;&gt;FCC: 200 MISMATCH, code FC-204
+            FCC--&gt;&gt;KS: FarmerCardResponse
+            KS-&gt;&gt;DB: INSERT verification_result (FARMER_CARD, MANUAL_REVIEW)
+        else Timeout or 5xx
+            FARMER--&gt;&gt;FCC: Read timeout
+            FCC--&gt;&gt;KS: FeignException
+            KS-&gt;&gt;DB: INSERT verification_result (FARMER_CARD, MANUAL_REVIEW, attempt 1)
+        end
+    end
+
+    KS--&gt;&gt;SS: KycOutcome(VERIFIED, VERIFIED, MANUAL_REVIEW)
+    SS-&gt;&gt;DB: UPDATE application SET aadhaar_verification_status = VERIFIED,&lt;br/&gt;pan_verification_status = VERIFIED,&lt;br/&gt;farmer_card_verification_status = MANUAL_REVIEW
+    SS-&gt;&gt;DB: status = REVIEW, INSERT application_status_history
+    SS--&gt;&gt;AC: SubmitResponse
+    AC--&gt;&gt;UI: 200 Application submitted for review
+    UI--&gt;&gt;EMP: Read-only view with verification badges
+
+    Note over SS,DB: A failed or timed-out verification never blocks&lt;br/&gt;the transition to REVIEW - a human decides.</pre>
+<h2 id="c4-sequence-diagram-3--supervisor-review-and-risk-hand-off">C4.
+Sequence Diagram 3 — Supervisor Review and Risk Hand-off</h2>
+<pre class="mermaid">sequenceDiagram
+    autonumber
+    actor SUP as Supervisor
+    actor EMP as Employee
+    participant UI as Web UI
+    participant SC as SupervisorController
+    participant RS as ReviewService
+    participant EV as Spring Event Bus
+    participant RHL as RiskHandoffListener
+    participant RAS as RiskAssessmentService
+    participant RFC as RiskAssessmentFeignClient
+    participant RISK as Risk Assessment Service
+    participant BLOB as BlobStorageAdapter
+    participant NS as NotificationService
+    participant DB as PostgreSQL
+
+    SUP-&gt;&gt;UI: Open review queue
+    UI-&gt;&gt;SC: GET /supervisor/applications?status=REVIEW
+    SC-&gt;&gt;DB: SELECT ... WHERE status = REVIEW AND branch_code IN (scope)
+    DB--&gt;&gt;SC: Page of applications, sorted by ageing
+    SC--&gt;&gt;UI: 200 queue
+    SUP-&gt;&gt;UI: Open application APP-2026-000090114
+    UI-&gt;&gt;SC: GET /applications/{id}
+    SC-&gt;&gt;DB: Load form, documents, verifications, comments, history
+    SC-&gt;&gt;BLOB: generateReadSasUrl(container, path) for each document
+    BLOB--&gt;&gt;SC: SAS URLs, TTL 10 minutes
+    SC--&gt;&gt;UI: 200 full detail
+    UI--&gt;&gt;SUP: Form + document preview + three verification statuses
+
+    alt Supervisor needs more information
+        SUP-&gt;&gt;UI: Enter comment and submit
+        UI-&gt;&gt;SC: POST /supervisor/applications/{id}/request-info
+        SC-&gt;&gt;RS: requestMoreInfo(appId, supervisorId, comment)
+        RS-&gt;&gt;DB: INSERT review_comment (action = NEEDS_MORE_INFO)
+        RS-&gt;&gt;DB: status = NEEDS_MORE_INFO, INSERT status history
+        RS-&gt;&gt;NS: notifyEmployee(app, APP_NEEDS_INFO)
+        RS--&gt;&gt;UI: 200
+        NS--&gt;&gt;EMP: In-app and email notification
+        EMP-&gt;&gt;UI: Open application, read comment, correct data or re-upload
+        UI-&gt;&gt;SC: POST /applications/{id}/submit (resubmit)
+        SC-&gt;&gt;DB: status = REVIEW, INSERT employee response comment
+        Note over EMP,SUP: This loop may repeat any number of times;&lt;br/&gt;every cycle is retained in status history.
+
+    else Supervisor rejects
+        SUP-&gt;&gt;UI: Choose reason code and remark
+        UI-&gt;&gt;SC: POST /supervisor/applications/{id}/reject
+        SC-&gt;&gt;RS: reject(appId, supervisorId, reason)
+        RS-&gt;&gt;DB: status = REJECTED (terminal)
+        RS-&gt;&gt;NS: notifyEmployee(app, APP_REJECTED)
+        RS--&gt;&gt;UI: 200
+
+    else Supervisor approves
+        SUP-&gt;&gt;UI: Click Approve
+        UI-&gt;&gt;SC: POST /supervisor/applications/{id}/approve
+        SC-&gt;&gt;RS: approve(appId, supervisorId, remark)
+        RS-&gt;&gt;DB: SELECT ... FOR UPDATE (pessimistic lock)
+        RS-&gt;&gt;RS: Assert supervisor is not the creator
+        RS-&gt;&gt;DB: status = APPROVED_SENDFORRISK, next_poll_at = now
+        RS-&gt;&gt;EV: publish ApplicationApprovedEvent
+        RS--&gt;&gt;UI: 200 riskHandoff = QUEUED
+
+        EV-&gt;&gt;RHL: AFTER_COMMIT, async
+        RHL-&gt;&gt;RAS: submit(applicationId)
+        RAS-&gt;&gt;DB: Load application aggregate
+        RAS-&gt;&gt;BLOB: SAS URLs for all documents
+        RAS-&gt;&gt;RAS: RiskPayloadAssembler.assemble(app)
+        RAS-&gt;&gt;RFC: submit(payload, idempotencyKey = applicationNumber)
+        RFC-&gt;&gt;RISK: POST /risk/assessments
+
+        alt Risk accepts
+            RISK--&gt;&gt;RFC: 202 riskRefId = RSK-2026-41182
+            RFC--&gt;&gt;RAS: RiskSubmitResponse
+            RAS-&gt;&gt;DB: risk_ref_id, risk_submitted_at,&lt;br/&gt;next_poll_at = now + 24h, status = RISK_IN_PROGRESS
+        else Risk unavailable
+            RISK--&gt;&gt;RFC: 503 Service Unavailable
+            RFC--&gt;&gt;RAS: FeignException after 3 retries
+            RAS-&gt;&gt;DB: No change - stays APPROVED_SENDFORRISK
+            Note over RAS,DB: The submitter job retries every 30 minutes.&lt;br/&gt;Idempotency key prevents duplicate submissions.
+        end
+    end</pre>
+<h2
+id="c5-sequence-diagram-4--scheduler-polling-and-policy-issuance">C5.
+Sequence Diagram 4 — Scheduler Polling and Policy Issuance</h2>
+<pre class="mermaid">sequenceDiagram
+    autonumber
+    participant SCH as RiskAssessmentScheduler
+    participant LOCK as ShedLock (DB)
+    participant REPO as ApplicationRepository
+    participant RAS as RiskAssessmentService
+    participant RFC as RiskAssessmentFeignClient
+    participant RISK as Risk Assessment Service
+    participant BLOB as BlobStorageAdapter
+    participant AZ as Azure Blob Storage
+    participant NS as NotificationService
+    participant DB as PostgreSQL
+    actor EMP as Employee
+
+    Note over SCH: Cron 0 0 2 * * * - daily at 02:00 IST
+
+    SCH-&gt;&gt;LOCK: Acquire lock riskPollJob (lockAtMostFor = 2h)
+    alt Lock not acquired (another pod is running)
+        LOCK--&gt;&gt;SCH: Skip this cycle
+    else Lock acquired
+        LOCK--&gt;&gt;SCH: Locked
+        SCH-&gt;&gt;REPO: findDueForPolling([RISK_IN_PROGRESS], now, 500)
+        REPO-&gt;&gt;DB: SELECT ... WHERE status = RISK_IN_PROGRESS&lt;br/&gt;AND next_poll_at is due ORDER BY next_poll_at
+        DB--&gt;&gt;REPO: List of due applications
+        REPO--&gt;&gt;SCH: Candidates
+
+        loop For each due application
+            SCH-&gt;&gt;RAS: pollAndApply(applicationId)
+            RAS-&gt;&gt;DB: SELECT ... FOR UPDATE
+            RAS-&gt;&gt;RFC: getStatus(riskRefId)
+            RFC-&gt;&gt;RISK: GET /risk/assessments/{riskRefId}
+
+            alt status = IN_PROGRESS
+                RISK--&gt;&gt;RFC: 200 IN_PROGRESS
+                RAS-&gt;&gt;DB: risk_poll_attempts += 1,&lt;br/&gt;next_poll_at = now + 24h
+                opt attempts reach the ceiling of 30
+                    RAS-&gt;&gt;NS: raiseSlaBreach(app)
+                    NS--&gt;&gt;SCH: Ops email sent, business status unchanged
+                end
+
+            else status = APPROVED
+                RISK--&gt;&gt;RFC: 200 APPROVED, policyNumber, policyDocumentUrl
+                RAS-&gt;&gt;BLOB: copyFromExternalUrl(policyDocumentUrl, appNumber)
+                BLOB-&gt;&gt;AZ: PUT policies/{yyyy}/{appNo}/policy.pdf
+                AZ--&gt;&gt;BLOB: 201 Created
+                BLOB--&gt;&gt;RAS: policy_blob_path
+                RAS-&gt;&gt;DB: policy_number, policy_document_url, policy_blob_path,&lt;br/&gt;policy_issued_at, next_poll_at = NULL,&lt;br/&gt;status = POLICY_ISSUED
+                RAS-&gt;&gt;NS: notifyPolicyIssued(app)
+                NS--&gt;&gt;EMP: In-app badge + email: New policy available
+
+            else status = REJECTED
+                RISK--&gt;&gt;RFC: 200 REJECTED, reason
+                RAS-&gt;&gt;DB: rejection_reason, next_poll_at = NULL,&lt;br/&gt;status = POLICY_REJECTED
+                RAS-&gt;&gt;NS: notifyPolicyRejected(app)
+                NS--&gt;&gt;EMP: Notification with reason
+
+            else Transport error
+                RISK--&gt;&gt;RFC: Timeout or 5xx
+                RAS-&gt;&gt;DB: next_poll_at = now + 24h (no status change)
+                Note over RAS,DB: Polling is read-only and safe to repeat.
+            end
+        end
+        SCH-&gt;&gt;LOCK: Release lock
+    end
+
+    EMP-&gt;&gt;DB: Login, open dashboard
+    DB--&gt;&gt;EMP: Application POLICY_ISSUED with download action
+    EMP-&gt;&gt;BLOB: GET /applications/{id}/policy
+    BLOB--&gt;&gt;EMP: SAS URL, TTL 10 minutes
+    EMP-&gt;&gt;EMP: Download PDF and forward to the customer</pre>
+<h2 id="c6-class-diagram--domain-services-and-integration-clients">C6.
+Class Diagram — Domain, Services and Integration Clients</h2>
+<pre class="mermaid">classDiagram
+    direction LR
+
+    %% ------------ DOMAIN ENTITIES ------------
+    class Employee {
+        +Long id
+        +String empCode
+        +String fullName
+        +String email
+        +String mobile
+        +EmployeeRole role
+        +String branchCode
+        +Employee reportingTo
+        +boolean active
+        +boolean isSupervisor() boolean
+    }
+
+    class InsuranceApplication {
+        +Long id
+        +String applicationNumber
+        +Employee createdBy
+        +Employee reviewedBy
+        +String branchCode
+        +String productCode
+        +ApplicationStatus status
+        +String eligibilityRuleVersion
+        +OffsetDateTime eligibilityAcceptedAt
+        +CustomerDetails customer
+        +CoverDetails cover
+        +VerificationStatus aadhaarVerificationStatus
+        +VerificationStatus panVerificationStatus
+        +VerificationStatus farmerCardVerificationStatus
+        +String riskRefId
+        +OffsetDateTime riskSubmittedAt
+        +OffsetDateTime nextPollAt
+        +int riskPollAttempts
+        +String policyNumber
+        +String policyDocumentUrl
+        +String policyBlobPath
+        +Long version
+        +transitionTo(ApplicationStatus to, Employee actor, String remark) void
+        +isEditableByEmployee() boolean
+        +allKycVerified() boolean
+    }
+
+    class CustomerDetails {
+        &lt;&lt;embeddable&gt;&gt;
+        +String name
+        +LocalDate dob
+        +String gender
+        +String mobile
+        +String email
+        +String addressLine1
+        +String district
+        +String state
+        +String pincode
+        +String aadhaarLast4
+        +String panNumber
+        +String farmerCardNumber
+    }
+
+    class CoverDetails {
+        &lt;&lt;embeddable&gt;&gt;
+        +BigDecimal landAreaAcres
+        +String cropType
+        +BigDecimal sumInsured
+        +BigDecimal premiumAmount
+        +LocalDate coverStartDate
+        +LocalDate coverEndDate
+        +String nomineeName
+        +String nomineeRelation
+    }
+
+    class KycDocument {
+        +Long id
+        +InsuranceApplication application
+        +DocumentType documentType
+        +String fileName
+        +String contentType
+        +long sizeBytes
+        +String blobContainer
+        +String blobPath
+        +String checksumSha256
+        +Employee uploadedBy
+        +boolean active
+    }
+
+    class VerificationResult {
+        +Long id
+        +InsuranceApplication application
+        +VerificationType verificationType
+        +VerificationStatus status
+        +String provider
+        +String providerRefId
+        +String responseCode
+        +String message
+        +int attemptCount
+        +String idempotencyKey
+        +OffsetDateTime verifiedAt
+    }
+
+    class ReviewComment {
+        +Long id
+        +InsuranceApplication application
+        +Employee author
+        +EmployeeRole authorRole
+        +String commentText
+        +ReviewAction action
+        +boolean resolved
+        +OffsetDateTime createdAt
+    }
+
+    class ApplicationStatusHistory {
+        +Long id
+        +InsuranceApplication application
+        +ApplicationStatus fromStatus
+        +ApplicationStatus toStatus
+        +Employee changedBy
+        +boolean changedBySystem
+        +String remarks
+        +OffsetDateTime changedAt
+    }
+
+    class NotificationLog {
+        +Long id
+        +InsuranceApplication application
+        +NotificationChannel channel
+        +String recipient
+        +String templateCode
+        +String providerMessageId
+        +String status
+        +String errorCode
+        +markSent(String sid, String status) void
+        +markFailed(String errorCode) void
+    }
+
+    class EligibilityRuleCache {
+        +Long id
+        +String productCode
+        +String locale
+        +String ruleVersion
+        +String contentJson
+        +OffsetDateTime fetchedAt
+        +boolean active
+    }
+
+    %% ------------ ENUMS ------------
+    class ApplicationStatus {
+        &lt;&lt;enumeration&gt;&gt;
+        DRAFT
+        ELIGIBILITY_ACCEPTED
+        DOCUMENTS_UPLOADED
+        KYC_IN_PROGRESS
+        REVIEW
+        NEEDS_MORE_INFO
+        APPROVED_SENDFORRISK
+        RISK_IN_PROGRESS
+        POLICY_ISSUED
+        POLICY_REJECTED
+        REJECTED
+        EXPIRED
+    }
+    class VerificationStatus {
+        &lt;&lt;enumeration&gt;&gt;
+        PENDING
+        IN_PROGRESS
+        VERIFIED
+        FAILED
+        MANUAL_REVIEW
+        NOT_APPLICABLE
+    }
+    class VerificationType {
+        &lt;&lt;enumeration&gt;&gt;
+        AADHAAR
+        PAN
+        FARMER_CARD
+    }
+    class DocumentType {
+        &lt;&lt;enumeration&gt;&gt;
+        AADHAAR
+        PAN
+        FARMER_CARD
+        PHOTO
+        LAND_RECORD
+        OTHER
+    }
+    class EmployeeRole {
+        &lt;&lt;enumeration&gt;&gt;
+        EMPLOYEE
+        SUPERVISOR
+    }
+    class NotificationChannel {
+        &lt;&lt;enumeration&gt;&gt;
+        SMS
+        WHATSAPP
+        EMAIL
+        IN_APP
+    }
+    class ReviewAction {
+        &lt;&lt;enumeration&gt;&gt;
+        NEEDS_MORE_INFO
+        APPROVED
+        REJECTED
+        EMPLOYEE_RESPONSE
+    }
+
+    %% ------------ REPOSITORIES ------------
+    class InsuranceApplicationRepository {
+        &lt;&lt;interface&gt;&gt;
+        +findByIdForUpdate(Long id) Optional~InsuranceApplication~
+        +findByCreatedByIdAndStatus(Long empId, ApplicationStatus s, Pageable p) Page~InsuranceApplication~
+        +findByStatusAndBranchCodeIn(ApplicationStatus s, List~String~ branches, Pageable p) Page~InsuranceApplication~
+        +findByStatusAndRiskRefIdIsNull(ApplicationStatus s, Pageable p) List~InsuranceApplication~
+        +findDueForPolling(List~ApplicationStatus~ st, OffsetDateTime now, Pageable p) List~InsuranceApplication~
+    }
+    class KycDocumentRepository
+    &lt;&lt;interface&gt;&gt; KycDocumentRepository
+    class VerificationResultRepository
+    &lt;&lt;interface&gt;&gt; VerificationResultRepository
+    class ReviewCommentRepository
+    &lt;&lt;interface&gt;&gt; ReviewCommentRepository
+    class NotificationLogRepository
+    &lt;&lt;interface&gt;&gt; NotificationLogRepository
+    class EligibilityRuleCacheRepository
+    &lt;&lt;interface&gt;&gt; EligibilityRuleCacheRepository
+
+    %% ------------ SERVICES ------------
+    class ApplicationService {
+        +startRegistration(Long empId, String productCode, String locale) StartRegistrationResponse
+        +saveForm(Long appId, ApplicationFormRequest req) void
+        +acceptEligibility(Long appId) void
+        +getDetail(Long appId, EmployeePrincipal p) ApplicationDetailResponse
+    }
+    class EligibilityService {
+        +getRules(String product, String locale) EligibilityRuleSet
+        -fromDatabase(String product, String locale, Throwable t) EligibilityRuleSet
+    }
+    class DocumentService {
+        +upload(Long appId, DocumentType type, MultipartFile file) KycDocument
+        +generateDownloadUrl(Long appId, Long docId) String
+        +softDelete(Long appId, Long docId) void
+    }
+    class KycVerificationService {
+        +verifyAll(InsuranceApplication app) KycOutcome
+        -verifyAadhaar(InsuranceApplication app) VerificationStatus
+        -verifyPan(InsuranceApplication app) VerificationStatus
+        -verifyFarmerCard(InsuranceApplication app) VerificationStatus
+    }
+    class SubmissionService {
+        +submit(Long appId, Long empId) SubmitResponse
+    }
+    class ReviewService {
+        +listQueue(EmployeePrincipal sup, ApplicationStatus s, Pageable p) Page~ApplicationSummary~
+        +requestMoreInfo(Long appId, Long supId, String comment) void
+        +approve(Long appId, Long supId, String remark) void
+        +reject(Long appId, Long supId, String reason) void
+    }
+    class RiskAssessmentService {
+        +submit(Long appId) void
+        +pollAndApply(Long appId) void
+    }
+    class NotificationService {
+        +send(InsuranceApplication app, NotificationChannel ch, String mobile) NotificationLog
+        +notifyPolicyIssued(InsuranceApplication app) void
+        +notifyPolicyRejected(InsuranceApplication app) void
+        +raiseSlaBreach(InsuranceApplication app) void
+    }
+    class ApplicationStateMachine {
+        &lt;&lt;utility&gt;&gt;
+        +assertAllowed(ApplicationStatus from, ApplicationStatus to) void
+    }
+    class RiskPayloadAssembler {
+        &lt;&lt;utility&gt;&gt;
+        +assemble(InsuranceApplication app) RiskSubmitRequest
+    }
+    class RiskAssessmentScheduler {
+        +submitPendingApplications() void
+        +pollRiskDecisions() void
+    }
+    class BlobStorageAdapter {
+        +upload(String appNo, DocumentType type, MultipartFile f) BlobRef
+        +generateReadSasUrl(String container, String path) String
+        +copyFromExternalUrl(String url, String appNo) String
+    }
+
+    %% ------------ FEIGN CLIENTS ------------
+    class CmsFeignClient {
+        &lt;&lt;interface&gt;&gt;
+        +fetchEligibilityRules(String product, String locale) CmsEligibilityResponse
+    }
+    class TwilioFeignClient {
+        &lt;&lt;interface&gt;&gt;
+        +sendMessage(String accountSid, Map form) TwilioMessageResponse
+    }
+    class ProteanKycFeignClient {
+        &lt;&lt;interface&gt;&gt;
+        +verifyAadhaar(AadhaarRequest req, String idempotencyKey) AadhaarResponse
+        +verifyPan(PanRequest req, String idempotencyKey) PanResponse
+    }
+    class FarmerCardFeignClient {
+        &lt;&lt;interface&gt;&gt;
+        +verifyFarmerCard(FarmerCardRequest req, String idempotencyKey) FarmerCardResponse
+    }
+    class RiskAssessmentFeignClient {
+        &lt;&lt;interface&gt;&gt;
+        +submit(RiskSubmitRequest req, String idempotencyKey) RiskSubmitResponse
+        +getStatus(String riskRefId) RiskStatusResponse
+    }
+
+    %% ------------ CONTROLLERS ------------
+    class ApplicationController {
+        +startRegistration(StartRegistrationRequest r) ResponseEntity
+        +saveForm(Long id, ApplicationFormRequest r) ResponseEntity
+        +uploadDocument(Long id, DocumentType t, MultipartFile f) ResponseEntity
+        +submit(Long id) ResponseEntity
+        +downloadPolicy(Long id) ResponseEntity
+    }
+    class SupervisorController {
+        +queue(ApplicationStatus s, Pageable p) ResponseEntity
+        +requestInfo(Long id, CommentRequest r) ResponseEntity
+        +approve(Long id, DecisionRequest r) ResponseEntity
+        +reject(Long id, DecisionRequest r) ResponseEntity
+    }
+
+    %% ------------ RELATIONSHIPS ------------
+    Employee &quot;1&quot; --&gt; &quot;0..*&quot; InsuranceApplication : creates
+    Employee &quot;0..1&quot; --&gt; &quot;0..*&quot; InsuranceApplication : reviews
+    InsuranceApplication &quot;1&quot; *-- &quot;0..*&quot; KycDocument
+    InsuranceApplication &quot;1&quot; *-- &quot;0..*&quot; VerificationResult
+    InsuranceApplication &quot;1&quot; *-- &quot;0..*&quot; ReviewComment
+    InsuranceApplication &quot;1&quot; *-- &quot;0..*&quot; ApplicationStatusHistory
+    InsuranceApplication &quot;1&quot; o-- &quot;0..*&quot; NotificationLog
+    InsuranceApplication *-- CustomerDetails
+    InsuranceApplication *-- CoverDetails
+    InsuranceApplication --&gt; ApplicationStatus
+    InsuranceApplication --&gt; VerificationStatus
+    KycDocument --&gt; DocumentType
+    VerificationResult --&gt; VerificationType
+    VerificationResult --&gt; VerificationStatus
+    ReviewComment --&gt; ReviewAction
+    NotificationLog --&gt; NotificationChannel
+    Employee --&gt; EmployeeRole
+
+    ApplicationController ..&gt; ApplicationService
+    ApplicationController ..&gt; DocumentService
+    ApplicationController ..&gt; SubmissionService
+    SupervisorController ..&gt; ReviewService
+
+    ApplicationService ..&gt; EligibilityService
+    ApplicationService ..&gt; InsuranceApplicationRepository
+    EligibilityService ..&gt; CmsFeignClient
+    EligibilityService ..&gt; EligibilityRuleCacheRepository
+    DocumentService ..&gt; BlobStorageAdapter
+    DocumentService ..&gt; KycDocumentRepository
+    SubmissionService ..&gt; KycVerificationService
+    KycVerificationService ..&gt; ProteanKycFeignClient
+    KycVerificationService ..&gt; FarmerCardFeignClient
+    KycVerificationService ..&gt; VerificationResultRepository
+    ReviewService ..&gt; InsuranceApplicationRepository
+    ReviewService ..&gt; ReviewCommentRepository
+    ReviewService ..&gt; NotificationService
+    NotificationService ..&gt; TwilioFeignClient
+    NotificationService ..&gt; NotificationLogRepository
+    RiskAssessmentService ..&gt; RiskAssessmentFeignClient
+    RiskAssessmentService ..&gt; RiskPayloadAssembler
+    RiskAssessmentService ..&gt; BlobStorageAdapter
+    RiskAssessmentService ..&gt; NotificationService
+    RiskAssessmentScheduler ..&gt; RiskAssessmentService
+    RiskAssessmentScheduler ..&gt; InsuranceApplicationRepository
+    InsuranceApplication ..&gt; ApplicationStateMachine : guards transitions</pre>
+<h2 id="c7-state-diagram--application-status-machine">C7. State Diagram
+— Application Status Machine</h2>
+<pre class="mermaid">stateDiagram-v2
+    [*] --&gt; DRAFT : Start Registration
+
+    DRAFT --&gt; ELIGIBILITY_ACCEPTED : Customer accepts terms
+    DRAFT --&gt; EXPIRED : Abandoned 30 days
+
+    ELIGIBILITY_ACCEPTED --&gt; DOCUMENTS_UPLOADED : All mandatory KYC files uploaded
+    ELIGIBILITY_ACCEPTED --&gt; EXPIRED : Abandoned 30 days
+
+    DOCUMENTS_UPLOADED --&gt; KYC_IN_PROGRESS : Submit
+    KYC_IN_PROGRESS --&gt; REVIEW : Verification results persisted
+
+    REVIEW --&gt; NEEDS_MORE_INFO : Supervisor adds comment
+    NEEDS_MORE_INFO --&gt; REVIEW : Employee resubmits
+    REVIEW --&gt; REJECTED : Supervisor rejects
+    REVIEW --&gt; APPROVED_SENDFORRISK : Supervisor approves
+
+    APPROVED_SENDFORRISK --&gt; APPROVED_SENDFORRISK : Hand-off failed, retry in 30 min
+    APPROVED_SENDFORRISK --&gt; RISK_IN_PROGRESS : riskRefId received
+
+    RISK_IN_PROGRESS --&gt; RISK_IN_PROGRESS : Poll returns IN_PROGRESS, next poll in 24h
+    RISK_IN_PROGRESS --&gt; POLICY_ISSUED : Risk approved, policy document stored
+    RISK_IN_PROGRESS --&gt; POLICY_REJECTED : Risk rejected with reason
+
+    POLICY_ISSUED --&gt; [*]
+    POLICY_REJECTED --&gt; [*]
+    REJECTED --&gt; [*]
+    EXPIRED --&gt; [*]
+
+    note right of REVIEW
+        A failed KYC check does not
+        auto-reject. A human decides.
+    end note
+
+    note right of RISK_IN_PROGRESS
+        Poll attempts capped at 30.
+        Breach raises an ops alert
+        without changing status.
+    end note</pre>
+<h2 id="c8-entity-relationship-diagram">C8. Entity Relationship
+Diagram</h2>
+<pre class="mermaid">erDiagram
+    EMPLOYEE ||--o{ INSURANCE_APPLICATION : &quot;creates&quot;
+    EMPLOYEE ||--o{ REVIEW_COMMENT : &quot;authors&quot;
+    EMPLOYEE ||--o{ KYC_DOCUMENT : &quot;uploads&quot;
+    EMPLOYEE ||--o{ EMPLOYEE : &quot;reports to&quot;
+    INSURANCE_APPLICATION ||--o{ KYC_DOCUMENT : &quot;has&quot;
+    INSURANCE_APPLICATION ||--o{ VERIFICATION_RESULT : &quot;has&quot;
+    INSURANCE_APPLICATION ||--o{ REVIEW_COMMENT : &quot;has&quot;
+    INSURANCE_APPLICATION ||--o{ APPLICATION_STATUS_HISTORY : &quot;has&quot;
+    INSURANCE_APPLICATION ||--o{ NOTIFICATION_LOG : &quot;triggers&quot;
+
+    EMPLOYEE {
+        bigint id PK
+        varchar emp_code UK
+        varchar full_name
+        varchar email UK
+        varchar role &quot;EMPLOYEE or SUPERVISOR&quot;
+        varchar branch_code
+        bigint reporting_to_id FK
+        boolean active
+    }
+
+    INSURANCE_APPLICATION {
+        bigint id PK
+        varchar application_number UK
+        bigint created_by_employee_id FK
+        bigint reviewed_by_supervisor_id FK
+        varchar status
+        varchar product_code
+        varchar eligibility_rule_version
+        varchar customer_name
+        varchar customer_mobile
+        varchar aadhaar_last4
+        varchar pan_number
+        varchar farmer_card_number
+        varchar aadhaar_verification_status
+        varchar pan_verification_status
+        varchar farmer_card_verification_status
+        varchar risk_ref_id
+        timestamptz next_poll_at
+        int risk_poll_attempts
+        varchar policy_number
+        varchar policy_document_url
+        bigint version
+    }
+
+    KYC_DOCUMENT {
+        bigint id PK
+        bigint application_id FK
+        varchar document_type
+        varchar blob_container
+        varchar blob_path
+        varchar checksum_sha256
+        boolean active
+    }
+
+    VERIFICATION_RESULT {
+        bigint id PK
+        bigint application_id FK
+        varchar verification_type
+        varchar status
+        varchar provider_ref_id
+        varchar response_code
+        varchar idempotency_key UK
+        int attempt_count
+    }
+
+    REVIEW_COMMENT {
+        bigint id PK
+        bigint application_id FK
+        bigint author_employee_id FK
+        text comment_text
+        varchar action
+        boolean resolved
+    }
+
+    APPLICATION_STATUS_HISTORY {
+        bigint id PK
+        bigint application_id FK
+        varchar from_status
+        varchar to_status
+        bigint changed_by FK
+        timestamptz changed_at
+    }
+
+    NOTIFICATION_LOG {
+        bigint id PK
+        bigint application_id FK
+        varchar channel
+        varchar recipient
+        varchar provider_message_id
+        varchar status
+    }
+
+    ELIGIBILITY_RULE_CACHE {
+        bigint id PK
+        varchar product_code
+        varchar locale
+        varchar rule_version
+        jsonb content_json
+        boolean active
+    }</pre>
+<h2 id="c9-component--integration-landscape">C9. Component / Integration
+Landscape</h2>
+<pre class="mermaid">flowchart LR
+    subgraph CLIENT[&quot;Client tier&quot;]
+        WEB[&quot;Employee and Supervisor Web UI&lt;br/&gt;React SPA&quot;]
+    end
+
+    subgraph APP[&quot;Spring Boot Insurance Issuance Service&quot;]
+        direction TB
+        SEC[&quot;Spring Security + JWT filter&quot;]
+        CTRL[&quot;Controllers&lt;br/&gt;Application, Supervisor, Auth&quot;]
+        SVC[&quot;Domain services&lt;br/&gt;Application, Eligibility, Document,&lt;br/&gt;KYC, Review, Risk, Notification&quot;]
+        SCHED[&quot;Scheduler&lt;br/&gt;ShedLock + @Scheduled&quot;]
+        JPA[&quot;Spring Data JPA repositories&quot;]
+        FEIGN[&quot;OpenFeign clients&lt;br/&gt;+ Resilience4j&quot;]
+        AZSDK[&quot;Azure Blob SDK adapter&quot;]
+    end
+
+    subgraph DATA[&quot;Data tier&quot;]
+        PG[(&quot;PostgreSQL&lt;br/&gt;applications, documents,&lt;br/&gt;verifications, history&quot;)]
+        CACHE[&quot;Caffeine L1 cache&quot;]
+    end
+
+    subgraph EXT[&quot;External systems&quot;]
+        DRUPAL[&quot;Drupal CMS&lt;br/&gt;eligibility rules&quot;]
+        TWILIO[&quot;Twilio&lt;br/&gt;SMS and WhatsApp&quot;]
+        AZURE[(&quot;Azure Blob Storage&lt;br/&gt;KYC docs and policies&quot;)]
+        PROTEAN[&quot;Protean&lt;br/&gt;Aadhaar and PAN KYC&quot;]
+        FARMER[&quot;Farmer Card&lt;br/&gt;Verification API&quot;]
+        RISK[&quot;Risk Assessment Service&lt;br/&gt;underwriting and policy issuance&quot;]
+    end
+
+    WEB --&gt;|HTTPS + JWT| SEC
+    SEC --&gt; CTRL
+    CTRL --&gt; SVC
+    SVC --&gt; JPA
+    SVC --&gt; FEIGN
+    SVC --&gt; AZSDK
+    SCHED --&gt; SVC
+    JPA --&gt; PG
+    SVC --&gt; CACHE
+    SCHED --&gt; PG
+
+    FEIGN --&gt;|GET eligibility rules| DRUPAL
+    FEIGN --&gt;|POST Messages.json| TWILIO
+    FEIGN --&gt;|POST verify aadhaar and pan| PROTEAN
+    FEIGN --&gt;|POST verify farmer card| FARMER
+    FEIGN --&gt;|POST submit and GET status| RISK
+    AZSDK --&gt;|PUT and SAS GET| AZURE</pre>
+<hr />
+<h1 id="appendix-a--configuration-reference">APPENDIX A — Configuration
+Reference</h1>
+<pre class="yaml"><code>spring:
+  application:
+    name: insurance-issuance-service
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:5432/insurance
+    hikari:
+      maximum-pool-size: 30
+  jpa:
+    hibernate.ddl-auto: validate
+    properties.hibernate.jdbc.batch_size: 50
+  servlet.multipart:
+    max-file-size: 5MB
+    max-request-size: 25MB
+
+azure:
+  storage:
+    account-name: ${AZ_STORAGE_ACCOUNT}
+    use-managed-identity: true
+    container:
+      kyc: kyc-documents
+      policy: policy-documents
+    sas-ttl-minutes: 10
+
+integration:
+  cms:
+    base-url: ${CMS_BASE_URL}
+    token: ${CMS_TOKEN}
+    cache-ttl-minutes: 30
+  twilio:
+    base-url: https://api.twilio.com
+    account-sid: ${TWILIO_ACCOUNT_SID}
+    auth-token: ${TWILIO_AUTH_TOKEN}
+    sms-from: ${TWILIO_SMS_FROM}
+    whatsapp-from: whatsapp:${TWILIO_WA_FROM}
+  protean:
+    base-url: ${PROTEAN_BASE_URL}
+    api-key: ${PROTEAN_API_KEY}
+  farmer-card:
+    base-url: ${FARMER_CARD_BASE_URL}
+  risk:
+    base-url: ${RISK_BASE_URL}
+
+risk:
+  poll-interval-hours: 24
+  max-poll-attempts: 30
+
+scheduler:
+  risk-submit.cron: &quot;0 */30 * * * *&quot;
+  risk-poll.cron:   &quot;0 0 2 * * *&quot;
+  draft-expiry.cron: &quot;0 30 1 * * *&quot;
+
+notification:
+  resend-limit-per-hour: 5</code></pre>
+<h1 id="appendix-b--glossary">APPENDIX B — Glossary</h1>
+<table>
+<thead>
+<tr class="header">
+<th>Term</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Maker–checker</strong></td>
+<td>Control pattern where the person who captures a record cannot be the
+person who approves it</td>
+</tr>
+<tr class="even">
+<td><strong>SAS URL</strong></td>
+<td>Shared Access Signature — a time-boxed, permission-scoped URL to an
+Azure blob</td>
+</tr>
+<tr class="odd">
+<td><strong>ShedLock</strong></td>
+<td>Library that ensures a scheduled task runs on only one node in a
+cluster</td>
+</tr>
+<tr class="even">
+<td><strong>Idempotency key</strong></td>
+<td>Client-generated token that lets a server recognise and de-duplicate
+a repeated request</td>
+</tr>
+<tr class="odd">
+<td><strong>Protean</strong></td>
+<td>Provider of Aadhaar and PAN verification services (formerly NSDL
+e-Governance)</td>
+</tr>
+<tr class="even">
+<td><strong>Rule set version</strong></td>
+<td>Immutable identifier of the eligibility content shown to a specific
+customer on a specific date</td>
+</tr>
+<tr class="odd">
+<td><strong>TAT</strong></td>
+<td>Turnaround time — here, the time the risk team takes to return a
+decision</td>
+</tr>
+<tr class="even">
+<td><strong>Circuit breaker</strong></td>
+<td>Resilience pattern that stops calling a failing dependency for a
+cooling-off period</td>
+</tr>
+</tbody>
+</table>
+</body></html>
