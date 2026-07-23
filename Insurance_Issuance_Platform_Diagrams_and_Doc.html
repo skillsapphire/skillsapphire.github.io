@@ -3298,6 +3298,1158 @@ Landscape</h2>
     FEIGN --&gt;|POST submit and GET status| RISK
     AZSDK --&gt;|PUT and SAS GET| AZURE</pre>
 <hr />
+<h1 id="part-d--azure-cloud-architecture">PART D — AZURE CLOUD
+ARCHITECTURE</h1>
+<h2 id="d0-relationship-to-part-b">D0. Relationship to Part B</h2>
+<p>Part B describes the application as a single deployable modular
+monolith on PostgreSQL, which is the correct starting shape for a
+low-volume pilot. This part describes the <strong>target-state
+deployment</strong>: the same bounded contexts split into independently
+deployable <strong>Spring Boot microservices on Azure App
+Service</strong>, fronted by <strong>Azure API Management</strong>,
+persisted in <strong>Azure SQL Database</strong>, with secrets in
+<strong>Azure Key Vault</strong> and telemetry in <strong>Azure
+Application Insights</strong>.</p>
+<p>The module boundaries in Part B (§B2) map one-to-one onto the
+microservices in §D2, which is why they were enforced with ArchUnit from
+day one. Nothing in the domain model changes; only the process boundary,
+the transport between modules and the database engine change.</p>
+<p><strong>Two deltas apply to Part B when this architecture is
+adopted:</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th>Part B assumption</th>
+<th>Azure target-state</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Single Spring Boot deployable</td>
+<td>Nine independently deployed App Services</td>
+</tr>
+<tr class="even">
+<td>In-process method calls between modules</td>
+<td>Feign over HTTPS for queries, Azure Service Bus for domain
+events</td>
+</tr>
+<tr class="odd">
+<td>PostgreSQL, one schema</td>
+<td>Azure SQL Database, database-per-service in an elastic pool</td>
+</tr>
+<tr class="even">
+<td>Single local transaction across modules</td>
+<td>Transactional outbox + eventual consistency across services</td>
+</tr>
+<tr class="odd">
+<td>Secrets as environment variables</td>
+<td>Key Vault references resolved by App Service at start-up</td>
+</tr>
+<tr class="even">
+<td>Micrometer to Prometheus</td>
+<td>Micrometer + OpenTelemetry to Application Insights</td>
+</tr>
+</tbody>
+</table>
+<h3 id="d01-postgresql-to-azure-sql-migration-deltas">D0.1 PostgreSQL to
+Azure SQL migration deltas</h3>
+<table>
+<thead>
+<tr class="header">
+<th>PostgreSQL (Part B DDL)</th>
+<th>Azure SQL (T-SQL)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>BIGSERIAL PRIMARY KEY</code></td>
+<td><code>BIGINT IDENTITY(1,1) PRIMARY KEY</code></td>
+</tr>
+<tr class="even">
+<td><code>TIMESTAMPTZ</code></td>
+<td><code>DATETIMEOFFSET(3)</code></td>
+</tr>
+<tr class="odd">
+<td><code>BOOLEAN</code></td>
+<td><code>BIT</code></td>
+</tr>
+<tr class="even">
+<td><code>TEXT</code></td>
+<td><code>NVARCHAR(MAX)</code></td>
+</tr>
+<tr class="odd">
+<td><code>JSONB</code></td>
+<td><code>NVARCHAR(MAX)</code> with
+<code>CHECK (ISJSON(content_json) = 1)</code>, queried via
+<code>JSON_VALUE</code></td>
+</tr>
+<tr class="even">
+<td><code>now()</code></td>
+<td><code>SYSDATETIMEOFFSET()</code></td>
+</tr>
+<tr class="odd">
+<td>Partial index <code>WHERE ...</code></td>
+<td>Filtered index — same syntax, fully supported</td>
+</tr>
+<tr class="even">
+<td><code>VARCHAR(n)</code></td>
+<td><code>NVARCHAR(n)</code> for any column holding customer names or
+addresses (Odia/Hindi content)</td>
+</tr>
+<tr class="odd">
+<td>Hibernate <code>PostgreSQLDialect</code></td>
+<td><code>org.hibernate.dialect.SQLServerDialect</code></td>
+</tr>
+<tr class="even">
+<td><code>@Version BIGINT</code></td>
+<td>Keep <code>BIGINT</code>; do <strong>not</strong> map to
+<code>rowversion</code>, JPA optimistic locking needs an incrementable
+column</td>
+</tr>
+<tr class="odd">
+<td>JDBC driver <code>org.postgresql</code></td>
+<td><code>com.microsoft.sqlserver:mssql-jdbc</code></td>
+</tr>
+</tbody>
+</table>
+<p>Connection string with managed identity — no password anywhere:</p>
+<pre class="yaml"><code>spring:
+  datasource:
+    url: jdbc:sqlserver://sql-ins-prod.database.windows.net:1433;
+         database=registration;
+         authentication=ActiveDirectoryMSI;
+         msiClientId=${AZURE_CLIENT_ID};
+         encrypt=true;trustServerCertificate=false;loginTimeout=30
+    hikari:
+      maximum-pool-size: 20
+      connection-timeout: 20000
+  jpa:
+    database-platform: org.hibernate.dialect.SQLServerDialect</code></pre>
+<h2 id="d1-high-level-azure-architecture">D1. High-Level Azure
+Architecture</h2>
+<pre class="mermaid">flowchart TB
+    subgraph USERS[&quot;Users&quot;]
+        U1[&quot;Branch Employee&lt;br/&gt;browser or mobile web&quot;]
+        U2[&quot;Supervisor&lt;br/&gt;browser&quot;]
+    end
+
+    subgraph EDGE[&quot;Edge and Identity&quot;]
+        AFD[&quot;Azure Front Door Premium&lt;br/&gt;global entry, TLS termination, CDN&quot;]
+        WAF[&quot;Azure WAF policy&lt;br/&gt;OWASP 3.2 managed rules, bot protection&quot;]
+        SWA[&quot;Azure Static Web Apps&lt;br/&gt;React SPA&quot;]
+        ENTRA[&quot;Microsoft Entra ID&lt;br/&gt;employee sign-in, app registrations,&lt;br/&gt;OIDC and OAuth2 client credentials&quot;]
+    end
+
+    subgraph APIM_LAYER[&quot;API Layer&quot;]
+        APIM[&quot;Azure API Management - Premium, internal VNet mode&lt;br/&gt;validate-jwt, rate limiting, quotas,&lt;br/&gt;request logging, response caching, versioning&quot;]
+        GW[&quot;Spring Cloud Gateway on App Service&lt;br/&gt;routing, correlation id, header enrichment,&lt;br/&gt;BFF aggregation for dashboards&quot;]
+    end
+
+    subgraph COMPUTE[&quot;Azure App Service - Linux plan ASP-INS-P1v3, zone redundant&quot;]
+        direction TB
+        S1[&quot;employee-identity-service&quot;]
+        S2[&quot;registration-service&quot;]
+        S3[&quot;eligibility-service&quot;]
+        S4[&quot;document-service&quot;]
+        S5[&quot;kyc-service&quot;]
+        S6[&quot;notification-service&quot;]
+        S7[&quot;risk-integration-service&lt;br/&gt;hosts the 24h polling scheduler&quot;]
+        S8[&quot;review-service&quot;]
+        S9[&quot;reporting-service&lt;br/&gt;read models and dashboards&quot;]
+    end
+
+    subgraph MSG[&quot;Messaging&quot;]
+        SB[&quot;Azure Service Bus - Premium&lt;br/&gt;topics: application-events, kyc-events,&lt;br/&gt;policy-events, notification-requests&lt;br/&gt;dead-letter queues&quot;]
+        EG[&quot;Azure Event Grid&lt;br/&gt;Blob-created events for AV scanning&quot;]
+    end
+
+    subgraph DATA[&quot;Data Tier&quot;]
+        SQL[(&quot;Azure SQL Database&lt;br/&gt;elastic pool, database per service,&lt;br/&gt;zone redundant, TDE, PITR 35 days&quot;)]
+        SQLGEO[(&quot;Azure SQL failover group&lt;br/&gt;secondary region - Central India&quot;)]
+        REDIS[(&quot;Azure Cache for Redis&lt;br/&gt;rule cache, token deny list,&lt;br/&gt;idempotency keys, rate counters&quot;)]
+        BLOB[(&quot;Azure Blob Storage&lt;br/&gt;kyc-documents, policy-documents&lt;br/&gt;GRS, soft delete, versioning,&lt;br/&gt;immutability policy on policies&quot;)]
+    end
+
+    subgraph SEC[&quot;Security and Governance&quot;]
+        KV[&quot;Azure Key Vault - Premium HSM&lt;br/&gt;Twilio token, Protean API key and mTLS cert,&lt;br/&gt;CMS token, risk client secret, PII data key&quot;]
+        MI[&quot;User-assigned Managed Identities&lt;br/&gt;one per service, least privilege RBAC&quot;]
+        DEF[&quot;Microsoft Defender for Cloud&lt;br/&gt;+ Defender for Storage AV scanning&quot;]
+        POL[&quot;Azure Policy and Blueprints&lt;br/&gt;deny public blob, enforce TLS 1.2, tagging&quot;]
+    end
+
+    subgraph OBS[&quot;Observability&quot;]
+        AI[&quot;Application Insights&lt;br/&gt;distributed tracing, live metrics,&lt;br/&gt;availability tests, failures and dependencies&quot;]
+        LAW[&quot;Log Analytics Workspace&lt;br/&gt;central log sink, KQL, 90-day retention&quot;]
+        MON[&quot;Azure Monitor&lt;br/&gt;alert rules, action groups,&lt;br/&gt;autoscale rules, workbooks&quot;]
+    end
+
+    subgraph EXTSYS[&quot;External Systems&quot;]
+        DRUPAL[&quot;Drupal CMS&lt;br/&gt;eligibility rules&quot;]
+        TWILIO[&quot;Twilio&lt;br/&gt;SMS and WhatsApp&quot;]
+        PROTEAN[&quot;Protean&lt;br/&gt;Aadhaar and PAN KYC - mTLS&quot;]
+        FARMER[&quot;Farmer Card Verification API&quot;]
+        RISKX[&quot;Risk Assessment Service&lt;br/&gt;underwriting and policy issuance&quot;]
+    end
+
+    U1 --&gt; AFD
+    U2 --&gt; AFD
+    AFD --- WAF
+    AFD --&gt; SWA
+    AFD --&gt; APIM
+    SWA -.-&gt;|&quot;OIDC redirect&quot;| ENTRA
+    APIM --&gt;|&quot;validate-jwt against Entra ID&quot;| ENTRA
+    APIM --&gt; GW
+
+    GW --&gt; S1
+    GW --&gt; S2
+    GW --&gt; S3
+    GW --&gt; S4
+    GW --&gt; S8
+    GW --&gt; S9
+
+    S2 --&gt;|Feign| S3
+    S2 --&gt;|Feign| S4
+    S2 --&gt;|Feign| S5
+    S8 --&gt;|Feign| S2
+    S2 --&gt;|publish| SB
+    S8 --&gt;|publish| SB
+    SB --&gt;|subscribe| S6
+    SB --&gt;|subscribe| S7
+    SB --&gt;|subscribe| S9
+    S5 --&gt;|publish| SB
+    S7 --&gt;|publish| SB
+
+    S1 --&gt; SQL
+    S2 --&gt; SQL
+    S3 --&gt; SQL
+    S4 --&gt; SQL
+    S5 --&gt; SQL
+    S6 --&gt; SQL
+    S7 --&gt; SQL
+    S8 --&gt; SQL
+    S9 --&gt; SQL
+    SQL -.-&gt;|&quot;geo replication&quot;| SQLGEO
+
+    S3 --&gt; REDIS
+    S1 --&gt; REDIS
+    S4 --&gt; BLOB
+    S7 --&gt; BLOB
+    BLOB --&gt; EG
+    EG --&gt; S4
+
+    S1 --&gt; KV
+    S3 --&gt; KV
+    S5 --&gt; KV
+    S6 --&gt; KV
+    S7 --&gt; KV
+    MI -.-&gt;|&quot;grants access to&quot;| KV
+    MI -.-&gt;|&quot;grants access to&quot;| SQL
+    MI -.-&gt;|&quot;grants access to&quot;| BLOB
+    MI -.-&gt;|&quot;grants access to&quot;| SB
+    DEF -.-&gt; BLOB
+    POL -.-&gt; COMPUTE
+
+    S3 --&gt;|Feign over private endpoint or firewall| DRUPAL
+    S6 --&gt;|Feign| TWILIO
+    S5 --&gt;|Feign with mTLS| PROTEAN
+    S5 --&gt;|Feign| FARMER
+    S7 --&gt;|Feign| RISKX
+
+    COMPUTE -.-&gt;|&quot;OpenTelemetry and Java agent&quot;| AI
+    APIM -.-&gt; AI
+    AI --&gt; LAW
+    SQL -.-&gt;|&quot;diagnostic settings&quot;| LAW
+    BLOB -.-&gt; LAW
+    SB -.-&gt; LAW
+    LAW --&gt; MON</pre>
+<h2 id="d2-microservice-decomposition">D2. Microservice
+Decomposition</h2>
+<table>
+<thead>
+<tr class="header">
+<th>#</th>
+<th>Service</th>
+<th>Bounded context</th>
+<th>Owns (Azure SQL DB)</th>
+<th>Key dependencies</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td><strong>api-gateway-service</strong></td>
+<td>Edge routing, BFF aggregation</td>
+<td>none</td>
+<td>All services</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><strong>employee-identity-service</strong></td>
+<td>Employee master, roles, branch hierarchy, token exchange</td>
+<td><code>identity</code></td>
+<td>Entra ID, Redis</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><strong>registration-service</strong></td>
+<td>The <code>InsuranceApplication</code> aggregate, form capture, state
+machine, status history</td>
+<td><code>registration</code></td>
+<td>eligibility, document, kyc, Service Bus</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td><strong>eligibility-service</strong></td>
+<td>Drupal rule retrieval, versioning, caching, fallback</td>
+<td><code>eligibility</code></td>
+<td>Drupal CMS, Redis, Key Vault</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td><strong>document-service</strong></td>
+<td>Blob upload, SAS issuance, checksum, AV scan callback</td>
+<td><code>document</code></td>
+<td>Blob Storage, Event Grid, Defender</td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td><strong>kyc-service</strong></td>
+<td>Aadhaar, PAN, farmer card verification, idempotency, provider
+retries</td>
+<td><code>kyc</code></td>
+<td>Protean, Farmer Card API, Key Vault</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td><strong>review-service</strong></td>
+<td>Supervisor queue, comments, maker–checker decisions</td>
+<td><code>review</code></td>
+<td>registration, Service Bus</td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td><strong>notification-service</strong></td>
+<td>Twilio SMS/WhatsApp, email, in-app, delivery webhooks,
+templates</td>
+<td><code>notification</code></td>
+<td>Twilio, Service Bus, Key Vault</td>
+</tr>
+<tr class="odd">
+<td>9</td>
+<td><strong>risk-integration-service</strong></td>
+<td>Risk hand-off, <strong>24-hour polling scheduler</strong>, policy
+document ingestion</td>
+<td><code>risk</code></td>
+<td>Risk API, Blob, Service Bus</td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td><strong>reporting-service</strong></td>
+<td>Denormalised read models, funnel and ageing dashboards</td>
+<td><code>reporting</code> (read replica)</td>
+<td>Service Bus</td>
+</tr>
+</tbody>
+</table>
+<h3 id="d21-communication-rules">D2.1 Communication rules</h3>
+<ul>
+<li><strong>Synchronous (Feign over HTTPS)</strong> only for read paths
+that the caller cannot proceed without — for example
+registration-service fetching the current rule version from
+eligibility-service. Every synchronous hop carries a circuit breaker and
+a timeout budget; the total budget for one user request is 5
+seconds.</li>
+<li><strong>Asynchronous (Service Bus topics)</strong> for everything
+that changes state elsewhere. Events published:
+<code>ApplicationSubmitted</code>, <code>KycCompleted</code>,
+<code>ApplicationApproved</code>,
+<code>ApplicationReturnedForInfo</code>, <code>RiskSubmitted</code>,
+<code>PolicyIssued</code>, <code>PolicyRejected</code>,
+<code>NotificationRequested</code>.</li>
+<li><strong>Transactional outbox</strong> in every publishing service:
+the domain change and the outbox row commit in one Azure SQL
+transaction; a relay publishes to Service Bus and marks the row sent.
+This removes the dual-write problem entirely.</li>
+<li><strong>Idempotent consumers</strong>: every handler keys on
+<code>messageId</code> held in Redis with a 7-day TTL, so Service Bus
+at-least-once delivery is safe.</li>
+<li><strong>No shared database.</strong> A service never reads another
+service's tables; it calls the API or subscribes to the event.</li>
+</ul>
+<h3 id="d22-service-interaction-diagram">D2.2 Service interaction
+diagram</h3>
+<pre class="mermaid">flowchart LR
+    subgraph SYNC[&quot;Synchronous - Feign over HTTPS&quot;]
+        direction TB
+        GW2[&quot;api-gateway-service&quot;] --&gt; REG[&quot;registration-service&quot;]
+        GW2 --&gt; IDN[&quot;employee-identity-service&quot;]
+        GW2 --&gt; REV[&quot;review-service&quot;]
+        GW2 --&gt; DOC[&quot;document-service&quot;]
+        GW2 --&gt; RPT[&quot;reporting-service&quot;]
+        REG --&gt; ELG[&quot;eligibility-service&quot;]
+        REG --&gt; DOC
+        REG --&gt; KYC[&quot;kyc-service&quot;]
+        REV --&gt; REG
+    end
+
+    subgraph ASYNC[&quot;Asynchronous - Azure Service Bus topics&quot;]
+        direction TB
+        T1[&quot;topic: application-events&quot;]
+        T2[&quot;topic: kyc-events&quot;]
+        T3[&quot;topic: policy-events&quot;]
+        T4[&quot;topic: notification-requests&quot;]
+        DLQ[&quot;dead-letter queues&lt;br/&gt;alerting on depth greater than zero&quot;]
+    end
+
+    REG --&gt;|ApplicationSubmitted| T1
+    REV --&gt;|&quot;ApplicationApproved&lt;br/&gt;ApplicationReturnedForInfo&quot;| T1
+    KYC --&gt;|KycCompleted| T2
+    RISKS[&quot;risk-integration-service&quot;] --&gt;|&quot;PolicyIssued&lt;br/&gt;PolicyRejected&quot;| T3
+
+    T1 --&gt; RISKS
+    T1 --&gt; NOTF[&quot;notification-service&quot;]
+    T1 --&gt; RPT
+    T2 --&gt; REG
+    T3 --&gt; NOTF
+    T3 --&gt; REG
+    T3 --&gt; RPT
+    T4 --&gt; NOTF
+    T1 -.-&gt; DLQ
+    T2 -.-&gt; DLQ
+    T3 -.-&gt; DLQ</pre>
+<h2 id="d3-azure-resource-inventory">D3. Azure Resource Inventory</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Layer</th>
+<th>Azure resource</th>
+<th>SKU / tier</th>
+<th>Purpose and configuration notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Global edge</td>
+<td>Azure Front Door Premium</td>
+<td>Premium</td>
+<td>Global anycast entry, TLS 1.2+, caching for SPA assets, Private Link
+to APIM, DDoS protection</td>
+</tr>
+<tr class="even">
+<td>Web firewall</td>
+<td>Azure WAF policy</td>
+<td>Attached to Front Door</td>
+<td>OWASP 3.2 managed ruleset in Prevention mode, custom rules for geo
+and rate limiting</td>
+</tr>
+<tr class="odd">
+<td>SPA hosting</td>
+<td>Azure Static Web Apps</td>
+<td>Standard</td>
+<td>React build artefacts, staging environments per pull request</td>
+</tr>
+<tr class="even">
+<td>API gateway</td>
+<td>Azure API Management</td>
+<td>Premium, internal VNet mode</td>
+<td><code>validate-jwt</code> against Entra ID, subscription keys for
+partners, rate limit 300 calls/min/employee, quota, request/response
+logging to App Insights, OpenAPI import per service, revisions and
+versions</td>
+</tr>
+<tr class="odd">
+<td>Compute</td>
+<td>Azure App Service (Linux)</td>
+<td>Plan P1v3 → P2v3, zone redundant, 3+ instances</td>
+<td>One Web App per microservice, Java 17 stack, Always On, health check
+<code>/actuator/health/readiness</code>, deployment slots
+<code>staging</code> + <code>production</code>, VNet integration,
+HTTP/2, <code>WEBSITES_PORT=8080</code></td>
+</tr>
+<tr class="even">
+<td>Autoscale</td>
+<td>App Service autoscale rules</td>
+<td>—</td>
+<td>Scale out at CPU &gt; 65% for 10 min or HTTP queue length &gt; 50;
+scale in at CPU &lt; 30%; min 2, max 10 instances; scheduled scale-up
+08:00–20:00 IST</td>
+</tr>
+<tr class="odd">
+<td>Database</td>
+<td>Azure SQL Database</td>
+<td>Elastic pool, General Purpose, 8 vCore, zone redundant</td>
+<td>One database per microservice, TDE with customer-managed key from
+Key Vault, PITR 35 days, LTR weekly 5 years, auto-failover group to
+secondary region, Advanced Threat Protection, Private Endpoint only</td>
+</tr>
+<tr class="even">
+<td>Cache</td>
+<td>Azure Cache for Redis</td>
+<td>Premium P1, zone redundant</td>
+<td>Rule set L2 cache, idempotency keys, token deny list, rate-limit
+counters, distributed lock fallback</td>
+</tr>
+<tr class="odd">
+<td>Object store</td>
+<td>Azure Storage Account (v2)</td>
+<td>RA-GRS, hot tier</td>
+<td>Containers <code>kyc-documents</code>,
+<code>policy-documents</code>; public access disabled; versioning and
+soft delete 30 days; immutability (WORM) policy on policy documents;
+lifecycle rule to cool after 90 days, archive after 1 year</td>
+</tr>
+<tr class="even">
+<td>Messaging</td>
+<td>Azure Service Bus</td>
+<td>Premium (VNet capable)</td>
+<td>Topics with per-service subscriptions, sessions where ordering
+matters, max delivery count 5, dead-letter alerting, duplicate detection
+window 10 min</td>
+</tr>
+<tr class="odd">
+<td>Eventing</td>
+<td>Azure Event Grid</td>
+<td>System topic on Storage</td>
+<td><code>Microsoft.Storage.BlobCreated</code> → document-service AV
+scan hook</td>
+</tr>
+<tr class="even">
+<td>Secrets</td>
+<td>Azure Key Vault</td>
+<td>Premium (HSM-backed keys)</td>
+<td>Secrets, certificates (Protean mTLS client cert), and the AES key
+used by the JPA <code>AttributeConverter</code> for PAN/farmer-card
+encryption; purge protection and soft delete on; RBAC data plane</td>
+</tr>
+<tr class="odd">
+<td>Identity</td>
+<td>Microsoft Entra ID</td>
+<td>P1</td>
+<td>Employee sign-in (OIDC + MFA + Conditional Access), app
+registrations per service, groups mapped to <code>ROLE_EMPLOYEE</code> /
+<code>ROLE_SUPERVISOR</code>, OAuth2 client credentials for
+service-to-service</td>
+</tr>
+<tr class="even">
+<td>Managed identity</td>
+<td>User-assigned managed identities</td>
+<td>One per service</td>
+<td>No credentials in code; RBAC to Key Vault (Secrets User), SQL
+(contained DB user), Blob (Blob Data Contributor), Service Bus (Data
+Sender/Receiver)</td>
+</tr>
+<tr class="odd">
+<td>APM</td>
+<td>Application Insights</td>
+<td>Workspace-based</td>
+<td>Java agent auto-attach on App Service
+(<code>APPLICATIONINSIGHTS_CONNECTION_STRING</code>), distributed
+tracing across all services and APIM, live metrics, availability URL
+tests from 5 regions, sampling 100% for errors and 25% for
+successes</td>
+</tr>
+<tr class="even">
+<td>Logs</td>
+<td>Log Analytics Workspace</td>
+<td>Pay-as-you-go, 90 days</td>
+<td>Central sink for App Service, APIM, SQL, Storage, Service Bus, Key
+Vault and NSG flow logs; KQL workbooks</td>
+</tr>
+<tr class="odd">
+<td>Monitoring</td>
+<td>Azure Monitor</td>
+<td>—</td>
+<td>Alert rules and action groups (email, Teams, PagerDuty), autoscale,
+dashboards</td>
+</tr>
+<tr class="even">
+<td>Networking</td>
+<td>Virtual Network + subnets</td>
+<td>Hub-and-spoke</td>
+<td>Subnets: <code>snet-apim</code>,
+<code>snet-appsvc-integration</code> (delegated),
+<code>snet-private-endpoints</code>, <code>snet-agents</code>,
+<code>snet-bastion</code></td>
+</tr>
+<tr class="odd">
+<td>Private access</td>
+<td>Private Endpoints + Private DNS zones</td>
+<td>—</td>
+<td>SQL, Blob, Key Vault, Service Bus, Redis all reachable only over
+private IPs; public network access disabled</td>
+</tr>
+<tr class="even">
+<td>Egress control</td>
+<td>Azure Firewall or NAT Gateway</td>
+<td>Standard</td>
+<td>Fixed outbound IPs so Protean, Twilio and the risk team can
+allowlist us; FQDN rules for external endpoints</td>
+</tr>
+<tr class="odd">
+<td>Registry</td>
+<td>Azure Container Registry</td>
+<td>Premium</td>
+<td>If services are deployed as containers rather than JARs;
+geo-replicated, content trust</td>
+</tr>
+<tr class="even">
+<td>CI/CD</td>
+<td>Azure DevOps or GitHub Actions</td>
+<td>—</td>
+<td>OIDC federated credentials to Azure, no service principal
+secrets</td>
+</tr>
+<tr class="odd">
+<td>Governance</td>
+<td>Azure Policy, Defender for Cloud, Cost Management</td>
+<td>Standard</td>
+<td>Deny public blob access, enforce HTTPS-only and TLS 1.2, require
+tags (<code>env</code>, <code>owner</code>, <code>costCentre</code>,
+<code>dataClass</code>), budget alerts</td>
+</tr>
+</tbody>
+</table>
+<h2 id="d4-network-topology">D4. Network Topology</h2>
+<pre class="mermaid">flowchart TB
+    INET([&quot;Public Internet&quot;])
+
+    subgraph HUB[&quot;Hub VNet 10.10.0.0/16&quot;]
+        FW[&quot;Azure Firewall&lt;br/&gt;egress FQDN rules, fixed outbound IPs&quot;]
+        BAS[&quot;Azure Bastion&lt;br/&gt;10.10.3.0/26&quot;]
+        DNSZ[&quot;Private DNS zones&lt;br/&gt;database.windows.net, blob.core.windows.net,&lt;br/&gt;vaultcore.azure.net, servicebus.windows.net&quot;]
+    end
+
+    subgraph SPOKE[&quot;Spoke VNet - Application 10.20.0.0/16&quot;]
+        subgraph SN1[&quot;snet-apim 10.20.1.0/24&quot;]
+            APIMN[&quot;API Management&lt;br/&gt;internal mode, private VIP&quot;]
+        end
+        subgraph SN2[&quot;snet-appsvc-integration 10.20.2.0/23 - delegated&quot;]
+            APPS[&quot;App Service VNet integration&lt;br/&gt;all nine microservices&quot;]
+        end
+        subgraph SN3[&quot;snet-private-endpoints 10.20.4.0/24&quot;]
+            PE1[&quot;PE: Azure SQL&quot;]
+            PE2[&quot;PE: Blob Storage&quot;]
+            PE3[&quot;PE: Key Vault&quot;]
+            PE4[&quot;PE: Service Bus&quot;]
+            PE5[&quot;PE: Redis&quot;]
+        end
+        subgraph SN4[&quot;snet-agents 10.20.5.0/24&quot;]
+            AGENT[&quot;Self-hosted build agents&lt;br/&gt;for private deployments&quot;]
+        end
+    end
+
+    subgraph PAAS[&quot;Azure PaaS - reached over Private Link only&quot;]
+        SQLR[(&quot;Azure SQL&quot;)]
+        BLOBR[(&quot;Blob Storage&quot;)]
+        KVR[&quot;Key Vault&quot;]
+        SBR[&quot;Service Bus&quot;]
+        RDR[(&quot;Redis&quot;)]
+    end
+
+    INET --&gt;|&quot;HTTPS 443&quot;| AFDN[&quot;Azure Front Door + WAF&quot;]
+    AFDN --&gt;|&quot;Private Link&quot;| APIMN
+    APIMN --&gt; APPS
+    APPS --&gt; PE1 --&gt; SQLR
+    APPS --&gt; PE2 --&gt; BLOBR
+    APPS --&gt; PE3 --&gt; KVR
+    APPS --&gt; PE4 --&gt; SBR
+    APPS --&gt; PE5 --&gt; RDR
+    APPS --&gt;|&quot;all egress forced through firewall&quot;| FW
+    FW --&gt;|&quot;allowlisted FQDNs only&quot;| EXT([&quot;Drupal CMS, Twilio,&lt;br/&gt;Protean, Farmer Card, Risk API&quot;])
+    HUB &lt;--&gt;|&quot;VNet peering&quot;| SPOKE
+    BAS -.-&gt;|&quot;admin access, no public IPs&quot;| AGENT
+    DNSZ -.-&gt; SN3</pre>
+<p><strong>Key controls</strong></p>
+<ul>
+<li>No App Service has a public inbound endpoint; access arrives only
+through APIM, which itself is only reachable from Front Door over
+Private Link. App Service access restrictions allow the APIM subnet and
+deny everything else.</li>
+<li>All PaaS data services have
+<code>publicNetworkAccess = Disabled</code>.</li>
+<li>Outbound traffic leaves through Azure Firewall so external partners
+see a stable, allowlistable IP range — a hard requirement for Protean
+and usually for the risk team.</li>
+<li>Private DNS zones are linked to both VNets so
+<code>sql-ins-prod.database.windows.net</code> resolves to a private IP
+from inside.</li>
+</ul>
+<h2 id="d5-security-architecture">D5. Security Architecture</h2>
+<pre class="mermaid">sequenceDiagram
+    autonumber
+    actor EMP as Employee
+    participant SPA as React SPA - Static Web Apps
+    participant ENT as Microsoft Entra ID
+    participant AFD as Front Door + WAF
+    participant APIM as API Management
+    participant REG as registration-service on App Service
+    participant MI as Managed Identity
+    participant KV as Key Vault
+    participant SQL as Azure SQL
+    participant AI as Application Insights
+
+    EMP-&gt;&gt;SPA: Open portal
+    SPA-&gt;&gt;ENT: OIDC authorization code + PKCE
+    ENT-&gt;&gt;EMP: MFA and Conditional Access evaluation
+    ENT--&gt;&gt;SPA: id_token + access_token with roles claim
+    SPA-&gt;&gt;AFD: GET /api/v1/applications/my with Bearer token
+    AFD-&gt;&gt;AFD: WAF ruleset evaluation
+    AFD-&gt;&gt;APIM: Forward over Private Link
+    APIM-&gt;&gt;APIM: validate-jwt - issuer, audience, signature, roles claim
+    APIM-&gt;&gt;APIM: rate-limit-by-key on employee object id
+    APIM-&gt;&gt;REG: Forward with X-Correlation-Id and X-Employee-Id
+
+    Note over REG,MI: No secrets in configuration.&lt;br/&gt;App Service resolves Key Vault references at start-up&lt;br/&gt;using its user-assigned managed identity.
+
+    REG-&gt;&gt;MI: Request token for vault scope
+    MI-&gt;&gt;KV: Get secret protean-api-key
+    KV--&gt;&gt;MI: Secret value - access audited
+    REG-&gt;&gt;MI: Request token for database scope
+    MI-&gt;&gt;SQL: Connect with ActiveDirectoryMSI - no password
+    SQL--&gt;&gt;REG: Result set - TDE at rest, TLS in transit
+    REG-&gt;&gt;AI: Span with correlation id, dependency timings
+    REG--&gt;&gt;APIM: 200 JSON
+    APIM--&gt;&gt;SPA: 200 (response logged to App Insights)</pre>
+<table>
+<thead>
+<tr class="header">
+<th>Control area</th>
+<th>Implementation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Identity</td>
+<td>Entra ID with MFA and Conditional Access; no local passwords in
+production; roles delivered as app-role claims</td>
+</tr>
+<tr class="even">
+<td>Token validation</td>
+<td>Enforced twice — at APIM (<code>validate-jwt</code>) and again in
+each service via Spring Security resource-server config</td>
+</tr>
+<tr class="odd">
+<td>Service-to-service</td>
+<td>OAuth2 client credentials with app roles, or managed identity
+tokens; mutual allowlisting via App Service access restrictions</td>
+</tr>
+<tr class="even">
+<td>Secrets</td>
+<td>100% Key Vault; App Setting values use
+<code>@Microsoft.KeyVault(SecretUri=https://kv-ins-prod.vault.azure.net/secrets/twilio-auth-token/)</code>;
+rotation every 90 days with Event Grid–triggered restart</td>
+</tr>
+<tr class="odd">
+<td>Encryption at rest</td>
+<td>SQL TDE with customer-managed key, Storage SSE with CMK, Key Vault
+HSM-backed keys</td>
+</tr>
+<tr class="even">
+<td>Encryption in transit</td>
+<td>TLS 1.2 minimum everywhere; mTLS to Protean using a certificate
+stored in Key Vault</td>
+</tr>
+<tr class="odd">
+<td>PII</td>
+<td>Aadhaar tokenised, PAN and farmer card encrypted by a JPA
+<code>AttributeConverter</code> using a Key Vault–wrapped data key;
+Application Insights telemetry processor strips PII before
+ingestion</td>
+</tr>
+<tr class="even">
+<td>Document access</td>
+<td>Private blob containers; user-delegation SAS with 10-minute TTL,
+generated per request, never persisted</td>
+</tr>
+<tr class="odd">
+<td>Malware</td>
+<td>Defender for Storage scans every uploaded blob; the
+<code>active</code> flag is set only after a clean verdict, via an Event
+Grid callback</td>
+</tr>
+<tr class="even">
+<td>Audit</td>
+<td>Azure SQL Auditing to Log Analytics, Key Vault access logs, APIM
+request logs, application-level <code>application_status_history</code>
+and <code>audit_log</code></td>
+</tr>
+<tr class="odd">
+<td>Posture</td>
+<td>Defender for Cloud with the Microsoft Cloud Security Benchmark;
+Azure Policy denies public blob access, non-TLS traffic and untagged
+resources</td>
+</tr>
+</tbody>
+</table>
+<h2 id="d6-the-scheduler-on-app-service">D6. The Scheduler on App
+Service</h2>
+<p>The 24-hour risk polling job (§B6.6) needs care in a horizontally
+scaled PaaS environment.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Option</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>@Scheduled</code> + ShedLock on the SQL database, running
+inside <code>risk-integration-service</code></td>
+<td><strong>Chosen.</strong> Requires <strong>Always On</strong> enabled
+and works correctly with any instance count, because ShedLock guarantees
+single execution. Keeps the scheduler in the same codebase and
+deployment as the service that owns the risk context.</td>
+</tr>
+<tr class="even">
+<td>App Service WebJob</td>
+<td>Rejected — a second artefact to build and deploy, weaker
+observability</td>
+</tr>
+<tr class="odd">
+<td>Azure Functions timer trigger calling an internal endpoint</td>
+<td>Viable alternative; adds another compute model and another identity
+to manage</td>
+</tr>
+<tr class="even">
+<td>Azure Container Apps Job (cron)</td>
+<td>Best option if the platform later moves to containers; keep as a
+documented exit path</td>
+</tr>
+</tbody>
+</table>
+<p>Additional App Service specifics for the scheduler:</p>
+<ul>
+<li><code>WEBSITE_TIME_ZONE=India Standard Time</code> so cron
+expressions are unambiguous.</li>
+<li>Deployment slot swaps must not run the job twice: the staging slot
+sets <code>SCHEDULER_ENABLED=false</code> as a
+<strong>slot-specific</strong> app setting, so the flag stays with the
+slot across a swap.</li>
+<li><code>lockAtMostFor</code> is set well above the worst-case runtime
+(2 hours) so that a pod recycle mid-cycle cannot leave the lock held
+forever.</li>
+<li>An Azure Monitor alert fires if the custom metric
+<code>risk_poll_cycle_completed</code> is not emitted within 26
+hours.</li>
+</ul>
+<h2 id="d7-cicd-pipeline">D7. CI/CD Pipeline</h2>
+<pre class="mermaid">flowchart LR
+    DEV[&quot;Developer&lt;br/&gt;feature branch&quot;] --&gt; PR[&quot;Pull request&quot;]
+    PR --&gt; CI[&quot;CI stage&quot;]
+    CI --&gt; C1[&quot;mvn verify&lt;br/&gt;unit + ArchUnit&quot;]
+    C1 --&gt; C2[&quot;Testcontainers integration tests&lt;br/&gt;Azure SQL Edge + Azurite + WireMock&quot;]
+    C2 --&gt; C3[&quot;SonarQube quality gate&lt;br/&gt;coverage 80 percent minimum&quot;]
+    C3 --&gt; C4[&quot;Trivy and OWASP dependency scan&quot;]
+    C4 --&gt; C5[&quot;Build JAR or container image&lt;br/&gt;push to Azure Container Registry&quot;]
+    C5 --&gt; ART[&quot;Versioned artefact&lt;br/&gt;semantic version + git sha&quot;]
+
+    ART --&gt; DEP_DEV[&quot;Deploy to DEV&lt;br/&gt;automatic on merge to main&quot;]
+    DEP_DEV --&gt; SMK1[&quot;Smoke tests + contract tests&quot;]
+    SMK1 --&gt; DEP_UAT[&quot;Deploy to UAT&lt;br/&gt;manual approval&quot;]
+    DEP_UAT --&gt; SMK2[&quot;Regression + performance suite&quot;]
+    SMK2 --&gt; DEP_STG[&quot;Deploy to PROD staging slot&lt;br/&gt;change advisory approval&quot;]
+    DEP_STG --&gt; WARM[&quot;Warm-up on health endpoint&lt;br/&gt;Flyway migration runs here&quot;]
+    WARM --&gt; SWAP[&quot;Slot swap to production&lt;br/&gt;zero downtime&quot;]
+    SWAP --&gt; VER[&quot;Post-deployment verification&lt;br/&gt;App Insights availability tests&quot;]
+    VER --&gt; ROLL{&quot;Error rate above threshold&lt;br/&gt;in first 15 minutes?&quot;}
+    ROLL --&gt;|Yes| BACK[&quot;Swap back to previous slot&quot;]
+    ROLL --&gt;|No| DONE([&quot;Release complete&quot;])</pre>
+<p><strong>Notes</strong></p>
+<ul>
+<li>Database migrations run with Flyway during slot warm-up and must be
+<strong>backward compatible</strong> — expand-then-contract, never a
+destructive change in the same release as the code that stops using the
+column. This is what makes a slot swap safely reversible.</li>
+<li>Pipelines authenticate to Azure with <strong>OIDC federated
+credentials</strong>, so there is no service principal secret to rotate
+or leak.</li>
+<li>Infrastructure is defined as Bicep or Terraform modules and deployed
+by the same pipeline; environments differ only by parameter file.</li>
+</ul>
+<h2 id="d8-environments-availability-and-disaster-recovery">D8.
+Environments, Availability and Disaster Recovery</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Environment</th>
+<th>Purpose</th>
+<th>Sizing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>DEV</td>
+<td>Continuous integration target</td>
+<td>B2 plan, single instance, SQL Basic, shared Key Vault</td>
+</tr>
+<tr class="even">
+<td>UAT</td>
+<td>Business acceptance, integration with partner sandboxes</td>
+<td>P1v3, 2 instances, SQL S2</td>
+</tr>
+<tr class="odd">
+<td>PROD</td>
+<td>Live</td>
+<td>P2v3 zone-redundant, 3–10 instances, SQL GP 8 vCore elastic
+pool</td>
+</tr>
+<tr class="even">
+<td>DR</td>
+<td>Warm standby in the paired region</td>
+<td>P1v3, 2 instances, SQL geo-secondary</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr class="header">
+<th>Aspect</th>
+<th>Design</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Intra-region HA</td>
+<td>Zone-redundant App Service plan, zone-redundant SQL and Service Bus
+Premium; a zone loss is transparent</td>
+</tr>
+<tr class="even">
+<td>Cross-region DR</td>
+<td>Active–passive. SQL auto-failover group with a 1-hour RTO; Storage
+RA-GRS; Front Door health probes shift traffic to the secondary APIM and
+App Service</td>
+</tr>
+<tr class="odd">
+<td>RPO / RTO</td>
+<td>RPO 15 minutes (SQL geo-replication lag typically under 10 seconds;
+15 minutes is the contracted figure), RTO 1 hour</td>
+</tr>
+<tr class="even">
+<td>Backups</td>
+<td>SQL PITR 35 days + LTR weekly for 5 years (regulatory); Blob soft
+delete 30 days plus versioning; Key Vault soft delete and purge
+protection</td>
+</tr>
+<tr class="odd">
+<td>DR drill</td>
+<td>Quarterly failover test with documented runbook and measured
+RTO</td>
+</tr>
+<tr class="even">
+<td>Graceful degradation</td>
+<td>If the risk API is unreachable, applications queue at
+<code>APPROVED_SENDFORRISK</code> and nothing is lost; if Drupal is
+down, cached rules are served; if Twilio is down, sharing is disabled
+but the workflow continues</td>
+</tr>
+</tbody>
+</table>
+<h2 id="d9-observability-with-application-insights">D9. Observability
+with Application Insights</h2>
+<ul>
+<li><strong>Auto-instrumentation</strong>: the Application Insights Java
+agent is enabled on every Web App through the
+<code>APPLICATIONINSIGHTS_CONNECTION_STRING</code> app setting; no code
+change is needed to capture HTTP, JDBC, Feign, Service Bus and Blob
+dependencies.</li>
+<li><strong>Distributed tracing</strong>: W3C <code>traceparent</code>
+flows from the SPA through Front Door, APIM, the gateway and every
+downstream service, including across Service Bus messages, so one
+application submission is a single end-to-end trace.</li>
+<li><strong>Cloud role names</strong>: each service sets
+<code>APPLICATIONINSIGHTS_CONFIGURATION_CONTENT</code> with a distinct
+<code>role.name</code>, which is what makes the Application Map
+readable.</li>
+<li><strong>Custom metrics</strong>:
+<code>application_submitted_total</code>,
+<code>kyc_verification_seconds{type}</code>,
+<code>risk_pending_age_hours</code>,
+<code>review_queue_age_hours</code>,
+<code>notification_sent_total{channel}</code>,
+<code>risk_poll_cycle_completed</code>.</li>
+<li><strong>Availability tests</strong>: standard tests every 5 minutes
+from five regions against <code>/actuator/health/readiness</code> on the
+gateway.</li>
+<li><strong>Sampling</strong>: 100% of failures and dependencies slower
+than 2 seconds; 25% of successful requests, to control cost without
+losing the signal.</li>
+<li><strong>Telemetry processor</strong>: strips Aadhaar, PAN, mobile
+and email patterns from request URLs and custom dimensions before
+ingestion.</li>
+</ul>
+<h3 id="alert-rules">Alert rules</h3>
+<table>
+<thead>
+<tr class="header">
+<th>Alert</th>
+<th>Condition</th>
+<th>Severity</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Service unhealthy</td>
+<td>Availability test fails from 3+ locations for 5 min</td>
+<td>Sev 1</td>
+<td>PagerDuty</td>
+</tr>
+<tr class="even">
+<td>Error rate spike</td>
+<td>Server exceptions &gt; 5% of requests over 15 min</td>
+<td>Sev 2</td>
+<td>Teams + email</td>
+</tr>
+<tr class="odd">
+<td>Dependency failure</td>
+<td>Protean or risk API failure rate &gt; 20% over 10 min</td>
+<td>Sev 2</td>
+<td>Teams</td>
+</tr>
+<tr class="even">
+<td>Circuit breaker open</td>
+<td>Custom metric <code>resilience4j_circuitbreaker_state</code> = open
+for 5 min</td>
+<td>Sev 3</td>
+<td>Teams</td>
+</tr>
+<tr class="odd">
+<td>Scheduler missed</td>
+<td><code>risk_poll_cycle_completed</code> absent for 26 h</td>
+<td>Sev 2</td>
+<td>Teams + email</td>
+</tr>
+<tr class="even">
+<td>Review queue ageing</td>
+<td><code>review_queue_age_hours</code> p95 &gt; 48</td>
+<td>Sev 3</td>
+<td>Business ops email</td>
+</tr>
+<tr class="odd">
+<td>Dead-letter queue</td>
+<td>Any DLQ depth &gt; 0 for 15 min</td>
+<td>Sev 2</td>
+<td>Teams</td>
+</tr>
+<tr class="even">
+<td>SQL DTU/CPU</td>
+<td>&gt; 80% for 15 min</td>
+<td>Sev 3</td>
+<td>Auto-scale + notify</td>
+</tr>
+<tr class="odd">
+<td>Key Vault access denied</td>
+<td>Any 403 on the data plane</td>
+<td>Sev 2</td>
+<td>Security team</td>
+</tr>
+<tr class="even">
+<td>Cost anomaly</td>
+<td>Daily spend &gt; 130% of the 7-day average</td>
+<td>Sev 4</td>
+<td>FinOps email</td>
+</tr>
+</tbody>
+</table>
+<h2
+id="d10-indicative-monthly-cost-production-inr-order-of-magnitude">D10.
+Indicative Monthly Cost (production, INR, order of magnitude)</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Resource</th>
+<th>Configuration</th>
+<th>Est. monthly</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>App Service Plan P2v3, zone redundant</td>
+<td>3 instances baseline</td>
+<td>₹95,000</td>
+</tr>
+<tr class="even">
+<td>API Management Premium</td>
+<td>1 unit</td>
+<td>₹2,60,000</td>
+</tr>
+<tr class="odd">
+<td>Azure SQL elastic pool, GP 8 vCore</td>
+<td>Zone redundant + geo-secondary</td>
+<td>₹1,45,000</td>
+</tr>
+<tr class="even">
+<td>Front Door Premium + WAF</td>
+<td>Base + traffic</td>
+<td>₹28,000</td>
+</tr>
+<tr class="odd">
+<td>Service Bus Premium</td>
+<td>1 messaging unit</td>
+<td>₹58,000</td>
+</tr>
+<tr class="even">
+<td>Redis Premium P1</td>
+<td>Zone redundant</td>
+<td>₹42,000</td>
+</tr>
+<tr class="odd">
+<td>Storage (RA-GRS, hot)</td>
+<td>2 TB + transactions</td>
+<td>₹12,000</td>
+</tr>
+<tr class="even">
+<td>Application Insights + Log Analytics</td>
+<td>~60 GB/month ingestion</td>
+<td>₹22,000</td>
+</tr>
+<tr class="odd">
+<td>Key Vault Premium, Defender, Firewall</td>
+<td>—</td>
+<td>₹65,000</td>
+</tr>
+<tr class="even">
+<td><strong>Approximate total</strong></td>
+<td></td>
+<td><strong>₹7,27,000</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>APIM Premium is the single largest line item and is only justified by
+the internal-VNet requirement and multi-region support. If a single
+region and public APIM endpoint are acceptable for v1.0, the Standard v2
+tier reduces this line by roughly 80% and can be upgraded later without
+changing the application.</p>
+</blockquote>
+<h2 id="d11-migration-path-from-monolith-to-microservices">D11.
+Migration Path from Monolith to Microservices</h2>
+<ol type="1">
+<li><strong>Ship the modular monolith first</strong> on a single App
+Service with Azure SQL. It exercises every external integration under
+real load with the lowest operational surface.</li>
+<li><strong>Extract notification-service</strong> first — it is
+asynchronous, has no shared transaction with the core, and proves the
+Service Bus pattern with the lowest risk.</li>
+<li><strong>Extract document-service and kyc-service</strong> next; both
+are integration-heavy, have independent scaling profiles and touch no
+shared write transaction.</li>
+<li><strong>Extract risk-integration-service</strong>, taking the
+scheduler with it, so risk polling load stops competing with user
+requests.</li>
+<li><strong>Extract eligibility-service and review-service</strong>
+last; review-service is the most coupled to the core aggregate and needs
+the outbox pattern to be mature before it moves.</li>
+<li><strong>registration-service</strong> remains as the core, having
+shed everything else.</li>
+</ol>
+<p>At each step the extracted module keeps its existing package
+structure, gains a Feign client in place of the in-process call, and
+gets its own database created by splitting the schema. The ArchUnit
+rules written in sprint 1 are what make each of these steps a mechanical
+refactor rather than an archaeology exercise.</p>
+<hr />
 <h1 id="appendix-a--configuration-reference">APPENDIX A — Configuration
 Reference</h1>
 <pre class="yaml"><code>spring:
@@ -3401,6 +4553,119 @@ decision</td>
 <td><strong>Circuit breaker</strong></td>
 <td>Resilience pattern that stops calling a failing dependency for a
 cooling-off period</td>
+</tr>
+</tbody>
+</table>
+<h1 id="appendix-c--azure-app-service-configuration-reference">APPENDIX
+C — Azure App Service Configuration Reference</h1>
+<p>Application settings for <code>app-ins-registration-prod</code> (the
+pattern repeats for every microservice):</p>
+<pre><code># --- Runtime ---
+JAVA_OPTS                              = -Xms512m -Xmx1536m -XX:+UseG1GC -Dfile.encoding=UTF-8
+WEBSITES_PORT                          = 8080
+WEBSITE_TIME_ZONE                      = India Standard Time
+SPRING_PROFILES_ACTIVE                 = prod,azure
+
+# --- Identity (user-assigned managed identity) ---
+AZURE_CLIENT_ID                        = 9f2c-....-uami-registration
+
+# --- Data ---
+SPRING_DATASOURCE_URL                  = jdbc:sqlserver://sql-ins-prod.database.windows.net:1433;
+                                         database=registration;authentication=ActiveDirectoryMSI;
+                                         msiClientId=$(AZURE_CLIENT_ID);encrypt=true
+SPRING_JPA_DATABASE_PLATFORM           = org.hibernate.dialect.SQLServerDialect
+SPRING_REDIS_HOST                      = redis-ins-prod.redis.cache.windows.net
+
+# --- Secrets via Key Vault references (resolved at start-up, never stored) ---
+INTEGRATION_TWILIO_AUTH_TOKEN          = @Microsoft.KeyVault(SecretUri=https://kv-ins-prod.vault.azure.net/secrets/twilio-auth-token/)
+INTEGRATION_PROTEAN_API_KEY            = @Microsoft.KeyVault(SecretUri=https://kv-ins-prod.vault.azure.net/secrets/protean-api-key/)
+INTEGRATION_CMS_TOKEN                  = @Microsoft.KeyVault(SecretUri=https://kv-ins-prod.vault.azure.net/secrets/cms-token/)
+INTEGRATION_RISK_CLIENT_SECRET         = @Microsoft.KeyVault(SecretUri=https://kv-ins-prod.vault.azure.net/secrets/risk-client-secret/)
+SECURITY_PII_DATA_KEY                  = @Microsoft.KeyVault(SecretUri=https://kv-ins-prod.vault.azure.net/secrets/pii-data-key/)
+
+# --- Storage and messaging (managed identity, no connection strings) ---
+AZURE_STORAGE_ACCOUNT_NAME             = stinsprod
+AZURE_SERVICEBUS_NAMESPACE             = sb-ins-prod.servicebus.windows.net
+
+# --- Observability ---
+APPLICATIONINSIGHTS_CONNECTION_STRING  = @Microsoft.KeyVault(SecretUri=https://kv-ins-prod.vault.azure.net/secrets/appinsights-conn/)
+APPLICATIONINSIGHTS_CONFIGURATION_CONTENT = {&quot;role&quot;:{&quot;name&quot;:&quot;registration-service&quot;},&quot;sampling&quot;:{&quot;percentage&quot;:25}}
+
+# --- Slot-specific settings (stay with the slot on swap) ---
+SCHEDULER_ENABLED                      = true      # false in the staging slot
+DEPLOYMENT_SLOT                        = production</code></pre>
+<p>Web App configuration (Bicep excerpt):</p>
+<pre class="bicep"><code>resource site &#39;Microsoft.Web/sites@2023-01-01&#39; = {
+  name: &#39;app-ins-registration-prod&#39;
+  identity: { type: &#39;UserAssigned&#39;, userAssignedIdentities: { &#39;${uami.id}&#39;: {} } }
+  properties: {
+    serverFarmId: plan.id
+    httpsOnly: true
+    virtualNetworkSubnetId: appSubnet.id
+    publicNetworkAccess: &#39;Disabled&#39;
+    siteConfig: {
+      linuxFxVersion: &#39;JAVA|17-java17&#39;
+      alwaysOn: true
+      http20Enabled: true
+      minTlsVersion: &#39;1.2&#39;
+      ftpsState: &#39;Disabled&#39;
+      vnetRouteAllEnabled: true
+      healthCheckPath: &#39;/actuator/health/readiness&#39;
+      ipSecurityRestrictions: [
+        { vnetSubnetResourceId: apimSubnet.id, action: &#39;Allow&#39;, priority: 100, name: &#39;apim-only&#39; }
+        { ipAddress: &#39;Any&#39;, action: &#39;Deny&#39;, priority: 2147483647, name: &#39;deny-all&#39; }
+      ]
+    }
+  }
+}</code></pre>
+<h1 id="appendix-d--azure-well-architected-review-summary">APPENDIX D —
+Azure Well-Architected Review Summary</h1>
+<table>
+<thead>
+<tr class="header">
+<th>Pillar</th>
+<th>How this design addresses it</th>
+<th>Residual gap</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Reliability</strong></td>
+<td>Zone-redundant App Service and SQL; geo failover group; Service Bus
+with DLQ and retry; scheduler retries hand-offs indefinitely; graceful
+degradation on every external dependency</td>
+<td>No active–active multi-region; RTO is 1 hour, not minutes</td>
+</tr>
+<tr class="even">
+<td><strong>Security</strong></td>
+<td>Private endpoints only, no public data plane; Entra ID with MFA;
+managed identity everywhere; Key Vault with HSM keys and rotation; WAF;
+PII tokenised and encrypted; Defender for Cloud</td>
+<td>Protean mTLS certificate rotation is still a manual runbook</td>
+</tr>
+<tr class="odd">
+<td><strong>Cost optimisation</strong></td>
+<td>Autoscale with scheduled scale-down overnight; App Insights
+sampling; blob lifecycle to cool and archive tiers; elastic pool rather
+than per-database vCores; DEV/UAT on lower SKUs and stopped outside
+hours</td>
+<td>APIM Premium dominates cost; revisit if internal VNet mode is not
+mandated</td>
+</tr>
+<tr class="even">
+<td><strong>Operational excellence</strong></td>
+<td>IaC for all environments; slot-swap releases with automated
+rollback; expand-then-contract migrations; runbooks for DR and provider
+outages; alert-to-action-group mapping</td>
+<td>Chaos testing not yet automated in the pipeline</td>
+</tr>
+<tr class="odd">
+<td><strong>Performance efficiency</strong></td>
+<td>Redis caching of rule sets; parallel KYC fan-out on a bounded pool;
+read models in reporting-service so dashboards never query the write
+path; filtered index driving the polling query</td>
+<td>Polling is inherently latent; a webhook from the risk team would cut
+turnaround materially</td>
 </tr>
 </tbody>
 </table>
