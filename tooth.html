@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dental Intraoral — Caries Simulation</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #070304;
+      font-family: Arial, Helvetica, sans-serif;
+      cursor: none;
+      user-select: none;
+      color: #eee;
+    }
+    canvas { display: block; width: 100%; height: 100%; }
+    .hud {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .hud .tl, .hud .tr, .hud .bl, .hud .br {
+      position: absolute;
+      font-size: 13px;
+      line-height: 1.55;
+      text-shadow: 0 1px 2px #000;
+    }
+    .tl { top: 16px; left: 18px; }
+    .tr { top: 16px; right: 18px; text-align: right; }
+    .bl { bottom: 18px; left: 18px; }
+    .br { bottom: 18px; right: 18px; text-align: right; }
+    .box {
+      border: 1px solid rgba(255,255,255,0.7);
+      padding: 8px 12px;
+      background: rgba(0,0,0,0.35);
+      min-width: 180px;
+    }
+    .warn { color: #ffb4b4; }
+    .cursor {
+      position: fixed;
+      width: 22px;
+      height: 22px;
+      margin: -11px 0 0 -11px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 4;
+      box-shadow: 0 0 12px rgba(90, 40, 10, 0.8);
+    }
+    .cursor::after {
+      content: "";
+      position: absolute;
+      left: 50%; top: 50%;
+      width: 6px; height: 6px;
+      margin: -3px 0 0 -3px;
+      background: #6b3a12;
+      border-radius: 50%;
+    }
+    .gate {
+      position: fixed;
+      inset: 0;
+      background: #090505;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      cursor: pointer;
+    }
+    .gate span {
+      border: 1px solid #c9a27a;
+      color: #f3e2c8;
+      padding: 16px 24px;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="view"></canvas>
+  <div class="hud">
+    <div class="tl">
+      INTRAORAL CAM 12<br />
+      FULL ARCH / x2.1<br />
+      MODE  CARIES<br />
+      SUGAR  chocolate rain
+    </div>
+    <div class="tr">
+      TEETH  <span id="toothCount">16</span><br />
+      DESTROYED  <span id="destroyed" class="warn">0</span><br />
+      ENAMEL  <span id="enamel">92%</span>
+    </div>
+    <div class="bl">
+      <div class="box">
+        FALLING  chocolate<br />
+        pH  <span id="ph">4.2</span>  acid<br />
+        GERMS  <span id="germCount">48</span> eating<br />
+        STATUS  <span id="cavity">decay spreading</span>
+      </div>
+    </div>
+    <div class="br">REPEAT</div>
+  </div>
+  <div class="cursor" id="cursor"></div>
+  <div class="gate" id="gate"><span>CLICK TO START TOOTH SCAN</span></div>
+
+  <script>
+    const canvas = document.getElementById("view");
+    const ctx = canvas.getContext("2d");
+    const gate = document.getElementById("gate");
+    const cursorEl = document.getElementById("cursor");
+    const enamelEl = document.getElementById("enamel");
+    const phEl = document.getElementById("ph");
+    const germEl = document.getElementById("germCount");
+    const cavityEl = document.getElementById("cavity");
+    const destroyedEl = document.getElementById("destroyed");
+
+    let W = 0, H = 0, dpr = 1;
+    let started = false;
+    let last = performance.now();
+    let mouse = { x: 0, y: 0, tx: 0, ty: 0, speed: 0 };
+    const teeth = [];
+    const drops = [];
+    const germs = [];
+    const crumbs = [];
+    const splats = [];
+    let spawnAcc = 0;
+
+    function rand(a, b) { return a + Math.random() * (b - a); }
+    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function hex(c) {
+      return [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16)];
+    }
+    function lerpColor(a, b, t) {
+      const pa = hex(a), pb = hex(b);
+      return `rgb(${Math.round(lerp(pa[0], pb[0], t))},${Math.round(lerp(pa[1], pb[1], t))},${Math.round(lerp(pa[2], pb[2], t))})`;
+    }
+
+    const KINDS = ["molar", "molar", "premolar", "canine", "incisor", "incisor", "canine", "premolar"];
+
+    class Tooth {
+      constructor(i, row) {
+        this.i = i;
+        this.row = row;
+        this.kind = row === "upper" ? KINDS[i] : KINDS[7 - i];
+        this.decay = rand(0.02, 0.12);
+        this.chocolate = 0;
+        this.shake = 0;
+        this.broken = 0;
+        this.gone = false;
+        this.respawn = 0;
+        this.holes = [
+          { x: rand(-0.18, 0.18), y: rand(-0.15, 0.2), r: rand(0.08, 0.14) },
+          { x: rand(-0.2, 0.2), y: rand(-0.25, 0.05), r: rand(0.06, 0.11) }
+        ];
+        this.place();
+      }
+      place() {
+        const n = 8;
+        const spread = W * 0.78;
+        const left = (W - spread) / 2;
+        const t = this.i / (n - 1);
+        const arch = Math.sin(t * Math.PI) * H * 0.045;
+        this.baseX = left + t * spread;
+        if (this.row === "upper") {
+          this.baseY = H * 0.30 + arch;
+          this.flip = 1;
+        } else {
+          this.baseY = H * 0.70 - arch;
+          this.flip = -1;
+        }
+        const s = Math.min(W, H);
+        const scale = this.kind === "molar" ? 1 : this.kind === "premolar" ? 0.82 : this.kind === "canine" ? 0.7 : 0.62;
+        this.w = s * 0.075 * scale;
+        this.h = s * 0.16 * (this.kind === "canine" ? 1.15 : 1);
+        this.x = this.baseX;
+        this.y = this.baseY;
+      }
+      hit(power) {
+        this.chocolate = clamp(this.chocolate + power * 0.45, 0, 1);
+        this.decay = clamp(this.decay + power * 0.18, 0, 1);
+        this.shake = Math.min(1, this.shake + power);
+        if (this.decay > 0.55 && Math.random() < power) this.breakOff(power);
+        if (this.decay >= 0.98) this.crumble();
+      }
+      breakOff(power) {
+        this.broken = clamp(this.broken + 0.12 + power * 0.15, 0, 0.85);
+        for (let i = 0; i < 6; i++) {
+          crumbs.push(new Crumb(this.x + rand(-this.w * 0.3, this.w * 0.3), this.y, "enamel"));
+        }
+        if (started) audio.crunch();
+      }
+      crumble() {
+        if (this.gone) return;
+        this.gone = true;
+        this.respawn = 4.5;
+        for (let i = 0; i < 14; i++) {
+          crumbs.push(new Crumb(this.x + rand(-this.w * 0.4, this.w * 0.4), this.y, Math.random() < 0.5 ? "enamel" : "choc"));
+        }
+        if (started) audio.crunch(true);
+      }
+      update(dt) {
+        if (this.gone) {
+          this.respawn -= dt;
+          if (this.respawn <= 0) {
+            this.gone = false;
+            this.decay = 0.05;
+            this.chocolate = 0;
+            this.broken = 0;
+            this.shake = 0;
+          }
+          return;
+        }
+        this.place();
+        this.chocolate = clamp(this.chocolate - dt * 0.02, 0, 1);
+        this.decay = clamp(this.decay + this.chocolate * dt * 0.04, 0, 1);
+        this.shake *= Math.pow(0.001, dt);
+        const jx = (Math.random() - 0.5) * this.shake * 10;
+        const jy = (Math.random() - 0.5) * this.shake * 8;
+        this.x = this.baseX + jx + (mouse.x - W * 0.5) * 0.012;
+        this.y = this.baseY + jy;
+        if (this.decay > 0.92) this.crumble();
+      }
+      contains(px, py) {
+        if (this.gone) return false;
+        return Math.abs(px - this.x) < this.w * 0.62 && Math.abs(py - this.y) < this.h * 0.55;
+      }
+      draw(g) {
+        if (this.gone) {
+          g.save();
+          g.translate(this.x, this.y + this.flip * this.h * 0.28);
+          g.fillStyle = "#5a2228";
+          g.beginPath();
+          g.ellipse(0, 0, this.w * 0.28, this.h * 0.08, 0, 0, Math.PI * 2);
+          g.fill();
+          g.restore();
+          return;
+        }
+        g.save();
+        g.translate(this.x, this.y);
+        g.scale(1, this.flip);
+        const d = this.decay;
+        const enamel = g.createLinearGradient(-this.w * 0.5, -this.h * 0.5, this.w * 0.4, this.h * 0.4);
+        enamel.addColorStop(0, lerpColor("#fffdf8", "#c9a36a", d));
+        enamel.addColorStop(0.45, lerpColor("#f3e6cc", "#8a5a28", d));
+        enamel.addColorStop(1, lerpColor("#d9c4a0", "#4a2a12", d));
+        g.fillStyle = enamel;
+        toothPath(g, this.w, this.h, this.kind, this.broken);
+        g.fill();
+
+        g.fillStyle = "rgba(255,255,255,0.28)";
+        g.beginPath();
+        g.ellipse(-this.w * 0.14, -this.h * 0.16, this.w * 0.12, this.h * 0.07, -0.4, 0, Math.PI * 2);
+        g.fill();
+
+        if (this.chocolate > 0.05) {
+          g.fillStyle = `rgba(42,18,6,${0.25 + this.chocolate * 0.55})`;
+          g.beginPath();
+          g.ellipse(0, -this.h * 0.12, this.w * 0.38, this.h * 0.18, 0.1, 0, Math.PI * 2);
+          g.fill();
+          g.beginPath();
+          g.ellipse(this.w * 0.08, this.h * 0.05, this.w * 0.22, this.h * 0.16, 0.3, 0, Math.PI * 2);
+          g.fill();
+        }
+
+        g.save();
+        toothPath(g, this.w, this.h, this.kind, this.broken);
+        g.clip();
+        this.holes.forEach((h, n) => {
+          const r = this.w * h.r * (0.7 + d * 2.2);
+          const pit = g.createRadialGradient(this.w * h.x, this.h * h.y, r * 0.1, this.w * h.x, this.h * h.y, r);
+          pit.addColorStop(0, "#090301");
+          pit.addColorStop(0.5, "#3a1608");
+          pit.addColorStop(1, "rgba(80,40,16,0)");
+          g.fillStyle = pit;
+          g.beginPath();
+          g.ellipse(this.w * h.x, this.h * h.y, r * 1.15, r * 0.85, n * 0.3, 0, Math.PI * 2);
+          g.fill();
+        });
+        g.restore();
+
+        g.strokeStyle = "rgba(70,50,30,0.4)";
+        g.lineWidth = 1.5;
+        toothPath(g, this.w, this.h, this.kind, this.broken);
+        g.stroke();
+        g.restore();
+      }
+    }
+
+    function toothPath(g, w, h, kind, broken) {
+      const chip = broken * w * 0.35;
+      g.beginPath();
+      if (kind === "incisor") {
+        g.moveTo(-w * 0.38, -h * 0.15);
+        g.lineTo(-w * 0.34 + chip, -h * 0.48);
+        g.lineTo(w * 0.34 - chip * 0.4, -h * 0.5);
+        g.lineTo(w * 0.38, -h * 0.15);
+        g.quadraticCurveTo(w * 0.3, h * 0.42, 0, h * 0.48);
+        g.quadraticCurveTo(-w * 0.3, h * 0.42, -w * 0.38, -h * 0.15);
+      } else if (kind === "canine") {
+        g.moveTo(-w * 0.32, -h * 0.1);
+        g.lineTo(0, -h * 0.58 + chip);
+        g.lineTo(w * 0.32, -h * 0.1);
+        g.quadraticCurveTo(w * 0.28, h * 0.4, 0, h * 0.46);
+        g.quadraticCurveTo(-w * 0.28, h * 0.4, -w * 0.32, -h * 0.1);
+      } else {
+        g.moveTo(-w * 0.46, -h * 0.12);
+        g.bezierCurveTo(-w * 0.5, -h * 0.48, -w * 0.12, -h * 0.55 + chip, 0, -h * 0.46);
+        g.bezierCurveTo(w * 0.12, -h * 0.55, w * 0.5, -h * 0.48, w * 0.46, -h * 0.12);
+        g.quadraticCurveTo(w * 0.42, h * 0.38, w * 0.18, h * 0.46);
+        g.lineTo(-w * 0.18, h * 0.46);
+        g.quadraticCurveTo(-w * 0.42, h * 0.38, -w * 0.46, -h * 0.12);
+      }
+      g.closePath();
+    }
+
+    class Drop {
+      constructor() {
+        this.reset(true);
+      }
+      reset(fromTop) {
+        this.x = lerp(rand(W * 0.12, W * 0.88), mouse.tx, 0.35);
+        this.y = fromTop ? rand(-80, -10) : -20;
+        this.r = rand(8, 18);
+        this.vy = rand(140, 260);
+        this.vx = (mouse.tx - this.x) * 0.15 + rand(-30, 30);
+        this.rot = rand(0, 6);
+        this.chunk = Math.random() < 0.55;
+      }
+      update(dt) {
+        this.vx += (mouse.tx - this.x) * 0.8 * dt;
+        this.vy += 520 * dt;
+        this.x += this.vx * dt;
+        this.y += this.vy * dt;
+        this.rot += dt * 3;
+        for (const tooth of teeth) {
+          if (tooth.contains(this.x, this.y)) {
+            tooth.hit(this.r / 16);
+            splats.push(new Splat(this.x, this.y, this.r));
+            for (let i = 0; i < 5; i++) crumbs.push(new Crumb(this.x, this.y, "choc"));
+            if (started) audio.splat();
+            this.reset(true);
+            return;
+          }
+        }
+        if (this.y > H + 40) this.reset(true);
+      }
+      draw(g) {
+        g.save();
+        g.translate(this.x, this.y);
+        g.rotate(this.rot);
+        const grd = g.createRadialGradient(-this.r * 0.3, -this.r * 0.3, 2, 0, 0, this.r);
+        grd.addColorStop(0, "#7a4318");
+        grd.addColorStop(0.55, "#3c1c08");
+        grd.addColorStop(1, "#140804");
+        g.fillStyle = grd;
+        g.beginPath();
+        if (this.chunk) {
+          g.moveTo(-this.r, 0);
+          g.lineTo(-this.r * 0.4, -this.r);
+          g.lineTo(this.r * 0.7, -this.r * 0.5);
+          g.lineTo(this.r, this.r * 0.3);
+          g.lineTo(0, this.r);
+          g.closePath();
+        } else {
+          g.ellipse(0, 0, this.r * 0.75, this.r, 0, 0, Math.PI * 2);
+        }
+        g.fill();
+        g.fillStyle = "rgba(255,200,140,0.2)";
+        g.beginPath();
+        g.ellipse(-this.r * 0.25, -this.r * 0.3, this.r * 0.22, this.r * 0.12, -0.5, 0, Math.PI * 2);
+        g.fill();
+        g.restore();
+      }
+    }
+
+    class Germ {
+      constructor(i) {
+        this.id = i;
+        this.tooth = teeth[i % teeth.length];
+        this.ox = rand(-0.35, 0.35);
+        this.oy = rand(-0.25, 0.3);
+        this.kind = i % 3;
+        this.phase = rand(0, 20);
+        this.scale = rand(0.7, 1.2);
+        this.hue = this.kind === 0 ? 92 : this.kind === 1 ? 48 : 128;
+        this.eat = 0;
+        this.x = 0;
+        this.y = 0;
+        this.angle = 0;
+      }
+      update(dt, scare) {
+        if (this.tooth.gone) this.tooth = teeth.find((t) => !t.gone) || this.tooth;
+        this.phase += dt * (10 + scare * 14);
+        this.eat += dt * (8 + this.tooth.decay * 10);
+        this.ox += Math.sin(this.phase + this.id) * dt * 0.15;
+        this.oy += Math.cos(this.phase * 0.8) * dt * 0.12;
+        this.ox = clamp(this.ox, -0.42, 0.42);
+        this.oy = clamp(this.oy, -0.38, 0.38);
+        let tx = this.tooth.x + this.ox * this.tooth.w;
+        let ty = this.tooth.y + this.oy * this.tooth.h * this.tooth.flip * 0.35;
+        const dx = mouse.x - this.x;
+        const dy = mouse.y - this.y;
+        const dist = Math.hypot(dx, dy) + 0.01;
+        if (dist < 160) {
+          tx = lerp(tx, mouse.x, 0.55 + scare * 0.3);
+          ty = lerp(ty, mouse.y, 0.55 + scare * 0.3);
+        }
+        if (!this.x) { this.x = tx; this.y = ty; }
+        this.angle = Math.atan2(ty - this.y, tx - this.x);
+        this.x = lerp(this.x, tx, 0.12 + scare * 0.2);
+        this.y = lerp(this.y, ty, 0.12 + scare * 0.2);
+        if (Math.sin(this.eat) > 0.92 && this.tooth.contains(this.x, this.y)) {
+          this.tooth.decay = clamp(this.tooth.decay + dt * 0.35, 0, 1);
+          this.tooth.chocolate = clamp(this.tooth.chocolate + dt * 0.1, 0, 1);
+          if (Math.random() < 0.25) crumbs.push(new Crumb(this.x, this.y, "enamel"));
+        }
+      }
+      draw(g) {
+        g.save();
+        g.translate(this.x, this.y);
+        g.rotate(this.angle);
+        const chew = 1 + Math.sin(this.eat * 2) * 0.18;
+        const s = this.scale * chew * (Math.min(W, H) / 980);
+        g.scale(s, s);
+        g.shadowColor = `hsla(${this.hue}, 80%, 40%, 0.7)`;
+        g.shadowBlur = 8;
+        g.fillStyle = `hsl(${this.hue}, 70%, 40%)`;
+        if (this.kind === 0) {
+          g.beginPath();
+          g.ellipse(0, 0, 15, 7, 0, 0, Math.PI * 2);
+          g.fill();
+        } else if (this.kind === 1) {
+          g.beginPath();
+          g.arc(-5, 0, 8, 0, Math.PI * 2);
+          g.arc(6, 1, 7, 0, Math.PI * 2);
+          g.fill();
+        } else {
+          g.beginPath();
+          for (let i = 0; i < 9; i++) {
+            const a = i / 9 * Math.PI * 2;
+            const r = i % 2 ? 7 : 13;
+            const x = Math.cos(a) * r, y = Math.sin(a) * r;
+            if (i === 0) g.moveTo(x, y); else g.lineTo(x, y);
+          }
+          g.closePath();
+          g.fill();
+        }
+        const bite = 3 + Math.sin(this.eat * 2) * 2;
+        g.fillStyle = "#1a0c08";
+        g.beginPath();
+        g.ellipse(9, 0, bite, 2.2, 0, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = "#fff";
+        g.beginPath();
+        g.moveTo(7, -2); g.lineTo(11, 0); g.lineTo(7, 2);
+        g.fill();
+        g.restore();
+      }
+    }
+
+    class Crumb {
+      constructor(x, y, kind) {
+        this.x = x;
+        this.y = y;
+        this.vx = rand(-90, 90);
+        this.vy = rand(-160, -20);
+        this.r = kind === "choc" ? rand(3, 7) : rand(2, 5);
+        this.kind = kind;
+        this.life = 1;
+        this.rot = rand(0, 6);
+      }
+      update(dt) {
+        this.vy += 480 * dt;
+        this.x += this.vx * dt;
+        this.y += this.vy * dt;
+        this.life -= dt * 0.7;
+        this.rot += dt * 5;
+      }
+      draw(g) {
+        g.save();
+        g.globalAlpha = clamp(this.life, 0, 1);
+        g.translate(this.x, this.y);
+        g.rotate(this.rot);
+        g.fillStyle = this.kind === "choc" ? "#3a1a08" : "#efe2c8";
+        g.fillRect(-this.r, -this.r * 0.6, this.r * 1.8, this.r * 1.1);
+        g.restore();
+      }
+    }
+
+    class Splat {
+      constructor(x, y, r) {
+        this.x = x;
+        this.y = y;
+        this.r = r * 1.6;
+        this.life = 1;
+      }
+      update(dt) { this.life -= dt * 1.8; this.r += dt * 40; }
+      draw(g) {
+        g.save();
+        g.globalAlpha = clamp(this.life, 0, 1) * 0.45;
+        g.fillStyle = "#4a220c";
+        g.beginPath();
+        g.ellipse(this.x, this.y, this.r * 1.4, this.r * 0.7, 0, 0, Math.PI * 2);
+        g.fill();
+        g.restore();
+      }
+    }
+
+    function layoutTeeth() {
+      teeth.length = 0;
+      for (let i = 0; i < 8; i++) teeth.push(new Tooth(i, "upper"));
+      for (let i = 0; i < 8; i++) teeth.push(new Tooth(i, "lower"));
+    }
+
+    function spawnWorld() {
+      layoutTeeth();
+      drops.length = 0;
+      germs.length = 0;
+      crumbs.length = 0;
+      splats.length = 0;
+      for (let i = 0; i < 18; i++) drops.push(new Drop());
+      for (let i = 0; i < 36; i++) germs.push(new Germ(i));
+    }
+
+    function drawMouth(g) {
+      const bg = g.createRadialGradient(W * 0.5, H * 0.5, 20, W * 0.5, H * 0.5, Math.max(W, H) * 0.7);
+      bg.addColorStop(0, "#4a1418");
+      bg.addColorStop(0.5, "#21080b");
+      bg.addColorStop(1, "#070203");
+      g.fillStyle = bg;
+      g.fillRect(0, 0, W, H);
+      g.fillStyle = "#8a333c";
+      g.beginPath();
+      g.ellipse(W * 0.5, H * 0.06, W * 0.7, H * 0.2, 0, 0, Math.PI * 2);
+      g.fill();
+      g.beginPath();
+      g.ellipse(W * 0.5, H * 0.96, W * 0.75, H * 0.22, 0, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = "#5e1f26";
+      g.beginPath();
+      g.ellipse(W * 0.5, H * 0.22, W * 0.55, H * 0.08, 0, 0, Math.PI * 2);
+      g.fill();
+      g.beginPath();
+      g.ellipse(W * 0.5, H * 0.78, W * 0.55, H * 0.08, 0, 0, Math.PI * 2);
+      g.fill();
+    }
+
+    const audio = {
+      ctx: null,
+      slime: null,
+      slimeGain: null,
+      buzzGain: null,
+      lastSplat: 0,
+      lastCrunch: 0,
+      init() {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AC();
+        const master = this.ctx.createGain();
+        master.gain.value = 0.28;
+        master.connect(this.ctx.destination);
+        this.master = master;
+        const n = this.ctx.sampleRate * 2;
+        const buf = this.ctx.createBuffer(1, n, this.ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        let last = 0;
+        for (let i = 0; i < n; i++) {
+          last = (last + (Math.random() * 2 - 1) * 0.06) * 0.97;
+          data[i] = last;
+        }
+        const src = this.ctx.createBufferSource();
+        src.buffer = buf;
+        src.loop = true;
+        const lp = this.ctx.createBiquadFilter();
+        lp.type = "lowpass";
+        lp.frequency.value = 380;
+        this.slime = lp;
+        this.slimeGain = this.ctx.createGain();
+        this.slimeGain.gain.value = 0.05;
+        src.connect(lp); lp.connect(this.slimeGain); this.slimeGain.connect(master);
+        src.start();
+        const buzz = this.ctx.createOscillator();
+        buzz.type = "sawtooth";
+        buzz.frequency.value = 72;
+        this.buzzGain = this.ctx.createGain();
+        this.buzzGain.gain.value = 0.02;
+        const bp = this.ctx.createBiquadFilter();
+        bp.type = "bandpass";
+        bp.frequency.value = 170;
+        buzz.connect(bp); bp.connect(this.buzzGain); this.buzzGain.connect(master);
+        buzz.start();
+        this.chewLoop();
+      },
+      tone(f, d, v, type) {
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.type = type || "triangle";
+        o.frequency.setValueAtTime(f, this.ctx.currentTime);
+        o.frequency.exponentialRampToValueAtTime(Math.max(28, f * 0.35), this.ctx.currentTime + d);
+        g.gain.setValueAtTime(v, this.ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + d);
+        o.connect(g); g.connect(this.master);
+        o.start(); o.stop(this.ctx.currentTime + d + 0.02);
+      },
+      splat() {
+        const now = performance.now();
+        if (now - this.lastSplat < 70) return;
+        this.lastSplat = now;
+        this.tone(rand(70, 140), 0.12, 0.1);
+      },
+      crunch(big) {
+        const now = performance.now();
+        if (now - this.lastCrunch < 90) return;
+        this.lastCrunch = now;
+        this.tone(rand(140, 280), 0.14, big ? 0.16 : 0.09);
+        this.tone(rand(700, 1600), 0.07, 0.05, "square");
+      },
+      chewLoop() {
+        const tick = () => {
+          if (!this.ctx) return;
+          this.tone(rand(90, 180), 0.08, 0.05);
+          setTimeout(tick, 180 + Math.random() * 260);
+        };
+        tick();
+      },
+      onMove(speed) {
+        if (!this.ctx) return;
+        const s = clamp(speed / 34, 0, 1);
+        this.slimeGain.gain.setTargetAtTime(0.05 + s * 0.2, this.ctx.currentTime, 0.05);
+        this.slime.frequency.setTargetAtTime(340 + s * 520, this.ctx.currentTime, 0.08);
+        this.buzzGain.gain.setTargetAtTime(0.02 + s * 0.07, this.ctx.currentTime, 0.05);
+      }
+    };
+
+    function resize() {
+      dpr = Math.min(devicePixelRatio || 1, 2);
+      W = innerWidth;
+      H = innerHeight;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      mouse.x = mouse.tx = W * 0.5;
+      mouse.y = mouse.ty = H * 0.35;
+      spawnWorld();
+    }
+
+    function frame(now) {
+      const dt = Math.min(0.033, (now - last) / 1000);
+      last = now;
+      const scare = clamp(mouse.speed / 26, 0, 1);
+      mouse.x = lerp(mouse.x, mouse.tx, 0.35);
+      mouse.y = lerp(mouse.y, mouse.ty, 0.35);
+
+      spawnAcc += dt;
+      if (spawnAcc > 0.12) {
+        spawnAcc = 0;
+        drops.push(new Drop());
+        if (drops.length > 40) drops.shift();
+      }
+
+      drawMouth(ctx);
+      teeth.forEach((t) => t.update(dt));
+      teeth.filter((t) => t.row === "upper").forEach((t) => t.draw(ctx));
+      teeth.filter((t) => t.row === "lower").forEach((t) => t.draw(ctx));
+      splats.forEach((s) => s.update(dt));
+      splats.forEach((s) => s.draw(ctx));
+      drops.forEach((d) => { d.update(dt); d.draw(ctx); });
+      germs.forEach((b) => { b.update(dt, scare); b.draw(ctx); });
+      crumbs.forEach((c) => c.update(dt));
+      crumbs.forEach((c) => c.draw(ctx));
+      for (let i = crumbs.length - 1; i >= 0; i--) if (crumbs[i].life <= 0) crumbs.splice(i, 1);
+      for (let i = splats.length - 1; i >= 0; i--) if (splats[i].life <= 0) splats.splice(i, 1);
+
+      const alive = teeth.filter((t) => !t.gone);
+      const avg = alive.length ? alive.reduce((s, t) => s + t.decay, 0) / alive.length : 1;
+      enamelEl.textContent = Math.round(96 - avg * 70) + "%";
+      phEl.textContent = (5.5 - avg * 2).toFixed(1);
+      germEl.textContent = String(germs.length);
+      destroyedEl.textContent = String(teeth.length - alive.length);
+      cavityEl.textContent = avg > 0.75 ? "teeth collapsing" : avg > 0.4 ? "germs eating enamel" : "chocolate hitting";
+
+      mouse.speed *= 0.88;
+      requestAnimationFrame(frame);
+    }
+
+    window.addEventListener("resize", resize);
+    window.addEventListener("mousemove", (e) => {
+      mouse.speed = Math.hypot(e.movementX, e.movementY);
+      mouse.tx = e.clientX;
+      mouse.ty = e.clientY;
+      cursorEl.style.left = e.clientX + "px";
+      cursorEl.style.top = e.clientY + "px";
+      if (started) audio.onMove(mouse.speed);
+    });
+
+    gate.addEventListener("click", async () => {
+      started = true;
+      audio.init();
+      if (audio.ctx.state === "suspended") await audio.ctx.resume();
+      gate.remove();
+    });
+
+    resize();
+    requestAnimationFrame(frame);
+  </script>
+</body>
+</html>

@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ocular Scan — Screen Damage Simulation</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #04060a;
+      font-family: Arial, Helvetica, sans-serif;
+      cursor: none;
+      user-select: none;
+      color: #dce6f0;
+    }
+    canvas { display: block; width: 100%; height: 100%; }
+    .hud { position: fixed; inset: 0; pointer-events: none; z-index: 2; }
+    .hud .tl, .hud .tr, .hud .bl, .hud .br {
+      position: absolute;
+      font-size: 13px;
+      line-height: 1.55;
+      text-shadow: 0 1px 2px #000;
+    }
+    .tl { top: 16px; left: 18px; }
+    .tr { top: 16px; right: 18px; text-align: right; }
+    .bl { bottom: 18px; left: 18px; }
+    .br { bottom: 18px; right: 18px; text-align: right; }
+    .box {
+      border: 1px solid rgba(160, 200, 255, 0.55);
+      padding: 8px 12px;
+      background: rgba(0, 8, 20, 0.45);
+      min-width: 188px;
+    }
+    .warn { color: #ff9aa8; }
+    .blue { color: #7ec8ff; }
+    .cursor {
+      position: fixed;
+      width: 22px;
+      height: 22px;
+      margin: -11px 0 0 -11px;
+      border: 2px solid #7ec8ff;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 4;
+      box-shadow: 0 0 14px #3af;
+    }
+    .gate {
+      position: fixed;
+      inset: 0;
+      background: #05070c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      cursor: pointer;
+    }
+    .gate span {
+      border: 1px solid #7ec8ff;
+      color: #cfe8ff;
+      padding: 16px 24px;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="view"></canvas>
+  <div class="hud">
+    <div class="tl">
+      FUNDUS + EXT CAM<br />
+      OCT  LIVE<br />
+      SOURCE  mobile / TV<br />
+      BLUE LIGHT  <span id="blue" class="blue">HIGH</span>
+    </div>
+    <div class="tr">
+      SCREEN TIME  <span id="time">00:00</span><br />
+      RETINA  <span id="retina" class="warn">92%</span><br />
+      DRYNESS  <span id="dry">low</span>
+    </div>
+    <div class="bl">
+      <div class="box">
+        MACULA  <span id="macula">strain</span><br />
+        CORNEA  <span id="cornea">ok</span><br />
+        VESSELS  <span id="vessels">intact</span><br />
+        INSIDE EYE  burning
+      </div>
+    </div>
+    <div class="br">REPEAT</div>
+  </div>
+  <div class="cursor" id="cursor"></div>
+  <div class="gate" id="gate"><span>CLICK TO START EYE SCAN</span></div>
+
+  <script>
+    const canvas = document.getElementById("view");
+    const ctx = canvas.getContext("2d");
+    const gate = document.getElementById("gate");
+    const cursorEl = document.getElementById("cursor");
+    const LOOP = 16000;
+
+    let W = 0, H = 0, dpr = 1;
+    let started = false;
+    let last = performance.now();
+    let t0 = performance.now();
+    let mouse = { x: 0, y: 0, tx: 0, ty: 0, speed: 0 };
+    const eyes = [];
+    const photons = [];
+    const floaters = [];
+    const burns = [];
+    const drips = [];
+    let phone, tv;
+
+    function rand(a, b) { return a + Math.random() * (b - a); }
+    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+    function lerp(a, b, t) { return a + (b - a) * t; }
+
+    class Eye {
+      constructor(side) {
+        this.side = side;
+        this.blink = 1;
+        this.blinkT = rand(1.5, 4);
+        this.red = 0.1;
+        this.dry = 0;
+        this.px = 0;
+        this.py = 0;
+        this.layout();
+      }
+      layout() {
+        const s = Math.min(W, H);
+        this.r = s * 0.145;
+        this.x = W * 0.5 + (this.side === "L" ? -s * 0.2 : s * 0.2);
+        this.y = H * 0.26;
+      }
+      update(dt, damage, scare) {
+        this.layout();
+        this.blinkT -= dt;
+        if (this.blinkT < 0) {
+          this.blink = 0.08;
+          this.blinkT = rand(2.2, 5.5);
+        }
+        this.blink = lerp(this.blink, 1, 0.18);
+        this.red = lerp(this.red, 0.15 + damage * 0.85, 0.04);
+        this.dry = lerp(this.dry, damage, 0.03);
+        const max = this.r * 0.22;
+        this.px = clamp((mouse.x - this.x) / 12, -max, max);
+        this.py = clamp((mouse.y - this.y) / 14, -max * 0.7, max * 0.7);
+        if (scare > 0.4) this.px += rand(-2, 2);
+      }
+      draw(g, damage) {
+        g.save();
+        g.translate(this.x, this.y);
+        g.beginPath();
+        g.ellipse(0, 0, this.r * 1.35, this.r * 0.82 * this.blink, 0, 0, Math.PI * 2);
+        g.clip();
+
+        g.fillStyle = lerpColor("#f4ece6", "#e8b0a8", this.red);
+        g.beginPath();
+        g.ellipse(0, 0, this.r * 1.35, this.r * 0.82, 0, 0, Math.PI * 2);
+        g.fill();
+
+        g.strokeStyle = `rgba(160,30,40,${0.25 + this.red * 0.7})`;
+        g.lineWidth = 1.2;
+        for (let i = 0; i < 10; i++) {
+          const a = (i / 10) * Math.PI * 2 + 0.2;
+          g.beginPath();
+          g.moveTo(Math.cos(a) * this.r * 0.55, Math.sin(a) * this.r * 0.38);
+          g.quadraticCurveTo(
+            Math.cos(a + 0.3) * this.r * 0.9,
+            Math.sin(a + 0.2) * this.r * 0.6,
+            Math.cos(a) * this.r * 1.2,
+            Math.sin(a) * this.r * 0.75
+          );
+          g.stroke();
+        }
+
+        const irisR = this.r * 0.46;
+        const ig = g.createRadialGradient(this.px * 0.3, this.py * 0.3, 4, 0, 0, irisR);
+        ig.addColorStop(0, "#2a6a4a");
+        ig.addColorStop(0.45, "#1c4a58");
+        ig.addColorStop(1, "#0b2430");
+        g.fillStyle = ig;
+        g.beginPath();
+        g.arc(this.px * 0.15, this.py * 0.15, irisR, 0, Math.PI * 2);
+        g.fill();
+
+        g.strokeStyle = "rgba(180,220,200,0.18)";
+        g.lineWidth = 1;
+        for (let i = 0; i < 16; i++) {
+          const a = i / 16 * Math.PI * 2;
+          g.beginPath();
+          g.moveTo(this.px * 0.15, this.py * 0.15);
+          g.lineTo(this.px * 0.15 + Math.cos(a) * irisR, this.py * 0.15 + Math.sin(a) * irisR);
+          g.stroke();
+        }
+
+        const pupil = this.r * (0.16 + damage * 0.08);
+        g.fillStyle = "#050308";
+        g.beginPath();
+        g.arc(this.px, this.py, pupil, 0, Math.PI * 2);
+        g.fill();
+
+        g.fillStyle = "rgba(120,200,255,0.35)";
+        g.beginPath();
+        g.arc(this.px, this.py, pupil * 0.7, 0, Math.PI * 2);
+        g.fill();
+
+        g.fillStyle = "rgba(255,255,255,0.7)";
+        g.beginPath();
+        g.ellipse(-this.r * 0.28, -this.r * 0.28, this.r * 0.12, this.r * 0.07, -0.5, 0, Math.PI * 2);
+        g.fill();
+
+        if (this.dry > 0.35) {
+          g.strokeStyle = `rgba(255,255,255,${this.dry * 0.45})`;
+          g.lineWidth = 1;
+          for (let i = 0; i < 6; i++) {
+            g.beginPath();
+            g.moveTo(rand(-this.r, this.r), rand(-this.r * 0.4, this.r * 0.4));
+            g.lineTo(rand(-this.r, this.r), rand(-this.r * 0.4, this.r * 0.4));
+            g.stroke();
+          }
+        }
+        g.restore();
+
+        g.save();
+        g.strokeStyle = "#5a3038";
+        g.lineWidth = 10;
+        g.beginPath();
+        g.ellipse(this.x, this.y, this.r * 1.38, this.r * 0.86 * this.blink, 0, Math.PI * 1.05, Math.PI * 1.95);
+        g.stroke();
+        g.beginPath();
+        g.ellipse(this.x, this.y, this.r * 1.38, this.r * 0.86 * this.blink, 0, Math.PI * 0.05, Math.PI * 0.95);
+        g.stroke();
+        g.restore();
+      }
+      pupil() {
+        return { x: this.x + this.px, y: this.y + this.py };
+      }
+    }
+
+    class Device {
+      constructor(kind) {
+        this.kind = kind;
+        this.x = 0;
+        this.y = 0;
+        this.phase = rand(0, 10);
+      }
+      update(dt) {
+        this.phase += dt;
+        if (this.kind === "phone") {
+          this.x = lerp(this.x, mouse.x + Math.sin(this.phase) * 18, 0.12);
+          this.y = lerp(this.y, mouse.y - 70 + Math.cos(this.phase * 0.8) * 10, 0.12);
+        } else {
+          this.x = lerp(this.x, mouse.x * 0.35 + W * 0.62, 0.06);
+          this.y = lerp(this.y, H * 0.18 + Math.sin(this.phase * 0.5) * 8, 0.06);
+        }
+      }
+      draw(g) {
+        g.save();
+        g.translate(this.x, this.y);
+        if (this.kind === "phone") {
+          g.fillStyle = "#11161c";
+          roundRect(g, -22, -40, 44, 80, 8);
+          g.fill();
+          const glow = g.createLinearGradient(-16, -32, 16, 32);
+          glow.addColorStop(0, "#4df");
+          glow.addColorStop(1, "#1a4cff");
+          g.fillStyle = glow;
+          roundRect(g, -16, -32, 32, 64, 4);
+          g.fill();
+          g.fillStyle = "#fff";
+          g.font = "9px Arial";
+          g.textAlign = "center";
+          g.fillText("PHONE", 0, 4);
+        } else {
+          g.fillStyle = "#14181e";
+          roundRect(g, -70, -42, 140, 84, 6);
+          g.fill();
+          const glow = g.createLinearGradient(-60, -32, 60, 32);
+          glow.addColorStop(0, "#6cf");
+          glow.addColorStop(1, "#2050ff");
+          g.fillStyle = glow;
+          g.fillRect(-62, -34, 124, 68);
+          g.fillStyle = "#222";
+          g.fillRect(-12, 42, 24, 10);
+          g.fillRect(-28, 52, 56, 6);
+          g.fillStyle = "#fff";
+          g.font = "11px Arial";
+          g.textAlign = "center";
+          g.fillText("TV", 0, 4);
+        }
+        g.restore();
+      }
+    }
+
+    function roundRect(g, x, y, w, h, r) {
+      g.beginPath();
+      g.moveTo(x + r, y);
+      g.arcTo(x + w, y, x + w, y + h, r);
+      g.arcTo(x + w, y + h, x, y + h, r);
+      g.arcTo(x, y + h, x, y, r);
+      g.arcTo(x, y, x + w, y, r);
+      g.closePath();
+    }
+
+    function lerpColor(a, b, t) {
+      const pa = [parseInt(a.slice(1, 3), 16), parseInt(a.slice(3, 5), 16), parseInt(a.slice(5, 7), 16)];
+      const pb = [parseInt(b.slice(1, 3), 16), parseInt(b.slice(3, 5), 16), parseInt(b.slice(5, 7), 16)];
+      return `rgb(${Math.round(lerp(pa[0], pb[0], t))},${Math.round(lerp(pa[1], pb[1], t))},${Math.round(lerp(pa[2], pb[2], t))})`;
+    }
+
+    function fundusBox() {
+      const s = Math.min(W, H);
+      return { x: W * 0.33, y: H * 0.68, r: s * 0.22 };
+    }
+    function cutawayBox() {
+      const s = Math.min(W, H);
+      return { x: W * 0.72, y: H * 0.68, r: s * 0.22 };
+    }
+
+    class Floater {
+      constructor() {
+        const f = fundusBox();
+        this.a = rand(0, Math.PI * 2);
+        this.d = rand(0.15, 0.85);
+        this.s = rand(0.2, 0.6);
+        this.w = rand(8, 18);
+        this.kind = Math.random() < 0.5 ? "worm" : "spot";
+      }
+      update(dt, scare) {
+        this.a += dt * this.s * (0.4 + scare);
+        const f = fundusBox();
+        const pull = Math.atan2(mouse.y - f.y, mouse.x - f.x);
+        this.a = lerp(this.a, pull, 0.01 + scare * 0.04);
+      }
+      draw(g, f) {
+        const x = f.x + Math.cos(this.a) * f.r * this.d;
+        const y = f.y + Math.sin(this.a) * f.r * this.d;
+        g.fillStyle = "rgba(40,10,10,0.55)";
+        if (this.kind === "spot") {
+          g.beginPath();
+          g.ellipse(x, y, 5, 3, this.a, 0, Math.PI * 2);
+          g.fill();
+        } else {
+          g.strokeStyle = "rgba(50,12,12,0.6)";
+          g.lineWidth = 2;
+          g.beginPath();
+          g.moveTo(x, y);
+          g.quadraticCurveTo(x + 10, y + 8, x + this.w, y + 4);
+          g.stroke();
+        }
+      }
+    }
+
+    class Burn {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.r = rand(4, 10);
+        this.life = 1;
+        this.grow = rand(8, 18);
+      }
+      update(dt, damage) {
+        this.r += dt * this.grow * (0.4 + damage);
+        this.life = Math.min(1, this.life + dt * 0.15);
+      }
+      draw(g) {
+        const grd = g.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r);
+        grd.addColorStop(0, "rgba(255,230,140,0.85)");
+        grd.addColorStop(0.35, "rgba(255,80,40,0.55)");
+        grd.addColorStop(0.7, "rgba(80,0,0,0.5)");
+        grd.addColorStop(1, "rgba(0,0,0,0)");
+        g.fillStyle = grd;
+        g.beginPath();
+        g.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+        g.fill();
+      }
+    }
+
+    class Photon {
+      constructor(from, to) {
+        this.x = from.x;
+        this.y = from.y;
+        this.tx = to.x;
+        this.ty = to.y;
+        this.t = 0;
+        this.spd = rand(1.6, 3.2);
+      }
+      update(dt) {
+        this.t += dt * this.spd;
+        this.x = lerp(this.x, this.tx, 0.12);
+        this.y = lerp(this.y, this.ty, 0.12);
+      }
+      draw(g) {
+        g.fillStyle = "rgba(120,210,255,0.85)";
+        g.beginPath();
+        g.arc(this.x, this.y, 2.4, 0, Math.PI * 2);
+        g.fill();
+      }
+    }
+
+    function drawBeams(g, damage) {
+      eyes.forEach((eye) => {
+        const p = eye.pupil();
+        [phone, tv].forEach((dev) => {
+          const grd = g.createLinearGradient(dev.x, dev.y, p.x, p.y);
+          grd.addColorStop(0, `rgba(80,180,255,${0.18 + damage * 0.25})`);
+          grd.addColorStop(1, `rgba(180,230,255,${0.05 + damage * 0.12})`);
+          g.fillStyle = grd;
+          g.beginPath();
+          const a = Math.atan2(p.y - dev.y, p.x - dev.x);
+          const w1 = dev.kind === "tv" ? 28 : 12;
+          const w2 = 6;
+          g.moveTo(dev.x + Math.cos(a + Math.PI / 2) * w1, dev.y + Math.sin(a + Math.PI / 2) * w1);
+          g.lineTo(dev.x + Math.cos(a - Math.PI / 2) * w1, dev.y + Math.sin(a - Math.PI / 2) * w1);
+          g.lineTo(p.x + Math.cos(a - Math.PI / 2) * w2, p.y + Math.sin(a - Math.PI / 2) * w2);
+          g.lineTo(p.x + Math.cos(a + Math.PI / 2) * w2, p.y + Math.sin(a + Math.PI / 2) * w2);
+          g.closePath();
+          g.fill();
+        });
+      });
+    }
+
+    function drawFundus(g, damage, now) {
+      const f = fundusBox();
+      g.save();
+      g.beginPath();
+      g.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+      g.clip();
+      const bg = g.createRadialGradient(f.x - f.r * 0.1, f.y - f.r * 0.1, 10, f.x, f.y, f.r);
+      bg.addColorStop(0, lerpColor("#c45a3a", "#6a1810", damage));
+      bg.addColorStop(0.55, lerpColor("#8a3020", "#3a0808", damage));
+      bg.addColorStop(1, "#1a0404");
+      g.fillStyle = bg;
+      g.fillRect(f.x - f.r, f.y - f.r, f.r * 2, f.r * 2);
+
+      g.strokeStyle = `rgba(180,30,40,${0.55 + damage * 0.3})`;
+      g.lineWidth = 2.2;
+      const disc = { x: f.x + f.r * 0.28, y: f.y - f.r * 0.05 };
+      for (let i = 0; i < 8; i++) {
+        const a = i / 8 * Math.PI * 2;
+        g.beginPath();
+        g.moveTo(disc.x, disc.y);
+        g.quadraticCurveTo(
+          disc.x + Math.cos(a) * f.r * 0.35,
+          disc.y + Math.sin(a) * f.r * 0.35,
+          disc.x + Math.cos(a) * f.r * 0.85,
+          disc.y + Math.sin(a) * f.r * 0.85
+        );
+        g.stroke();
+      }
+      g.fillStyle = "#d8c8a0";
+      g.beginPath();
+      g.arc(disc.x, disc.y, f.r * 0.12, 0, Math.PI * 2);
+      g.fill();
+
+      const macX = f.x - f.r * 0.12;
+      const macY = f.y + f.r * 0.04;
+      const macR = f.r * (0.1 + damage * 0.18);
+      const mac = g.createRadialGradient(macX, macY, 2, macX, macY, macR);
+      mac.addColorStop(0, damage > 0.45 ? "#fff3a0" : "#6a3020");
+      mac.addColorStop(0.4, damage > 0.6 ? "#ff4020" : "#8a4030");
+      mac.addColorStop(1, "rgba(0,0,0,0)");
+      g.fillStyle = mac;
+      g.beginPath();
+      g.arc(macX, macY, macR, 0, Math.PI * 2);
+      g.fill();
+
+      if (damage > 0.55) {
+        g.fillStyle = "rgba(140,0,0,0.55)";
+        for (let i = 0; i < 7; i++) {
+          g.beginPath();
+          g.ellipse(
+            f.x + Math.cos(i * 1.7 + now / 800) * f.r * 0.4,
+            f.y + Math.sin(i * 1.1) * f.r * 0.35,
+            7 + damage * 8, 4 + damage * 4, i, 0, Math.PI * 2
+          );
+          g.fill();
+        }
+      }
+      if (damage > 0.75) {
+        g.fillStyle = "rgba(0,0,0,0.65)";
+        g.beginPath();
+        g.arc(macX, macY, macR * 0.55, 0, Math.PI * 2);
+        g.fill();
+        g.strokeStyle = "rgba(255,200,160,0.35)";
+        g.beginPath();
+        g.arc(f.x, f.y + f.r * 0.15, f.r * 0.7, 0.2, 2.4);
+        g.stroke();
+      }
+
+      burns.forEach((b) => b.draw(g));
+      floaters.forEach((fl) => fl.draw(g, f));
+
+      const sweep = (now / 1800) % 1;
+      g.fillStyle = "rgba(180,230,255,0.07)";
+      g.beginPath();
+      g.moveTo(f.x, f.y);
+      g.arc(f.x, f.y, f.r, sweep * Math.PI * 2, sweep * Math.PI * 2 + 0.4);
+      g.closePath();
+      g.fill();
+      g.restore();
+
+      g.strokeStyle = "rgba(180,210,240,0.5)";
+      g.lineWidth = 2;
+      g.beginPath();
+      g.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+      g.stroke();
+      g.fillStyle = "#cfe6ff";
+      g.font = "12px Arial";
+      g.textAlign = "center";
+      g.fillText("INSIDE EYE  —  RETINA / MACULA", f.x, f.y + f.r + 18);
+    }
+
+    function drawCutaway(g, damage, now) {
+      const c = cutawayBox();
+      g.save();
+      g.beginPath();
+      g.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+      g.clip();
+      g.fillStyle = "#0a0c10";
+      g.fillRect(c.x - c.r, c.y - c.r, c.r * 2, c.r * 2);
+
+      g.fillStyle = "#e8d8cc";
+      g.beginPath();
+      g.arc(c.x, c.y, c.r * 0.92, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = lerpColor("#7ad0e8", "#3a6080", damage);
+      g.beginPath();
+      g.arc(c.x, c.y, c.r * 0.78, 0, Math.PI * 2);
+      g.fill();
+
+      g.fillStyle = lerpColor("#c44a30", "#5a1008", damage);
+      g.beginPath();
+      g.arc(c.x + c.r * 0.08, c.y, c.r * 0.7, Math.PI * 0.55, Math.PI * 1.45);
+      g.fill();
+
+      g.fillStyle = "rgba(255,255,255,0.55)";
+      g.beginPath();
+      g.ellipse(c.x - c.r * 0.55, c.y, c.r * 0.12, c.r * 0.22, 0, 0, Math.PI * 2);
+      g.fill();
+      g.strokeStyle = "#8ab";
+      g.beginPath();
+      g.ellipse(c.x - c.r * 0.32, c.y, c.r * 0.08, c.r * 0.16, 0, 0, Math.PI * 2);
+      g.stroke();
+
+      g.fillStyle = "#1a3040";
+      g.beginPath();
+      g.arc(c.x - c.r * 0.48, c.y, c.r * 0.09, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = "#050308";
+      g.beginPath();
+      g.arc(c.x - c.r * 0.48, c.y, c.r * 0.045, 0, Math.PI * 2);
+      g.fill();
+
+      const beamA = 0.12 + Math.sin(now / 400) * 0.03;
+      g.fillStyle = `rgba(100,200,255,${0.18 + damage * 0.25})`;
+      g.beginPath();
+      g.moveTo(c.x - c.r * 0.95, c.y - 6);
+      g.lineTo(c.x - c.r * 0.95, c.y + 6);
+      g.lineTo(c.x + c.r * 0.55, c.y + 14 + damage * 20);
+      g.lineTo(c.x + c.r * 0.55, c.y - 14 - damage * 20);
+      g.closePath();
+      g.fill();
+
+      g.fillStyle = damage > 0.5 ? "#ffcc66" : "#c45a38";
+      g.beginPath();
+      g.arc(c.x + c.r * 0.52, c.y, c.r * (0.08 + damage * 0.12), 0, Math.PI * 2);
+      g.fill();
+      if (damage > 0.65) {
+        g.fillStyle = "#200";
+        g.beginPath();
+        g.arc(c.x + c.r * 0.52, c.y, c.r * 0.07, 0, Math.PI * 2);
+        g.fill();
+      }
+
+      g.fillStyle = "rgba(40,10,10,0.45)";
+      for (let i = 0; i < 5; i++) {
+        const a = now / 700 + i;
+        g.beginPath();
+        g.arc(c.x + Math.cos(a) * c.r * 0.25, c.y + Math.sin(a * 1.3) * c.r * 0.2, 3, 0, Math.PI * 2);
+        g.fill();
+      }
+      g.restore();
+
+      g.strokeStyle = "rgba(180,210,240,0.5)";
+      g.lineWidth = 2;
+      g.beginPath();
+      g.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+      g.stroke();
+      g.fillStyle = "#cfe6ff";
+      g.font = "12px Arial";
+      g.textAlign = "center";
+      g.fillText("EYE CROSS-SECTION  —  LIGHT BURN", c.x, c.y + c.r + 18);
+    }
+
+    function spawn() {
+      eyes.length = 0;
+      eyes.push(new Eye("L"), new Eye("R"));
+      phone = new Device("phone");
+      tv = new Device("tv");
+      phone.x = W * 0.5;
+      phone.y = H * 0.4;
+      tv.x = W * 0.7;
+      tv.y = H * 0.2;
+      floaters.length = 0;
+      burns.length = 0;
+      photons.length = 0;
+      for (let i = 0; i < 10; i++) floaters.push(new Floater());
+    }
+
+    const audio = {
+      ctx: null,
+      humGain: null,
+      hum: null,
+      last: 0,
+      init() {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AC();
+        const master = this.ctx.createGain();
+        master.gain.value = 0.24;
+        master.connect(this.ctx.destination);
+        this.master = master;
+        const o = this.ctx.createOscillator();
+        o.type = "sawtooth";
+        o.frequency.value = 55;
+        this.hum = o;
+        this.humGain = this.ctx.createGain();
+        this.humGain.gain.value = 0.03;
+        const f = this.ctx.createBiquadFilter();
+        f.type = "lowpass";
+        f.frequency.value = 400;
+        o.connect(f); f.connect(this.humGain); this.humGain.connect(master);
+        o.start();
+        this.sizzleLoop();
+      },
+      tone(freq, d, v, type) {
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.type = type || "sine";
+        o.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        o.frequency.exponentialRampToValueAtTime(Math.max(40, freq * 0.4), this.ctx.currentTime + d);
+        g.gain.setValueAtTime(v, this.ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + d);
+        o.connect(g); g.connect(this.master);
+        o.start(); o.stop(this.ctx.currentTime + d + 0.02);
+      },
+      sizzleLoop() {
+        const tick = () => {
+          if (!this.ctx) return;
+          this.tone(rand(800, 2200), 0.08, 0.04, "square");
+          if (Math.random() < 0.4) this.tone(rand(90, 160), 0.12, 0.06);
+          setTimeout(tick, 240 + Math.random() * 400);
+        };
+        tick();
+      },
+      onMove(speed, damage) {
+        if (!this.ctx) return;
+        const s = clamp(speed / 34, 0, 1);
+        this.humGain.gain.setTargetAtTime(0.03 + s * 0.08 + damage * 0.05, this.ctx.currentTime, 0.05);
+        this.hum.frequency.setTargetAtTime(50 + s * 40 + damage * 30, this.ctx.currentTime, 0.08);
+        const now = performance.now();
+        if (s > 0.15 && now - this.last > 100) {
+          this.last = now;
+          this.tone(rand(1200, 2800), 0.07, 0.05, "square");
+        }
+      }
+    };
+
+    function resize() {
+      dpr = Math.min(devicePixelRatio || 1, 2);
+      W = innerWidth;
+      H = innerHeight;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      mouse.x = mouse.tx = W * 0.5;
+      mouse.y = mouse.ty = H * 0.4;
+      spawn();
+    }
+
+    function frame(now) {
+      const dt = Math.min(0.033, (now - last) / 1000);
+      last = now;
+      const loopT = ((now - t0) % LOOP) / LOOP;
+      const damage = 0.12 + 0.88 * (0.5 + 0.5 * Math.sin(loopT * Math.PI * 2 - Math.PI / 2));
+      const scare = clamp(mouse.speed / 26, 0, 1);
+      mouse.x = lerp(mouse.x, mouse.tx, 0.28);
+      mouse.y = lerp(mouse.y, mouse.ty, 0.28);
+
+      const bg = ctx.createRadialGradient(W * 0.5, H * 0.2, 20, W * 0.5, H * 0.5, Math.max(W, H));
+      bg.addColorStop(0, "#1a1020");
+      bg.addColorStop(1, "#04060a");
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.fillStyle = "#2a1820";
+      ctx.beginPath();
+      ctx.ellipse(W * 0.5, H * 0.28, Math.min(W, H) * 0.48, Math.min(W, H) * 0.22, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      eyes.forEach((e) => e.update(dt, damage, scare));
+      phone.update(dt);
+      tv.update(dt);
+      drawBeams(ctx, damage);
+      eyes.forEach((e) => e.draw(ctx, damage));
+      phone.draw(ctx);
+      tv.draw(ctx);
+
+      if (Math.random() < 0.35 + scare * 0.4) {
+        const eye = eyes[Math.random() < 0.5 ? 0 : 1];
+        const src = Math.random() < 0.6 ? phone : tv;
+        photons.push(new Photon({ x: src.x, y: src.y }, eye.pupil()));
+      }
+      photons.forEach((p) => p.update(dt));
+      photons.forEach((p) => p.draw(ctx));
+      for (let i = photons.length - 1; i >= 0; i--) if (photons[i].t > 1.2) photons.splice(i, 1);
+
+      const f = fundusBox();
+      if (Math.random() < 0.04 + damage * 0.08 + scare * 0.05) {
+        const a = Math.atan2(mouse.y - f.y, mouse.x - f.x) + rand(-0.4, 0.4);
+        const d = rand(0.1, 0.7) * f.r;
+        burns.push(new Burn(f.x + Math.cos(a) * d, f.y + Math.sin(a) * d));
+        if (burns.length > 18) burns.shift();
+      }
+      burns.forEach((b) => b.update(dt, damage));
+      floaters.forEach((fl) => fl.update(dt, scare));
+
+      drawFundus(ctx, damage, now);
+      drawCutaway(ctx, damage, now);
+
+      const sec = Math.floor(((now - t0) % LOOP) / 1000);
+      document.getElementById("time").textContent = "02:" + String(sec).padStart(2, "0");
+      document.getElementById("retina").textContent = Math.round(96 - damage * 72) + "%";
+      document.getElementById("blue").textContent = damage > 0.6 ? "EXTREME" : "HIGH";
+      document.getElementById("dry").textContent = damage > 0.7 ? "severe" : damage > 0.35 ? "medium" : "low";
+      document.getElementById("macula").textContent = damage > 0.7 ? "burn hole" : damage > 0.4 ? "overheating" : "strain";
+      document.getElementById("cornea").textContent = damage > 0.5 ? "dry / cracked" : "ok";
+      document.getElementById("vessels").textContent = damage > 0.65 ? "bleeding" : "intact";
+
+      mouse.speed *= 0.88;
+      requestAnimationFrame(frame);
+    }
+
+    window.addEventListener("resize", resize);
+    window.addEventListener("mousemove", (e) => {
+      mouse.speed = Math.hypot(e.movementX, e.movementY);
+      mouse.tx = e.clientX;
+      mouse.ty = e.clientY;
+      cursorEl.style.left = e.clientX + "px";
+      cursorEl.style.top = e.clientY + "px";
+      if (started) audio.onMove(mouse.speed, 0.5);
+    });
+
+    gate.addEventListener("click", async () => {
+      started = true;
+      audio.init();
+      if (audio.ctx.state === "suspended") await audio.ctx.resume();
+      gate.remove();
+    });
+
+    resize();
+    requestAnimationFrame(frame);
+  </script>
+</body>
+</html>

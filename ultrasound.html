@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ultrasound</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+      font-family: Arial, Helvetica, sans-serif;
+      cursor: crosshair;
+      user-select: none;
+    }
+    canvas { display: block; width: 100%; height: 100%; }
+    .gate {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      color: #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+      cursor: pointer;
+    }
+    .gate span {
+      border: 1px solid #888;
+      padding: 14px 22px;
+      letter-spacing: 1px;
+      font-size: 14px;
+    }
+    .repeat {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      color: #fff;
+      font-size: 12px;
+      letter-spacing: 1px;
+      opacity: 0.85;
+      z-index: 4;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="scan"></canvas>
+  <div class="repeat">REPEAT</div>
+  <div class="gate" id="gate"><span>CLICK TO START LIVE SCAN</span></div>
+  <script>
+    const canvas = document.getElementById("scan");
+    const ctx = canvas.getContext("2d");
+    const gate = document.getElementById("gate");
+    const LOOP = 12000;
+
+    let W = 0, H = 0, dpr = 1;
+    let tissue = null;
+    let started = false;
+    let mouse = { x: -9999, y: -9999, speed: 0 };
+    let last = performance.now();
+
+    function rand(a, b) { return a + Math.random() * (b - a); }
+    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+    function lerp(a, b, t) { return a + (b - a) * t; }
+
+    function fanPath(g, w, h) {
+      const cx = w * 0.5;
+      const cy = h * 0.05;
+      const r = Math.min(w * 0.92, h * 1.05);
+      g.beginPath();
+      g.moveTo(cx, cy);
+      g.arc(cx, cy, r, Math.PI * 0.22, Math.PI * 0.78);
+      g.closePath();
+      return { cx, cy, r };
+    }
+
+    function buildTissue(w, h) {
+      const c = document.createElement("canvas");
+      c.width = w;
+      c.height = h;
+      const g = c.getContext("2d");
+      g.fillStyle = "#000";
+      g.fillRect(0, 0, w, h);
+      const { cx, cy, r } = fanPath(g, w, h);
+      g.save();
+      g.clip();
+
+      const grd = g.createRadialGradient(cx, cy + h * 0.12, 8, cx, h * 0.55, r);
+      grd.addColorStop(0, "#d8d8d8");
+      grd.addColorStop(0.12, "#9a9a9a");
+      grd.addColorStop(0.28, "#5a5a5a");
+      grd.addColorStop(0.5, "#2e2e2e");
+      grd.addColorStop(1, "#0a0a0a");
+      g.fillStyle = grd;
+      g.fillRect(0, 0, w, h);
+
+      g.strokeStyle = "rgba(255,255,255,0.28)";
+      for (let i = 0; i < 9; i++) {
+        g.lineWidth = 7 - i * 0.5;
+        g.beginPath();
+        g.arc(cx, cy, r * (0.08 + i * 0.035), Math.PI * 0.24, Math.PI * 0.76);
+        g.stroke();
+      }
+
+      g.fillStyle = "rgba(8,8,8,0.96)";
+      g.beginPath();
+      g.ellipse(cx - w * 0.02, h * 0.52, w * 0.20, h * 0.23, -0.28, 0, Math.PI * 2);
+      g.fill();
+
+      g.fillStyle = "rgba(70,70,70,0.35)";
+      g.beginPath();
+      g.ellipse(cx + w * 0.16, h * 0.42, w * 0.09, h * 0.12, 0.5, 0, Math.PI * 2);
+      g.fill();
+      g.beginPath();
+      g.ellipse(cx - w * 0.18, h * 0.38, w * 0.08, h * 0.1, -0.4, 0, Math.PI * 2);
+      g.fill();
+
+      const img = g.getImageData(0, 0, w, h);
+      const d = img.data;
+      for (let i = 0; i < d.length; i += 4) {
+        if (d[i] + d[i + 1] + d[i + 2] < 6) continue;
+        const n = (Math.random() - 0.45) * 52;
+        const v = clamp(d[i] + n, 0, 255);
+        d[i] = d[i + 1] = d[i + 2] = v;
+      }
+      g.putImageData(img, 0, 0);
+      g.restore();
+      return c;
+    }
+
+    function loopPoint(t, which) {
+      const cx = W * 0.48;
+      const cy = H * 0.52;
+      const a = t * Math.PI * 2;
+      if (which === "worm") {
+        return {
+          x: cx + Math.cos(a) * W * 0.07 + Math.sin(a * 2) * W * 0.03,
+          y: cy + Math.sin(a) * H * 0.08
+        };
+      }
+      const slots = [
+        [0.12, -0.16],
+        [-0.14, -0.08],
+        [0.10, 0.14],
+        [-0.08, 0.16]
+      ];
+      const s = slots[which];
+      return {
+        x: cx + s[0] * W + Math.cos(a + which) * W * 0.045,
+        y: cy + s[1] * H + Math.sin(a * 1.3 + which) * H * 0.04
+      };
+    }
+
+    class Centipede {
+      constructor() {
+        this.n = 22;
+        this.seg = [];
+        this.phase = 0;
+        for (let i = 0; i < this.n; i++) this.seg.push({ x: 0, y: 0 });
+      }
+      update(dt, t, scare) {
+        const home = loopPoint(t, "worm");
+        let tx = home.x, ty = home.y;
+        const dx = this.seg[0].x - mouse.x;
+        const dy = this.seg[0].y - mouse.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < 170) {
+          tx += (dx / dist) * 80;
+          ty += (dy / dist) * 80;
+        }
+        if (!this.seg[0].x) {
+          this.seg[0].x = tx;
+          this.seg[0].y = ty;
+        }
+        const spd = 0.18 + scare * 0.45;
+        this.seg[0].x = lerp(this.seg[0].x, tx, spd);
+        this.seg[0].y = lerp(this.seg[0].y, ty, spd);
+        this.phase += dt * (6 + scare * 10);
+        const spacing = Math.min(W, H) * 0.014;
+        for (let i = 1; i < this.n; i++) {
+          const p = this.seg[i - 1];
+          const s = this.seg[i];
+          if (!s.x) { s.x = p.x; s.y = p.y; }
+          const a = Math.atan2(p.y - s.y, p.x - s.x);
+          const wobble = Math.sin(this.phase - i * 0.45) * 0.25;
+          s.x = p.x - Math.cos(a + wobble) * spacing;
+          s.y = p.y - Math.sin(a + wobble) * spacing;
+        }
+      }
+      draw(g) {
+        g.save();
+        g.shadowColor = "rgba(255,255,255,0.85)";
+        g.shadowBlur = 10;
+        for (let i = this.n - 1; i >= 0; i--) {
+          const p = 1 - i / this.n;
+          const rad = lerp(3.2, 9.5, p) * (Math.min(W, H) / 700);
+          g.fillStyle = `rgba(255,255,255,${0.42 + p * 0.28})`;
+          g.beginPath();
+          g.arc(this.seg[i].x, this.seg[i].y, rad, 0, Math.PI * 2);
+          g.fill();
+          if (i > 0 && i < this.n - 1) {
+            const a = Math.atan2(this.seg[i - 1].y - this.seg[i].y, this.seg[i - 1].x - this.seg[i].x);
+            g.strokeStyle = "rgba(255,255,255,0.55)";
+            g.lineWidth = 1;
+            const lx = Math.cos(a + Math.PI / 2);
+            const ly = Math.sin(a + Math.PI / 2);
+            const kick = Math.sin(this.phase * 2 + i) * 2;
+            const leg = rad * 2.4;
+            g.beginPath();
+            g.moveTo(this.seg[i].x + lx * rad, this.seg[i].y + ly * rad);
+            g.lineTo(this.seg[i].x + lx * (leg + kick), this.seg[i].y + ly * (leg + kick));
+            g.moveTo(this.seg[i].x - lx * rad, this.seg[i].y - ly * rad);
+            g.lineTo(this.seg[i].x - lx * (leg + kick), this.seg[i].y - ly * (leg + kick));
+            g.stroke();
+          }
+        }
+        g.restore();
+      }
+    }
+
+    class Ant {
+      constructor(id) {
+        this.id = id;
+        this.x = 0;
+        this.y = 0;
+        this.angle = 0;
+        this.leg = rand(0, 10);
+        this.scale = rand(0.9, 1.2);
+      }
+      update(dt, t, scare) {
+        const home = loopPoint(t, this.id);
+        let tx = home.x, ty = home.y;
+        const dx = this.x - mouse.x;
+        const dy = this.y - mouse.y;
+        const dist = Math.hypot(dx, dy) + 0.01;
+        if (dist < 150) {
+          tx += (dx / dist) * (70 + scare * 40);
+          ty += (dy / dist) * (70 + scare * 40);
+        }
+        if (!this.x) { this.x = tx; this.y = ty; }
+        const ox = tx - this.x, oy = ty - this.y;
+        this.angle = Math.atan2(oy, ox);
+        this.x = lerp(this.x, tx, 0.12 + scare * 0.3);
+        this.y = lerp(this.y, ty, 0.12 + scare * 0.3);
+        this.leg += dt * (14 + scare * 18);
+      }
+      draw(g) {
+        g.save();
+        g.translate(this.x, this.y);
+        g.rotate(this.angle);
+        g.scale(this.scale * (Math.min(W, H) / 720), this.scale * (Math.min(W, H) / 720));
+        g.shadowColor = "#fff";
+        g.shadowBlur = 8;
+        g.fillStyle = "#fff";
+        g.strokeStyle = "#fff";
+        g.lineWidth = 1.2;
+        g.beginPath();
+        g.ellipse(-10, 0, 7.5, 4.6, 0, 0, Math.PI * 2);
+        g.ellipse(0, 0, 4.2, 3.3, 0, 0, Math.PI * 2);
+        g.ellipse(8, 0, 3.4, 2.8, 0, 0, Math.PI * 2);
+        g.fill();
+        g.beginPath();
+        g.moveTo(10, -1); g.lineTo(16, -6);
+        g.moveTo(10, 1); g.lineTo(16, 6);
+        g.stroke();
+        for (let i = 0; i < 3; i++) {
+          const swing = Math.sin(this.leg + i) * 4;
+          g.beginPath();
+          g.moveTo(-4 + i * 4, 2);
+          g.lineTo(-10 + i * 5 + swing, 11);
+          g.moveTo(-4 + i * 4, -2);
+          g.lineTo(-10 + i * 5 - swing, -11);
+          g.stroke();
+        }
+        g.restore();
+      }
+    }
+
+    const worm = new Centipede();
+    const ants = [0, 1, 2, 3].map((i) => new Ant(i));
+
+    const audio = {
+      ctx: null,
+      crawlGain: null,
+      buzz: null,
+      buzzGain: null,
+      crawl: null,
+      lastHit: 0,
+      init() {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AC();
+        const master = this.ctx.createGain();
+        master.gain.value = 0.3;
+        master.connect(this.ctx.destination);
+        this.master = master;
+
+        const n = this.ctx.sampleRate * 2;
+        const buf = this.ctx.createBuffer(1, n, this.ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        let last = 0;
+        for (let i = 0; i < n; i++) {
+          last = (last + (Math.random() * 2 - 1) * 0.07) * 0.98;
+          data[i] = last;
+        }
+        const src = this.ctx.createBufferSource();
+        src.buffer = buf;
+        src.loop = true;
+        const bp = this.ctx.createBiquadFilter();
+        bp.type = "bandpass";
+        bp.frequency.value = 500;
+        this.crawlGain = this.ctx.createGain();
+        this.crawlGain.gain.value = 0.05;
+        src.connect(bp); bp.connect(this.crawlGain); this.crawlGain.connect(master);
+        src.start();
+        this.crawl = bp;
+
+        this.buzz = this.ctx.createOscillator();
+        this.buzz.type = "sawtooth";
+        this.buzz.frequency.value = 88;
+        this.buzzGain = this.ctx.createGain();
+        this.buzzGain.gain.value = 0.015;
+        const lp = this.ctx.createBiquadFilter();
+        lp.type = "lowpass";
+        lp.frequency.value = 700;
+        this.buzz.connect(lp); lp.connect(this.buzzGain); this.buzzGain.connect(master);
+        this.buzz.start();
+        this.whooshLoop();
+      },
+      blip(f, d, v, type) {
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.type = type || "square";
+        o.frequency.setValueAtTime(f, this.ctx.currentTime);
+        o.frequency.exponentialRampToValueAtTime(Math.max(40, f * 0.3), this.ctx.currentTime + d);
+        g.gain.setValueAtTime(v, this.ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + d);
+        o.connect(g); g.connect(this.master);
+        o.start(); o.stop(this.ctx.currentTime + d + 0.02);
+      },
+      whooshLoop() {
+        const tick = () => {
+          if (!this.ctx) return;
+          this.blip(rand(1600, 3800), 0.1, 0.06);
+          if (Math.random() < 0.45) this.blip(rand(80, 140), 0.16, 0.1, "triangle");
+          setTimeout(tick, 280 + Math.random() * 420);
+        };
+        tick();
+      },
+      onMove(speed) {
+        if (!this.ctx) return;
+        const s = clamp(speed / 36, 0, 1);
+        this.crawlGain.gain.setTargetAtTime(0.05 + s * 0.22, this.ctx.currentTime, 0.05);
+        this.crawl.frequency.setTargetAtTime(480 + s * 900, this.ctx.currentTime, 0.08);
+        this.buzzGain.gain.setTargetAtTime(0.015 + s * 0.08, this.ctx.currentTime, 0.05);
+        const now = performance.now();
+        if (s > 0.12 && now - this.lastHit > 80) {
+          this.lastHit = now;
+          this.blip(rand(1800, 4200), 0.09, 0.08);
+          if (Math.random() < 0.4) this.blip(rand(70, 150), 0.18, 0.12, "triangle");
+        }
+      }
+    };
+
+    function drawOSD(g) {
+      g.save();
+      g.fillStyle = "#fff";
+      g.font = `${Math.max(12, Math.round(H * 0.018))}px Arial`;
+      g.textBaseline = "top";
+      const left = 18;
+      const lines = ["C9-2", "38Hz", "RS", "2D", "60%", "Dyn R 58", "P Low", "HRes"];
+      lines.forEach((t, i) => g.fillText(t, left, 16 + i * 18));
+      g.textAlign = "right";
+      g.fillText("TIS0.1   MI 0.7", W - 18, 16);
+
+      const top = H * 0.12;
+      const bot = H * 0.88;
+      g.textAlign = "left";
+      g.font = `${Math.max(11, Math.round(H * 0.016))}px Arial`;
+      for (let i = 0; i <= 8; i += 2) {
+        const y = top + (i / 8) * (bot - top);
+        g.fillRect(W - 36, y, 12, 1);
+        g.fillText(String(i), W - 54, y - 6);
+      }
+      g.strokeStyle = "#fff";
+      g.lineWidth = 1;
+      const fy = top + (bot - top) * 0.45;
+      g.strokeRect(W - 28, fy - 18, 8, 36);
+      g.fillText("x3", W - 54, fy - 6);
+      g.textAlign = "right";
+      g.fillText("9.0cm", W - 18, H - 28);
+
+      g.textAlign = "left";
+      const bx = 16, by = H - 86;
+      g.strokeRect(bx, by, 138, 70);
+      g.fillText("CRL  1.32 cm", bx + 10, by + 10);
+      g.fillText("GA   6w6d", bx + 10, by + 30);
+      g.fillText("EDD  08/23/2025", bx + 10, by + 50);
+      g.restore();
+    }
+
+    function resize() {
+      dpr = Math.min(devicePixelRatio || 1, 2);
+      W = innerWidth;
+      H = innerHeight;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      tissue = buildTissue(W, H);
+    }
+
+    function frame(now) {
+      const dt = Math.min(0.033, (now - last) / 1000);
+      last = now;
+      const t = (now % LOOP) / LOOP;
+      const scare = clamp(mouse.speed / 28, 0, 1);
+
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, W, H);
+      if (tissue) ctx.drawImage(tissue, 0, 0);
+
+      ctx.save();
+      fanPath(ctx, W, H);
+      ctx.clip();
+      worm.update(dt, t, scare);
+      worm.draw(ctx);
+      ants.forEach((a) => { a.update(dt, t, scare); a.draw(ctx); });
+      ctx.restore();
+
+      drawOSD(ctx);
+      mouse.speed *= 0.88;
+      requestAnimationFrame(frame);
+    }
+
+    window.addEventListener("resize", resize);
+    window.addEventListener("mousemove", (e) => {
+      mouse.speed = Math.hypot(e.movementX, e.movementY);
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+      if (started) audio.onMove(mouse.speed);
+    });
+
+    gate.addEventListener("click", async () => {
+      started = true;
+      audio.init();
+      if (audio.ctx.state === "suspended") await audio.ctx.resume();
+      gate.remove();
+    });
+
+    resize();
+    requestAnimationFrame(frame);
+  </script>
+</body>
+</html>

@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jungle — Don't Wander Off</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #020403;
+      font-family: Arial, Helvetica, sans-serif;
+      cursor: none;
+      user-select: none;
+      color: #d7e7d0;
+    }
+    canvas { display: block; width: 100%; height: 100%; }
+    .hud { position: fixed; inset: 0; pointer-events: none; z-index: 2; }
+    .hud .tl, .hud .tr, .hud .bl, .hud .br {
+      position: absolute;
+      font-size: 13px;
+      line-height: 1.55;
+      text-shadow: 0 1px 3px #000;
+    }
+    .tl { top: 16px; left: 18px; }
+    .tr { top: 16px; right: 18px; text-align: right; }
+    .bl { bottom: 18px; left: 18px; }
+    .br { bottom: 18px; right: 18px; text-align: right; }
+    .box {
+      border: 1px solid rgba(180, 220, 140, 0.45);
+      padding: 8px 12px;
+      background: rgba(0, 10, 4, 0.45);
+      max-width: 280px;
+    }
+    .warn { color: #ffb4a0; }
+    .cursor {
+      position: fixed;
+      width: 26px;
+      height: 26px;
+      margin: -13px 0 0 -13px;
+      border: 2px solid #ffe9a0;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 4;
+      box-shadow: 0 0 18px #ffcc66;
+    }
+    .gate {
+      position: fixed;
+      inset: 0;
+      background: #030704;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      cursor: pointer;
+    }
+    .gate-card { text-align: center; max-width: 520px; padding: 20px; }
+    .gate-card h1 {
+      color: #c8f0a8;
+      font-size: 22px;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+    .gate-card p { color: #a9c4a8; margin-bottom: 18px; }
+    .gate-card span {
+      border: 1px solid #c8f0a8;
+      padding: 14px 22px;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="view"></canvas>
+  <div class="hud">
+    <div class="tl">NIGHT JUNGLE<br />STATUS  lost / alone<br />PARENTS  not here</div>
+    <div class="tr">THREAT  <span id="threat" class="warn">rising</span><br />DINO  <span id="dino">near</span></div>
+    <div class="bl">
+      <div class="box">This is what happens when you don't listen to your parents and wander off alone.</div>
+    </div>
+    <div class="br">REPEAT</div>
+  </div>
+  <div class="cursor" id="cursor"></div>
+  <div class="gate" id="gate">
+    <div class="gate-card">
+      <h1>YOU DIDN'T LISTEN</h1>
+      <p>Now you are alone in the jungle. Click to turn on the flashlight.</p>
+      <span>ENTER THE JUNGLE</span>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("view");
+    const ctx = canvas.getContext("2d");
+    const gate = document.getElementById("gate");
+    const cursorEl = document.getElementById("cursor");
+    const LOOP = 18000;
+
+    let W = 0, H = 0, dpr = 1;
+    let started = false;
+    let last = performance.now();
+    let t0 = performance.now();
+    let mouse = { x: 0, y: 0, tx: 0, ty: 0, speed: 0 };
+    const trees = [];
+    const vines = [];
+    const snakes = [];
+    const eyes = [];
+    const bugs = [];
+    let kid, gorilla, raccoon, fox, dino;
+
+    function rand(a, b) { return a + Math.random() * (b - a); }
+    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+    function lerp(a, b, t) { return a + (b - a) * t; }
+
+    class Tree {
+      constructor(layer) {
+        this.layer = layer;
+        this.reset();
+      }
+      reset() {
+        const scale = this.layer === 0 ? rand(0.7, 1.3) : this.layer === 1 ? rand(1.1, 1.8) : rand(1.6, 2.4);
+        this.x = rand(-40, W + 40);
+        this.y = H * (0.62 + this.layer * 0.08);
+        this.h = H * 0.55 * scale;
+        this.w = 18 * scale + rand(6, 16);
+        this.lean = rand(-0.08, 0.08);
+        this.shade = 18 + this.layer * 10 + rand(0, 12);
+      }
+      draw(g) {
+        g.save();
+        g.translate(this.x, this.y);
+        g.rotate(this.lean);
+        g.fillStyle = `rgb(${this.shade},${this.shade + 8},${this.shade - 4})`;
+        g.beginPath();
+        g.moveTo(-this.w * 0.5, 0);
+        g.lineTo(-this.w * 0.28, -this.h);
+        g.lineTo(this.w * 0.28, -this.h);
+        g.lineTo(this.w * 0.5, 0);
+        g.closePath();
+        g.fill();
+        g.fillStyle = `rgb(${20 + this.layer * 8},${50 + this.layer * 18},${18 + this.layer * 6})`;
+        for (let i = 0; i < 5; i++) {
+          g.beginPath();
+          g.ellipse(
+            rand(-this.w * 2.2, this.w * 2.2),
+            -this.h + rand(-40, 50),
+            rand(40, 90) * (0.7 + this.layer * 0.2),
+            rand(24, 44) * (0.7 + this.layer * 0.2),
+            rand(-0.4, 0.4), 0, Math.PI * 2
+          );
+          g.fill();
+        }
+        g.restore();
+      }
+    }
+
+    class Kid {
+      constructor() { this.x = 0; this.y = 0; this.shake = 0; this.look = 0; }
+      update(dt, fear) {
+        this.x = lerp(this.x, W * 0.5 + (mouse.x - W * 0.5) * 0.08, 0.08);
+        this.y = H * 0.72;
+        this.shake = fear;
+        this.look = clamp((mouse.x - this.x) / 40, -8, 8);
+      }
+      draw(g, fear) {
+        const s = Math.min(W, H) / 900;
+        const jx = (Math.random() - 0.5) * fear * 6;
+        g.save();
+        g.translate(this.x + jx, this.y);
+        g.scale(s, s);
+        g.fillStyle = "#1a120c";
+        g.beginPath();
+        g.ellipse(0, 28, 16, 6, 0, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = "#3a6a9a";
+        g.fillRect(-11, -6, 22, 20);
+        g.fillStyle = "#2a3340";
+        g.fillRect(-10, 14, 8, 18);
+        g.fillRect(2, 14, 8, 18);
+        g.fillStyle = "#e8c8a8";
+        g.fillRect(-16, -4, 7, 16);
+        g.fillRect(9, -4, 7, 16);
+        g.beginPath();
+        g.arc(this.look * 0.3, -28, 14, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = "#2a1a10";
+        g.beginPath();
+        g.arc(this.look * 0.3, -34, 12, Math.PI, Math.PI * 2);
+        g.fill();
+        g.fillStyle = "#fff";
+        g.beginPath();
+        g.ellipse(-4 + this.look, -28, 3.5, 4.2, 0, 0, Math.PI * 2);
+        g.ellipse(5 + this.look, -28, 3.5, 4.2, 0, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = "#111";
+        g.beginPath();
+        g.arc(-3 + this.look * 1.2, -27, 1.6, 0, Math.PI * 2);
+        g.arc(6 + this.look * 1.2, -27, 1.6, 0, Math.PI * 2);
+        g.fill();
+        g.strokeStyle = "#4a2018";
+        g.lineWidth = 1.5;
+        g.beginPath();
+        g.arc(this.look * 0.3, -22, 4, 0.2, Math.PI - 0.2);
+        g.stroke();
+        g.restore();
+      }
+    }
+
+    class Gorilla {
+      constructor() { this.x = 0; this.y = 0; this.phase = 0; this.home = 0; }
+      update(dt, close) {
+        this.phase += dt;
+        this.home = lerp(this.home, W * 0.12 + close * W * 0.22, 0.03);
+        this.x = this.home + Math.sin(this.phase * 1.3) * 10 + (mouse.x - W * 0.5) * 0.04;
+        this.y = H * 0.68;
+      }
+      draw(g) {
+        const s = Math.min(W, H) / 720;
+        g.save();
+        g.translate(this.x, this.y);
+        g.scale(s, s);
+        g.fillStyle = "#1a1410";
+        g.beginPath();
+        g.ellipse(0, 10, 38, 28, 0, 0, Math.PI * 2);
+        g.fill();
+        g.beginPath();
+        g.arc(-6, -28, 22, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = "#3a2a22";
+        g.beginPath();
+        g.ellipse(-4, -22, 12, 10, 0, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = "#e8c070";
+        g.beginPath();
+        g.arc(-12, -30, 3, 0, Math.PI * 2);
+        g.arc(2, -30, 3, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = "#111";
+        g.beginPath();
+        g.arc(-12, -30, 1.4, 0, Math.PI * 2);
+        g.arc(2, -30, 1.4, 0, Math.PI * 2);
+        g.fill();
+        const swing = Math.sin(this.phase * 6) * 8;
+        g.strokeStyle = "#1a1410";
+        g.lineWidth = 14;
+        g.lineCap = "round";
+        g.beginPath();
+        g.moveTo(-28, 0); g.lineTo(-40, 38 + swing);
+        g.moveTo(28, 8); g.lineTo(36, 40 - swing);
+        g.stroke();
+        g.restore();
+      }
+    }
+
+    class Raccoon {
+      constructor() { this.x = 0; this.y = 0; this.phase = rand(0, 9); }
+      update(dt, close) {
+        this.phase += dt * (2 + close * 3);
+        const path = W * 0.28 + Math.sin(this.phase) * W * 0.12 + close * 80;
+        this.x = lerp(this.x || path, path + (mouse.x - W * 0.5) * 0.05, 0.1);
+        this.y = H * 0.76 + Math.sin(this.phase * 4) * 4;
+      }
+      draw(g) {
+        const s = Math.min(W, H) / 900;
+        g.save();
+        g.translate(this.x, this.y);
+        g.scale(s * (this.x > kid.x ? 1 : -1), s);
+        g.fillStyle = "#6a655e";
+        g.beginPath();
+        g.ellipse(0, 0, 18, 10, 0, 0, Math.PI * 2);
+        g.fill();
+        g.beginPath();
+        g.arc(14, -6, 8, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = "#111";
+        g.beginPath();
+        g.ellipse(16, -6, 7, 4, 0.2, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = "#fff";
+        g.beginPath();
+        g.arc(17, -7, 2, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = "#8a7a60";
+        g.beginPath();
+        g.arc(-14, 2, 5, 0, Math.PI * 2);
+        g.fill();
+        g.restore();
+      }
+    }
+
+    class Fox {
+      constructor() { this.x = 0; this.y = 0; this.phase = rand(0, 8); }
+      update(dt, close) {
+        this.phase += dt * 1.6;
+        this.x = W * 0.78 - close * W * 0.2 + Math.sin(this.phase) * 20 + (mouse.x - W * 0.5) * 0.06;
+        this.y = H * 0.74;
+      }
+      draw(g) {
+        const s = Math.min(W, H) / 860;
+        g.save();
+        g.translate(this.x, this.y);
+        g.scale(-s, s);
+        g.fillStyle = "#c45a18";
+        g.beginPath();
+        g.ellipse(0, 0, 22, 10, 0, 0, Math.PI * 2);
+        g.fill();
+        g.beginPath();
+        g.moveTo(16, -8); g.lineTo(28, -22); g.lineTo(22, -6);
+        g.fill();
+        g.beginPath();
+        g.arc(18, -6, 8, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = "#fff";
+        g.beginPath();
+        g.moveTo(-18, 0); g.lineTo(-32, -6); g.lineTo(-22, 6);
+        g.fill();
+        g.fillStyle = "#111";
+        g.beginPath();
+        g.arc(20, -8, 1.6, 0, Math.PI * 2);
+        g.fill();
+        g.restore();
+      }
+    }
+
+    class Dino {
+      constructor() { this.x = 0; this.y = 0; this.phase = 0; }
+      update(dt, close) {
+        this.phase += dt;
+        this.x = lerp(this.x, W * 0.92 - close * W * 0.28, 0.025);
+        this.y = H * 0.62 + Math.sin(this.phase * 3) * 6;
+      }
+      draw(g) {
+        const s = Math.min(W, H) / 640;
+        g.save();
+        g.translate(this.x, this.y);
+        g.scale(-s, s);
+        g.fillStyle = "#2a4a28";
+        g.beginPath();
+        g.ellipse(-10, 10, 70, 32, 0, 0, Math.PI * 2);
+        g.fill();
+        g.beginPath();
+        g.moveTo(40, -10);
+        g.quadraticCurveTo(70, -70, 86, -40);
+        g.lineTo(78, -8);
+        g.closePath();
+        g.fill();
+        g.beginPath();
+        g.arc(78, -48, 18, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = "#c9e86a";
+        g.beginPath();
+        g.arc(84, -52, 5, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = "#111";
+        g.beginPath();
+        g.arc(85, -52, 2.2, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = "#d8d0c0";
+        g.beginPath();
+        g.moveTo(88, -42); g.lineTo(98, -38); g.lineTo(88, -34);
+        g.fill();
+        const stomp = Math.sin(this.phase * 6);
+        g.fillStyle = "#1e3820";
+        g.fillRect(-30, 30, 16, 38 + stomp * 6);
+        g.fillRect(10, 30, 16, 38 - stomp * 6);
+        g.beginPath();
+        g.moveTo(-70, 10);
+        g.quadraticCurveTo(-120, 0, -150, 18);
+        g.quadraticCurveTo(-120, 16, -70, 22);
+        g.fill();
+        g.restore();
+      }
+    }
+
+    class Snake {
+      constructor(i) {
+        this.n = 16;
+        this.seg = [];
+        this.phase = rand(0, 10);
+        this.ground = i % 3 !== 0;
+        this.x = rand(W * 0.1, W * 0.9);
+        this.y = rand(H * 0.55, H * 0.85);
+        this.hue = rand(70, 130);
+        for (let k = 0; k < this.n; k++) this.seg.push({ x: this.x, y: this.y });
+      }
+      update(dt, close, scare) {
+        this.phase += dt * (4 + scare * 6);
+        const tx = lerp(this.x, kid.x + Math.sin(this.phase + this.hue) * 80, 0.02 + close * 0.03);
+        const ty = this.ground ? H * 0.8 + Math.sin(this.phase) * 8 : lerp(this.y, kid.y - 40, 0.02);
+        const mx = scare > 0.2 ? mouse.x : tx;
+        const my = scare > 0.2 ? mouse.y : ty;
+        this.x = lerp(this.x, mx, 0.04 + scare * 0.08);
+        this.y = lerp(this.y, my, 0.04 + scare * 0.08);
+        this.seg[0].x = this.x;
+        this.seg[0].y = this.y;
+        for (let i = 1; i < this.n; i++) {
+          const p = this.seg[i - 1], s = this.seg[i];
+          const a = Math.atan2(p.y - s.y, p.x - s.x) + Math.sin(this.phase - i * 0.4) * 0.15;
+          s.x = p.x - Math.cos(a) * 9;
+          s.y = p.y - Math.sin(a) * 9;
+        }
+      }
+      draw(g) {
+        for (let i = this.n - 1; i >= 0; i--) {
+          const p = 1 - i / this.n;
+          g.fillStyle = `hsl(${this.hue}, 55%, ${18 + p * 22}%)`;
+          g.beginPath();
+          g.arc(this.seg[i].x, this.seg[i].y, 3 + p * 5, 0, Math.PI * 2);
+          g.fill();
+        }
+        g.fillStyle = "#ff3030";
+        g.beginPath();
+        g.arc(this.x + 4, this.y - 2, 1.5, 0, Math.PI * 2);
+        g.arc(this.x + 4, this.y + 2, 1.5, 0, Math.PI * 2);
+        g.fill();
+      }
+    }
+
+    function spawn() {
+      trees.length = 0;
+      vines.length = 0;
+      snakes.length = 0;
+      eyes.length = 0;
+      bugs.length = 0;
+      for (let layer = 0; layer < 3; layer++) {
+        const n = 10 + layer * 6;
+        for (let i = 0; i < n; i++) trees.push(new Tree(layer));
+      }
+      for (let i = 0; i < 12; i++) {
+        vines.push({ x: rand(0, W), y: rand(0, H * 0.2), h: rand(80, 220), phase: rand(0, 8) });
+      }
+      for (let i = 0; i < 9; i++) snakes.push(new Snake(i));
+      for (let i = 0; i < 16; i++) {
+        eyes.push({ x: rand(0, W), y: rand(H * 0.35, H * 0.62), blink: rand(0, 4) });
+      }
+      kid = new Kid();
+      gorilla = new Gorilla();
+      raccoon = new Raccoon();
+      fox = new Fox();
+      dino = new Dino();
+      kid.x = W * 0.5;
+    }
+
+    function drawSky(g, now) {
+      const grd = g.createLinearGradient(0, 0, 0, H);
+      grd.addColorStop(0, "#07120c");
+      grd.addColorStop(0.45, "#0c1a10");
+      grd.addColorStop(1, "#1a140c");
+      g.fillStyle = grd;
+      g.fillRect(0, 0, W, H);
+      g.fillStyle = "#0e1c12";
+      g.beginPath();
+      g.ellipse(W * 0.5, H * 0.42, W * 0.7, H * 0.18, 0, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = "#2a2114";
+      g.fillRect(0, H * 0.62, W, H * 0.4);
+      g.fillStyle = "#1e3318";
+      for (let i = 0; i < 40; i++) {
+        g.globalAlpha = 0.25;
+        g.fillRect((i * 73 + now * 0.01) % W, H * 0.62, 8, 14);
+      }
+      g.globalAlpha = 1;
+    }
+
+    function drawVines(g, now) {
+      g.strokeStyle = "#1a3a18";
+      g.lineWidth = 3;
+      vines.forEach((v) => {
+        g.beginPath();
+        g.moveTo(v.x, 0);
+        g.quadraticCurveTo(v.x + Math.sin(now / 600 + v.phase) * 18, v.h * 0.5, v.x + 8, v.h);
+        g.stroke();
+      });
+    }
+
+    function drawBushEyes(g, now, fear) {
+      eyes.forEach((e) => {
+        e.blink -= 0.016;
+        if (e.blink < 0) e.blink = rand(1.5, 4);
+        if (e.blink < 0.12) return;
+        const glow = 0.35 + fear * 0.5;
+        g.fillStyle = `rgba(255, 220, 80, ${glow})`;
+        g.beginPath();
+        g.ellipse(e.x - 6, e.y, 3.5, 2.2, 0, 0, Math.PI * 2);
+        g.ellipse(e.x + 6, e.y, 3.5, 2.2, 0, 0, Math.PI * 2);
+        g.fill();
+      });
+    }
+
+    function flashlight(g) {
+      g.save();
+      g.globalCompositeOperation = "destination-in";
+      const grd = g.createRadialGradient(mouse.x, mouse.y, 40, mouse.x, mouse.y, Math.max(W, H) * 0.55);
+      grd.addColorStop(0, "rgba(255,255,255,1)");
+      grd.addColorStop(0.25, "rgba(255,255,255,0.7)");
+      grd.addColorStop(1, "rgba(255,255,255,0.12)");
+      g.fillStyle = grd;
+      g.fillRect(0, 0, W, H);
+      g.restore();
+      g.fillStyle = "rgba(0,0,0,0.35)";
+      g.fillRect(0, 0, W, H);
+      const beam = g.createRadialGradient(mouse.x, mouse.y, 10, mouse.x, mouse.y, 220);
+      beam.addColorStop(0, "rgba(255, 230, 160, 0.16)");
+      beam.addColorStop(1, "rgba(0,0,0,0)");
+      g.fillStyle = beam;
+      g.beginPath();
+      g.arc(mouse.x, mouse.y, 220, 0, Math.PI * 2);
+      g.fill();
+    }
+
+    const audio = {
+      ctx: null,
+      drone: null,
+      droneGain: null,
+      hissGain: null,
+      last: 0,
+      init() {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AC();
+        const master = this.ctx.createGain();
+        master.gain.value = 0.3;
+        master.connect(this.ctx.destination);
+        this.master = master;
+
+        const n = this.ctx.sampleRate * 2;
+        const buf = this.ctx.createBuffer(1, n, this.ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        let last = 0;
+        for (let i = 0; i < n; i++) {
+          last = (last + (Math.random() * 2 - 1) * 0.05) * 0.98;
+          data[i] = last + (Math.random() * 2 - 1) * 0.02;
+        }
+        const src = this.ctx.createBufferSource();
+        src.buffer = buf;
+        src.loop = true;
+        const bp = this.ctx.createBiquadFilter();
+        bp.type = "bandpass";
+        bp.frequency.value = 180;
+        this.droneGain = this.ctx.createGain();
+        this.droneGain.gain.value = 0.08;
+        src.connect(bp); bp.connect(this.droneGain); this.droneGain.connect(master);
+        src.start();
+        this.drone = bp;
+
+        const hiss = this.ctx.createOscillator();
+        hiss.type = "sawtooth";
+        hiss.frequency.value = 70;
+        this.hissGain = this.ctx.createGain();
+        this.hissGain.gain.value = 0.02;
+        const lp = this.ctx.createBiquadFilter();
+        lp.type = "lowpass";
+        lp.frequency.value = 300;
+        hiss.connect(lp); lp.connect(this.hissGain); this.hissGain.connect(master);
+        hiss.start();
+        this.dangerLoop();
+      },
+      tone(f, d, v, type) {
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.type = type || "sawtooth";
+        o.frequency.setValueAtTime(f, this.ctx.currentTime);
+        o.frequency.exponentialRampToValueAtTime(Math.max(30, f * 0.4), this.ctx.currentTime + d);
+        g.gain.setValueAtTime(v, this.ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + d);
+        o.connect(g); g.connect(this.master);
+        o.start(); o.stop(this.ctx.currentTime + d + 0.03);
+      },
+      dangerLoop() {
+        const tick = () => {
+          if (!this.ctx) return;
+          const r = Math.random();
+          if (r < 0.25) this.tone(rand(60, 110), 0.45, 0.14);
+          else if (r < 0.5) this.tone(rand(180, 320), 0.2, 0.08, "square");
+          else if (r < 0.75) this.tone(rand(700, 1400), 0.12, 0.05, "square");
+          else this.tone(rand(40, 70), 0.7, 0.16);
+          setTimeout(tick, 500 + Math.random() * 900);
+        };
+        tick();
+      },
+      onMove(speed, fear) {
+        if (!this.ctx) return;
+        const s = clamp(speed / 30, 0, 1);
+        this.droneGain.gain.setTargetAtTime(0.08 + s * 0.12 + fear * 0.08, this.ctx.currentTime, 0.05);
+        this.hissGain.gain.setTargetAtTime(0.02 + s * 0.06 + fear * 0.05, this.ctx.currentTime, 0.05);
+        const now = performance.now();
+        if (s > 0.18 && now - this.last > 140) {
+          this.last = now;
+          this.tone(rand(90, 200), 0.12, 0.08);
+          if (Math.random() < 0.3) this.tone(rand(400, 900), 0.08, 0.05, "square");
+        }
+      }
+    };
+
+    function resize() {
+      dpr = Math.min(devicePixelRatio || 1, 2);
+      W = innerWidth;
+      H = innerHeight;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      mouse.x = mouse.tx = W * 0.5;
+      mouse.y = mouse.ty = H * 0.6;
+      spawn();
+    }
+
+    function frame(now) {
+      const dt = Math.min(0.033, (now - last) / 1000);
+      last = now;
+      const loopT = ((now - t0) % LOOP) / LOOP;
+      const close = 0.15 + 0.85 * (0.5 + 0.5 * Math.sin(loopT * Math.PI * 2 - Math.PI / 2));
+      const scare = clamp(mouse.speed / 24, 0, 1);
+      const fear = clamp(close * 0.8 + scare * 0.4, 0, 1);
+      mouse.x = lerp(mouse.x, mouse.tx, 0.25);
+      mouse.y = lerp(mouse.y, mouse.ty, 0.25);
+
+      drawSky(ctx, now);
+      trees.filter((t) => t.layer === 0).forEach((t) => t.draw(ctx));
+      drawVines(ctx, now);
+      drawBushEyes(ctx, now, fear);
+      dino.update(dt, close);
+      dino.draw(ctx);
+      trees.filter((t) => t.layer === 1).forEach((t) => t.draw(ctx));
+      gorilla.update(dt, close);
+      fox.update(dt, close);
+      raccoon.update(dt, close);
+      gorilla.draw(ctx);
+      fox.draw(ctx);
+      raccoon.draw(ctx);
+      kid.update(dt, fear);
+      kid.draw(ctx, fear);
+      snakes.forEach((s) => { s.update(dt, close, scare); s.draw(ctx); });
+      trees.filter((t) => t.layer === 2).forEach((t) => t.draw(ctx));
+      flashlight(ctx);
+
+      document.getElementById("threat").textContent = close > 0.75 ? "VERY CLOSE" : close > 0.4 ? "rising" : "lurking";
+      document.getElementById("dino").textContent = close > 0.7 ? "RIGHT BEHIND YOU" : "in the trees";
+      mouse.speed *= 0.88;
+      requestAnimationFrame(frame);
+    }
+
+    window.addEventListener("resize", resize);
+    window.addEventListener("mousemove", (e) => {
+      mouse.speed = Math.hypot(e.movementX, e.movementY);
+      mouse.tx = e.clientX;
+      mouse.ty = e.clientY;
+      cursorEl.style.left = e.clientX + "px";
+      cursorEl.style.top = e.clientY + "px";
+      if (started) audio.onMove(mouse.speed, 0.5);
+    });
+
+    gate.addEventListener("click", async () => {
+      started = true;
+      audio.init();
+      if (audio.ctx.state === "suspended") await audio.ctx.resume();
+      gate.remove();
+    });
+
+    resize();
+    requestAnimationFrame(frame);
+  </script>
+</body>
+</html>
