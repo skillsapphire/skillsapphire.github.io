@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic AI Platform — Production Implementation Guide</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<style>
+:root{
+  --paper:#eef2f5;
+  --paper-2:#e3e9ee;
+  --ink:#17222b;
+  --ink-soft:#42525e;
+  --line:#c7d2da;
+  --line-soft:#d8e0e6;
+  --blue:#1f5f8b;
+  --blue-deep:#123a54;
+  --amber:#c46a2e;
+  --mono:'IBM Plex Mono','SF Mono',Consolas,monospace;
+  --serif:'Source Serif 4','Georgia',serif;
+  --sans:'Inter','Helvetica Neue',Arial,sans-serif;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--paper);
+  background-image:
+    linear-gradient(var(--line-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+  background-size:32px 32px;
+  color:var(--ink);
+  font-family:var(--serif);
+  font-size:17px;
+  line-height:1.7;
+}
+.layout{
+  display:grid;
+  grid-template-columns:300px minmax(0,900px);
+  justify-content:center;
+  gap:0;
+  min-height:100vh;
+}
+/* ---------- Sidebar ---------- */
+.sidebar{
+  position:sticky;
+  top:0;
+  height:100vh;
+  overflow-y:auto;
+  padding:36px 22px 40px 36px;
+  border-right:1px solid var(--line);
+  background:rgba(238,242,245,0.85);
+  backdrop-filter:blur(6px);
+}
+.sidebar .mark{
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--amber);
+  border:1px solid var(--amber);
+  display:inline-block;
+  padding:3px 8px;
+  border-radius:2px;
+  margin-bottom:14px;
+}
+.sidebar h2.doc-title{
+  font-family:var(--sans);
+  font-size:16px;
+  font-weight:700;
+  line-height:1.35;
+  margin:0 0 4px 0;
+  color:var(--blue-deep);
+}
+.sidebar .doc-sub{
+  font-family:var(--mono);
+  font-size:11.5px;
+  color:var(--ink-soft);
+  margin-bottom:28px;
+  display:block;
+}
+.toc-list{
+  list-style:none;
+  margin:0;
+  padding:0;
+  border-left:2px solid var(--line);
+}
+.toc-list li{
+  margin:0;
+}
+.toc-list li a{
+  display:block;
+  font-family:var(--sans);
+  font-size:13.5px;
+  color:var(--ink-soft);
+  text-decoration:none;
+  padding:7px 0 7px 16px;
+  margin-left:-2px;
+  border-left:2px solid transparent;
+  transition:color .15s ease, border-color .15s ease;
+}
+.toc-list li a:hover{
+  color:var(--blue-deep);
+  border-left:2px solid var(--amber);
+}
+.toc-list li.toc-sub a{
+  font-family:var(--mono);
+  font-size:11.5px;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+  color:var(--blue);
+  opacity:.85;
+}
+/* ---------- Main ---------- */
+main{
+  padding:60px 56px 120px 56px;
+  min-width:0;
+}
+.title-block{
+  margin-bottom:8px;
+  padding-bottom:28px;
+  border-bottom:1px solid var(--line);
+}
+.title-block .eyebrow{
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color:var(--amber);
+  margin-bottom:10px;
+}
+main h1{
+  font-family:var(--sans);
+  font-size:38px;
+  font-weight:800;
+  line-height:1.15;
+  color:var(--blue-deep);
+  letter-spacing:-0.01em;
+  margin:0 0 10px 0;
+}
+main > p:first-of-type{
+  font-size:18px;
+  color:var(--ink-soft);
+  max-width:64ch;
+}
+h2{
+  font-family:var(--sans);
+  font-weight:800;
+  font-size:25px;
+  color:var(--blue-deep);
+  margin:56px 0 16px 0;
+  padding-top:8px;
+  position:relative;
+  scroll-margin-top:24px;
+}
+h2::before{
+  content:"";
+  display:block;
+  width:40px;
+  height:3px;
+  background:var(--amber);
+  margin-bottom:14px;
+}
+h3{
+  font-family:var(--sans);
+  font-weight:700;
+  font-size:19px;
+  color:var(--ink);
+  margin:34px 0 12px 0;
+  scroll-margin-top:24px;
+}
+h3::before{
+  content:"◆ ";
+  color:var(--amber);
+  font-size:12px;
+}
+p{margin:14px 0; color:var(--ink);}
+strong{color:var(--blue-deep); font-weight:700;}
+em{color:var(--ink-soft);}
+a{color:var(--blue);}
+hr{
+  border:none;
+  border-top:1px dashed var(--line);
+  margin:44px 0;
+}
+ul,ol{padding-left:1.4em; margin:14px 0;}
+li{margin:6px 0;}
+code{
+  font-family:var(--mono);
+  font-size:0.86em;
+  background:var(--paper-2);
+  border:1px solid var(--line);
+  border-radius:3px;
+  padding:1px 5px;
+  color:var(--blue-deep);
+}
+pre{
+  background:#0f1720;
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:18px 20px;
+  overflow-x:auto;
+  margin:18px 0;
+  box-shadow:2px 2px 0 var(--line);
+}
+pre code{
+  background:none;
+  border:none;
+  color:#dbe4ea;
+  padding:0;
+  font-size:13.5px;
+  line-height:1.6;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin:20px 0;
+  font-family:var(--sans);
+  font-size:14.5px;
+  background:#fff;
+  border:1px solid var(--line);
+}
+th,td{
+  border:1px solid var(--line);
+  padding:10px 12px;
+  text-align:left;
+  vertical-align:top;
+}
+th{
+  background:var(--blue-deep);
+  color:#fff;
+  font-weight:600;
+  font-size:12.5px;
+  letter-spacing:.03em;
+  text-transform:uppercase;
+}
+tr:nth-child(even) td{background:var(--paper-2);}
+.mermaid-wrap{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:26px 20px 18px 20px;
+  margin:22px 0;
+  box-shadow:3px 3px 0 var(--line-soft);
+  overflow-x:auto;
+  position:relative;
+}
+.mermaid-wrap::before{
+  content:"SCHEMATIC";
+  position:absolute;
+  top:8px;
+  left:16px;
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.14em;
+  color:var(--line);
+}
+.mermaid{display:flex; justify-content:center;}
+::selection{background:var(--amber); color:#fff;}
+.back-top{
+  position:fixed;
+  bottom:28px;
+  right:28px;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  background:var(--blue-deep);
+  color:#fff;
+  padding:10px 14px;
+  border-radius:3px;
+  text-decoration:none;
+  opacity:.85;
+  box-shadow:2px 2px 0 var(--amber);
+}
+.back-top:hover{opacity:1;}
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr;}
+  .sidebar{position:relative; height:auto; border-right:none; border-bottom:1px solid var(--line);}
+  main{padding:36px 20px 80px 20px;}
+  main h1{font-size:28px;}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+  <nav class="sidebar">
+    <span class="mark">Senior Track / Ref</span>
+    <h2 class="doc-title">Agentic AI Platform</h2>
+    <span class="doc-sub">Production Implementation Guide</span>
+    <ul class="toc-list">
+      <li class="toc-sub"><a href="#end-to-end-request-flow-system-level-view">End-to-End Request Flow (System-Level View)</a></li>
+<li><a href="#1-gateway-client-layer">1. Gateway &amp; Client Layer</a></li>
+<li><a href="#2-authentication">2. Authentication</a></li>
+<li><a href="#3-authorization-policy-engine">3. Authorization / Policy Engine</a></li>
+<li><a href="#4-agent-harness-execution-loop">4. Agent Harness &amp; Execution Loop</a></li>
+<li><a href="#5-state-memory">5. State &amp; Memory</a></li>
+<li><a href="#6-guardrails-safety">6. Guardrails &amp; Safety</a></li>
+<li><a href="#7-prompt-context-management">7. Prompt &amp; Context Management</a></li>
+<li><a href="#8-rag-pipeline">8. RAG Pipeline</a></li>
+<li><a href="#9-tooling-mcp-sandboxing">9. Tooling, MCP &amp; Sandboxing</a></li>
+<li><a href="#10-model-layer">10. Model Layer</a></li>
+<li><a href="#11-observability">11. Observability</a></li>
+<li><a href="#12-cost-management-finops">12. Cost Management &amp; FinOps</a></li>
+<li><a href="#13-evaluation-feedback">13. Evaluation &amp; Feedback</a></li>
+<li><a href="#14-reliability-resilience">14. Reliability &amp; Resilience</a></li>
+<li><a href="#15-infrastructure-deployment">15. Infrastructure &amp; Deployment</a></li>
+<li><a href="#16-security-audit-compliance-governance-implementation-specifics">16. Security, Audit, Compliance, Governance — Implementation Specifics</a></li>
+<li><a href="#summary-the-production-vs-prototype-delta">Summary: The Production-vs-Prototype Delta</a></li>
+    </ul>
+  </nav>
+  <main>
+    <h1 id="agentic-ai-platform-production-implementation-guide">Agentic AI Platform — Production Implementation Guide</h1>
+<p>This is the implementation-depth companion to the architecture study guide. Each section names concrete technologies, shows representative config/code patterns, and calls out the failure modes and decisions that separate a working prototype from a production system.</p>
+<h3 id="end-to-end-request-flow-system-level-view">End-to-End Request Flow (System-Level View)</h3>
+<p>Before diving into each layer, it helps to see how a single request travels through the <em>entire</em> stack. This is the diagram to draw first on a whiteboard in a system design interview — everything else in this guide is a zoom-in on one box below.</p>
+<div class="mermaid-wrap"><div class="mermaid">flowchart TD
+    U[User / Client] --&gt; GW[Gateway&lt;br/&gt;rate limit, versioning, SSE/WS]
+    GW --&gt; AUTHN[AuthN&lt;br/&gt;OIDC/JWT/mTLS]
+    AUTHN --&gt; AUTHZ[AuthZ&lt;br/&gt;OPA policy decision]
+    AUTHZ -- deny --&gt; REJECT[403 Rejected]
+    AUTHZ -- allow --&gt; HARNESS[Agent Harness&lt;br/&gt;loads session + memory]
+
+    HARNESS --&gt; LOOP{Agent Loop}
+    LOOP --&gt;|reason/plan| MODEL[Model Gateway&lt;br/&gt;routes to LLM]
+    LOOP --&gt;|retrieve context| RAG[RAG Pipeline]
+    LOOP --&gt;|act| TOOLS[Tool Gateway&lt;br/&gt;+ MCP + sandbox]
+    TOOLS --&gt;|high risk| APPROVAL[Human Approval Queue]
+    APPROVAL --&gt;|approved| TOOLS
+    LOOP --&gt;|validate| GUARD[Guardrails&lt;br/&gt;output validation]
+    GUARD --&gt;|pass| DONE[Response to User]
+    GUARD --&gt;|fail| LOOP
+
+    HARNESS -.-&gt;|every step| OBS[Observability:&lt;br/&gt;traces, cost, audit log]
+    OBS -.-&gt; COST[Cost/Budget Enforcement]
+    OBS -.-&gt; AUDIT[Immutable Audit Store]
+
+    style REJECT fill:#f8d7da
+    style DONE fill:#d4edda
+    style APPROVAL fill:#fff3cd
+</div></div>
+
+<p><strong>How to read this diagram:</strong> the solid arrows are the <em>happy path</em> a request takes; the dotted arrows are <em>cross-cutting observation</em> that happens in parallel at every single step, not just at the end. The single most important thing to internalize: <strong>the Agent Loop is not one call — it's a cycle that repeatedly calls out to Model, RAG, and Tools, with Guardrails able to send it back around the loop rather than terminating.</strong> Interviewers often probe whether candidates understand this is a loop with re-entry points, not a linear pipeline.</p>
+<hr />
+<h2 id="1-gateway-client-layer">1. Gateway &amp; Client Layer</h2>
+<p><strong>Stack choices:</strong> Kong, Envoy, AWS API Gateway, or a custom FastAPI/Node edge service behind a load balancer. For streaming agent responses, use <strong>Server-Sent Events (SSE)</strong> for one-way token streaming (simpler, works through most proxies) or WebSockets when the client needs bidirectional interrupt/steer capability mid-run.</p>
+<p><strong>Rate limiting implementation — token bucket, per-identity:</strong></p>
+<pre><code class="language-python"># Redis-backed token bucket, atomic via Lua script
+LUA_TOKEN_BUCKET = &quot;&quot;&quot;
+local key = KEYS[1]
+local capacity = tonumber(ARGV[1])
+local refill_rate = tonumber(ARGV[2])  -- tokens/sec
+local now = tonumber(ARGV[3])
+local requested = tonumber(ARGV[4])
+
+local bucket = redis.call('HMGET', key, 'tokens', 'ts')
+local tokens = tonumber(bucket[1]) or capacity
+local ts = tonumber(bucket[2]) or now
+
+local delta = math.max(0, now - ts)
+tokens = math.min(capacity, tokens + delta * refill_rate)
+
+if tokens &gt;= requested then
+  tokens = tokens - requested
+  redis.call('HMSET', key, 'tokens', tokens, 'ts', now)
+  redis.call('EXPIRE', key, 3600)
+  return 1
+else
+  redis.call('HMSET', key, 'tokens', tokens, 'ts', now)
+  return 0
+end
+&quot;&quot;&quot;
+</code></pre>
+<p><strong>Why token bucket over fixed window:</strong> fixed windows allow 2x burst at window boundaries; token bucket smooths it. Rate-limit on <strong>three dimensions simultaneously</strong>: requests/sec (abuse), tokens/min (cost), and concurrent agent runs (resource exhaustion) — a single dimension under-protects.</p>
+<p><strong>API versioning:</strong> URL-path versioning (<code>/v2/agents/run</code>) for breaking changes; header-based (<code>X-Agent-Schema-Version</code>) for prompt/tool-schema evolution that clients need to negotiate without a full API bump.</p>
+<p><strong>Session management:</strong> Sticky sessions only if the agent runtime is stateful in-process (anti-pattern at scale). Prefer <strong>stateless compute + externalized state</strong> (Redis/Postgres) so any pod can serve any request — critical for autoscaling and for surviving pod restarts mid-agent-run.</p>
+<p><strong>Why this layer is more than "just a proxy":</strong> in a normal web app, the gateway's job is basically routing + throttling. In an agentic system it does one extra critical thing — it's the <strong>cost circuit breaker of last resort</strong>. Agent runs are expensive and can be long-lived (seconds to minutes, not milliseconds), so the gateway needs request-level timeouts that are much longer than a typical REST timeout, but still bounded — otherwise a single hung client connection can pin a backend worker indefinitely. A common production pattern: the gateway accepts the request, immediately returns a <code>run_id</code>, and the client polls or subscribes via SSE — decoupling "did the request get accepted" from "is the agent still working," which avoids the whole problem of picking one timeout value that's right for every agent task.</p>
+<hr />
+<h2 id="2-authentication">2. Authentication</h2>
+<p><strong>Human auth:</strong> OIDC via Auth0/Okta/Keycloak → short-lived JWT (5–15 min access token + refresh token). Validate signature via JWKS endpoint, cache JWKS keys with a 24h TTL and background refresh.</p>
+<p><strong>Agent-to-agent / service auth — the part people get wrong:</strong> Do not reuse a static API key across all agent-to-service calls. Use one of:
+- <strong>mTLS with SPIFFE/SPIRE</strong> — each agent workload gets a cryptographic identity (SVID) issued by a workload identity provider, rotated automatically (minutes-to-hours TTL). This is the production-grade answer for "how does Agent A prove to Tool Service B who it is."
+- <strong>Short-lived JWTs issued by an internal STS</strong> (e.g., a Vault-backed token exchange) scoped to a single agent run ID, expiring when the run completes.</p>
+<p><strong>Delegation pattern (important for agentic systems):</strong> When Agent A calls Tool B <em>on behalf of user U</em>, the token passed must encode <strong>both</strong> the agent's identity <strong>and</strong> the original user's identity/scope (an OAuth "token exchange" / RFC 8693 pattern), so downstream authorization can enforce "this agent may only do what this user is allowed to do" — never let the agent's own broader service credentials leak through to user-scoped actions.</p>
+<pre><code class="language-python"># Token exchange request (RFC 8693) — agent exchanges its own credential
+# + user's token for a narrowly-scoped downstream token
+POST /oauth/token
+grant_type=urn:ietf:params:oauth:grant-type:token-exchange
+subject_token=&lt;user_jwt&gt;
+actor_token=&lt;agent_service_jwt&gt;
+requested_scope=tool:crm:read
+</code></pre>
+<p><strong>Why token exchange, and not "just pass the user's token straight through"?</strong> Two reasons senior interviewers probe for:
+1. <strong>Scope narrowing.</strong> The user's original token might have broad scope (<code>read:all_crm</code>), but this particular agent action only needs <code>tool:crm:read</code> for one customer record. Token exchange lets you mint a token with the <em>minimum</em> scope needed for this specific downstream call — least privilege enforced per-call, not per-session.
+2. <strong>Traceability.</strong> The exchanged token still carries the <code>actor</code> (agent) and <code>subject</code> (user) as distinct claims, so an audit log entry can always answer "which agent did this, acting for which user" — passing the raw user token through loses the agent's own identity from the trail.</p>
+<div class="mermaid-wrap"><div class="mermaid">sequenceDiagram
+    participant U as User
+    participant GW as Gateway
+    participant STS as Token Exchange (STS)
+    participant AG as Agent Service
+    participant TB as Tool B (e.g. CRM)
+
+    U-&gt;&gt;GW: Request + user JWT
+    GW-&gt;&gt;AG: Forward request + user JWT
+    AG-&gt;&gt;STS: Exchange (subject=user_jwt, actor=agent_jwt, scope=tool:crm:read)
+    STS--&gt;&gt;AG: Narrowly-scoped short-lived token
+    AG-&gt;&gt;TB: Call tool with exchanged token
+    TB-&gt;&gt;TB: Validate token, check scope + actor + subject
+    TB--&gt;&gt;AG: Result (only if scope satisfied)
+</div></div>
+
+<hr />
+<h2 id="3-authorization-policy-engine">3. Authorization / Policy Engine</h2>
+<p><strong>Production choice: Open Policy Agent (OPA) with Rego, or AWS Cedar</strong> for policy-as-code. Deploy OPA as a <strong>sidecar</strong> next to each service (sub-millisecond local decision, no network hop) with policies pushed via bundle API from a central policy repo (GitOps).</p>
+<pre><code class="language-rego">package agent.authz
+
+default allow = false
+
+allow {
+    input.action == &quot;tool.invoke&quot;
+    input.tool.risk_level == &quot;low&quot;
+    input.user.role in {&quot;analyst&quot;, &quot;admin&quot;}
+}
+
+allow {
+    input.action == &quot;tool.invoke&quot;
+    input.tool.risk_level == &quot;high&quot;
+    input.approval.status == &quot;human_approved&quot;
+    input.approval.approver != input.user.id   # no self-approval
+}
+
+deny_reason = &quot;tool_not_in_allowlist_for_tenant&quot; {
+    not input.tool.id in data.tenant_allowlists[input.tenant_id]
+}
+</code></pre>
+<p><strong>Decision caching:</strong> Cache allow/deny decisions per (identity, action, resource) tuple with a short TTL (10–30s) to avoid re-evaluating identical policy checks in a tight agent loop — but <strong>never cache human-approval-gated decisions</strong>.</p>
+<p><strong>Policy testing in CI:</strong> Treat Rego policies like code — unit test with <code>opa test</code>, require PR review, and run a policy simulation against historical traffic before rollout to catch unintended denials/allows.</p>
+<p><strong>Where the sidecar sits, concretely:</strong> every service that needs an authz decision (the harness, the tool gateway, the RAG retriever if it gates access to sensitive documents) has its own OPA sidecar container in the same pod. This means the policy decision never crosses a network boundary to a shared central service in the hot path — you get microsecond decisions instead of round-trip latency, while the <em>policy bundle itself</em> is still centrally authored and pushed out to every sidecar, so you don't lose consistency for the sake of speed.</p>
+<div class="mermaid-wrap"><div class="mermaid">flowchart LR
+    subgraph Pod[&quot;Agent Harness Pod&quot;]
+        APP[Harness Process] --&gt;|local call&lt;br/&gt;~1ms| OPA[OPA Sidecar]
+    end
+    REPO[Central Policy Repo&lt;br/&gt;git] --&gt;|CI: opa test, PR review| BUNDLE[Policy Bundle Server]
+    BUNDLE -.-&gt;|poll every 30-60s| OPA
+    OPA --&gt;|allow/deny + reason| APP
+</div></div>
+
+<hr />
+<h2 id="4-agent-harness-execution-loop">4. Agent Harness &amp; Execution Loop</h2>
+<p><strong>Frameworks:</strong> LangGraph, custom state machine on top of a durable execution engine (Temporal, AWS Step Functions), or a bespoke asyncio loop for simpler cases. For anything with retries/checkpointing/long-running tasks at production scale, <strong>durable execution (Temporal)</strong> is the strongest choice — it gives you crash-safe replay for free.</p>
+<p><strong>Loop implementation sketch (Temporal-style workflow):</strong></p>
+<pre><code class="language-python">@workflow.defn
+class AgentRun:
+    @workflow.run
+    async def run(self, goal: Goal) -&gt; AgentResult:
+        state = AgentState(goal=goal)
+        for step in range(MAX_STEPS):
+            plan = await workflow.execute_activity(
+                reason_and_plan, state, start_to_close_timeout=timedelta(seconds=30)
+            )
+            if plan.is_complete:
+                break
+
+            action = await workflow.execute_activity(decide_action, state)
+
+            if action.risk_level == &quot;high&quot;:
+                approved = await workflow.wait_condition(
+                    lambda: state.approval_received, timeout=timedelta(hours=1)
+                )
+                if not approved:
+                    state.terminate(reason=&quot;approval_timeout&quot;)
+                    break
+
+            observation = await workflow.execute_activity(
+                execute_tool, action,
+                retry_policy=RetryPolicy(maximum_attempts=3, backoff_coefficient=2.0),
+            )
+            valid = await workflow.execute_activity(validate_observation, observation, state.goal)
+            state.update(action, observation, valid)
+
+            # checkpoint is implicit — Temporal persists workflow state every step
+        return state.finalize()
+</code></pre>
+<p><strong>Why this matters at production level:</strong> each <code>execute_activity</code> call is independently retried, timed out, and logged by the workflow engine. If the process crashes at step 7 of 12, Temporal replays from the last completed step — you get checkpoint/resume "for free" instead of hand-rolling a state-persistence layer.</p>
+<p><strong>Termination controller specifics:</strong> hard cap on steps (e.g., 25), hard cap on wall-clock time, hard cap on cumulative token spend per run, and a <strong>loop-detection check</strong> (hash the last N actions; if a cycle repeats identically 3x, terminate — this is the #1 cause of runaway cost incidents).</p>
+<p><strong>The loop as a state machine.</strong> It's easy to describe Reason→Plan→Decide→Act→Observe→Validate as a straight line, but production agents need explicit re-entry edges: validation failure sends you back to Reason (not just "try again" on Act), and a failed tool call can trigger <em>replanning</em> rather than a blind retry of the same plan. Drawing this as a state machine (not a pipeline) is what makes the termination conditions obvious — every state needs its own exit condition, or you can get stuck cycling between Plan and Validate forever without ever hitting a step-count check if that check only lives at the top of the loop.</p>
+<div class="mermaid-wrap"><div class="mermaid">stateDiagram-v2
+    [*] --&gt; Reason
+    Reason --&gt; Plan
+    Plan --&gt; Decide
+    Decide --&gt; Act
+    Act --&gt; Observe
+    Observe --&gt; Validate
+    Validate --&gt; Reason: invalid, replan needed
+    Validate --&gt; Act: invalid, retry same action (bounded)
+    Validate --&gt; Done: goal satisfied
+    Act --&gt; HumanApproval: risk_score &gt; threshold
+    HumanApproval --&gt; Act: approved
+    HumanApproval --&gt; Terminated: denied / timeout
+    Reason --&gt; Terminated: step_count &gt; max OR loop_detected OR budget_exceeded
+    Done --&gt; [*]
+    Terminated --&gt; [*]
+</div></div>
+
+<p><strong>Why durable execution engines (Temporal) are worth the operational overhead:</strong> without one, you'd hand-roll this exact state machine's persistence — writing state to Redis/Postgres after every transition, wrapping every external call in try/except/retry logic, and building your own "resume from last state" logic on crash recovery. Temporal (or Step Functions) gives you this by construction: the workflow definition <em>is</em> the state machine, and the engine handles persistence, retry, and replay. The trade-off is operational complexity (running/operating the Temporal cluster) and a steeper learning curve for the team — for a low-stakes/low-volume agent, a simpler hand-rolled loop with Postgres checkpointing is a defensible choice; the durable-engine investment pays off once you have many concurrent long-running agent workflows.</p>
+<hr />
+<h2 id="5-state-memory">5. State &amp; Memory</h2>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Storage</th>
+<th>TTL</th>
+<th>Access pattern</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Session state</td>
+<td>Redis (in-memory)</td>
+<td>Life of session</td>
+<td>Read/write every step</td>
+</tr>
+<tr>
+<td>Short-term/working memory</td>
+<td>In-process object, checkpointed to Redis</td>
+<td>Life of agent run</td>
+<td>Read/write every step</td>
+</tr>
+<tr>
+<td>Long-term memory</td>
+<td>Postgres (structured) + vector DB (semantic)</td>
+<td>Persistent</td>
+<td>Retrieved selectively via embedding similarity</td>
+</tr>
+<tr>
+<td>Checkpoints</td>
+<td>Postgres/S3 (durable engine handles this if using Temporal)</td>
+<td>Persistent, per-run</td>
+<td>Write every step, read only on resume</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Long-term memory retrieval pattern:</strong> don't replay raw history. Summarize each session into a structured memory record (facts, preferences, unresolved items) using a cheap model, embed the summary, and retrieve top-k relevant memories at the start of a new session — bounded to a fixed token budget (e.g., 500 tokens of memory max).</p>
+<p><strong>Memory write-back is a guardrail surface too:</strong> validate/sanitize before writing agent-derived "facts" into long-term memory — a hallucinated fact that gets persisted becomes a recurring error in every future session (memory poisoning).</p>
+<div class="mermaid-wrap"><div class="mermaid">flowchart LR
+    A[Agent Run] --&gt;|read/write every step| SS[Session State&lt;br/&gt;Redis]
+    A --&gt;|read/write every step| WM[Working Memory&lt;br/&gt;in-process, checkpointed]
+    A --&gt;|end of session| SUM[Summarizer&lt;br/&gt;cheap model]
+    SUM --&gt;|structured summary| EMB[Embed]
+    EMB --&gt; LTM[(Long-Term Memory&lt;br/&gt;Postgres + Vector DB)]
+    A --&gt;|start of new session&lt;br/&gt;top-k retrieval, budget-capped| LTM
+    LTM -.-&gt;|validate before write| SAN[Sanitize/Guardrail Check]
+    SUM --&gt; SAN
+    SAN --&gt; LTM
+</div></div>
+
+<p><strong>Concrete numbers to anchor this:</strong> a typical production system caps retrieved long-term memory at 300–800 tokens (a small fraction of a 100K+ context window), caps working memory at whatever the current task's tool outputs actually require (often the single largest consumer of context, since raw API/DB responses can be verbose — truncate or summarize tool outputs before they enter working memory, don't just dump raw JSON), and treats session state as ephemeral and cheap to lose (a dropped session should be recoverable from long-term memory + checkpoint, not catastrophic).</p>
+<hr />
+<h2 id="6-guardrails-safety">6. Guardrails &amp; Safety</h2>
+<p><strong>Concrete tool stack:</strong>
+- <strong>Input/output moderation:</strong> Llama Guard, OpenAI Moderation API, or Azure AI Content Safety.
+- <strong>PII detection/redaction:</strong> Microsoft Presidio (regex + NER-based), run on both input and tool outputs before they re-enter the context window.
+- <strong>Prompt injection detection:</strong> a dedicated classifier model (e.g., a fine-tuned DeBERTa) scoring incoming text (user input <strong>and</strong> retrieved documents/tool outputs) for injection patterns; block or flag above a threshold.
+- <strong>Schema/structured-output guardrails:</strong> Pydantic/JSON-schema validation on every tool call the model proposes — reject and re-prompt if the LLM's tool call doesn't conform, rather than executing malformed calls.</p>
+<pre><code class="language-python">class ToolCall(BaseModel):
+    tool_name: Literal[&quot;send_email&quot;, &quot;query_db&quot;, &quot;delete_record&quot;]
+    parameters: dict
+    justification: str
+
+    @field_validator(&quot;parameters&quot;)
+    def validate_against_schema(cls, v, info):
+        schema = TOOL_REGISTRY[info.data[&quot;tool_name&quot;]].input_schema
+        jsonschema.validate(v, schema)  # raises on mismatch
+        return v
+</code></pre>
+<p><strong>Risk scoring gate (feeds human-in-the-loop):</strong></p>
+<pre><code class="language-python">def risk_score(action: ToolCall) -&gt; float:
+    score = BASE_RISK[action.tool_name]
+    if action.parameters.get(&quot;amount&quot;, 0) &gt; APPROVAL_THRESHOLD:
+        score += 0.4
+    if action.tool_name in DESTRUCTIVE_TOOLS:
+        score += 0.3
+    return min(score, 1.0)
+
+# score &gt; 0.7 -&gt; route to human approval queue before Act stage
+</code></pre>
+<p><strong>Defense-in-depth checklist (interview-ready):</strong> validate at (1) user input, (2) each RAG-retrieved chunk, (3) each tool call proposal before execution, (4) each tool result before it re-enters context, (5) final output before returning to user. Missing #2 and #4 is the most common production gap — teams guard the edges and forget the middle.</p>
+<div class="mermaid-wrap"><div class="mermaid">flowchart TD
+    UI[1. User Input] --&gt;|moderation + injection classifier| G1{Guardrail}
+    G1 --&gt;|pass| MODEL[Model Reasoning]
+    RAG[2. RAG-Retrieved Chunks] --&gt;|injection classifier&lt;br/&gt;treat as untrusted| G2{Guardrail}
+    G2 --&gt;|pass| MODEL
+    MODEL --&gt;|proposes tool call| G3{3. Schema + Risk&lt;br/&gt;Guardrail}
+    G3 --&gt;|low risk, valid schema| EXEC[Execute Tool]
+    G3 --&gt;|high risk| HUMAN[Human Approval]
+    HUMAN --&gt;|approved| EXEC
+    EXEC --&gt;|raw result| G4{4. Tool Result&lt;br/&gt;PII/Content Guardrail}
+    G4 --&gt;|sanitized| MODEL
+    MODEL --&gt;|final answer| G5{5. Output Guardrail}
+    G5 --&gt;|pass| OUT[Return to User]
+    G1 --&gt;|fail| BLOCK1[Block/Flag]
+    G2 --&gt;|fail| BLOCK2[Discard chunk or block]
+    G5 --&gt;|fail| BLOCK3[Regenerate/Block]
+
+    style G1 fill:#fff3cd
+    style G2 fill:#fff3cd
+    style G3 fill:#fff3cd
+    style G4 fill:#fff3cd
+    style G5 fill:#fff3cd
+</div></div>
+
+<p><strong>The most-missed attack surface, spelled out:</strong> teams reliably build guardrail #1 (user input) and #5 (final output) because those map cleanly onto "moderate the request, moderate the response" — the pattern everyone already knows from non-agentic chatbots. Guardrails #2 and #4 are missed because they require realizing that <strong>anything the model reads is effectively a prompt</strong>, whether it came from the user, a retrieved document, or a tool's API response. A malicious instruction embedded in a PDF the RAG pipeline retrieves, or in the text field of a ticket a tool fetches, is just as capable of hijacking the agent's next action as a malicious user message — and it bypasses guardrail #1 entirely because it never touched the user input path.</p>
+<hr />
+<h2 id="7-prompt-context-management">7. Prompt &amp; Context Management</h2>
+<p><strong>Versioning:</strong> store prompts as files in git (not in a database blob), reviewed via PR, tagged by semantic version. Use a prompt registry (e.g., LangSmith Hub, PromptLayer, or a simple internal service) that resolves <code>prompt_id@version</code> at runtime so you can A/B test or roll back a specific prompt without a code deploy.</p>
+<p><strong>Templating:</strong> Jinja2 or f-string templates with strict variable validation (fail loudly on missing variables rather than silently rendering <code>None</code>).</p>
+<p><strong>Context budget algorithm (concrete):</strong></p>
+<pre><code class="language-python">def build_context(budget_tokens: int, components: list[ContextComponent]) -&gt; str:
+    # priority order: system prompt &gt; tool defs &gt; current task &gt; recent turns &gt; memory &gt; RAG
+    allocated = []
+    remaining = budget_tokens
+    for c in sorted(components, key=lambda x: x.priority):
+        c_tokens = count_tokens(c.render())
+        if c.required and c_tokens &gt; remaining:
+            raise ContextBudgetExceeded(c.name)
+        if c_tokens &lt;= remaining:
+            allocated.append(c)
+            remaining -= c_tokens
+        elif c.compressible:
+            compressed = compress(c, remaining)
+            allocated.append(compressed)
+            remaining -= count_tokens(compressed.render())
+    return assemble(allocated)
+</code></pre>
+<p><strong>Senior nuance:</strong> compress by <em>summarizing</em> low-priority long-tail context (older conversation turns) rather than truncating — truncation silently drops information and produces confidently wrong answers; summarization degrades gracefully.</p>
+<p><strong>A worked example of the budget in practice</strong>, for a model with a 128K context window and a working reserve of 8K tokens for the model's own output:</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Typical allocation</th>
+<th>Priority</th>
+<th>Compressible?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>System prompt + tool definitions</td>
+<td>2K–4K</td>
+<td>Highest (required)</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Current task/goal</td>
+<td>~200</td>
+<td>Highest (required)</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Recent conversation turns</td>
+<td>4K–10K</td>
+<td>High</td>
+<td>Summarize oldest first</td>
+</tr>
+<tr>
+<td>Retrieved RAG chunks</td>
+<td>2K–6K</td>
+<td>Medium</td>
+<td>Drop lowest-ranked first</td>
+</tr>
+<tr>
+<td>Long-term memory</td>
+<td>300–800</td>
+<td>Medium</td>
+<td>Summarize further</td>
+</tr>
+<tr>
+<td>Tool call results (current step)</td>
+<td>Variable, often largest</td>
+<td>High while active</td>
+<td>Truncate/summarize verbose JSON</td>
+</tr>
+</tbody>
+</table>
+<p>Notice tool results are the wildcard — a single verbose API response can blow the entire budget if not summarized before being appended to context, which is why production systems often run a small "compress this tool output to the relevant fields" pass immediately after every tool call rather than passing raw responses straight into the next reasoning step.</p>
+<hr />
+<h2 id="8-rag-pipeline">8. RAG Pipeline</h2>
+<p><strong>Ingestion stack:</strong> Unstructured.io or LlamaParse for parsing (PDF/DOCX/HTML) → semantic chunking (not fixed 512-token windows — split on section boundaries, target 200–500 tokens with 10–15% overlap) → embedding (OpenAI <code>text-embedding-3-large</code>, Cohere <code>embed-v3</code>, or a domain-tuned open model) → <strong>pgvector</strong> (if already on Postgres, simplest ops story), <strong>Weaviate</strong>, or <strong>Pinecone</strong> for scale.</p>
+<p><strong>Retrieval pattern — hybrid search + rerank, the production standard:</strong></p>
+<pre><code class="language-python">def retrieve(query: str, k: int = 20, final_k: int = 5) -&gt; list[Chunk]:
+    vector_hits = vector_db.search(embed(query), top_k=k)
+    keyword_hits = bm25_index.search(query, top_k=k)          # catches exact terms/IDs vector search misses
+    merged = reciprocal_rank_fusion(vector_hits, keyword_hits)
+    reranked = cross_encoder_rerank(query, merged, top_k=final_k)  # e.g. Cohere Rerank
+    return [c for c in reranked if c.score &gt; RELEVANCE_THRESHOLD]
+</code></pre>
+<p><strong>Why hybrid:</strong> pure vector search misses exact-match needs (SKUs, error codes, names); pure keyword search misses semantic paraphrase. Reciprocal rank fusion combines both cheaply before the expensive reranking step.</p>
+<p><strong>Freshness/versioning:</strong> tag chunks with <code>source_version</code> and <code>ingested_at</code>; re-embed on source change via a change-data-capture pipeline (not a full nightly re-index at scale) — stale RAG content is a top production quality complaint.</p>
+<p><strong>Grounding/citation enforcement:</strong> require the model to output chunk IDs alongside claims; validate post-hoc that cited chunk IDs were actually in the retrieved set (catches citation hallucination) — this feeds directly into the Evaluation layer's "grounding/citation" metric.</p>
+<div class="mermaid-wrap"><div class="mermaid">flowchart TD
+    subgraph Ingestion
+        SRC[Data Sources&lt;br/&gt;files/APIs/docs] --&gt; PARSE[Parser&lt;br/&gt;Unstructured/LlamaParse]
+        PARSE --&gt; CHUNK[Semantic Chunking&lt;br/&gt;200-500 tok, 10-15% overlap]
+        CHUNK --&gt; EMBED1[Embed]
+        EMBED1 --&gt; VDB[(Vector DB&lt;br/&gt;pgvector/Weaviate/Pinecone)]
+        CDC[Change Data Capture] -.-&gt;|source changed| PARSE
+    end
+
+    subgraph Retrieval
+        Q[Agent Query] --&gt; EMBED2[Embed Query]
+        Q --&gt; BM25[BM25 Keyword Search]
+        EMBED2 --&gt; VSEARCH[Vector Search&lt;br/&gt;top-k=20]
+        BM25 --&gt; KSEARCH[Keyword Hits&lt;br/&gt;top-k=20]
+        VSEARCH --&gt; FUSE[Reciprocal Rank Fusion]
+        KSEARCH --&gt; FUSE
+        FUSE --&gt; RERANK[Cross-Encoder Rerank&lt;br/&gt;e.g. Cohere Rerank]
+        RERANK --&gt; THRESH{score &gt;threshold?}
+        THRESH --&gt;|yes| CTX[Context Builder&lt;br/&gt;final_k=5]
+        THRESH --&gt;|no| DROP[Discard chunk]
+    end
+
+    VDB --&gt; VSEARCH
+</div></div>
+
+<p><strong>Why the two-stage retrieve-then-rerank design specifically, spelled out with the intuition:</strong> vector search over millions of chunks has to be fast, so it uses a cheap similarity metric (cosine distance on embeddings) — this is optimized for <em>recall</em> (don't miss relevant chunks) but is noisy on <em>precision</em> (some irrelevant chunks sneak into the top 20). A cross-encoder reranker is far more accurate at judging true relevance because it looks at the query and chunk <em>together</em> (not as separate pre-computed vectors), but it's too slow to run over the whole corpus — so you use the cheap/fast method to get a shortlist of ~20, then the slow/accurate method to pick the best 5 from that shortlist. This two-speed design (cheap-broad then expensive-narrow) recurs throughout the whole architecture, not just RAG — it's the same idea behind cheap-model-for-routing/expensive-model-for-reasoning in the Model Layer.</p>
+<hr />
+<h2 id="9-tooling-mcp-sandboxing">9. Tooling, MCP &amp; Sandboxing</h2>
+<p><strong>Tool registry:</strong> a versioned catalog (OpenAPI-style schema per tool) stored in a service/DB, not hardcoded in prompts — enables dynamic tool discovery and per-tenant tool allowlists.</p>
+<p><strong>MCP implementation pattern:</strong></p>
+<pre><code class="language-python"># MCP server exposing a tool
+@mcp_server.tool()
+async def query_crm(customer_id: str, fields: list[str]) -&gt; dict:
+    &quot;&quot;&quot;Fetch CRM fields for a customer. Requires crm:read scope.&quot;&quot;&quot;
+    authz.check(current_identity(), action=&quot;crm.read&quot;, resource=customer_id)
+    return await crm_client.get(customer_id, fields)
+
+# Agent-side MCP client discovers and calls tools without hardcoded integration
+tools = await mcp_client.list_tools()
+result = await mcp_client.call_tool(&quot;query_crm&quot;, {&quot;customer_id&quot;: &quot;123&quot;, &quot;fields&quot;: [&quot;email&quot;]})
+</code></pre>
+<p><strong>Why MCP matters at production scale:</strong> tool <em>providers</em> (internal platform teams) and tool <em>consumers</em> (agent teams) can ship independently — the protocol is the contract, not a shared codebase. This is the same value proposition as a service mesh: decoupling via a standard interface.</p>
+<p><strong>Sandboxing for code-execution tools:</strong> never run agent-generated code in the same trust boundary as the orchestrator. Use gVisor or Firecracker microVMs (what AWS Lambda/Fargate use under the hood) with:
+- No network egress by default (explicit allowlist).
+- CPU/memory/time limits enforced by the runtime, not the application.
+- Ephemeral filesystem, destroyed after execution.</p>
+<p><strong>Tool-call rate limiting is per-tool, not just per-user:</strong> a single agent looping can hammer one downstream API even within an otherwise reasonable overall rate limit — enforce limits at the Tool Gateway keyed by <code>(tool_id, tenant_id)</code>.</p>
+<div class="mermaid-wrap"><div class="mermaid">flowchart LR
+    MODEL[Model proposes&lt;br/&gt;tool call] --&gt; REG[Tool Registry&lt;br/&gt;lookup schema/metadata]
+    REG --&gt; GW[Tool Gateway&lt;br/&gt;authN + rate limit + audit]
+    GW --&gt; AUTHZ2[Tool Authorization&lt;br/&gt;policy/risk check]
+    AUTHZ2 --&gt;|deny| REJ[Rejected, returned to agent]
+    AUTHZ2 --&gt;|allow, code exec tool| SANDBOX[Sandboxed Execution&lt;br/&gt;gVisor/Firecracker microVM]
+    AUTHZ2 --&gt;|allow, API tool| MCP[MCP Client → MCP Server]
+    SANDBOX --&gt;|no network egress&lt;br/&gt;by default| RESULT1[Result]
+    MCP --&gt; EXT[External API/SaaS/DB]
+    EXT --&gt; RESULT2[Result]
+    RESULT1 --&gt; G4[Guardrail: sanitize result]
+    RESULT2 --&gt; G4
+    G4 --&gt; MODEL
+</div></div>
+
+<p><strong>The sandbox is a hard trust boundary, not a soft one.</strong> A useful mental model: treat every agent-generated code execution the same way you'd treat running code submitted by an anonymous internet user — because functionally, that's what it is (the model can be manipulated via prompt injection into generating arbitrary code). This is why the microVM's network egress defaults to <em>closed</em> rather than open-with-an-blocklist: an allowlist-first posture means a new, unanticipated exfiltration path doesn't silently work by default — it has to be explicitly granted.</p>
+<hr />
+<h2 id="10-model-layer">10. Model Layer</h2>
+<p><strong>Production pattern: LiteLLM (or a custom equivalent) as a unified model gateway</strong> — normalizes the API shape across OpenAI/Anthropic/Bedrock/Azure/self-hosted vLLM, so application code calls one interface regardless of provider.</p>
+<pre><code class="language-python">router_config = {
+    &quot;routing_strategy&quot;: &quot;latency-based&quot;,  # or cost-based, least-busy
+    &quot;model_list&quot;: [
+        {&quot;model_name&quot;: &quot;reasoning&quot;, &quot;litellm_params&quot;: {&quot;model&quot;: &quot;anthropic/claude-opus-4-8&quot;}},
+        {&quot;model_name&quot;: &quot;general&quot;,   &quot;litellm_params&quot;: {&quot;model&quot;: &quot;openai/gpt-5&quot;}},
+        {&quot;model_name&quot;: &quot;general&quot;,   &quot;litellm_params&quot;: {&quot;model&quot;: &quot;bedrock/anthropic.claude-sonnet-5&quot;}},  # fallback
+    ],
+    &quot;fallbacks&quot;: [{&quot;general&quot;: [&quot;general-bedrock-backup&quot;]}],
+    &quot;timeout&quot;: 30,
+    &quot;num_retries&quot;: 2,
+}
+</code></pre>
+<p><strong>Task-based routing:</strong> classify task complexity cheaply (a small model or heuristic) before routing to the expensive reasoning model — e.g., simple extraction tasks go to a fast/cheap model, multi-step planning goes to a frontier reasoning model. This is where most of the cost savings in FinOps actually come from.</p>
+<p><strong>Provider outage handling:</strong> automatic fallback chain (primary → secondary provider → cached/degraded response) with circuit breaker so a slow provider doesn't cascade into timing out the whole agent run.</p>
+<div class="mermaid-wrap"><div class="mermaid">flowchart TD
+    STEP[Agent needs a&lt;br/&gt;model call] --&gt; CLASSIFY[Cheap classifier:&lt;br/&gt;task complexity]
+    CLASSIFY --&gt;|simple/extraction| CHEAP[Fast/cheap model&lt;br/&gt;e.g. Haiku-class]
+    CLASSIFY --&gt;|complex/planning| REASON[Frontier reasoning model&lt;br/&gt;e.g. Opus-class]
+    CHEAP --&gt; GATEWAY[Model Gateway]
+    REASON --&gt; GATEWAY
+    GATEWAY --&gt; PRIMARY{Primary provider&lt;br/&gt;healthy?}
+    PRIMARY --&gt;|yes| CALL1[Call primary]
+    PRIMARY --&gt;|circuit open| FALLBACK[Call secondary&lt;br/&gt;provider/region]
+    CALL1 --&gt;|timeout/error| FALLBACK
+    FALLBACK --&gt;|also fails| DEGRADED[Degraded response&lt;br/&gt;or cached answer]
+</div></div>
+
+<p><strong>The cost impact of task-based routing, made concrete:</strong> if 70% of an agent's model calls are simple classification/extraction steps and only 30% are genuine multi-step reasoning, routing the 70% to a model that's roughly 10–20x cheaper than the frontier reasoning model can cut total model spend by more than half without touching quality on the calls that matter — this single design decision is usually the highest-leverage FinOps lever available, ahead of prompt-length optimization or caching.</p>
+<hr />
+<h2 id="11-observability">11. Observability</h2>
+<p><strong>Stack:</strong> OpenTelemetry for traces/spans (vendor-neutral), exported to Langfuse, LangSmith, Arize Phoenix, or a general APM (Datadog/Honeycomb) with LLM-specific span attributes.</p>
+<p><strong>Trace structure — every agent run is one trace, every loop iteration is a span:</strong></p>
+<pre><code class="language-python">with tracer.start_as_current_span(&quot;agent_run&quot;, attributes={&quot;goal&quot;: goal.id, &quot;user_id&quot;: user.id}) as run_span:
+    for step in range(max_steps):
+        with tracer.start_as_current_span(f&quot;step_{step}&quot;) as step_span:
+            step_span.set_attribute(&quot;reasoning_tokens&quot;, plan.token_count)
+            with tracer.start_as_current_span(&quot;tool_call&quot;, attributes={&quot;tool&quot;: action.tool_name}):
+                observation = execute_tool(action)
+            step_span.set_attribute(&quot;validation_result&quot;, valid.status)
+</code></pre>
+<p><strong>What must be captured per step (non-negotiable for debugging autonomous agents):</strong> full prompt sent to the model, full raw model output, tool call + parameters, tool result, validation verdict, latency, token counts, and model/version used. Store this in a structured log store (not just APM sampling) since you need 100% of agent traces for incident review, not a sampled subset.</p>
+<div class="mermaid-wrap"><div class="mermaid">flowchart TD
+    T[&quot;Trace: agent_run&lt;br/&gt;(run_id, user_id, goal)&quot;] --&gt; S1[&quot;Span: step_0&quot;]
+    T --&gt; S2[&quot;Span: step_1&quot;]
+    T --&gt; S3[&quot;Span: step_N&quot;]
+    S1 --&gt; R1[&quot;Span: reason_and_plan&lt;br/&gt;(prompt, output, tokens, latency)&quot;]
+    S1 --&gt; TC1[&quot;Span: tool_call&lt;br/&gt;(tool, params, result, latency)&quot;]
+    S1 --&gt; V1[&quot;Span: validate&lt;br/&gt;(verdict, guardrail results)&quot;]
+    S2 --&gt; R2[...]
+    S2 --&gt; TC2[...]
+</div></div>
+
+<p><strong>Why 100% capture instead of sampling, spelled out:</strong> normal microservices can sample traces (e.g., 1% of requests) because failures tend to be statistically similar across requests, and volume is high enough that a sample still catches patterns. Agent runs are lower-volume, higher-stakes, and each one is a <em>unique reasoning path</em> — the specific run that went wrong is exactly the one you need the full trace for, and by definition you don't know in advance which run that will be. This is the same logic as why you don't sample audit logs — the cost of storing full traces is usually far lower than the cost of an unreproducible incident.</p>
+<hr />
+<h2 id="12-cost-management-finops">12. Cost Management &amp; FinOps</h2>
+<p><strong>Token accounting middleware — enforced, not just logged:</strong></p>
+<pre><code class="language-python">async def enforce_budget(tenant_id: str, estimated_tokens: int):
+    spent = await redis.get(f&quot;budget:{tenant_id}:{today()}&quot;)
+    if spent + estimated_tokens * COST_PER_TOKEN[model] &gt; DAILY_BUDGET[tenant_id]:
+        raise BudgetExceededError(tenant_id)
+    await redis.incrby(f&quot;budget:{tenant_id}:{today()}&quot;, estimated_tokens)
+</code></pre>
+<p>Run this <strong>before</strong> the model call, using a token estimate, then reconcile with actual usage after — pre-flight checks prevent runaway spend better than after-the-fact alerting.</p>
+<p><strong>FinOps allocation:</strong> tag every LLM/tool call with <code>tenant_id</code>, <code>team_id</code>, <code>feature_id</code> at the point of the call (propagated via context, not reconstructed later from logs) so cost-per-business-outcome reporting is queryable directly rather than requiring log archaeology.</p>
+<hr />
+<h2 id="13-evaluation-feedback">13. Evaluation &amp; Feedback</h2>
+<p><strong>Eval harness:</strong> promptfoo, Ragas (RAG-specific: faithfulness, answer relevancy, context precision/recall), or a custom eval suite running against a <strong>golden dataset</strong> of representative tasks with known-good outcomes.</p>
+<p><strong>CI gate pattern:</strong></p>
+<pre><code class="language-yaml"># .github/workflows/agent-eval-gate.yml
+- name: Run eval suite against golden dataset
+  run: python -m evals.run --suite regression --model ${{ env.CANDIDATE_MODEL }}
+- name: Fail if quality regresses
+  run: python -m evals.compare --baseline main --candidate ${{ env.CANDIDATE_MODEL }} --threshold -0.02
+</code></pre>
+<p>No prompt, model, or RAG-config change ships without passing this gate — this is the direct implementation of the "Agent Evaluation Gate" box in the deployment pipeline.</p>
+<p><strong>Feedback loop:</strong> thumbs up/down + free-text captured at the point of interaction, written to a feedback store keyed by trace ID, reviewed in a weekly triage that feeds directly back into the golden dataset (failed interactions become new eval cases — this is how eval suites stay relevant instead of going stale).</p>
+<hr />
+<h2 id="14-reliability-resilience">14. Reliability &amp; Resilience</h2>
+<p><strong>Circuit breaker (per tool/model provider):</strong></p>
+<pre><code class="language-python">class CircuitBreaker:
+    def __init__(self, failure_threshold=5, reset_timeout=30):
+        self.failures = 0
+        self.state = &quot;closed&quot;
+        self.opened_at = None
+
+    async def call(self, fn, *args):
+        if self.state == &quot;open&quot;:
+            if time.time() - self.opened_at &gt; self.reset_timeout:
+                self.state = &quot;half_open&quot;
+            else:
+                raise CircuitOpenError()
+        try:
+            result = await fn(*args)
+            if self.state == &quot;half_open&quot;:
+                self.state = &quot;closed&quot;
+                self.failures = 0
+            return result
+        except Exception:
+            self.failures += 1
+            if self.failures &gt;= self.failure_threshold:
+                self.state = &quot;open&quot;
+                self.opened_at = time.time()
+            raise
+</code></pre>
+<p><strong>Retry policy:</strong> exponential backoff with jitter, capped attempts (2–3 for tool calls, since agent loops already have their own outer retry semantics — retrying at both the HTTP layer and the agent-loop layer compounds latency badly if not capped).</p>
+<div class="mermaid-wrap"><div class="mermaid">stateDiagram-v2
+    [*] --&gt; Closed
+    Closed --&gt; Open: failures &gt;= threshold
+    Open --&gt; HalfOpen: reset_timeout elapsed
+    HalfOpen --&gt; Closed: call succeeds
+    HalfOpen --&gt; Open: call fails
+    Closed --&gt; Closed: call succeeds
+    note right of Closed
+        Normal operation.
+        Every failure increments counter.
+    end note
+    note right of Open
+        Fail fast — reject
+        immediately, no call attempted.
+        Protects downstream from pile-up.
+    end note
+    note right of HalfOpen
+        One trial call allowed
+        to test recovery.
+    end note
+</div></div>
+
+<p><strong>The "fail fast" intuition, made explicit:</strong> a naive retry-everything approach under a real outage makes things worse, not better — every failed call still consumes a connection slot and adds latency before it fails, so a struggling downstream service gets <em>more</em> load exactly when it can least handle it (retry storms are a classic cause of cascading outages). The circuit breaker's <code>Open</code> state trades a guaranteed-fast local failure for skipping calls that would likely fail anyway, giving the downstream service room to recover — this is why <code>Open</code> rejects instantly rather than attempting and timing out.</p>
+<p><strong>Idempotency:</strong> every tool call that mutates state must carry an idempotency key (derived from run_id + step number), so a retried call after a timeout doesn't double-execute (e.g., double-send an email, double-charge a payment).</p>
+<p><strong>Multi-region:</strong> active-active for stateless gateway/model-routing tiers; active-passive with async replication for stateful stores (Postgres) — full active-active state replication for agent memory is rarely worth the complexity unless you have strict regional data-residency + high-availability requirements simultaneously.</p>
+<hr />
+<h2 id="15-infrastructure-deployment">15. Infrastructure &amp; Deployment</h2>
+<p><strong>Kubernetes patterns:</strong> agent workers as a Deployment with HPA scaling on queue depth (not just CPU — agent workloads are I/O-bound waiting on model calls, so CPU-based autoscaling under-provisions). Use a service mesh (Istio/Linkerd) for mTLS between services, retries, and traffic shaping — this is what actually implements the "Agent-to-Agent Security" box from the governance panel at the network layer.</p>
+<p><strong>Deployment pipeline stages:</strong> build &amp; test → agent evaluation gate (§13) → artifact registry (versioned prompt+model+tool config bundle, not just a container image — the <em>configuration</em> is the deployable unit for agents, code changes less often than prompts do) → canary release (Argo Rollouts, 5% traffic, auto-rollback on eval-metric or error-rate regression) → progressive rollout → full release.</p>
+<p><strong>Rollback:</strong> because prompts/configs are versioned artifacts (§7), rollback is a config pointer change, not a redeploy — this is what makes sub-minute rollback achievable for a bad prompt change.</p>
+<div class="mermaid-wrap"><div class="mermaid">flowchart LR
+    PR[PR: prompt/model/&lt;br/&gt;tool config change] --&gt; BUILD[Build &amp; Test]
+    BUILD --&gt; GATE{Eval Gate:&lt;br/&gt;golden dataset&lt;br/&gt;regression check}
+    GATE --&gt;|fail| BLOCKED[Blocked, PR fails CI]
+    GATE --&gt;|pass| REGISTRY[Artifact Registry:&lt;br/&gt;versioned config bundle]
+    REGISTRY --&gt; CANARY[Canary: 5% traffic]
+    CANARY --&gt; MONITOR{Error rate /&lt;br/&gt;eval metrics OK?}
+    MONITOR --&gt;|regression| AUTOROLLBACK[Auto-rollback:&lt;br/&gt;pointer reverts to&lt;br/&gt;last-good version]
+    MONITOR --&gt;|healthy| PROGRESSIVE[Progressive rollout&lt;br/&gt;25% → 50% → 100%]
+    PROGRESSIVE --&gt; FULL[Full release]
+
+    style BLOCKED fill:#f8d7da
+    style AUTOROLLBACK fill:#f8d7da
+    style FULL fill:#d4edda
+</div></div>
+
+<p><strong>The key insight that makes fast rollback possible:</strong> because the <em>deployable unit</em> is a config bundle reference (a pointer to <code>prompt_v14 + model_v3 + tool_config_v7</code> in the registry), rolling back means updating one pointer in a fast key-value store, not rebuilding and redeploying a container image through the full CI/CD pipeline. This is a deliberate architectural choice — if prompts were embedded directly in application code, every prompt tweak would require a full code deploy, and rollback would take as long as a normal software rollback (minutes, sometimes longer with approval gates) instead of seconds.</p>
+<hr />
+<h2 id="16-security-audit-compliance-governance-implementation-specifics">16. Security, Audit, Compliance, Governance — Implementation Specifics</h2>
+<p><strong>Secrets management:</strong> HashiCorp Vault or cloud KMS for all API keys/credentials; agents and tools fetch short-lived secrets at runtime, never embed static secrets in prompts or tool configs.</p>
+<p><strong>Immutable audit log:</strong> append-only store (e.g., S3 with Object Lock / WORM, or a dedicated audit service) — every authz decision, tool call, human approval, and model invocation written as a structured event with a cryptographic hash chain (each event includes the hash of the previous event) so tampering is detectable.</p>
+<pre><code class="language-json">{
+  &quot;event_id&quot;: &quot;evt_9f2a...&quot;,
+  &quot;prev_hash&quot;: &quot;a13f...&quot;,
+  &quot;timestamp&quot;: &quot;2026-08-20T10:15:00Z&quot;,
+  &quot;actor&quot;: {&quot;type&quot;: &quot;agent&quot;, &quot;id&quot;: &quot;agent_run_882&quot;, &quot;on_behalf_of&quot;: &quot;user_44&quot;},
+  &quot;action&quot;: &quot;tool.invoke&quot;,
+  &quot;resource&quot;: &quot;crm.customer.123&quot;,
+  &quot;decision&quot;: &quot;allow&quot;,
+  &quot;policy_version&quot;: &quot;v14&quot;,
+  &quot;hash&quot;: &quot;b8e0...&quot;
+}
+</code></pre>
+<p><strong>Data residency/compliance:</strong> route requests to region-pinned model deployments (e.g., EU customer data never leaves an EU-hosted model endpoint) enforced at the Model Gateway via tenant metadata, not just a policy document — compliance has to be a routing constraint, not only a written rule.</p>
+<p><strong>Approval workflows (governance):</strong> implemented as a durable workflow step (ties back to §4's Temporal pattern) with SLA timeout, escalation path, and mandatory two-person rule for the highest-risk action categories (no self-approval, enforced in the OPA policy from §3).</p>
+<div class="mermaid-wrap"><div class="mermaid">flowchart LR
+    E1[Event 1&lt;br/&gt;hash: a13f] --&gt; E2[Event 2&lt;br/&gt;prev_hash: a13f&lt;br/&gt;hash: b8e0]
+    E2 --&gt; E3[Event 3&lt;br/&gt;prev_hash: b8e0&lt;br/&gt;hash: c92d]
+    E3 --&gt; E4[Event 4&lt;br/&gt;prev_hash: c92d&lt;br/&gt;hash: d47e]
+
+    style E1 fill:#e2e3f5
+    style E2 fill:#e2e3f5
+    style E3 fill:#e2e3f5
+    style E4 fill:#e2e3f5
+</div></div>
+
+<p><strong>Why the hash chain, specifically:</strong> each event stores the hash of the event before it, so altering or deleting any single historical event breaks the hash of every event after it — an auditor can verify integrity by recomputing the chain rather than trusting that the storage layer was never tampered with. This is the same core idea as a blockchain's append-only ledger, applied at a much smaller scale (a single audit log stream, not a distributed consensus system) — you get tamper-evidence without needing the complexity of actual distributed consensus.</p>
+<div class="mermaid-wrap"><div class="mermaid">sequenceDiagram
+    participant Agent
+    participant Policy as OPA Policy
+    participant Q as Approval Queue
+    participant A1 as Approver 1
+    participant A2 as Approver 2
+
+    Agent-&gt;&gt;Policy: propose high-risk action
+    Policy--&gt;&gt;Agent: requires 2-person approval
+    Agent-&gt;&gt;Q: enqueue with SLA timer
+    Q-&gt;&gt;A1: notify
+    A1-&gt;&gt;Q: approve
+    Q-&gt;&gt;Policy: check A1 != requester
+    Q-&gt;&gt;A2: notify (2nd approver required)
+    A2-&gt;&gt;Q: approve
+    Q-&gt;&gt;Policy: check A2 != A1 and A2 != requester
+    Policy--&gt;&gt;Agent: approved, proceed to Act
+    Note over Q: If SLA timer expires&lt;br/&gt;before 2nd approval → escalate or auto-deny
+</div></div>
+
+<hr />
+<h2 id="summary-the-production-vs-prototype-delta">Summary: The Production-vs-Prototype Delta</h2>
+<table>
+<thead>
+<tr>
+<th>Concern</th>
+<th>Prototype</th>
+<th>Production</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>State</td>
+<td>In-memory, lost on restart</td>
+<td>Externalized, checkpointed, crash-safe (Temporal/Redis/Postgres)</td>
+</tr>
+<tr>
+<td>Auth</td>
+<td>One shared API key</td>
+<td>Per-identity OIDC/mTLS + token exchange for delegation</td>
+</tr>
+<tr>
+<td>Tools</td>
+<td>Hardcoded function calls</td>
+<td>MCP-based registry, sandboxed execution, per-tool rate limits</td>
+</tr>
+<tr>
+<td>Guardrails</td>
+<td>Output filter only</td>
+<td>Layered at input, RAG, tool-call, tool-result, output</td>
+</tr>
+<tr>
+<td>Cost</td>
+<td>Logged after the fact</td>
+<td>Pre-flight enforced budgets per tenant</td>
+</tr>
+<tr>
+<td>Prompts</td>
+<td>Inline strings in code</td>
+<td>Versioned artifacts, eval-gated CI/CD, instant rollback</td>
+</tr>
+<tr>
+<td>Observability</td>
+<td>Basic request logs</td>
+<td>Full per-step tracing, 100% capture, structured for replay</td>
+</tr>
+<tr>
+<td>Governance</td>
+<td>Ad hoc</td>
+<td>Policy-as-code, immutable audit trail, two-person approval on high-risk actions</td>
+</tr>
+</tbody>
+</table>
+<p>This table is a strong closing answer to "how do you know when an agentic system is production-ready" in a senior interview.</p>
+  </main>
+</div>
+<a href="#top" class="back-top">↑ Top</a>
+<script>
+  mermaid.initialize({
+    startOnLoad:true,
+    theme:'base',
+    themeVariables:{
+      background:'#ffffff',
+      primaryColor:'#e9f1f7',
+      primaryTextColor:'#17222b',
+      primaryBorderColor:'#1f5f8b',
+      lineColor:'#42525e',
+      secondaryColor:'#f3e6da',
+      tertiaryColor:'#eef2f5',
+      fontFamily:'IBM Plex Mono, monospace',
+      fontSize:'13px'
+    },
+    flowchart:{curve:'basis', padding:12},
+    sequence:{actorMargin:60, boxMargin:10}
+  });
+  hljs.highlightAll();
+</script>
+</body>
+</html>
