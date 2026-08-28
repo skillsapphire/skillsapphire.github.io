@@ -1,0 +1,2395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic AI Academy — Zero to Hero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EAF6F2;
+    --card:#FFFFFF;
+    --ink:#16324F;
+    --ink-soft:#4A6076;
+    --line:#CFE4DD;
+    --coral:#FF6F59;
+    --coral-soft:#FFE4DE;
+    --gold:#FFC857;
+    --gold-soft:#FFF3D6;
+    --purple:#8577DD;
+    --purple-soft:#EAE7FA;
+    --teal:#2FB8A6;
+    --teal-soft:#DAF3EE;
+    --blue:#4C8FE8;
+    --blue-soft:#E1EDFC;
+    --pink:#E8639A;
+    --pink-soft:#FBE1EC;
+    --radius:18px;
+    --shadow: 0 6px 20px rgba(22,50,79,0.08);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    line-height:1.6;
+  }
+  h1,h2,h3,.display{
+    font-family:'Baloo 2',cursive;
+    color:var(--ink);
+    line-height:1.15;
+  }
+  code, pre, .mono{ font-family:'JetBrains Mono',monospace; }
+  a{ color:inherit; }
+  img,svg{ max-width:100%; }
+
+  /* ---------- Layout ---------- */
+  .app{ display:flex; min-height:100vh; }
+
+  /* Sidebar */
+  .sidebar{
+    width:272px;
+    flex-shrink:0;
+    background:var(--card);
+    border-right:1px solid var(--line);
+    position:sticky;
+    top:0;
+    height:100vh;
+    overflow-y:auto;
+    padding:22px 16px 40px;
+    z-index:40;
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    padding:4px 8px 18px;
+    border-bottom:1px dashed var(--line);
+    margin-bottom:14px;
+  }
+  .brand .mark{
+    width:38px;height:38px;border-radius:12px;
+    background:linear-gradient(135deg,var(--coral),var(--gold));
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px;flex-shrink:0;
+  }
+  .brand .name{ font-family:'Baloo 2'; font-weight:700; font-size:16.5px; }
+  .brand .sub{ font-size:11px; color:var(--ink-soft); font-weight:500; }
+
+  nav.levels{ display:flex; flex-direction:column; gap:3px; }
+  nav.levels a{
+    display:flex; align-items:center; gap:10px;
+    text-decoration:none;
+    padding:9px 10px;
+    border-radius:12px;
+    font-size:13.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    transition:background .15s ease, color .15s ease;
+  }
+  nav.levels a:hover{ background:var(--bg); color:var(--ink); }
+  nav.levels a.active{ background:var(--coral-soft); color:var(--coral); }
+  nav.levels a .num{
+    width:22px;height:22px;border-radius:50%;
+    background:var(--line); color:var(--ink);
+    font-size:11px; font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+    flex-shrink:0;
+  }
+  nav.levels a.active .num{ background:var(--coral); color:#fff; }
+
+  .sidebar-foot{
+    margin-top:18px; padding-top:14px; border-top:1px dashed var(--line);
+    font-size:11.5px; color:var(--ink-soft);
+  }
+
+  /* Topbar (mobile) */
+  .topbar{
+    display:none;
+    position:sticky; top:0; z-index:50;
+    background:var(--card);
+    border-bottom:1px solid var(--line);
+    padding:12px 16px;
+    align-items:center; justify-content:space-between;
+  }
+  .topbar .brand{ border:none; padding:0; margin:0; }
+  .hamburger{
+    width:40px;height:40px;border-radius:10px;
+    border:1px solid var(--line); background:var(--bg);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+  }
+  .hamburger span, .hamburger::before, .hamburger::after{ content:''; }
+
+  main{ flex:1; min-width:0; }
+
+  /* Hero / quest path */
+  .hero{
+    padding:56px 48px 20px;
+    max-width:980px;
+  }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--gold-soft); color:#8A5A00;
+    padding:6px 14px; border-radius:999px;
+    font-size:12.5px; font-weight:700; letter-spacing:.02em;
+    margin-bottom:18px;
+  }
+  .hero h1{ font-size:clamp(32px,5vw,50px); margin:0 0 14px; }
+  .hero h1 .hi{ color:var(--coral); }
+  .hero p.lede{ font-size:17px; color:var(--ink-soft); max-width:640px; margin:0 0 30px; }
+
+  .quest{ margin: 10px 0 40px; }
+  .quest svg{ display:block; width:100%; height:auto; }
+  .quest-caption{ font-size:12.5px; color:var(--ink-soft); text-align:center; margin-top:6px; }
+
+  section.level{
+    padding:54px 48px;
+    max-width:980px;
+    border-top:1px dashed var(--line);
+    scroll-margin-top:20px;
+  }
+  section.level:first-of-type{ border-top:none; }
+
+  .level-head{ display:flex; align-items:center; gap:14px; margin-bottom:6px; }
+  .level-badge{
+    width:46px;height:46px;border-radius:14px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px; flex-shrink:0;
+    box-shadow: var(--shadow);
+  }
+  .level-eyebrow{ font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); }
+  .level-head h2{ font-size:28px; margin:2px 0 0; }
+
+  .level-tagline{ font-size:16px; color:var(--ink-soft); margin: 10px 0 26px; max-width:680px; }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:22px 24px;
+    box-shadow:var(--shadow);
+    margin-bottom:20px;
+  }
+  .card h3{ font-size:15px; margin:0 0 10px; display:flex; align-items:center; gap:8px; }
+  .card p{ margin:0; font-size:14.5px; color:var(--ink-soft); }
+  .card p + p{ margin-top:8px; }
+
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:760px){ .grid2{ grid-template-columns:1fr; } }
+
+  .analogy{ border-left:4px solid var(--gold); }
+  .analogy h3{ color:#8A5A00; }
+  .usecase{ border-left:4px solid var(--teal); }
+  .usecase h3{ color:#0F7A6A; }
+
+  .diagram-wrap{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:26px;
+    box-shadow:var(--shadow);
+    margin: 22px 0;
+  }
+  .diagram-title{ font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); margin-bottom:14px; }
+
+  pre.code{
+    background:#102A3A;
+    color:#DCEFEA;
+    border-radius:14px;
+    padding:20px 22px;
+    overflow-x:auto;
+    font-size:13px;
+    line-height:1.65;
+    margin: 22px 0;
+    box-shadow: var(--shadow);
+  }
+  pre.code .c1{ color:#7FD8C4; }
+  pre.code .c2{ color:#FFC857; }
+  pre.code .c3{ color:#FF9C8A; }
+  pre.code .c4{ color:#9BB8CC; font-style:italic; }
+
+  .code-label{
+    display:inline-block; font-size:11px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.05em; color:var(--ink-soft); margin-bottom:8px;
+  }
+
+  .challenge{
+    background:var(--purple-soft);
+    border:1px dashed var(--purple);
+    border-radius:var(--radius);
+    padding:20px 24px;
+    margin-top:24px;
+  }
+  .challenge h3{ color:#5A4CB8; margin:0 0 8px; }
+  .challenge p{ margin:0; font-size:14.5px; color:#4A3F99; }
+
+  .interview-tag{
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--coral-soft); color:var(--coral);
+    font-size:12px; font-weight:700;
+    padding:5px 12px; border-radius:999px;
+    margin-top:22px;
+  }
+
+  .recap{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:8px;
+  }
+  @media (max-width:760px){ .recap{ grid-template-columns:1fr 1fr; } }
+  @media (max-width:520px){ .recap{ grid-template-columns:1fr; } }
+  .recap .chip{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:14px 16px; font-size:13px; font-weight:600;
+  }
+  .recap .chip .k{ display:block; font-size:11px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; margin-bottom:4px; }
+
+  footer{
+    padding:40px 48px 70px;
+    max-width:980px;
+    color:var(--ink-soft);
+    font-size:13px;
+  }
+
+  /* Mobile sidebar behavior */
+  @media (max-width:900px){
+    .sidebar{
+      position:fixed; left:0; top:0; height:100%;
+      transform:translateX(-100%);
+      transition:transform .25s ease;
+      box-shadow: 0 0 0 rgba(0,0,0,0);
+      width:78vw; max-width:300px;
+    }
+    .sidebar.open{ transform:translateX(0); box-shadow:0 0 40px rgba(0,0,0,0.25); }
+    .topbar{ display:flex; }
+    .hero, section.level, footer{ padding-left:22px; padding-right:22px; }
+    .overlay{
+      display:none; position:fixed; inset:0; background:rgba(16,42,58,0.35); z-index:39;
+    }
+    .overlay.show{ display:block; }
+  }
+
+  ::selection{ background:var(--coral); color:#fff; }
+
+  /* ---------- Answer toggle ---------- */
+  button.interview-tag{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--coral-soft); color:var(--coral);
+    font-size:12px; font-weight:700; font-family:'Inter',sans-serif;
+    padding:9px 16px; border-radius:999px; border:none; cursor:pointer;
+    margin-top:22px; transition:background .15s ease;
+  }
+  button.interview-tag:hover{ background:#FFD9D0; }
+  button.interview-tag .chevron{ display:inline-block; font-size:11px; transition:transform .2s ease; }
+  button.interview-tag.open .chevron{ transform:rotate(180deg); }
+
+  .answer-box{
+    display:none;
+    margin-top:12px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-left:4px solid var(--coral);
+    border-radius:14px;
+    padding:18px 22px;
+    box-shadow:var(--shadow);
+  }
+  .answer-box.show{ display:block; }
+  .answer-label{
+    font-size:11.5px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.04em; color:var(--coral); margin-bottom:8px;
+  }
+  .answer-box p{ margin:0; font-size:14.5px; color:var(--ink-soft); }
+  .answer-box p + p{ margin-top:8px; }
+
+  /* ---------- Quiz ---------- */
+  .quiz-card{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:26px 28px; box-shadow:var(--shadow);
+  }
+  .quiz-progress{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:16px; font-size:12.5px; color:var(--ink-soft); font-weight:600;
+  }
+  .quiz-bar{ height:8px; border-radius:999px; background:var(--bg); overflow:hidden; margin-bottom:22px; }
+  .quiz-bar-fill{ height:100%; background:linear-gradient(90deg,var(--coral),var(--gold)); border-radius:999px; transition:width .25s ease; }
+  .quiz-q{ font-size:17px; font-weight:700; margin-bottom:16px; font-family:'Baloo 2'; }
+  .quiz-options{ display:flex; flex-direction:column; gap:10px; margin-bottom:6px; }
+  .quiz-opt{
+    text-align:left; padding:13px 16px; border-radius:12px;
+    border:1.5px solid var(--line); background:var(--bg);
+    font-size:14px; font-family:'Inter'; color:var(--ink); cursor:pointer;
+    transition:border-color .15s ease, background .15s ease;
+  }
+  .quiz-opt:hover:not(:disabled){ border-color:var(--coral); }
+  .quiz-opt:disabled{ cursor:default; }
+  .quiz-opt.correct{ background:var(--teal-soft); border-color:var(--teal); font-weight:700; }
+  .quiz-opt.incorrect{ background:var(--coral-soft); border-color:var(--coral); font-weight:700; }
+  .quiz-explain{
+    margin-top:16px; padding:16px 18px; border-radius:14px;
+    background:var(--gold-soft); border:1px dashed var(--gold); font-size:13.5px; color:#7A5200;
+    display:none;
+  }
+  .quiz-explain.show{ display:block; }
+  .quiz-next{
+    margin-top:18px; background:var(--ink); color:#fff; border:none;
+    padding:11px 22px; border-radius:999px; font-weight:700; font-size:13.5px;
+    cursor:pointer; display:none; font-family:'Inter';
+  }
+  .quiz-next.show{ display:inline-block; }
+  .quiz-result{ text-align:center; padding:20px 0; }
+  .quiz-result .score{ font-family:'Baloo 2'; font-size:44px; color:var(--coral); margin:6px 0; }
+  .quiz-result p{ color:var(--ink-soft); font-size:14.5px; }
+  .quiz-retake{
+    margin-top:16px; background:var(--coral); color:#fff; border:none;
+    padding:11px 24px; border-radius:999px; font-weight:700; font-size:13.5px; cursor:pointer;
+  }
+
+  /* ---------- Access matrix table ---------- */
+  table.access-matrix{
+    width:100%; border-collapse:collapse; font-size:12.5px; margin-bottom:6px;
+  }
+  table.access-matrix th, table.access-matrix td{
+    padding:10px 12px; text-align:center; border-bottom:1px solid var(--line);
+  }
+  table.access-matrix th{
+    font-family:'Baloo 2'; font-weight:700; font-size:12px; color:var(--ink);
+    background:var(--bg); text-align:center;
+  }
+  table.access-matrix td:first-child, table.access-matrix th:first-child{
+    text-align:left; font-weight:600; color:var(--ink);
+  }
+  table.access-matrix td.yes{ color:#0F7A6A; font-weight:700; }
+  table.access-matrix td.partial{ color:#8A5A00; font-weight:700; }
+  table.access-matrix td.no{ color:#C43D2E; font-weight:700; }
+  @media (max-width:760px){
+    table.access-matrix{ display:block; overflow-x:auto; white-space:nowrap; }
+  }
+
+  /* ---------- Glossary ---------- */
+  .glossary-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:760px){ .glossary-grid{ grid-template-columns:1fr; } }
+  .glossary-cat-title{
+    font-family:'Baloo 2'; font-size:16px; margin:0 0 14px; display:flex; align-items:center; gap:8px;
+  }
+  .term{ padding:12px 0; border-top:1px dashed var(--line); }
+  .term:first-child{ border-top:none; padding-top:0; }
+  .term-name{ font-weight:700; font-size:14px; margin-bottom:5px; color:var(--ink); font-family:'Baloo 2'; }
+  .term-def{ font-size:12.5px; color:var(--ink-soft); margin:3px 0; line-height:1.5; }
+  .term-def .tag{ font-weight:700; margin-right:4px; }
+  .term-def.simple .tag{ color:#8A5A00; }
+  .term-def.tech .tag{ color:var(--blue); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="mark">🤖</div>
+    <div>
+      <div class="name">Agentic AI Academy</div>
+      <div class="sub">Zero → Hero</div>
+    </div>
+  </div>
+  <div class="hamburger" id="hamburgerBtn" aria-label="Open menu">☰</div>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<div class="app">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="mark">🤖</div>
+      <div>
+        <div class="name">Agentic AI Academy</div>
+        <div class="sub">Zero → Hero</div>
+      </div>
+    </div>
+    <nav class="levels" id="levelNav">
+      <a href="#start"><span class="num">0</span> Start Here</a>
+      <a href="#rag"><span class="num">1</span> RAG — The Librarian</a>
+      <a href="#vectordb"><span class="num">2</span> Vector DBs — Magic Shelf</a>
+      <a href="#agents"><span class="num">3</span> Multi-Agent Teams</a>
+      <a href="#protocols"><span class="num">4</span> MCP &amp; A2A — Robot Talk</a>
+      <a href="#guardrails"><span class="num">5</span> Guardrails &amp; Governance</a>
+      <a href="#cloud"><span class="num">6</span> Cloud Infra — The Factory</a>
+      <a href="#observability"><span class="num">7</span> Observability — Control Room</a>
+      <a href="#cicd"><span class="num">8</span> Eval &amp; CI/CD — Report Card</a>
+      <a href="#bosslevel"><span class="num">9</span> Boss Level — Full System</a>
+      <a href="#banking"><span class="num">10</span> Banking — Multi-Source RAG</a>
+      <a href="#v3prod"><span class="num">11</span> V3 — Production Retrieval Engine</a>
+      <a href="#evalobs"><span class="num">12</span> Evaluation &amp; Observability</a>
+      <a href="#glossary"><span class="num">13</span> Glossary — Speak Like a Pro</a>
+      <a href="#quiz"><span class="num">🎯</span> Test Your Powers</a>
+      <a href="#recap"><span class="num">★</span> Hero Recap</a>
+    </nav>
+    <div class="sidebar-foot">Built for interview prep on Senior Agentic AI Architect roles. Concepts explained simply, then leveled up to real production language.</div>
+  </aside>
+
+  <main>
+    <div class="hero" id="start">
+      <span class="eyebrow">🎮 A learning quest, not a lecture</span>
+      <h1>From <span class="hi">zero</span> to <span class="hi">Agentic&nbsp;AI&nbsp;hero</span></h1>
+      <p class="lede">Every big idea in enterprise AI architecture — RAG, vector databases, multi-agent teams, guardrails, cloud infrastructure — is really just a simple everyday idea wearing a fancy costume. This guide takes off the costume first, then puts it back on so you can talk like a pro.</p>
+
+      <div class="quest">
+        <svg viewBox="0 0 960 150" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 20 110 C 140 20, 240 20, 320 90 S 480 160, 560 90 S 720 20, 800 90 S 900 140, 940 70"
+                fill="none" stroke="#CFE4DD" stroke-width="6" stroke-linecap="round" stroke-dasharray="2 14"/>
+          <g font-family="Baloo 2" font-size="12" font-weight="700" text-anchor="middle">
+            <circle cx="20" cy="110" r="16" fill="#FF6F59"/><text x="20" y="114" fill="#fff">0</text>
+            <circle cx="320" cy="90" r="16" fill="#2FB8A6"/><text x="320" y="94" fill="#fff">1-2</text>
+            <circle cx="560" cy="90" r="16" fill="#8577DD"/><text x="560" y="94" fill="#fff">3-4</text>
+            <circle cx="800" cy="90" r="16" fill="#4C8FE8"/><text x="800" y="94" fill="#fff">5-7</text>
+            <circle cx="940" cy="70" r="18" fill="#FFC857"/><text x="940" y="74" fill="#16324F">🏆</text>
+          </g>
+          <g font-family="Inter" font-size="11" fill="#4A6076" text-anchor="middle">
+            <text x="20" y="135">Start</text>
+            <text x="320" y="115">Knowledge</text>
+            <text x="560" y="115">Teamwork</text>
+            <text x="800" y="115">Safety &amp; Ops</text>
+            <text x="940" y="105">Hero</text>
+          </g>
+        </svg>
+        <div class="quest-caption">Your route: knowledge tools → teams of agents → keeping it safe and observable → the full system.</div>
+      </div>
+    </div>
+
+    <!-- LEVEL 1: RAG -->
+    <section class="level" id="rag">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--teal-soft);">📚</div>
+        <div>
+          <div class="level-eyebrow">Level 1</div>
+          <h2>RAG — Retrieval-Augmented Generation</h2>
+        </div>
+      </div>
+      <p class="level-tagline">An AI model only knows what it learned during training — like a kid who read a lot of books but hasn't seen today's newspaper. RAG hands the model the newspaper right before it answers.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it like I'm 8</h3>
+          <p>Imagine asking a super-smart friend a question. Instead of guessing from memory, they run to the library, pull the exact right book off the shelf, read the right page, and <em>then</em> answer you — pointing to the page as proof.</p>
+          <p>That's RAG: <strong>fetch the facts first, then write the answer.</strong></p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A washing machine company builds a chatbot. Instead of the AI guessing your model's manual from memory (and getting it wrong), it searches the actual PDF manual for your exact model, then answers using that page.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">How a RAG pipeline flows</div>
+        <svg viewBox="0 0 920 220" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs>
+            <marker id="arrow1" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#4A6076"/></marker>
+          </defs>
+          <!-- boxes -->
+          <g font-size="12.5" font-weight="600">
+            <rect x="10" y="80" width="120" height="60" rx="12" fill="#DAF3EE" stroke="#2FB8A6"/>
+            <text x="70" y="105" text-anchor="middle" fill="#16324F">Documents</text>
+            <text x="70" y="122" text-anchor="middle" fill="#4A6076" font-size="10.5">manuals, PDFs</text>
+
+            <rect x="175" y="80" width="120" height="60" rx="12" fill="#E1EDFC" stroke="#4C8FE8"/>
+            <text x="235" y="105" text-anchor="middle" fill="#16324F">Chunk +</text>
+            <text x="235" y="120" text-anchor="middle" fill="#16324F">Embed</text>
+
+            <rect x="340" y="80" width="120" height="60" rx="12" fill="#EAE7FA" stroke="#8577DD"/>
+            <text x="400" y="105" text-anchor="middle" fill="#16324F">Vector DB</text>
+            <text x="400" y="122" text-anchor="middle" fill="#4A6076" font-size="10.5">stores meaning</text>
+
+            <rect x="340" y="10" width="120" height="50" rx="12" fill="#FBE1EC" stroke="#E8639A"/>
+            <text x="400" y="40" text-anchor="middle" fill="#16324F">Your question</text>
+
+            <rect x="505" y="80" width="120" height="60" rx="12" fill="#FFF3D6" stroke="#FFC857"/>
+            <text x="565" y="105" text-anchor="middle" fill="#16324F">Retrieve top</text>
+            <text x="565" y="120" text-anchor="middle" fill="#16324F">matches</text>
+
+            <rect x="670" y="80" width="120" height="60" rx="12" fill="#FFE4DE" stroke="#FF6F59"/>
+            <text x="730" y="105" text-anchor="middle" fill="#16324F">LLM reads</text>
+            <text x="730" y="120" text-anchor="middle" fill="#16324F">+ answers</text>
+
+            <rect x="800" y="80" width="110" height="60" rx="12" fill="#DAF3EE" stroke="#2FB8A6"/>
+            <text x="855" y="105" text-anchor="middle" fill="#16324F">Grounded</text>
+            <text x="855" y="120" text-anchor="middle" fill="#16324F">answer ✅</text>
+          </g>
+          <!-- arrows -->
+          <g stroke="#4A6076" stroke-width="2" marker-end="url(#arrow1)">
+            <line x1="130" y1="110" x2="172" y2="110"/>
+            <line x1="295" y1="110" x2="337" y2="110"/>
+            <line x1="460" y1="110" x2="502" y2="110"/>
+            <line x1="625" y1="110" x2="667" y2="110"/>
+            <line x1="790" y1="110" x2="797" y2="110"/>
+            <line x1="400" y1="60" x2="400" y2="78"/>
+            <line x1="400" y1="34" x2="500" y2="34"/>
+            <line x1="500" y1="34" x2="500" y2="78"/>
+          </g>
+          <text x="500" y="26" text-anchor="middle" fill="#4A6076" font-size="10.5">also compared for retrieval</text>
+        </svg>
+      </div>
+
+      <div class="code-label">A tiny retrieval step, in plain code</div>
+      <pre class="code"><span class="c4"># The core idea of RAG in ~10 lines</span>
+<span class="c2">def</span> answer_question(question):
+    <span class="c1"># 1. Turn the question into a list of numbers ("embedding")</span>
+    question_vector = embed(question)
+
+    <span class="c1"># 2. Find the most similar chunks in the vector database</span>
+    top_chunks = vector_db.search(question_vector, top_k=<span class="c3">3</span>)
+
+    <span class="c1"># 3. Hand those exact chunks to the model as context</span>
+    context = <span class="c3">"\n"</span>.join(chunk.text <span class="c2">for</span> chunk <span class="c2">in</span> top_chunks)
+    prompt = f<span class="c3">"Answer using only this context:\n{context}\n\nQuestion: {question}"</span>
+
+    <span class="c1"># 4. The model writes an answer grounded in real facts</span>
+    <span class="c2">return</span> llm.generate(prompt)</pre>
+
+      <div class="card" style="border-left:4px solid var(--blue);">
+        <h3>🎓 Architect-level version (what to say in the interview)</h3>
+        <p>In production this becomes: chunking strategy matched to document structure, <strong>hybrid search</strong> (dense embeddings + BM25 keyword search) for recall, a <strong>reranker</strong> (cross-encoder) to sort the top candidates by true relevance, <strong>semantic caching</strong> for repeated queries, and a confidence threshold that triggers "I don't know" instead of a hallucinated guess.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Pick a real product (a phone, a car, a video game). What "documents" would you feed a RAG system so it could answer customer questions about it perfectly? Sketch the 4 boxes above with your own example.</p>
+      </div>
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Walk me through a RAG pipeline for a 500k-document knowledge base." <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Start with a chunking strategy tied to document structure (headers, sections) rather than fixed character counts. Use <strong>hybrid retrieval</strong> — dense embeddings plus BM25 keyword search — to catch both semantic and exact-term matches. Add a <strong>reranking</strong> stage (cross-encoder) so the top candidates are sorted by true relevance, not just raw similarity. For sub-second latency, use approximate nearest-neighbor indexing (HNSW), shard the index, and add a semantic cache for repeated queries. Finally, include a fallback: if retrieval confidence is low, return "insufficient information" instead of letting the model guess.</p>
+        <p><em>Why this answer works:</em> it shows you think about the full pipeline (ingestion → retrieval → generation) and about failure modes, not just the happy path — which is exactly what a Staff/Principal interviewer is listening for.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 2: Vector DB -->
+    <section class="level" id="vectordb">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--purple-soft);">🗂️</div>
+        <div>
+          <div class="level-eyebrow">Level 2</div>
+          <h2>Vector Databases — The Magic Bookshelf</h2>
+        </div>
+      </div>
+      <p class="level-tagline">A vector database doesn't store words — it stores <em>meaning</em>, as points in space. Similar meanings end up sitting close together, like a librarian who shelves books by <em>topic</em> instead of alphabetically.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it like I'm 8</h3>
+          <p>Think of Spotify. You like a song, and it recommends ten more that "sound similar" — even if the titles are totally different words. It's not matching letters, it's matching <em>vibe</em>. A vector database is a giant map of "vibes," and it finds the closest ones to your question.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A hospital stores thousands of doctors' notes. A vector DB lets a nurse type "patient with chest pain and shortness of breath" and instantly find similar past cases — even if those notes used completely different wording.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Similarity search — nearest neighbors in "meaning space"</div>
+        <svg viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <rect x="0" y="0" width="600" height="260" rx="16" fill="#F7FBFA"/>
+          <g>
+            <circle cx="150" cy="80" r="7" fill="#2FB8A6"/><text x="162" y="84" font-size="11" fill="#16324F">"dog"</text>
+            <circle cx="185" cy="120" r="7" fill="#2FB8A6"/><text x="197" y="124" font-size="11" fill="#16324F">"puppy"</text>
+            <circle cx="120" cy="140" r="7" fill="#2FB8A6"/><text x="60" y="150" font-size="11" fill="#16324F">"golden retriever"</text>
+            <circle cx="430" cy="70" r="7" fill="#8577DD"/><text x="442" y="74" font-size="11" fill="#16324F">"car"</text>
+            <circle cx="470" cy="110" r="7" fill="#8577DD"/><text x="482" y="114" font-size="11" fill="#16324F">"engine"</text>
+            <circle cx="410" cy="130" r="7" fill="#8577DD"/><text x="330" y="150" font-size="11" fill="#16324F">"road trip"</text>
+            <circle cx="260" cy="210" r="7" fill="#FF6F59"/><text x="272" y="214" font-size="11" fill="#16324F">"pizza"</text>
+            <circle cx="300" cy="235" r="7" fill="#FF6F59"/><text x="200" y="248" font-size="11" fill="#16324F">"pasta recipe"</text>
+          </g>
+          <!-- query -->
+          <circle cx="160" cy="105" r="9" fill="#FFC857" stroke="#16324F" stroke-width="1.5"/>
+          <text x="172" y="100" font-size="11" font-weight="700" fill="#16324F">your query: "labrador"</text>
+          <circle cx="160" cy="105" r="55" fill="none" stroke="#FFC857" stroke-width="2" stroke-dasharray="4 6"/>
+          <text x="20" y="20" font-size="11" fill="#4A6076">Closest points = most similar meaning, found in milliseconds ⚡</text>
+        </svg>
+      </div>
+
+      <div class="card" style="border-left:4px solid var(--blue);">
+        <h3>🎓 Architect-level version</h3>
+        <p><strong>Milvus</strong> is a dedicated vector engine — great when you need raw ANN performance at huge scale (HNSW / IVF_PQ indexing, sharding). <strong>Amazon Aurora PostgreSQL + pgvector</strong> is great when your vectors live alongside relational business data and you want transactional consistency and simpler ops. Many enterprise designs use both: metadata and access control in Postgres, high-volume embeddings in Milvus.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>If Netflix used a vector database for movies, what "closeness" would matter most — genre, mood, actors, or pacing? There's no wrong answer — that's literally the design decision an architect makes.</p>
+      </div>
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Milvus vs. pgvector on Aurora — how do you decide?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Choose <strong>Milvus</strong> when you need raw ANN performance and scale — billions of vectors, advanced indexing like IVF_PQ or HNSW, and dedicated infrastructure tuned purely for similarity search. Choose <strong>Aurora + pgvector</strong> when your vectors need to live alongside relational business data — you want transactional consistency, SQL joins between vectors and structured records, and simpler operations (one system instead of two). Many real architectures use both: business metadata and access control in Postgres, high-volume embeddings in Milvus.</p>
+        <p><em>Why this answer works:</em> it avoids a "one is better" trap and instead frames the decision around scale, ops overhead, and data-locality trade-offs — the language an architect actually uses.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 3: Multi-Agent -->
+    <section class="level" id="agents">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--purple-soft);">🤝</div>
+        <div>
+          <div class="level-eyebrow">Level 3</div>
+          <h2>Multi-Agent Systems — A Team of Little Robots</h2>
+        </div>
+      </div>
+      <p class="level-tagline">One AI trying to do everything is like one kid trying to cook, serve, and wash dishes alone. A multi-agent system is a kitchen crew — each robot has one job, and someone coordinates them.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it like I'm 8</h3>
+          <p>Think of a class group project: one kid researches, one kid writes, one kid checks for mistakes, and the team leader decides what happens next. Each "agent" is like one of those kids — good at one thing, working together toward a shared goal.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>An insurance company automating claims: one agent reads the claim form, one agent checks the policy rules, one agent looks for signs of fraud, and a "supervisor" agent combines their findings into a final decision.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Supervisor–worker pattern (the most common enterprise pattern)</div>
+        <svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs>
+            <marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#8577DD"/></marker>
+          </defs>
+          <rect x="280" y="10" width="140" height="60" rx="14" fill="#EAE7FA" stroke="#8577DD" stroke-width="2"/>
+          <text x="350" y="36" text-anchor="middle" font-size="13" font-weight="700" fill="#16324F">Supervisor</text>
+          <text x="350" y="53" text-anchor="middle" font-size="10.5" fill="#4A6076">plans + delegates</text>
+
+          <g font-size="11.5" font-weight="600">
+            <rect x="30" y="150" width="150" height="66" rx="12" fill="#DAF3EE" stroke="#2FB8A6"/>
+            <text x="105" y="178" text-anchor="middle" fill="#16324F">Policy Lookup</text>
+            <text x="105" y="195" text-anchor="middle" font-size="10" fill="#4A6076">agent (RAG)</text>
+
+            <rect x="275" y="150" width="150" height="66" rx="12" fill="#FFE4DE" stroke="#FF6F59"/>
+            <text x="350" y="178" text-anchor="middle" fill="#16324F">Fraud Check</text>
+            <text x="350" y="195" text-anchor="middle" font-size="10" fill="#4A6076">agent</text>
+
+            <rect x="520" y="150" width="150" height="66" rx="12" fill="#FFF3D6" stroke="#FFC857"/>
+            <text x="595" y="178" text-anchor="middle" fill="#16324F">Decision</text>
+            <text x="595" y="195" text-anchor="middle" font-size="10" fill="#4A6076">agent</text>
+          </g>
+
+          <g stroke="#8577DD" stroke-width="2" marker-end="url(#arrow2)" fill="none">
+            <path d="M320 70 C 260 100, 150 120, 105 148"/>
+            <path d="M350 70 L 350 148"/>
+            <path d="M380 70 C 450 100, 560 120, 595 148"/>
+          </g>
+          <text x="350" y="245" text-anchor="middle" font-size="10.5" fill="#4A6076">Each worker reports back — supervisor decides: auto-approve, ask for info, or route to a human 👤</text>
+        </svg>
+      </div>
+
+      <div class="code-label">A minimal agent graph (LangGraph-style pseudocode)</div>
+      <pre class="code"><span class="c1"># A supervisor routes work to the right specialist, step by step</span>
+graph = StateGraph(ClaimState)
+
+graph.add_node(<span class="c3">"policy_lookup"</span>, policy_lookup_agent)
+graph.add_node(<span class="c3">"fraud_check"</span>, fraud_check_agent)
+graph.add_node(<span class="c3">"decision"</span>, decision_agent)
+
+graph.add_edge(<span class="c3">"policy_lookup"</span>, <span class="c3">"fraud_check"</span>)
+graph.add_edge(<span class="c3">"fraud_check"</span>, <span class="c3">"decision"</span>)
+
+<span class="c1"># conditional routing = the "thinking" part</span>
+graph.add_conditional_edges(
+    <span class="c3">"decision"</span>,
+    <span class="c2">lambda</span> state: <span class="c3">"human_review"</span> <span class="c2">if</span> state.risk_score > <span class="c3">0.7</span> <span class="c2">else</span> <span class="c3">"auto_approve"</span>
+)
+
+app = graph.compile(checkpointer=redis_checkpointer)  <span class="c4"># state survives restarts</span></pre>
+
+      <div class="card" style="border-left:4px solid var(--blue);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Supervisor-worker is easier to <strong>debug, trace, and audit</strong> — important when regulators ask "why was this claim approved?" Decentralized/blackboard collaboration is more flexible for open-ended research tasks, but harder to guarantee termination and harder to govern. Always pair autonomy with a <strong>max-step budget</strong> and a <strong>token/cost ceiling</strong> so agents can't loop forever.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Design a 3-agent team for planning a birthday party. Who's the supervisor? What do the workers each own? Where would a human need to approve something (like the budget)?</p>
+      </div>
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Supervisor-worker vs. decentralized collaboration — when would you choose each?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p><strong>Supervisor-worker</strong> fits well-defined task decomposition — it's easier to debug, trace, and audit, which matters most in regulated enterprise workflows like claims or finance where you must explain "why did the system do that." <strong>Decentralized/blackboard collaboration</strong> fits open-ended, exploratory tasks where the right path isn't known upfront, but it's harder to guarantee termination and harder to govern. Most enterprise deployments default to supervisor-worker for auditability, and reserve decentralized patterns for research or creative tasks.</p>
+        <p><em>Why this answer works:</em> it ties the technical choice back to a business consequence (auditability vs. flexibility) instead of just describing the mechanics.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 4: Protocols -->
+    <section class="level" id="protocols">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--blue-soft);">🔌</div>
+        <div>
+          <div class="level-eyebrow">Level 4</div>
+          <h2>MCP &amp; A2A — Teaching Robots a Common Language</h2>
+        </div>
+      </div>
+      <p class="level-tagline">If every tool speaks its own secret language, every agent needs a custom translator for every tool. Protocols fix that by giving everyone one shared plug.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it like I'm 8</h3>
+          <p><strong>MCP (Model Context Protocol)</strong> is like USB-C. Before USB-C, every gadget had its own weird cable. Now one plug works everywhere. MCP is a USB-C port for AI agents to plug into tools, files, and data — no custom wiring per tool.</p>
+          <p><strong>A2A (Agent-to-Agent)</strong> is like agents learning a shared language — like two kids from different countries agreeing to speak English so they can play together, even though they go to different schools (built by different companies).</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>Your claims-triage agent needs to check a policy database, send an email, and look up a customer's history in a CRM — three completely different systems. With MCP, it connects to all three through the same standard interface instead of three custom integrations.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">MCP: one plug, many tools</div>
+        <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs>
+            <marker id="arrow3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#4C8FE8"/></marker>
+          </defs>
+          <rect x="30" y="80" width="150" height="60" rx="14" fill="#EAE7FA" stroke="#8577DD" stroke-width="2"/>
+          <text x="105" y="115" text-anchor="middle" font-size="13" font-weight="700" fill="#16324F">Your Agent</text>
+
+          <rect x="270" y="70" width="160" height="80" rx="16" fill="#E1EDFC" stroke="#4C8FE8" stroke-width="2"/>
+          <text x="350" y="105" text-anchor="middle" font-size="13" font-weight="700" fill="#16324F">MCP Server</text>
+          <text x="350" y="122" text-anchor="middle" font-size="10.5" fill="#4A6076">"the USB-C port"</text>
+
+          <g font-size="11" font-weight="600">
+            <rect x="530" y="10" width="150" height="46" rx="10" fill="#DAF3EE" stroke="#2FB8A6"/>
+            <text x="605" y="38" text-anchor="middle" fill="#16324F">Policy database</text>
+            <rect x="530" y="88" width="150" height="46" rx="10" fill="#FFF3D6" stroke="#FFC857"/>
+            <text x="605" y="116" text-anchor="middle" fill="#16324F">Email tool</text>
+            <rect x="530" y="164" width="150" height="46" rx="10" fill="#FBE1EC" stroke="#E8639A"/>
+            <text x="605" y="192" text-anchor="middle" fill="#16324F">CRM system</text>
+          </g>
+          <g stroke="#4C8FE8" stroke-width="2" marker-end="url(#arrow3)" fill="none">
+            <line x1="180" y1="110" x2="267" y2="110"/>
+            <path d="M430 90 L 527 33"/>
+            <path d="M430 110 L 527 111"/>
+            <path d="M430 130 L 527 187"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="card" style="border-left:4px solid var(--blue);">
+        <h3>🎓 Architect-level version</h3>
+        <p>MCP standardizes <strong>agent-to-tool</strong> access (context, resources, function calls). A2A standardizes <strong>agent-to-agent</strong> discovery and task delegation across vendors and frameworks — so a LangGraph agent could hand off a task to a Bedrock agent built by another team, without custom glue code. Both are still maturing standards, so when proposing them, pair adoption with a fallback plan and a way to evaluate vendor support.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>List 3 tools a school-scheduling assistant agent would need to plug into (e.g., calendar, room booking, attendance system). Notice how each one used to need its own "cable" — that's the N×M problem MCP solves.</p>
+      </div>
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "What problem does MCP solve that a custom API integration doesn't?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Without a standard, every agent needs custom integration code for every tool — the N×M problem. MCP defines one common interface for tools, resources, and context, so any MCP-compliant agent can plug into any MCP-compliant tool without bespoke glue code. That gives portability across agent frameworks and lower integration maintenance cost. It's worth being honest that the standard is still maturing, so I'd pair adoption with an evaluation of vendor support and a fallback integration plan for critical tools.</p>
+        <p><em>Why this answer works:</em> it explains the "why" (N×M problem), not just the "what," and shows calibrated judgment by flagging the maturity risk instead of overselling it.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 5: Guardrails -->
+    <section class="level" id="guardrails">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--coral-soft);">🛡️</div>
+        <div>
+          <div class="level-eyebrow">Level 5</div>
+          <h2>Guardrails &amp; Governance — Safety Rules for Smart Robots</h2>
+        </div>
+      </div>
+      <p class="level-tagline">The more autonomous a system gets, the more it needs rules, checkpoints, and a way to explain itself — just like a kid gets more freedom as they earn trust, but always within house rules.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it like I'm 8</h3>
+          <p>Bowling with bumpers! The ball can move freely, but the bumpers stop it from going in the gutter. Guardrails do the same for AI: the model can think freely, but can't say harmful things, leak private info, or take a risky action without a check.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A bank's AI can freely answer "what's my balance," but before it moves money out of your account, it must pause and ask a human to confirm — that pause is a <strong>human-in-the-loop</strong> guardrail.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Where guardrails sit in the flow</div>
+        <svg viewBox="0 0 900 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="arrow4" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#4A6076"/></marker></defs>
+          <g font-size="12" font-weight="600">
+            <rect x="10" y="45" width="130" height="60" rx="12" fill="#E1EDFC" stroke="#4C8FE8"/>
+            <text x="75" y="80" text-anchor="middle" fill="#16324F">User input</text>
+
+            <rect x="180" y="45" width="140" height="60" rx="12" fill="#FFE4DE" stroke="#FF6F59"/>
+            <text x="250" y="70" text-anchor="middle" fill="#16324F">Input guardrail</text>
+            <text x="250" y="87" text-anchor="middle" font-size="10" fill="#4A6076">PII, jailbreaks</text>
+
+            <rect x="360" y="45" width="140" height="60" rx="12" fill="#EAE7FA" stroke="#8577DD"/>
+            <text x="430" y="80" text-anchor="middle" fill="#16324F">Agent reasoning</text>
+
+            <rect x="540" y="45" width="150" height="60" rx="12" fill="#FFF3D6" stroke="#FFC857"/>
+            <text x="615" y="70" text-anchor="middle" fill="#16324F">Risky action?</text>
+            <text x="615" y="87" text-anchor="middle" font-size="10" fill="#4A6076">→ human approval</text>
+
+            <rect x="730" y="45" width="150" height="60" rx="12" fill="#DAF3EE" stroke="#2FB8A6"/>
+            <text x="805" y="70" text-anchor="middle" fill="#16324F">Output guardrail</text>
+            <text x="805" y="87" text-anchor="middle" font-size="10" fill="#4A6076">grounding check</text>
+          </g>
+          <g stroke="#4A6076" stroke-width="2" marker-end="url(#arrow4)">
+            <line x1="140" y1="75" x2="177" y2="75"/>
+            <line x1="320" y1="75" x2="357" y2="75"/>
+            <line x1="500" y1="75" x2="537" y2="75"/>
+            <line x1="690" y1="75" x2="727" y2="75"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">A simple guardrail check</div>
+      <pre class="code"><span class="c2">def</span> check_before_acting(action, risk_score):
+    <span class="c1"># Irreversible or high-risk actions always pause for a human</span>
+    <span class="c2">if</span> action.type <span class="c2">in</span> [<span class="c3">"send_payment"</span>, <span class="c3">"delete_record"</span>, <span class="c3">"deny_claim"</span>]:
+        <span class="c2">return</span> <span class="c3">"needs_human_approval"</span>
+
+    <span class="c2">if</span> risk_score > <span class="c3">0.7</span>:
+        <span class="c2">return</span> <span class="c3">"needs_human_approval"</span>
+
+    <span class="c1"># Low-risk, reversible actions can proceed autonomously</span>
+    <span class="c2">return</span> <span class="c3">"auto_approved"</span></pre>
+
+      <div class="card" style="border-left:4px solid var(--blue);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Production guardrails span input filtering (PII/toxicity/jailbreak detection, e.g. Bedrock Guardrails), output grounding checks against retrieved context, an <strong>eval harness</strong> with golden datasets and LLM-as-judge scoring, and a full <strong>audit trail</strong> for compliance (SOC2, GDPR, HIPAA depending on industry). Not every step needs a human — place approval gates where the cost of being wrong is high or irreversible.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>For a homework-helper AI used by kids, list 3 things it should never do without a teacher checking first.</p>
+      </div>
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Where do you place human-in-the-loop checkpoints, and how do you decide?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Placement is risk-based, not blanket. I'd add a checkpoint before <strong>irreversible actions</strong> (payments, deletions, external communications), <strong>high-ambiguity decisions</strong>, or whenever the model's <strong>confidence is low</strong>. In a claims-triage example, that means only claims above a dollar-amount or risk-score threshold route to a human adjuster — low-risk, clearly-covered claims auto-approve. Adding a human to every step doesn't scale and defeats the purpose of automation; the goal is friction exactly where the cost of being wrong is highest.</p>
+        <p><em>Why this answer works:</em> it shows you can balance autonomy against risk instead of defaulting to "always ask a human," which interviewers often probe for.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 6: Cloud Infra -->
+    <section class="level" id="cloud">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--gold-soft);">🏭</div>
+        <div>
+          <div class="level-eyebrow">Level 6</div>
+          <h2>Cloud Infrastructure — The Robot Factory</h2>
+        </div>
+      </div>
+      <p class="level-tagline">You could build your own kitchen, own power plant, and own delivery trucks — or you could rent a fully-equipped commercial kitchen and just cook. Cloud infrastructure is the rented kitchen.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it like I'm 8</h3>
+          <p>Instead of building a robot factory from scratch, AWS rents you all the machines: a pantry to store ingredients (S3), a recipe binder that's always organized (Aurora/RDS), on-demand short-order cooks that appear only when needed (Lambda), and a whole kitchen crew working together (EKS/Kubernetes).</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>An insurance company's claims agents run as containers on EKS, use Lambda to fire off quick actions (like sending a notification email), store documents in S3, and keep session state in DocumentDB so a conversation can pause and resume later.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">AWS building blocks, mapped to their job</div>
+        <svg viewBox="0 0 900 200" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <g font-size="11.5" font-weight="600">
+            <rect x="10" y="20" width="150" height="70" rx="12" fill="#FFF3D6" stroke="#FFC857"/>
+            <text x="85" y="48" text-anchor="middle" fill="#16324F">Bedrock</text>
+            <text x="85" y="65" text-anchor="middle" font-size="10" fill="#4A6076">model access + agents</text>
+
+            <rect x="180" y="20" width="150" height="70" rx="12" fill="#FFE4DE" stroke="#FF6F59"/>
+            <text x="255" y="48" text-anchor="middle" fill="#16324F">Lambda</text>
+            <text x="255" y="65" text-anchor="middle" font-size="10" fill="#4A6076">on-demand actions</text>
+
+            <rect x="350" y="20" width="150" height="70" rx="12" fill="#EAE7FA" stroke="#8577DD"/>
+            <text x="425" y="48" text-anchor="middle" fill="#16324F">EKS</text>
+            <text x="425" y="65" text-anchor="middle" font-size="10" fill="#4A6076">agent worker fleet</text>
+
+            <rect x="520" y="20" width="150" height="70" rx="12" fill="#DAF3EE" stroke="#2FB8A6"/>
+            <text x="595" y="48" text-anchor="middle" fill="#16324F">S3</text>
+            <text x="595" y="65" text-anchor="middle" font-size="10" fill="#4A6076">document storage</text>
+
+            <rect x="690" y="20" width="150" height="70" rx="12" fill="#E1EDFC" stroke="#4C8FE8"/>
+            <text x="765" y="48" text-anchor="middle" fill="#16324F">Aurora / DocumentDB</text>
+            <text x="765" y="65" text-anchor="middle" font-size="10" fill="#4A6076">state + session memory</text>
+
+            <rect x="180" y="120" width="150" height="60" rx="12" fill="#FBE1EC" stroke="#E8639A"/>
+            <text x="255" y="145" text-anchor="middle" fill="#16324F">SageMaker</text>
+            <text x="255" y="162" text-anchor="middle" font-size="10" fill="#4A6076">fine-tuning</text>
+
+            <rect x="350" y="120" width="150" height="60" rx="12" fill="#FFF3D6" stroke="#FFC857"/>
+            <text x="425" y="145" text-anchor="middle" fill="#16324F">Docker + K8s</text>
+            <text x="425" y="162" text-anchor="middle" font-size="10" fill="#4A6076">containerize + scale</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="card" style="border-left:4px solid var(--blue);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Split stateless compute (agent reasoning workers on EKS, autoscaled by queue depth) from stateful storage (DocumentDB/Aurora for session state). Use Lambda for short, event-driven tool actions. CI/CD for non-deterministic AI outputs means eval-gated deployments, shadow traffic canaries, and statistical pass/fail thresholds instead of exact-match tests.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Which AWS piece above would you use to store a photo a customer uploads with their claim? Which one remembers that the customer already answered "yes" to a question 5 minutes ago?</p>
+      </div>
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "How do you scale stateful agent workloads on Kubernetes?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>The key is separating <strong>stateless compute</strong> from <strong>stateful storage</strong>. Agent reasoning workers run as stateless pods, horizontally autoscaled (HPA) based on queue depth or concurrent session count. Session and conversation state lives outside the pod — in DocumentDB, Redis, or Aurora — so any pod can pick up any session, and restarts or scale-downs don't lose state. Session affinity is only used where it genuinely helps latency, not as a substitute for externalized state.</p>
+        <p><em>Why this answer works:</em> "don't put state in the pod" is the single sentence that signals real production experience with stateful workloads on Kubernetes.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 7: Observability -->
+    <section class="level" id="observability">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--pink-soft);">📡</div>
+        <div>
+          <div class="level-eyebrow">Level 7</div>
+          <h2>Observability — The Mission Control Room</h2>
+        </div>
+      </div>
+      <p class="level-tagline">If an autonomous agent takes an action, you'd better be able to answer "why did it do that?" afterward. Observability is the flight recorder that makes that possible.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it like I'm 8</h3>
+          <p>Airplanes have a black box that records everything, so if something goes wrong, engineers can replay exactly what happened. Observability gives every AI agent a black box: what it thought, what tool it called, how long it took, and how much it cost.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A claim gets denied and the customer complains. With good observability, an engineer can replay the exact reasoning trace — which documents were retrieved, which agent made the call, and why — in minutes instead of days.</p>
+        </div>
+      </div>
+
+      <div class="code-label">Logging a trace for one agent step</div>
+      <pre class="code">trace.log(
+    agent=<span class="c3">"fraud_check"</span>,
+    tool_calls=[<span class="c3">"lookup_claim_history"</span>],
+    tokens_used=<span class="c3">842</span>,
+    latency_ms=<span class="c3">310</span>,
+    outcome=<span class="c3">"no fraud signals found"</span>,
+    confidence=<span class="c3">0.91</span>,
+)
+<span class="c1"># Every hop gets logged, so any decision can be replayed and explained</span></pre>
+
+      <div class="card" style="border-left:4px solid var(--blue);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Distributed tracing across every agent hop (OpenTelemetry-style spans), token usage and cost attribution per agent/session, latency breakdowns per tool call, and failure-state classification (tool error vs. model error vs. timeout) — all feeding alerts tied to real SLAs.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>If your homework got graded wrong by an AI teacher's assistant, what 3 pieces of information would you want logged so someone could figure out what went wrong?</p>
+      </div>
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "What would your observability stack look like for a production multi-agent system?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Distributed tracing across every agent hop, using OpenTelemetry-style spans so a full session can be replayed step by step. Token usage and cost attribution per agent and per session, latency broken down per tool call, and failure-state classification — tool error vs. model error vs. timeout — so incidents can be triaged fast. All of it feeds alerts tied to real SLAs, not just raw logs nobody looks at.</p>
+        <p><em>Why this answer works:</em> naming the specific dimensions (cost, latency, failure type) rather than just saying "we'd add logging" shows you've actually run one of these systems in production.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 8: Evaluation & CI/CD -->
+    <section class="level" id="cicd">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--teal-soft);">📝</div>
+        <div>
+          <div class="level-eyebrow">Level 8</div>
+          <h2>Evaluation &amp; CI/CD — The Report Card</h2>
+        </div>
+      </div>
+      <p class="level-tagline">You can't test an AI system the way you test a calculator — the same question can get two different, equally correct answers. So how do you know a change made things better or worse?</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it like I'm 8</h3>
+          <p>Grading a math test is easy — there's one right answer. Grading an essay is harder — a teacher reads it and judges quality against a rubric. Testing AI outputs is like grading essays: you need a rubric (eval criteria) and a grader (a human, or another AI acting as judge) instead of a simple right/wrong checker.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>Before shipping a new version of the claims-triage agent, the team runs it against 200 real past claims with known correct outcomes ("golden dataset"). If the new version's accuracy drops, or it starts approving claims it shouldn't, the deployment is blocked automatically — just like a report card catching a slipping grade before report-card day.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Eval-gated deployment pipeline</div>
+        <svg viewBox="0 0 900 160" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="arrow6" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#4A6076"/></marker></defs>
+          <g font-size="11.5" font-weight="600">
+            <rect x="10" y="45" width="140" height="60" rx="12" fill="#E1EDFC" stroke="#4C8FE8"/>
+            <text x="80" y="70" text-anchor="middle" fill="#16324F">Code / prompt</text>
+            <text x="80" y="87" text-anchor="middle" font-size="10" fill="#4A6076">change proposed</text>
+
+            <rect x="190" y="45" width="150" height="60" rx="12" fill="#FFF3D6" stroke="#FFC857"/>
+            <text x="265" y="70" text-anchor="middle" fill="#16324F">Golden eval set</text>
+            <text x="265" y="87" text-anchor="middle" font-size="10" fill="#4A6076">200 known cases</text>
+
+            <rect x="380" y="45" width="150" height="60" rx="12" fill="#EAE7FA" stroke="#8577DD"/>
+            <text x="455" y="70" text-anchor="middle" fill="#16324F">LLM-as-judge</text>
+            <text x="455" y="87" text-anchor="middle" font-size="10" fill="#4A6076">+ human spot-check</text>
+
+            <rect x="570" y="45" width="150" height="60" rx="12" fill="#FFE4DE" stroke="#FF6F59"/>
+            <text x="645" y="70" text-anchor="middle" fill="#16324F">Score vs.</text>
+            <text x="645" y="87" text-anchor="middle" font-size="10" fill="#4A6076">threshold</text>
+
+            <rect x="760" y="45" width="130" height="60" rx="12" fill="#DAF3EE" stroke="#2FB8A6"/>
+            <text x="825" y="70" text-anchor="middle" fill="#16324F">Shadow deploy</text>
+            <text x="825" y="87" text-anchor="middle" font-size="10" fill="#4A6076">→ full rollout</text>
+          </g>
+          <g stroke="#4A6076" stroke-width="2" marker-end="url(#arrow6)">
+            <line x1="150" y1="75" x2="187" y2="75"/>
+            <line x1="340" y1="75" x2="377" y2="75"/>
+            <line x1="530" y1="75" x2="567" y2="75"/>
+            <line x1="720" y1="75" x2="757" y2="75"/>
+          </g>
+          <text x="450" y="140" text-anchor="middle" font-size="10.5" fill="#4A6076">If the score drops below threshold, the pipeline blocks the deploy — just like a failing grade holds back report cards</text>
+        </svg>
+      </div>
+
+      <div class="code-label">A simple eval gate</div>
+      <pre class="code"><span class="c1"># Runs automatically in CI before any deploy</span>
+<span class="c2">def</span> run_eval_gate(new_model, golden_dataset, threshold=<span class="c3">0.85</span>):
+    scores = []
+    <span class="c2">for</span> case <span class="c2">in</span> golden_dataset:
+        output = new_model.run(case.input)
+        <span class="c1"># an LLM "judge" grades faithfulness, correctness, tone</span>
+        score = llm_judge.grade(output, case.expected, rubric=case.rubric)
+        scores.append(score)
+
+    avg_score = sum(scores) / len(scores)
+    <span class="c2">if</span> avg_score < threshold:
+        <span class="c2">raise</span> DeploymentBlocked(f<span class="c3">"Eval score {avg_score:.2f} below threshold {threshold}"</span>)
+
+    <span class="c2">return</span> <span class="c3">"safe to deploy ✅"</span></pre>
+
+      <div class="card" style="border-left:4px solid var(--blue);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Production eval pipelines combine <strong>golden datasets</strong> (regression protection), <strong>LLM-as-judge</strong> scoring for scale with periodic human audits to keep the judge honest, <strong>statistical pass/fail thresholds</strong> instead of exact-match assertions, and <strong>shadow deployments</strong> that compare the new version against production traffic before a full rollout. Prompt and model versions are tracked like code, so any regression can be bisected to the exact change that caused it.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>If you were grading an AI tutor's answers to math word problems, what would your "rubric" check for besides just the final number being right?</p>
+      </div>
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "How do you evaluate a non-deterministic AI system in CI/CD?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>You can't rely on exact-match assertions because outputs vary run to run. Instead, run every change against a golden evaluation dataset, score outputs with an LLM-as-judge (periodically audited by humans to catch judge drift), and gate deployment on a statistical threshold rather than a single pass/fail case. Before full rollout, run a shadow deployment comparing the new version against the current one on live traffic. Track prompt and model versions like code so regressions can be bisected.</p>
+        <p><em>Why this answer works:</em> it directly names the core problem (non-determinism breaks exact-match testing) before describing the solution, which shows you understand <em>why</em> the practice exists, not just that it exists.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 9: Boss Level -->
+    <section class="level" id="bosslevel">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--coral-soft);">🏆</div>
+        <div>
+          <div class="level-eyebrow">Level 9 — Boss Level</div>
+          <h2>Putting it all together: Claims Triage</h2>
+        </div>
+      </div>
+      <p class="level-tagline">Everything you leveled up on now combines into one real system: an insurance company automating claims review, end to end.</p>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Full architecture — every level you just learned, working together</div>
+        <svg viewBox="0 0 940 380" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="arrow5" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#4A6076"/></marker></defs>
+
+          <rect x="20" y="20" width="150" height="50" rx="12" fill="#E1EDFC" stroke="#4C8FE8"/>
+          <text x="95" y="50" text-anchor="middle" font-size="12" font-weight="700" fill="#16324F">Customer submits claim</text>
+
+          <rect x="20" y="100" width="150" height="60" rx="12" fill="#FFE4DE" stroke="#FF6F59"/>
+          <text x="95" y="125" text-anchor="middle" font-size="11.5" font-weight="700" fill="#16324F">Input guardrail</text>
+          <text x="95" y="142" text-anchor="middle" font-size="10" fill="#4A6076">(L5) PII check</text>
+
+          <rect x="220" y="100" width="150" height="60" rx="12" fill="#EAE7FA" stroke="#8577DD"/>
+          <text x="295" y="122" text-anchor="middle" font-size="11.5" font-weight="700" fill="#16324F">Supervisor agent</text>
+          <text x="295" y="140" text-anchor="middle" font-size="10" fill="#4A6076">(L3) plans work</text>
+
+          <rect x="220" y="200" width="150" height="60" rx="12" fill="#DAF3EE" stroke="#2FB8A6"/>
+          <text x="295" y="222" text-anchor="middle" font-size="11.5" font-weight="700" fill="#16324F">Policy lookup</text>
+          <text x="295" y="240" text-anchor="middle" font-size="10" fill="#4A6076">(L1) RAG + (L2) vector DB</text>
+
+          <rect x="420" y="200" width="150" height="60" rx="12" fill="#FFF3D6" stroke="#FFC857"/>
+          <text x="495" y="222" text-anchor="middle" font-size="11.5" font-weight="700" fill="#16324F">Fraud check</text>
+          <text x="495" y="240" text-anchor="middle" font-size="10" fill="#4A6076">(L3) worker agent</text>
+
+          <rect x="620" y="200" width="150" height="60" rx="12" fill="#E1EDFC" stroke="#4C8FE8"/>
+          <text x="695" y="222" text-anchor="middle" font-size="11.5" font-weight="700" fill="#16324F">MCP tool layer</text>
+          <text x="695" y="240" text-anchor="middle" font-size="10" fill="#4A6076">(L4) CRM, email, DB</text>
+
+          <rect x="420" y="100" width="150" height="60" rx="12" fill="#FBE1EC" stroke="#E8639A"/>
+          <text x="495" y="122" text-anchor="middle" font-size="11.5" font-weight="700" fill="#16324F">Decision agent</text>
+          <text x="495" y="140" text-anchor="middle" font-size="10" fill="#4A6076">risk score</text>
+
+          <rect x="420" y="20" width="150" height="50" rx="12" fill="#FFF3D6" stroke="#FFC857"/>
+          <text x="495" y="50" text-anchor="middle" font-size="12" font-weight="700" fill="#16324F">Risky? → Human review</text>
+
+          <rect x="620" y="20" width="150" height="50" rx="12" fill="#DAF3EE" stroke="#2FB8A6"/>
+          <text x="695" y="50" text-anchor="middle" font-size="12" font-weight="700" fill="#16324F">Auto-approve ✅</text>
+
+          <rect x="770" y="200" width="150" height="60" rx="12" fill="#EAE7FA" stroke="#8577DD"/>
+          <text x="845" y="222" text-anchor="middle" font-size="11.5" font-weight="700" fill="#16324F">Observability</text>
+          <text x="845" y="240" text-anchor="middle" font-size="10" fill="#4A6076">(L7) trace every step</text>
+
+          <rect x="20" y="290" width="900" height="60" rx="12" fill="#FFF9EE" stroke="#FFC857" stroke-dasharray="4 5"/>
+          <text x="470" y="325" text-anchor="middle" font-size="11.5" fill="#8A5A00" font-weight="600">Runs on Bedrock + EKS + Lambda + Aurora/DocumentDB (Level 6) — every hop logged for compliance</text>
+
+          <g stroke="#4A6076" stroke-width="2" marker-end="url(#arrow5)" fill="none">
+            <line x1="95" y1="70" x2="95" y2="97"/>
+            <line x1="170" y1="130" x2="217" y2="130"/>
+            <line x1="295" y1="160" x2="295" y2="197"/>
+            <path d="M370 230 L 417 230"/>
+            <path d="M570 230 L 617 230"/>
+            <path d="M295 200 C 350 160, 400 140, 417 130"/>
+            <path d="M570 130 L 617 240"/>
+            <path d="M495 100 L 495 73"/>
+            <path d="M570 40 L 617 40"/>
+            <line x1="770" y1="230" x2="767" y2="230"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="card usecase">
+        <h3>🌍 Why this matters (tie back to the JD)</h3>
+        <p>This is exactly the shape of system the job description asks you to design: "translate business automation goals into scalable, production-grade AI architectures," with "human-in-the-loop decision controls" and "observability." If you can narrate this diagram out loud — box by box, trade-off by trade-off — you can answer almost any system-design question in the interview.</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 This is the exact style of question from Part 3 of your prep doc: "Design an agentic AI platform for claims triage." <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer structure</div>
+        <p><strong>1. Clarify scope</strong> — claim volume, latency SLA, and regulatory constraints, since insurance is heavily regulated and auto-approvals need audit trails. <strong>2. High-level architecture</strong> — ingestion, RAG over policy documents, and a supervisor agent delegating to policy-lookup, fraud-check, and decision specialist agents, with a human-in-the-loop gate above a risk threshold. <strong>3. Data &amp; retrieval</strong> — vector DB choice and structured extraction from claim forms. <strong>4. Governance</strong> — why auto-approval needs guardrails, an audit trail, and explainable reason codes for regulators. <strong>5. Infra</strong> — Bedrock for orchestration, Lambda for actions, EKS for agent workers, full observability on every decision path. <strong>6. Failure handling</strong> — what happens when retrieval confidence is low or a tool call fails mid-workflow.</p>
+        <p><em>Why this answer works:</em> interviewers grade structure and trade-off reasoning far more than a single "correct" design — narrating assumptions out loud as you go through each numbered stage is what separates a strong answer from a memorized one.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 10: Banking Multi-Source RAG -->
+    <section class="level" id="banking">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--gold-soft);">🏦</div>
+        <div>
+          <div class="level-eyebrow">Level 10 — Bonus Boss Level</div>
+          <h2>Banking: Fast, Cheap RAG Across Messy Data — With Locked Doors</h2>
+        </div>
+      </div>
+      <p class="level-tagline">A bank's knowledge isn't one tidy library — it's scanned loan PDFs, Excel risk models, Word policy docs, KYC ID photos, call-center recordings, and rows in Core Banking, CRM, and ERP systems. And not every employee is allowed to see all of it. This level covers the four hardest asks in one system: many formats, speed, cost, and per-employee access control — plus keeping it all fresh without rebuilding everything.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it like I'm 8</h3>
+          <p>Picture a huge library where books arrive as photocopies, voice recordings, spreadsheets, and even locked filing cabinets. The librarian has to be able to read <em>all</em> of them. But some shelves have a sign: "Managers only," "Compliance officers only," "Ask a supervisor." The librarian never hands a restricted book to the wrong person — even if they ask nicely.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A bank builds one internal AI assistant used by relationship managers, call-center agents, compliance officers, and credit-risk analysts. A relationship manager can ask "what's this customer's mortgage status" and get product and payment info. The same question from a compliance officer can also surface flagged SAR (suspicious activity report) notes. A call-center agent asking the same question sees neither — just enough to answer the customer on the phone.</p>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="card" style="border-left:4px solid var(--purple);">
+          <h3>🗃️ Ask 1: Many formats, one system</h3>
+          <p>PDFs and Word docs (loan agreements, policy manuals) → text + layout extraction. Excel (risk models, transaction exports) → structured tables, not flattened text. Images (scanned KYC IDs, signatures) → OCR + vision. Call recordings → speech-to-text transcription. Core Banking DB, CRM, ERP → change-data-capture (CDC), not one-time dumps.</p>
+        </div>
+        <div class="card" style="border-left:4px solid var(--coral);">
+          <h3>🔒 Ask 2: Not everyone sees everything</h3>
+          <p>Every chunk is tagged at ingestion with metadata: sensitivity tier, department, product line, customer-consent flag. Retrieval applies these tags as filters <em>before</em> anything reaches the model — permissions are enforced by the retrieval layer, never left to the LLM's judgment.</p>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="card" style="border-left:4px solid var(--teal);">
+          <h3>⚡ Ask 3: Fast and cost-effective</h3>
+          <p>Hot/cold storage tiers (frequently-asked policies stay in fast indexes; rarely-touched archives sit cheaper), a small/cheap model handles simple lookups and only escalates to a larger model for complex reasoning, and semantic caching avoids recomputing answers to common questions.</p>
+        </div>
+        <div class="card" style="border-left:4px solid var(--blue);">
+          <h3>🔄 Ask 4: Partial, not full, updates</h3>
+          <p>When one loan policy page changes, the system shouldn't re-embed the entire knowledge base. Each chunk is hashed; only chunks whose hash changed get re-embedded and swapped in — a delta update instead of a full rebuild.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Ingestion: eight messy sources → one governed, tagged index</div>
+        <svg viewBox="0 0 960 300" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="arrowB1" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#4A6076"/></marker></defs>
+          <g font-size="10" font-weight="600">
+            <rect x="5" y="15" width="110" height="46" rx="10" fill="#FFE4DE" stroke="#FF6F59"/><text x="60" y="42" text-anchor="middle" fill="#16324F">PDF loan docs</text>
+            <rect x="123" y="15" width="110" height="46" rx="10" fill="#FFF3D6" stroke="#FFC857"/><text x="178" y="42" text-anchor="middle" fill="#16324F">Excel / Word</text>
+            <rect x="241" y="15" width="110" height="46" rx="10" fill="#FBE1EC" stroke="#E8639A"/><text x="296" y="42" text-anchor="middle" fill="#16324F">KYC images</text>
+            <rect x="359" y="15" width="110" height="46" rx="10" fill="#EAE7FA" stroke="#8577DD"/><text x="414" y="42" text-anchor="middle" fill="#16324F">Call recordings</text>
+            <rect x="477" y="15" width="110" height="46" rx="10" fill="#DAF3EE" stroke="#2FB8A6"/><text x="532" y="42" text-anchor="middle" fill="#16324F">Core Banking DB</text>
+            <rect x="595" y="15" width="110" height="46" rx="10" fill="#E1EDFC" stroke="#4C8FE8"/><text x="650" y="42" text-anchor="middle" fill="#16324F">CRM</text>
+            <rect x="713" y="15" width="110" height="46" rx="10" fill="#FFE4DE" stroke="#FF6F59"/><text x="768" y="42" text-anchor="middle" fill="#16324F">ERP</text>
+            <rect x="831" y="15" width="120" height="46" rx="10" fill="#FFF3D6" stroke="#FFC857"/><text x="891" y="42" text-anchor="middle" fill="#16324F">Compliance files</text>
+          </g>
+
+          <rect x="80" y="100" width="800" height="50" rx="12" fill="#F7FBFA" stroke="#2FB8A6" stroke-width="2"/>
+          <text x="480" y="122" text-anchor="middle" font-size="12" font-weight="700" fill="#16324F">Format-aware extraction</text>
+          <text x="480" y="138" text-anchor="middle" font-size="10" fill="#4A6076">document parsers • OCR + vision • speech-to-text • CDC connectors for DB/CRM/ERP</text>
+
+          <rect x="80" y="185" width="800" height="50" rx="12" fill="#FBE1EC" stroke="#E8639A" stroke-width="2"/>
+          <text x="480" y="207" text-anchor="middle" font-size="12" font-weight="700" fill="#16324F">Normalize + tag</text>
+          <text x="480" y="223" text-anchor="middle" font-size="10" fill="#4A6076">common chunk format + metadata: sensitivity tier, department, product line, customer-consent flag</text>
+
+          <rect x="80" y="255" width="800" height="42" rx="12" fill="#EAE7FA" stroke="#8577DD" stroke-width="2"/>
+          <text x="480" y="281" text-anchor="middle" font-size="11.5" font-weight="700" fill="#16324F">Vector DB — hot/cold tiers, every chunk carries its ACL tag</text>
+
+          <g stroke="#4A6076" stroke-width="2" marker-end="url(#arrowB1)" fill="none">
+            <path d="M60 61 L 200 98"/>
+            <path d="M178 61 L 260 98"/>
+            <path d="M296 61 L 340 98"/>
+            <path d="M414 61 L 440 98"/>
+            <path d="M532 61 L 520 98"/>
+            <path d="M650 61 L 600 98"/>
+            <path d="M768 61 L 700 98"/>
+            <path d="M891 61 L 780 98"/>
+            <line x1="480" y1="150" x2="480" y2="183"/>
+            <line x1="480" y1="235" x2="480" y2="253"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Same question, two different answers — access control enforced at query time</div>
+        <svg viewBox="0 0 940 260" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="arrowB2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#4A6076"/></marker></defs>
+
+          <rect x="20" y="20" width="180" height="50" rx="12" fill="#E1EDFC" stroke="#4C8FE8"/>
+          <text x="110" y="42" text-anchor="middle" font-size="11.5" font-weight="700" fill="#16324F">Call-center agent asks:</text>
+          <text x="110" y="58" text-anchor="middle" font-size="10" fill="#4A6076">"Status of this customer's loan?"</text>
+
+          <rect x="20" y="150" width="180" height="50" rx="12" fill="#FFE4DE" stroke="#FF6F59"/>
+          <text x="110" y="172" text-anchor="middle" font-size="11.5" font-weight="700" fill="#16324F">Compliance officer asks:</text>
+          <text x="110" y="188" text-anchor="middle" font-size="10" fill="#4A6076">"Status of this customer's loan?"</text>
+
+          <rect x="260" y="85" width="170" height="50" rx="12" fill="#FFF3D6" stroke="#FFC857"/>
+          <text x="345" y="107" text-anchor="middle" font-size="11.5" font-weight="700" fill="#16324F">Role / clearance check</text>
+          <text x="345" y="123" text-anchor="middle" font-size="10" fill="#4A6076">looked up from IAM/AD</text>
+
+          <rect x="480" y="30" width="190" height="55" rx="12" fill="#DAF3EE" stroke="#2FB8A6"/>
+          <text x="575" y="52" text-anchor="middle" font-size="11.5" font-weight="700" fill="#16324F">Filtered retrieval</text>
+          <text x="575" y="68" text-anchor="middle" font-size="10" fill="#4A6076">only "public/product-tier" chunks</text>
+
+          <rect x="480" y="140" width="190" height="55" rx="12" fill="#EAE7FA" stroke="#8577DD"/>
+          <text x="575" y="162" text-anchor="middle" font-size="11.5" font-weight="700" fill="#16324F">Filtered retrieval</text>
+          <text x="575" y="178" text-anchor="middle" font-size="10" fill="#4A6076">+ "compliance-tier" chunks unlocked</text>
+
+          <rect x="720" y="30" width="200" height="55" rx="12" fill="#E1EDFC" stroke="#4C8FE8"/>
+          <text x="820" y="52" text-anchor="middle" font-size="11.5" font-weight="700" fill="#16324F">Answer: balance,</text>
+          <text x="820" y="68" text-anchor="middle" font-size="10" fill="#4A6076">payment due date only</text>
+
+          <rect x="720" y="140" width="200" height="55" rx="12" fill="#FFE4DE" stroke="#FF6F59"/>
+          <text x="820" y="162" text-anchor="middle" font-size="11.5" font-weight="700" fill="#16324F">Answer: balance +</text>
+          <text x="820" y="178" text-anchor="middle" font-size="10" fill="#4A6076">flagged SAR notes</text>
+
+          <g stroke="#4A6076" stroke-width="2" marker-end="url(#arrowB2)" fill="none">
+            <path d="M200 45 L 258 100"/>
+            <path d="M200 175 L 258 120"/>
+            <path d="M345 85 L 500 60"/>
+            <path d="M345 135 L 500 165"/>
+            <path d="M670 58 L 717 58"/>
+            <path d="M670 168 L 717 168"/>
+          </g>
+          <text x="470" y="240" text-anchor="middle" font-size="10.5" fill="#4A6076">Same question, same model — the ACL filter decides what context the model is even allowed to see</text>
+        </svg>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Partial updates: only re-embed what actually changed</div>
+        <svg viewBox="0 0 900 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="arrowB3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#4A6076"/></marker></defs>
+          <g font-size="11.5" font-weight="600">
+            <rect x="10" y="40" width="150" height="60" rx="12" fill="#E1EDFC" stroke="#4C8FE8"/>
+            <text x="85" y="65" text-anchor="middle" fill="#16324F">Source changes</text>
+            <text x="85" y="82" text-anchor="middle" font-size="10" fill="#4A6076">one policy page edited</text>
+
+            <rect x="200" y="40" width="150" height="60" rx="12" fill="#FFF3D6" stroke="#FFC857"/>
+            <text x="275" y="65" text-anchor="middle" fill="#16324F">Hash the chunk</text>
+            <text x="275" y="82" text-anchor="middle" font-size="10" fill="#4A6076">compare to stored hash</text>
+
+            <rect x="390" y="40" width="150" height="60" rx="12" fill="#FFE4DE" stroke="#FF6F59"/>
+            <text x="465" y="65" text-anchor="middle" fill="#16324F">Changed?</text>
+            <text x="465" y="82" text-anchor="middle" font-size="10" fill="#4A6076">skip if identical</text>
+
+            <rect x="580" y="40" width="150" height="60" rx="12" fill="#EAE7FA" stroke="#8577DD"/>
+            <text x="655" y="65" text-anchor="middle" fill="#16324F">Re-embed only</text>
+            <text x="655" y="82" text-anchor="middle" font-size="10" fill="#4A6076">that one chunk</text>
+
+            <rect x="750" y="40" width="140" height="60" rx="12" fill="#DAF3EE" stroke="#2FB8A6"/>
+            <text x="820" y="65" text-anchor="middle" fill="#16324F">Upsert into</text>
+            <text x="820" y="82" text-anchor="middle" font-size="10" fill="#4A6076">vector DB, live instantly</text>
+          </g>
+          <g stroke="#4A6076" stroke-width="2" marker-end="url(#arrowB3)">
+            <line x1="160" y1="70" x2="197" y2="70"/>
+            <line x1="350" y1="70" x2="387" y2="70"/>
+            <line x1="540" y1="70" x2="577" y2="70"/>
+            <line x1="730" y1="70" x2="747" y2="70"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">Retrieval that respects who's asking</div>
+      <pre class="code"><span class="c1"># Access control is enforced at retrieval time, not left to the model</span>
+<span class="c2">def</span> retrieve_for_user(query, user):
+    query_vector = embed(query)
+
+    <span class="c1"># Pull the user's permitted tags from IAM/AD, not from the request itself</span>
+    allowed_tiers = get_clearance(user)  <span class="c4"># e.g. ["public", "product", "compliance"]</span>
+
+    results = vector_db.search(
+        query_vector,
+        top_k=<span class="c3">5</span>,
+        filter=<span class="c3">f"sensitivity_tier IN {allowed_tiers} AND department IN {user.departments}"</span>
+    )
+    <span class="c1"># The LLM only ever sees chunks that already passed the filter</span>
+    <span class="c2">return</span> results</pre>
+
+      <div class="card" style="border-left:4px solid var(--coral);">
+        <h3>🚫 Document-level denial, not just answer-level filtering</h3>
+        <p>Chunk-tag filtering (above) controls <em>which pieces of content</em> can surface. Some documents need a harder rule: certain files should never appear in a certain role's search results at all — not partially, not summarized, not even acknowledged as existing. Board minutes, SAR filings, and executive credit-risk models are typically <strong>document-level restricted</strong>, not just chunk-filtered. This is enforced by tagging the whole document with an <code>allowed_roles</code> list at ingestion, and rejecting it from the candidate set before vector search even runs — the same mechanism as chunk filtering, applied at the document boundary instead of the passage boundary.</p>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Role → document access matrix (illustrative)</div>
+        <table class="access-matrix">
+          <thead>
+            <tr>
+              <th>Document type</th>
+              <th>Call-center agent</th>
+              <th>Relationship manager</th>
+              <th>Credit-risk analyst</th>
+              <th>Compliance officer</th>
+              <th>Branch manager</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Product brochures</td><td class="yes">✅ Full</td><td class="yes">✅ Full</td><td class="yes">✅ Full</td><td class="yes">✅ Full</td><td class="yes">✅ Full</td></tr>
+            <tr><td>Customer loan status</td><td class="partial">🟡 Partial</td><td class="yes">✅ Full</td><td class="yes">✅ Full</td><td class="yes">✅ Full</td><td class="yes">✅ Full</td></tr>
+            <tr><td>Credit-risk models</td><td class="no">⛔ None</td><td class="no">⛔ None</td><td class="yes">✅ Full</td><td class="partial">🟡 Partial</td><td class="partial">🟡 Partial</td></tr>
+            <tr><td>KYC / ID documents</td><td class="no">⛔ None</td><td class="partial">🟡 Partial</td><td class="partial">🟡 Partial</td><td class="yes">✅ Full</td><td class="partial">🟡 Partial</td></tr>
+            <tr><td>SAR / compliance filings</td><td class="no">⛔ None</td><td class="no">⛔ None</td><td class="no">⛔ None</td><td class="yes">✅ Full</td><td class="no">⛔ None</td></tr>
+            <tr><td>Board / executive reports</td><td class="no">⛔ None</td><td class="no">⛔ None</td><td class="no">⛔ None</td><td class="partial">🟡 Partial</td><td class="no">⛔ None</td></tr>
+          </tbody>
+        </table>
+        <div class="quest-caption">"None" means the document is excluded from that role's search results entirely — it never surfaces, even as a snippet.</div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Same search, one document that simply doesn't exist for this role</div>
+        <svg viewBox="0 0 900 190" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="arrowB4" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#4A6076"/></marker></defs>
+          <g font-size="11" font-weight="600">
+            <rect x="10" y="20" width="180" height="46" rx="10" fill="#E1EDFC" stroke="#4C8FE8"/><text x="100" y="48" text-anchor="middle" fill="#16324F">Query: "flag risk on ACC-4471"</text>
+
+            <rect x="230" y="20" width="170" height="46" rx="10" fill="#FFF3D6" stroke="#FFC857"/><text x="315" y="48" text-anchor="middle" fill="#16324F">Document allowlist check</text>
+
+            <rect x="440" y="20" width="200" height="46" rx="10" fill="#DAF3EE" stroke="#2FB8A6"/><text x="540" y="42" text-anchor="middle" fill="#16324F">SAR filing on ACC-4471</text>
+            <text x="540" y="58" text-anchor="middle" font-size="9" fill="#4A6076">exists in the index</text>
+
+            <rect x="440" y="110" width="200" height="60" rx="10" fill="#FFE4DE" stroke="#FF6F59"/>
+            <text x="540" y="132" text-anchor="middle" fill="#16324F">Relationship manager</text>
+            <text x="540" y="148" text-anchor="middle" font-size="9.5" fill="#4A6076">document excluded pre-search</text>
+            <text x="540" y="163" text-anchor="middle" font-size="9.5" fill="#4A6076">→ zero results, no "restricted" hint</text>
+
+            <rect x="700" y="20" width="180" height="46" rx="10" fill="#EAE7FA" stroke="#8577DD"/>
+            <text x="790" y="42" text-anchor="middle" fill="#16324F">Compliance officer</text>
+            <text x="790" y="58" text-anchor="middle" font-size="9" fill="#4A6076">→ document retrieved normally</text>
+          </g>
+          <g stroke="#4A6076" stroke-width="2" marker-end="url(#arrowB4)" fill="none">
+            <line x1="190" y1="43" x2="227" y2="43"/>
+            <path d="M400 35 L 437 35"/>
+            <path d="M540 66 L 540 108"/>
+            <path d="M640 35 L 697 35"/>
+          </g>
+        </svg>
+        <div class="quest-caption">The document isn't hidden or redacted for the relationship manager — it simply never enters the candidate set, so there's nothing to accidentally leak or infer.</div>
+      </div>
+
+      <div class="code-label">Document-level allowlist, checked before chunk-level retrieval</div>
+      <pre class="code"><span class="c1"># Two layers: a document must pass BOTH checks to ever reach the user</span>
+<span class="c2">def</span> retrieve_for_user(query, user):
+    query_vector = embed(query)
+    allowed_tiers = get_clearance(user)
+
+    results = vector_db.search(
+        query_vector,
+        top_k=<span class="c3">5</span>,
+        filter=<span class="c3">f"""</span>
+<span class="c3">            sensitivity_tier IN {allowed_tiers}</span>          <span class="c4"># layer 1: chunk-level tier</span>
+<span class="c3">            AND document_id NOT IN {get_denied_documents(user)}</span>  <span class="c4"># layer 2: doc-level deny</span>
+<span class="c3">        """</span>
+    )
+    <span class="c1"># A restricted document was never a candidate — nothing to filter after the fact</span>
+    <span class="c2">return</span> results</pre>
+
+      <div class="code-label">Delta reindexing — cheap, incremental knowledge base updates</div>
+      <pre class="code"><span class="c1"># Runs on every CDC event from Core Banking / CRM / ERP, or on document re-upload</span>
+<span class="c2">def</span> sync_chunk(chunk, chunk_store):
+    new_hash = sha256(chunk.text)
+    old_hash = chunk_store.get_hash(chunk.id)
+
+    <span class="c2">if</span> new_hash == old_hash:
+        <span class="c2">return</span> <span class="c3">"unchanged — skip embedding, save cost"</span>
+
+    <span class="c1"># Only the changed chunk gets a fresh, costly embedding call</span>
+    new_vector = embed(chunk.text)
+    vector_db.upsert(chunk.id, new_vector, metadata=chunk.metadata)
+    chunk_store.set_hash(chunk.id, new_hash)
+    <span class="c2">return</span> <span class="c3">"updated ✅"</span></pre>
+
+      <div class="card" style="border-left:4px solid var(--blue);">
+        <h3>🎓 Architect-level version (how to say all of this in one breath)</h3>
+        <p><strong>Format diversity</strong> is solved at ingestion: format-specific extractors (document parsers, OCR/vision for scans, speech-to-text for calls, CDC connectors for DB/CRM/ERP) normalize everything into one chunk schema. <strong>Access control</strong> works at two layers: chunk-level sensitivity tags filter individual passages, while a document-level allowlist keeps certain files (SAR filings, board reports) out of a role's candidate set entirely — both enforced as pre-filters at retrieval, mirrored from IAM/Active Directory, never as a prompt instruction to the model. <strong>Cost and speed</strong> come from hot/cold storage tiers, a small-model-first routing strategy that escalates to a larger model only for complex reasoning, and semantic caching for repeat queries. <strong>Partial updates</strong> come from chunk-level hashing plus event-driven CDC pipelines, so a single changed policy page triggers one cheap re-embed instead of a full, expensive reindex.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Design the sensitivity tiers <em>and</em> a document-level deny list for a bank's internal assistant: what would "public," "product," "compliance," and "executive" tiers each contain, and which specific document types should be completely invisible to a call-center agent?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "How would you architect a RAG system for a bank ingesting PDFs, Excel, Word, images, audio, and CRM/ERP data — fast, cost-effective, with per-employee access control and partial knowledge-base updates?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>I'd split this into four concerns. First, <strong>ingestion</strong>: route each format to the right extractor — document parsers for PDF/Word, structured table extraction for Excel (not flattened text), OCR/vision for scanned KYC images, speech-to-text for call recordings, and CDC connectors for Core Banking, CRM, and ERP so structured data stays fresh without full re-pulls. Everything lands in one normalized chunk schema with metadata. Second, <strong>access control</strong>: tag every chunk with a sensitivity tier and department at ingestion, mirrored from the source system's own IAM/AD permissions, and enforce that as a metadata filter at retrieval time — before the LLM ever sees the content, not as a prompt instruction. Third, <strong>cost and speed</strong>: hot/cold storage tiers so frequently-asked content stays in fast indexes while archives sit cheaper, a small-model-first routing strategy that only escalates to a larger model for complex reasoning, and semantic caching for repeated questions. Fourth, <strong>partial updates</strong>: hash each chunk and only re-embed chunks whose hash changed, triggered by CDC events or document re-uploads, so a single policy change doesn't require rebuilding the whole index.</p>
+        <p><em>Why this answer works:</em> it addresses all four constraints explicitly instead of just describing a generic RAG pipeline, and it repeatedly makes the point that access control is enforced structurally (metadata filters, mirrored permissions) rather than trusted to the model — which is exactly the distinction a banking security reviewer would probe for.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 11: V3 Production Retrieval Engine -->
+    <section class="level" id="v3prod">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--blue-soft);">⚙️</div>
+        <div>
+          <div class="level-eyebrow">Level 11 — Deep Dive</div>
+          <h2>V3: Turning the Banking RAG Sketch Into a Production Engine</h2>
+        </div>
+      </div>
+      <p class="level-tagline">Level 10 was the architecture sketch. V3 is what happens when that sketch has to survive real production traffic: two search methods blended with a real formula instead of guesswork, questions split into sub-questions, policy versions that change over time, numbers that must never be hallucinated, and every claim checked against its source before it reaches the user.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it like I'm 8</h3>
+          <p>Imagine two search parties looking for the same missing treasure: one that recognizes the treasure by <em>shape</em> (meaning) and one that recognizes it by its <em>exact label</em> (keywords). Instead of you comparing their two lists by hand, you give both lists to a referee with a fair scoring rule — that's what a database like Qdrant does natively now, so nobody has to referee the lists in application code.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A credit officer asks two very different questions: <em>"How can a loan be restructured for a borrower facing financial hardship?"</em> (a natural-language, meaning-heavy question) and <em>"RBI/2026-27/45 DOR.CRE.REC.123"</em> (an exact regulatory identifier). The first should lean on meaning-based search; the second should lean almost entirely on exact keyword matching. A production system detects the difference and reweights search accordingly, instead of treating every question the same way.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">V3 target architecture — the whole request, end to end</div>
+        <svg viewBox="0 0 960 480" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="arrowV1" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#4A6076"/></marker></defs>
+          <g font-size="11" font-weight="600">
+            <rect x="390" y="10" width="180" height="42" rx="10" fill="#E1EDFC" stroke="#4C8FE8"/><text x="480" y="35" text-anchor="middle" fill="#16324F">User / UI</text>
+            <rect x="390" y="72" width="180" height="42" rx="10" fill="#EAE7FA" stroke="#8577DD"/><text x="480" y="97" text-anchor="middle" fill="#16324F">FastAPI</text>
+            <rect x="390" y="134" width="180" height="42" rx="10" fill="#FFE4DE" stroke="#FF6F59"/><text x="480" y="159" text-anchor="middle" fill="#16324F">Auth / IAM</text>
+            <rect x="360" y="196" width="240" height="52" rx="10" fill="#FFF3D6" stroke="#FFC857"/>
+            <text x="480" y="217" text-anchor="middle" fill="#16324F">Query Planner</text>
+            <text x="480" y="233" text-anchor="middle" font-size="9.5" fill="#4A6076">intent • decomposition • date/version • route</text>
+
+            <rect x="80" y="288" width="160" height="46" rx="10" fill="#DAF3EE" stroke="#2FB8A6"/><text x="160" y="316" text-anchor="middle" fill="#16324F">Document RAG</text>
+            <rect x="400" y="288" width="160" height="46" rx="10" fill="#DAF3EE" stroke="#2FB8A6"/><text x="480" y="316" text-anchor="middle" fill="#16324F">Excel / SQL path</text>
+            <rect x="720" y="288" width="160" height="46" rx="10" fill="#DAF3EE" stroke="#2FB8A6"/><text x="800" y="316" text-anchor="middle" fill="#16324F">Hybrid (both)</text>
+
+            <rect x="80" y="352" width="160" height="42" rx="10" fill="#E1EDFC" stroke="#4C8FE8"/><text x="160" y="377" text-anchor="middle" fill="#16324F">BGE-M3 dense+sparse</text>
+            <rect x="400" y="352" width="160" height="42" rx="10" fill="#E1EDFC" stroke="#4C8FE8"/><text x="480" y="377" text-anchor="middle" fill="#16324F">Analytics DB (SQL)</text>
+
+            <rect x="80" y="410" width="160" height="42" rx="10" fill="#8577DD" opacity="0.15" stroke="#8577DD"/><text x="160" y="435" text-anchor="middle" fill="#16324F">Qdrant RRF → Rerank</text>
+
+            <rect x="330" y="410" width="300" height="42" rx="10" fill="#FFF3D6" stroke="#FFC857"/><text x="480" y="435" text-anchor="middle" fill="#16324F">Evidence → Citation → LLM → Verify</text>
+          </g>
+          <g stroke="#4A6076" stroke-width="2" marker-end="url(#arrowV1)" fill="none">
+            <line x1="480" y1="52" x2="480" y2="70"/>
+            <line x1="480" y1="114" x2="480" y2="132"/>
+            <line x1="480" y1="176" x2="480" y2="194"/>
+            <path d="M400 248 L 170 286"/>
+            <path d="M480 248 L 480 286"/>
+            <path d="M560 248 L 790 286"/>
+            <line x1="160" y1="334" x2="160" y2="350"/>
+            <line x1="480" y1="334" x2="480" y2="350"/>
+            <line x1="160" y1="394" x2="160" y2="408"/>
+            <path d="M240 410 L 328 425"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🔀 V3.1 — Fusion moves out of Python, into the database</h3>
+        <p>Earlier versions ran dense search and sparse search separately, then merged the two ranked lists (Reciprocal Rank Fusion, or RRF) in application code. Modern vector databases like Qdrant now support this natively: send both searches as a single request with a fusion instruction, and let the database return one merged, ranked list — fewer network round-trips, less code to maintain, and a consistent scoring rule.</p>
+      </div>
+
+      <div class="code-label">Native hybrid retrieval — one request, database does the fusion</div>
+      <pre class="code"><span class="c1"># Dense (meaning) + sparse (keyword) search, fused inside the vector DB itself</span>
+prefetch = [
+    Prefetch(query=dense_vector, using=<span class="c3">"dense"</span>, limit=<span class="c3">50</span>),
+    Prefetch(query=SparseVector(indices=sparse_idx, values=sparse_vals),
+             using=<span class="c3">"sparse"</span>, limit=<span class="c3">50</span>),
+]
+
+results = vector_db.query_points(
+    collection_name=<span class="c3">"bank_chunks"</span>,
+    prefetch=prefetch,
+    query=RrfQuery(rrf=Rrf(k=<span class="c3">60</span>)),   <span class="c4"># reciprocal rank fusion, tunable k</span>
+    limit=<span class="c3">30</span>,
+    query_filter=security_filter,          <span class="c4"># access control applied here too — see V3.7</span>
+    with_payload=<span class="c2">True</span>,
+)</pre>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">V3.2 — Query-dependent weighting: not every question trusts meaning and keywords equally</div>
+        <svg viewBox="0 0 900 190" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="arrowV2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#4A6076"/></marker></defs>
+          <g font-size="11" font-weight="600">
+            <rect x="10" y="20" width="260" height="50" rx="10" fill="#E1EDFC" stroke="#4C8FE8"/>
+            <text x="140" y="42" text-anchor="middle" fill="#16324F">"How can a loan be restructured</text>
+            <text x="140" y="58" text-anchor="middle" fill="#16324F">for a hardship case?" (semantic)</text>
+
+            <rect x="10" y="120" width="260" height="50" rx="10" fill="#FFE4DE" stroke="#FF6F59"/>
+            <text x="140" y="142" text-anchor="middle" fill="#16324F">"RBI/2026-27/45</text>
+            <text x="140" y="158" text-anchor="middle" fill="#16324F">DOR.CRE.REC.123" (identifier)</text>
+
+            <rect x="340" y="20" width="220" height="50" rx="10" fill="#FFF3D6" stroke="#FFC857"/>
+            <text x="450" y="42" text-anchor="middle" fill="#16324F">dense 0.7 · sparse 0.3</text>
+            <text x="450" y="58" text-anchor="middle" font-size="9.5" fill="#4A6076">weighted toward meaning</text>
+
+            <rect x="340" y="120" width="220" height="50" rx="10" fill="#FFF3D6" stroke="#FFC857"/>
+            <text x="450" y="142" text-anchor="middle" fill="#16324F">dense 0.3 · sparse 0.7</text>
+            <text x="450" y="158" text-anchor="middle" font-size="9.5" fill="#4A6076">weighted toward exact match</text>
+
+            <rect x="640" y="70" width="230" height="50" rx="10" fill="#EAE7FA" stroke="#8577DD"/>
+            <text x="755" y="92" text-anchor="middle" fill="#16324F">Query planner classifies:</text>
+            <text x="755" y="108" text-anchor="middle" font-size="9.5" fill="#4A6076">semantic · identifier · regulation · numeric…</text>
+          </g>
+          <g stroke="#4A6076" stroke-width="2" marker-end="url(#arrowV2)" fill="none">
+            <line x1="270" y1="45" x2="337" y2="45"/>
+            <line x1="270" y1="145" x2="337" y2="145"/>
+            <path d="M560 45 L 720 68"/>
+            <path d="M560 145 L 720 120"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="grid2">
+        <div class="card usecase">
+          <h3>🥈 V3.3 — Two-stage reranking</h3>
+          <p>After hybrid retrieval returns the top 30, a dedicated reranker (a cross-encoder, e.g. a BGE reranker) re-scores those 30 by reading the question and each candidate together, cutting to the true top 10. This second pass catches relevance nuances that similarity scores alone miss.</p>
+        </div>
+        <div class="card analogy">
+          <h3>🧪 Experimental third stage</h3>
+          <p>Embedding models like BGE-M3 can also produce ColBERT-style "late interaction" representations — a finer-grained, token-level comparison. It's a promising third stage, but it adds latency, so it should stay experimental until benchmarks prove it lifts recall/nDCG enough to earn its cost — never switch it on globally by default.</p>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="card" style="border-left:4px solid var(--teal);">
+          <h3>🧩 V3.4 — Multi-section retrieval</h3>
+          <p>A question like "what are the eligibility, documentation, and exception requirements for a gold loan?" is really three questions stitched together. The planner splits it into sub-queries, retrieves for each separately, and merges the resulting sections into one evidence set — far more reliable than just cranking up <code>top_k</code> on a single search.</p>
+        </div>
+        <div class="card" style="border-left:4px solid var(--purple);">
+          <h3>🕸️ V3.5 — Evidence graph</h3>
+          <p>Each retrieved chunk carries relationships to its neighbors: parent section, previous/next chunk, sibling sections, and which document version it supersedes or is superseded by. A retrieval hit on "Income" can pull in the related "Eligibility," "Documentation," and "Exceptions" sections automatically — without every one of them needing to score high on similarity alone.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">V3.6 — Version-aware retrieval: which policy was actually in force?</div>
+        <svg viewBox="0 0 900 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="arrowV3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#4A6076"/></marker></defs>
+          <g font-size="11" font-weight="600">
+            <rect x="10" y="60" width="170" height="50" rx="10" fill="#E1EDFC" stroke="#4C8FE8"/><text x="95" y="90" text-anchor="middle" fill="#16324F">Question asked</text>
+            <rect x="230" y="60" width="200" height="50" rx="10" fill="#FFF3D6" stroke="#FFC857"/><text x="330" y="82" text-anchor="middle" fill="#16324F">Does it name a date?</text>
+            <rect x="480" y="10" width="200" height="46" rx="10" fill="#DAF3EE" stroke="#2FB8A6"/><text x="580" y="38" text-anchor="middle" fill="#16324F">Yes → use policy version</text>
+            <text x="580" y="52" text-anchor="middle" font-size="9.5" fill="#4A6076">effective on that date</text>
+            <rect x="480" y="110" width="200" height="46" rx="10" fill="#FFE4DE" stroke="#FF6F59"/><text x="580" y="138" text-anchor="middle" fill="#16324F">No → use current</text>
+            <text x="580" y="152" text-anchor="middle" font-size="9.5" fill="#4A6076">effective version only</text>
+            <rect x="730" y="60" width="150" height="50" rx="10" fill="#EAE7FA" stroke="#8577DD"/><text x="805" y="82" text-anchor="middle" fill="#16324F">Correct answer,</text>
+            <text x="805" y="98" text-anchor="middle" font-size="9.5" fill="#4A6076">not just similar text</text>
+          </g>
+          <g stroke="#4A6076" stroke-width="2" marker-end="url(#arrowV3)" fill="none">
+            <line x1="180" y1="85" x2="227" y2="85"/>
+            <path d="M430 75 L 477 40"/>
+            <path d="M430 95 L 477 128"/>
+            <path d="M680 33 L 727 75"/>
+            <path d="M680 133 L 727 90"/>
+          </g>
+        </svg>
+        <div class="quest-caption">A 2025 policy chunk can be highly similar in wording to a 2026 update — similarity alone would confidently return the wrong, outdated answer.</div>
+      </div>
+
+      <div class="grid2">
+        <div class="card" style="border-left:4px solid var(--coral);">
+          <h3>🔐 V3.7 — Security filtering happens before search, not after</h3>
+          <p>The flow is User → IAM → resolved permissions → ACL filter → vector database — the database is only ever allowed to search points the user is cleared to see. Permissions are resolved server-side from the bank's identity provider; a client is never trusted to simply declare its own role.</p>
+        </div>
+        <div class="card" style="border-left:4px solid var(--blue);">
+          <h3>📊 V3.8 — Excel gets its own path, not a RAG chunk</h3>
+          <p>A 5-million-row loan portfolio spreadsheet shouldn't be embedded and handed to an LLM to "calculate" from — LLMs are unreliable at arithmetic over huge tables. Instead, Excel is profiled into a governed SQL schema. "Total outstanding in Odisha" becomes an actual <code>SUM()</code> query, with the SQL itself shown as the citation.</p>
+        </div>
+      </div>
+
+      <div class="code-label">V3.9 — Guarding LLM-generated SQL before it ever runs</div>
+      <pre class="code"><span class="c1"># Generated SQL must pass every gate below — never execute it directly</span>
+<span class="c2">def</span> run_safe_sql(generated_sql, connection):
+    ast = parse_sql(generated_sql)
+
+    <span class="c2">if</span> ast.statement_type <span class="c2">not in</span> [<span class="c3">"SELECT"</span>, <span class="c3">"WITH"</span>]:
+        <span class="c2">raise</span> Rejected(<span class="c3">"only read queries are allowed"</span>)
+
+    <span class="c2">if not</span> ast.tables.issubset(ALLOWED_TABLES):
+        <span class="c2">raise</span> Rejected(<span class="c3">"table not on the allowlist"</span>)
+
+    <span class="c2">return</span> connection.execute(
+        generated_sql,
+        readonly=<span class="c2">True</span>,
+        row_limit=<span class="c3">10_000</span>,
+        timeout_seconds=<span class="c3">5</span>,
+    )</pre>
+
+      <div class="grid2">
+        <div class="card usecase">
+          <h3>✅ V3.10 — Citation verification</h3>
+          <p>Before an answer ships, every cited claim is traced back to its source chunk and checked: does the evidence actually support what the model said? If not, the answer is rejected or regenerated. This is what separates <em>retrieval quality</em> (did we find the right documents) from <em>generation faithfulness</em> (did the model actually say only what those documents support) — the two most-confused failure modes in RAG systems.</p>
+        </div>
+        <div class="card analogy">
+          <h3>📏 V3.11 — Evaluation, automated</h3>
+          <p>Standard RAG metrics (context precision/recall, faithfulness, answer relevancy — the kind Ragas measures) cover generic quality. A bank needs its own on top: SectionCoverage, CitationCorrectness, VersionCorrectness, ACL-leakage rate, numerical accuracy, and abstention accuracy (did it correctly say "I don't know" when it should have).</p>
+        </div>
+      </div>
+
+      <div class="card" style="border-left:4px solid var(--gold);">
+        <h3>🗂️ V3.12 — The golden dataset</h3>
+        <p>Each test case records the question, its category (simple factual, policy, multi-section, version-sensitive, Excel aggregation, unauthorized, conflicting policies, ambiguous, and more — roughly 18 categories), the documents and sections it should retrieve, and the exact citations expected. A production-ready target is on the order of <strong>1,000+ labeled questions</strong>, not a handful of spot checks.</p>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">V3.13 &amp; V3.14 — Latency and cost: cache carefully, separate CPU from GPU work</div>
+        <svg viewBox="0 0 900 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="arrowV4" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#4A6076"/></marker></defs>
+          <g font-size="11" font-weight="600">
+            <rect x="10" y="20" width="160" height="50" rx="10" fill="#E1EDFC" stroke="#4C8FE8"/><text x="90" y="42" text-anchor="middle" fill="#16324F">Query arrives</text>
+            <text x="90" y="58" text-anchor="middle" font-size="9.5" fill="#4A6076">check Redis cache</text>
+
+            <rect x="220" y="20" width="180" height="50" rx="10" fill="#FFF3D6" stroke="#FFC857"/><text x="310" y="42" text-anchor="middle" fill="#16324F">Cache key includes:</text>
+            <text x="310" y="58" text-anchor="middle" font-size="9" fill="#4A6076">user + doc version + date + filters</text>
+
+            <rect x="450" y="20" width="150" height="50" rx="10" fill="#DAF3EE" stroke="#2FB8A6"/><text x="525" y="42" text-anchor="middle" fill="#16324F">Hit → instant</text>
+            <text x="525" y="58" text-anchor="middle" font-size="9.5" fill="#4A6076">no LLM call needed</text>
+
+            <rect x="650" y="20" width="230" height="50" rx="10" fill="#EAE7FA" stroke="#8577DD"/><text x="765" y="42" text-anchor="middle" fill="#16324F">Miss → full pipeline</text>
+            <text x="765" y="58" text-anchor="middle" font-size="9.5" fill="#4A6076">then cache the result</text>
+
+            <rect x="10" y="110" width="420" height="50" rx="10" fill="#FFE4DE" stroke="#FF6F59"/><text x="220" y="132" text-anchor="middle" fill="#16324F">CPU tier: API, Postgres, Redis, Qdrant, Kafka</text>
+            <text x="220" y="148" text-anchor="middle" font-size="9.5" fill="#4A6076">cheap, always-on services</text>
+            <rect x="460" y="110" width="420" height="50" rx="10" fill="#8577DD" opacity="0.15" stroke="#8577DD"/><text x="670" y="132" text-anchor="middle" fill="#16324F">GPU tier: embeddings + reranker</text>
+            <text x="670" y="148" text-anchor="middle" font-size="9.5" fill="#4A6076">batched during ingestion, not one-call-per-chunk</text>
+          </g>
+          <g stroke="#4A6076" stroke-width="2" marker-end="url(#arrowV4)" fill="none">
+            <line x1="170" y1="45" x2="217" y2="45"/>
+            <path d="M400 35 L 447 35"/>
+            <path d="M400 55 L 647 55"/>
+          </g>
+        </svg>
+        <div class="quest-caption">Caching without including the user's authorization context in the key is a real risk: it can return an answer generated for someone else's permission level.</div>
+      </div>
+
+      <div class="card" style="border-left:4px solid var(--blue);">
+        <h3>🎓 Architect-level version (the whole thing, in one breath)</h3>
+        <p>V3 moves hybrid fusion into the vector database itself (native RRF, tunable and weighted), classifies each query so dense/sparse weighting adapts to whether it's semantic or an exact identifier, adds a reranking stage with an experimental late-interaction option, decomposes multi-part questions into sub-queries merged through an evidence graph, resolves the correct policy version by effective date, enforces access control as a pre-search filter never a post-hoc trust exercise, routes tabular/numeric questions to governed SQL instead of embedding-based guessing, verifies every citation against its source before answering, and evaluates all of it — retrieval, generation, and security — against a large, categorized golden dataset. Deployment separates cheap always-on CPU services from batched GPU workloads, and caching is keyed on the user's authorization context so nobody ever gets an answer meant for someone else.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>A customer asks "what was my loan's interest rate as of March 2025?" List every V3 component this single question would need to touch — hint: it's more than just retrieval.</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "How would you evolve a banking RAG proof-of-concept into a production-grade retrieval engine?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>I'd move fusion of dense and sparse search into the vector database itself using native hybrid queries with reciprocal rank fusion, and make the dense/sparse weighting query-dependent — natural-language questions lean on meaning, exact identifiers lean on keyword matching. I'd add a reranking stage on top of the initial candidate set, decompose multi-part questions into sub-queries merged through an evidence graph so related sections surface even when they aren't independently similar, and resolve document versions by effective date so outdated-but-similar text can't win. Access control is enforced as a pre-search filter resolved server-side from the identity provider — never trusted from the client and never left to the model to withhold. Tabular and numerical questions route to a governed, read-only SQL path with an allowlist and row/time limits instead of being embedded and guessed at. Every generated citation is verified against its source chunk before the answer ships. And the whole system is evaluated continuously against a large, categorized golden dataset covering retrieval, generation faithfulness, and security leakage — not just a generic benchmark score.</p>
+        <p><em>Why this answer works:</em> it shows a coherent set of production concerns — correctness, security, and cost — reinforcing each other rather than a list of disconnected features, and it ends on the metric that actually matters: optimizing the <em>combination</em> of retrieval recall, citation correctness, authorization safety, numerical accuracy, latency, and cost per query — not any single benchmark in isolation.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 12: Evaluation & Observability -->
+    <section class="level" id="evalobs">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--teal-soft);">🔬</div>
+        <div>
+          <div class="level-eyebrow">Level 12</div>
+          <h2>Evaluation &amp; Observability — How Do You Actually Know It Works?</h2>
+        </div>
+      </div>
+      <p class="level-tagline">"It seemed to work when I tried it" is not an evaluation strategy. A production RAG system needs layers of measurement — before it ships, while it's live, and after something goes wrong — each answering a different question.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it like I'm 8</h3>
+          <p>Think about how a school checks a new teaching method actually works: a practice test before rolling it out to everyone (offline eval), watching how the whole class does once it's live (online monitoring), and a teacher spot-checking a few notebooks by hand to catch anything the test missed (human review). You need all three — a practice test alone won't catch a teacher misreading the room.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A bank's RAG assistant passes its offline eval with 92% faithfulness. Two weeks after launch, live monitoring shows answer quality quietly dropping for questions about a newly-updated loan policy — the golden dataset never had questions about it. A human auditor flags the pattern before a customer gets a wrong rate quoted to them. Each layer caught something the others missed.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Three layers of evaluation, each catching different failures</div>
+        <svg viewBox="0 0 900 260" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="arrowE1" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#4A6076"/></marker></defs>
+          <g font-size="11.5" font-weight="700">
+            <rect x="30" y="20" width="250" height="60" rx="12" fill="#DAF3EE" stroke="#2FB8A6" stroke-width="2"/>
+            <text x="155" y="45" text-anchor="middle" fill="#16324F">Offline evaluation</text>
+            <text x="155" y="62" text-anchor="middle" font-size="9.5" font-weight="500" fill="#4A6076">golden dataset, before every deploy</text>
+
+            <rect x="325" y="20" width="250" height="60" rx="12" fill="#FFF3D6" stroke="#FFC857" stroke-width="2"/>
+            <text x="450" y="45" text-anchor="middle" fill="#16324F">Online monitoring</text>
+            <text x="450" y="62" text-anchor="middle" font-size="9.5" font-weight="500" fill="#4A6076">live traffic, real user questions</text>
+
+            <rect x="620" y="20" width="250" height="60" rx="12" fill="#FBE1EC" stroke="#E8639A" stroke-width="2"/>
+            <text x="745" y="45" text-anchor="middle" fill="#16324F">Human-in-the-loop audit</text>
+            <text x="745" y="62" text-anchor="middle" font-size="9.5" font-weight="500" fill="#4A6076">spot checks, red-teaming</text>
+          </g>
+          <g font-size="10" font-weight="600" fill="#16324F">
+            <rect x="30" y="110" width="250" height="120" rx="12" fill="#F7FBFA" stroke="#CFE4DD"/>
+            <text x="155" y="132" text-anchor="middle" font-weight="700">Catches:</text>
+            <text x="155" y="152" text-anchor="middle" font-weight="500">regressions before</text>
+            <text x="155" y="167" text-anchor="middle" font-weight="500">they reach users</text>
+            <text x="155" y="187" text-anchor="middle" font-weight="500">Recall@K, nDCG,</text>
+            <text x="155" y="202" text-anchor="middle" font-weight="500">Faithfulness, MRR</text>
+
+            <rect x="325" y="110" width="250" height="120" rx="12" fill="#F7FBFA" stroke="#CFE4DD"/>
+            <text x="450" y="132" text-anchor="middle" font-weight="700">Catches:</text>
+            <text x="450" y="152" text-anchor="middle" font-weight="500">drift, edge cases</text>
+            <text x="450" y="167" text-anchor="middle" font-weight="500">the golden set missed</text>
+            <text x="450" y="187" text-anchor="middle" font-weight="500">latency, cost, thumbs</text>
+            <text x="450" y="202" text-anchor="middle" font-weight="500">up/down, escalation rate</text>
+
+            <rect x="620" y="110" width="250" height="120" rx="12" fill="#F7FBFA" stroke="#CFE4DD"/>
+            <text x="745" y="132" text-anchor="middle" font-weight="700">Catches:</text>
+            <text x="745" y="152" text-anchor="middle" font-weight="500">subtle harms, bias,</text>
+            <text x="745" y="167" text-anchor="middle" font-weight="500">ACL leakage attempts</text>
+            <text x="745" y="187" text-anchor="middle" font-weight="500">expert grading,</text>
+            <text x="745" y="202" text-anchor="middle" font-weight="500">adversarial testing</text>
+          </g>
+          <g stroke="#4A6076" stroke-width="2" marker-end="url(#arrowE1)" fill="none">
+            <line x1="280" y1="50" x2="322" y2="50"/>
+            <line x1="575" y1="50" x2="617" y2="50"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="grid2">
+        <div class="card usecase">
+          <h3>📐 Retrieval-level metrics</h3>
+          <p><strong>Recall@K</strong> — did the right chunk appear anywhere in the top K results? <strong>Precision@K</strong> — how much of the top K was actually relevant? <strong>MRR</strong> (Mean Reciprocal Rank) — how high up was the first correct result? <strong>nDCG</strong> — rewards correct results appearing near the top, not just present. These answer: "did we find the right material at all?"</p>
+        </div>
+        <div class="card analogy">
+          <h3>✍️ Generation-level metrics</h3>
+          <p><strong>Faithfulness / groundedness</strong> — is every claim in the answer actually supported by the retrieved context? <strong>Answer relevancy</strong> — does the answer address what was asked? <strong>Answer correctness</strong> — is it factually right against a known answer? <strong>Hallucination rate</strong> — how often does the model state something the context doesn't support? These answer: "given good material, did the model use it honestly?"</p>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="card" style="border-left:4px solid var(--purple);">
+          <h3>🧪 Automated eval frameworks</h3>
+          <p>Tools like <strong>RAGAS</strong>, <strong>TruLens</strong>, and <strong>DeepEval</strong> use an LLM as a judge to score faithfulness, relevancy, and context quality at scale — far cheaper than having a human grade every response, but the judge itself should be periodically spot-checked by a human so it doesn't quietly drift.</p>
+        </div>
+        <div class="card" style="border-left:4px solid var(--gold);">
+          <h3>🙋 Human evaluation</h3>
+          <p><strong>Expert grading</strong> against a rubric, <strong>pairwise comparison</strong> ("which of these two answers is better?" — often more reliable than absolute scoring), and <strong>red-teaming</strong> (deliberately trying to make the system leak restricted data or produce unsafe output). Human eval is slower and pricier, so it's used to calibrate and audit the automated methods, not replace them.</p>
+        </div>
+      </div>
+
+      <div class="code-label">A minimal retrieval eval loop</div>
+      <pre class="code"><span class="c1"># Recall@K — the simplest, most important retrieval metric to start with</span>
+<span class="c2">def</span> recall_at_k(golden_dataset, retriever, k=<span class="c3">5</span>):
+    hits = <span class="c3">0</span>
+    <span class="c2">for</span> case <span class="c2">in</span> golden_dataset:
+        retrieved_ids = [c.id <span class="c2">for</span> c <span class="c2">in</span> retriever.search(case.question, top_k=k)]
+        <span class="c2">if</span> case.expected_chunk_id <span class="c2">in</span> retrieved_ids:
+            hits += <span class="c3">1</span>
+    <span class="c2">return</span> hits / len(golden_dataset)
+
+<span class="c1"># Faithfulness — did the generated answer stay grounded in retrieved context?</span>
+<span class="c2">def</span> faithfulness_score(answer, context):
+    claims = extract_claims(answer)          <span class="c4"># split answer into atomic statements</span>
+    supported = [c <span class="c2">for</span> c <span class="c2">in</span> claims <span class="c2">if</span> llm_judge.is_supported(c, context)]
+    <span class="c2">return</span> len(supported) / len(claims)</pre>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Observability: what you watch once the system is live</div>
+        <svg viewBox="0 0 940 220" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="arrowE2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#4A6076"/></marker></defs>
+          <g font-size="10.5" font-weight="600">
+            <rect x="10" y="20" width="170" height="50" rx="10" fill="#E1EDFC" stroke="#4C8FE8"/><text x="95" y="42" text-anchor="middle" fill="#16324F">Every request</text><text x="95" y="58" text-anchor="middle" font-size="9" fill="#4A6076">retrieval + generation trace</text>
+
+            <rect x="220" y="20" width="170" height="50" rx="10" fill="#EAE7FA" stroke="#8577DD"/><text x="305" y="42" text-anchor="middle" fill="#16324F">Structured logs</text><text x="305" y="58" text-anchor="middle" font-size="9" fill="#4A6076">OpenTelemetry-style spans</text>
+
+            <rect x="430" y="20" width="170" height="50" rx="10" fill="#FFF3D6" stroke="#FFC857"/><text x="515" y="42" text-anchor="middle" fill="#16324F">Dashboards</text><text x="515" y="58" text-anchor="middle" font-size="9" fill="#4A6076">latency, cost, error rate</text>
+
+            <rect x="640" y="20" width="140" height="50" rx="10" fill="#FFE4DE" stroke="#FF6F59"/><text x="710" y="42" text-anchor="middle" fill="#16324F">Alerts</text><text x="710" y="58" text-anchor="middle" font-size="9" fill="#4A6076">SLA breach paging</text>
+
+            <rect x="800" y="20" width="130" height="50" rx="10" fill="#DAF3EE" stroke="#2FB8A6"/><text x="865" y="42" text-anchor="middle" fill="#16324F">Audit trail</text><text x="865" y="58" text-anchor="middle" font-size="9" fill="#4A6076">replay any decision</text>
+
+            <rect x="150" y="130" width="640" height="60" rx="12" fill="#FBE1EC" stroke="#E8639A" stroke-width="2"/>
+            <text x="470" y="153" text-anchor="middle" font-weight="700" fill="#16324F">Drift &amp; feedback signals</text>
+            <text x="470" y="170" text-anchor="middle" font-size="9.5" font-weight="500" fill="#4A6076">embedding drift · query-distribution shift · thumbs up/down feeding back into the golden dataset</text>
+          </g>
+          <g stroke="#4A6076" stroke-width="2" marker-end="url(#arrowE2)" fill="none">
+            <line x1="180" y1="45" x2="217" y2="45"/>
+            <line x1="390" y1="45" x2="427" y2="45"/>
+            <line x1="600" y1="45" x2="637" y2="45"/>
+            <line x1="780" y1="45" x2="797" y2="45"/>
+            <path d="M515 70 L 470 128"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="grid2">
+        <div class="card" style="border-left:4px solid var(--blue);">
+          <h3>🎓 Architect-level version</h3>
+          <p>Ship an <strong>eval-gated CI/CD pipeline</strong> (golden dataset + statistical thresholds, from Level 8) so regressions never reach production. In production, run <strong>distributed tracing</strong> across every agent/retrieval hop, dashboards for p50/p95 latency, token cost, and error classification, and alerting tied to real SLAs. Feed <strong>user feedback</strong> (thumbs up/down, explicit corrections) back into the golden dataset so it grows from real failures, not just what the team thought to test upfront. Monitor for <strong>drift</strong> — embedding distributions and query patterns shift over time as products, policies, and customer language change — and schedule periodic <strong>human red-teaming</strong> specifically targeting access-control leakage, since that's the failure mode automated metrics are worst at catching.</p>
+        </div>
+        <div class="card usecase">
+          <h3>📋 Banking-specific metrics worth adding</h3>
+          <p><strong>CitationCorrectness</strong> (does the cited source actually say that), <strong>VersionCorrectness</strong> (right policy version for the date asked), <strong>ACL-leakage rate</strong> (did any restricted content ever surface for an unauthorized role — target: zero, tested adversarially), <strong>NumericalAccuracy</strong> (for anything routed through SQL), and <strong>AbstentionAccuracy</strong> (did it correctly say "I don't know" instead of guessing).</p>
+        </div>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>If your bank's RAG assistant confidently gave a customer the wrong interest rate, which of the three evaluation layers above <em>should</em> have caught it before it happened — and which one actually would have, realistically?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "How do you build a comprehensive evaluation and observability strategy for a production RAG system?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>I'd build three layers, not one. <strong>Offline</strong>: a golden dataset scored on retrieval metrics (Recall@K, MRR, nDCG) and generation metrics (faithfulness, answer relevancy), gating every deploy through CI/CD. <strong>Online</strong>: distributed tracing on every request, dashboards for latency/cost/error rate, and alerting tied to SLAs — plus drift monitoring, since query patterns and document content both shift over time. <strong>Human-in-the-loop</strong>: periodic expert audits and red-teaming specifically targeting access-control leakage and edge cases automated metrics tend to miss. User feedback (thumbs up/down, corrections) feeds back into the golden dataset so it keeps improving from real production failures instead of staying static.</p>
+        <p><em>Why this answer works:</em> it shows the three layers catch genuinely different failure modes rather than being redundant, and it explicitly calls out that access-control leakage needs adversarial human testing — automated faithfulness scores won't reliably catch a permission boundary being crossed.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 13: Glossary -->
+    <section class="level" id="glossary">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--purple-soft);">📖</div>
+        <div>
+          <div class="level-eyebrow">Level 13 — Reference</div>
+          <h2>Glossary — Speak Like a Pro</h2>
+        </div>
+      </div>
+      <p class="level-tagline">Every term below gets two definitions: the one you'd give an 8-year-old, and the one you'd give a hiring panel. Use the simple version to build intuition, then the technical version to sound like you've shipped this in production — because by now, you basically have.</p>
+
+      <div class="glossary-grid">
+        <div class="card">
+          <h3 class="glossary-cat-title">🧠 GenAI &amp; LLM Foundations</h3>
+
+          <div class="term">
+            <div class="term-name">Token</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a small piece of a word the AI reads one bite at a time.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>the base unit of text an LLM processes; words often split into multiple subword tokens via byte-pair or similar encoding, and both input and output length are measured in tokens.</div>
+          </div>
+          <div class="term">
+            <div class="term-name">Context window</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>how much the AI can "remember" at once during a conversation.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>the maximum number of tokens (input + output combined) a model can attend to in a single request; exceeding it forces truncation or summarization.</div>
+          </div>
+          <div class="term">
+            <div class="term-name">Parameters</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>the tiny knobs inside the AI's brain that got tuned during learning.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>the learned weights of a neural network; model "size" (7B, 70B, etc.) refers to parameter count, which loosely correlates with capability and cost.</div>
+          </div>
+          <div class="term">
+            <div class="term-name">Temperature</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>how playful vs. predictable the AI's answers are.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a sampling parameter controlling randomness in next-token selection; near 0 is deterministic/greedy, higher values increase diversity at the cost of consistency.</div>
+          </div>
+          <div class="term">
+            <div class="term-name">Hallucination</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>when the AI confidently makes something up.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>output that is fluent and confident but unsupported by training data or provided context — mitigated by grounding (RAG), faithfulness scoring, and confidence thresholds.</div>
+          </div>
+          <div class="term">
+            <div class="term-name">Fine-tuning</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>giving the AI extra practice on your specific kind of questions.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>further training a pretrained foundation model on a smaller, task-specific dataset to shift its behavior, style, or knowledge without training from scratch.</div>
+          </div>
+          <div class="term">
+            <div class="term-name">Prompt engineering</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>asking the question the right way to get a better answer.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>systematically designing instructions, examples, and structure in a prompt to reliably steer model behavior — includes few-shot examples, role framing, and output-format constraints.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="glossary-cat-title">📚 RAG Concepts</h3>
+
+          <div class="term">
+            <div class="term-name">Embedding</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>turning words into a list of numbers that captures their meaning.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a dense vector representation produced by an encoder model, positioned so semantically similar text lands near other similar text in vector space.</div>
+          </div>
+          <div class="term">
+            <div class="term-name">Vector database</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a library organized by meaning instead of alphabet.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a data store optimized for approximate nearest-neighbor search over embeddings (e.g. via HNSW or IVF indexing), often paired with metadata filtering.</div>
+          </div>
+          <div class="term">
+            <div class="term-name">Chunking</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>cutting a big document into bite-sized pieces before storing it.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>splitting documents into retrievable units, ideally aligned to semantic or structural boundaries rather than a fixed character count, to balance retrieval precision and context completeness.</div>
+          </div>
+          <div class="term">
+            <div class="term-name">Hybrid search</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>searching by both "sounds similar" and "exact words match."</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>combining dense (embedding) retrieval with sparse (keyword/BM25) retrieval, typically merged via reciprocal rank fusion, to improve recall on both semantic and exact-match queries.</div>
+          </div>
+          <div class="term">
+            <div class="term-name">Reranking</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>double-checking the search results and putting the best ones first.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a second-pass scoring step, usually a cross-encoder, that jointly evaluates the query and each candidate to reorder results by true relevance.</div>
+          </div>
+          <div class="term">
+            <div class="term-name">Grounding</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>making sure the AI's answer is based on real facts it was shown.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>constraining generation to be verifiably supported by retrieved context, measured via faithfulness/groundedness scoring.</div>
+          </div>
+          <div class="term">
+            <div class="term-name">Knowledge base</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>the whole collection of documents the AI is allowed to look things up in.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>the curated, ingested, and indexed corpus a RAG system retrieves from — typically versioned, access-tagged, and kept fresh via incremental updates.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="glossary-cat-title">🤖 Agentic AI Concepts</h3>
+
+          <div class="term">
+            <div class="term-name">Agent</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>an AI that can take actions, not just talk.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>an LLM-driven system that plans, calls tools/functions, observes results, and iterates toward a goal, rather than producing a single one-shot response.</div>
+          </div>
+          <div class="term">
+            <div class="term-name">Tool use / function calling</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>the AI reaching for a calculator, a search bar, or a database instead of guessing.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a model outputting a structured call to an external function with typed arguments, which the system executes and feeds the result back into context.</div>
+          </div>
+          <div class="term">
+            <div class="term-name">Multi-agent orchestration</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a team of specialist AI helpers working together, with one coordinating.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>coordination patterns (supervisor-worker, decentralized) for multiple specialized agents sharing state and handing off subtasks toward a common goal.</div>
+          </div>
+          <div class="term">
+            <div class="term-name">Memory</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>what the AI remembers — for right now, or for next time.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>short-term (session-scoped conversation state) vs. long-term (persisted episodic/semantic memory across sessions) storage that agents read from and write to.</div>
+          </div>
+          <div class="term">
+            <div class="term-name">Planning loop (ReAct-style)</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>think, try something, look at what happened, think again.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>an iterative reason-act-observe cycle where the model alternates between reasoning steps and tool calls, bounded by a max-step or token budget to guarantee termination.</div>
+          </div>
+          <div class="term">
+            <div class="term-name">Guardrails</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>bumper-lane rules that stop the AI from doing something risky.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>input/output filters, action-risk classifiers, and policy checks (PII, toxicity, jailbreak detection, irreversible-action gating) enforced around model calls.</div>
+          </div>
+          <div class="term">
+            <div class="term-name">Human-in-the-loop</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a person has to say "yes, go ahead" before something risky happens.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a workflow checkpoint that pauses autonomous execution for human approval, placed based on action risk, reversibility, or model confidence.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="glossary-cat-title">🧬 Multi-Model &amp; Deployment</h3>
+
+          <div class="term">
+            <div class="term-name">Model router / cascade</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>using a small helper for easy questions and a big expert only for hard ones.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a dispatch layer that routes requests to different-sized models based on estimated task complexity, trading cost and latency against capability.</div>
+          </div>
+          <div class="term">
+            <div class="term-name">Quantization</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>shrinking the AI so it runs faster, with a tiny bit less precision.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>reducing numerical precision of model weights (e.g. FP16 → INT8/INT4) to cut memory and inference cost, at a small, measurable quality tradeoff.</div>
+          </div>
+          <div class="term">
+            <div class="term-name">LoRA / PEFT</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>teaching the AI something new without retraining its whole brain.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>parameter-efficient fine-tuning methods (e.g. Low-Rank Adaptation) that train small additional weight matrices instead of updating the full model, drastically cutting training cost.</div>
+          </div>
+          <div class="term">
+            <div class="term-name">Distillation</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a smaller AI learning to copy a bigger, smarter AI's answers.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>training a smaller "student" model to mimic a larger "teacher" model's outputs, aiming to retain much of its quality at a fraction of the inference cost.</div>
+          </div>
+          <div class="term">
+            <div class="term-name">A/B testing / canary deploy</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>trying a change on a few people first before rolling it out to everyone.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>routing a small percentage of live traffic to a new model/prompt version, comparing metrics against the baseline before full rollout.</div>
+          </div>
+          <div class="term">
+            <div class="term-name">Observability / tracing</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a flight recorder that shows exactly what the AI did, step by step.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>structured, replayable logs of every model/tool call in a request — typically OpenTelemetry-style spans — capturing latency, token cost, and outcome per hop.</div>
+          </div>
+          <div class="term">
+            <div class="term-name">Eval harness / golden dataset</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a practice test with known right answers, used to grade the AI before it goes live.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a labeled benchmark dataset plus automated scoring pipeline (metrics + LLM-as-judge) run in CI/CD to gate deployments against regressions.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUIZ -->
+    <section class="level" id="quiz">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--pink-soft);">🎯</div>
+        <div>
+          <div class="level-eyebrow">Level 14</div>
+          <h2>Test Your Powers — Hero Quiz</h2>
+        </div>
+      </div>
+      <p class="level-tagline">18 questions covering everything above. Every answer — right or wrong — comes with an explanation, so this is study, not just scoring.</p>
+      <div class="quiz-card" id="quizCard"></div>
+    </section>
+
+    <!-- RECAP -->
+    <section class="level" id="recap">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--gold-soft);">⭐</div>
+        <div>
+          <div class="level-eyebrow">Hero status</div>
+          <h2>One-page recap</h2>
+        </div>
+      </div>
+      <p class="level-tagline">If you only remember one analogy per topic, remember these.</p>
+      <div class="recap">
+        <div class="chip"><span class="k">RAG</span>The librarian who fetches the exact book before answering.</div>
+        <div class="chip"><span class="k">Vector DB</span>A map sorted by meaning, not alphabet — Spotify-style "similar vibe" search.</div>
+        <div class="chip"><span class="k">Multi-agent</span>A kitchen crew — each agent owns one job, a supervisor coordinates.</div>
+        <div class="chip"><span class="k">MCP</span>USB-C for agents — one plug, any tool.</div>
+        <div class="chip"><span class="k">A2A</span>A shared language so agents from different companies can work together.</div>
+        <div class="chip"><span class="k">Guardrails</span>Bowling bumpers — freedom to think, limits on what can go wrong.</div>
+        <div class="chip"><span class="k">Cloud infra</span>Renting a fully-equipped kitchen instead of building your own.</div>
+        <div class="chip"><span class="k">Observability</span>The airplane's black box — replay any decision, anytime.</div>
+        <div class="chip"><span class="k">Boss level</span>All of the above, working together on one real claim.</div>
+      </div>
+    </section>
+
+    <footer>
+      Built as a study companion for Senior Agentic AI Architect interview prep. Walk through each level out loud — explaining the kid-friendly version first, then the architect-level version, is the fastest way to sound confident under pressure. 🚀
+    </footer>
+  </main>
+</div>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+  const hamburger = document.getElementById('hamburgerBtn');
+
+  function openSidebar(){ sidebar.classList.add('open'); overlay.classList.add('show'); }
+  function closeSidebar(){ sidebar.classList.remove('open'); overlay.classList.remove('show'); }
+
+  hamburger.addEventListener('click', () => {
+    sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+  });
+  overlay.addEventListener('click', closeSidebar);
+  document.querySelectorAll('#levelNav a').forEach(a => a.addEventListener('click', closeSidebar));
+
+  // Scroll-spy
+  const links = Array.from(document.querySelectorAll('#levelNav a'));
+  const sections = links.map(a => document.querySelector(a.getAttribute('href')));
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = '#' + entry.target.id;
+        links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === id));
+      }
+    });
+  }, { rootMargin: '-40% 0px -50% 0px', threshold: 0 });
+
+  sections.forEach(s => { if (s) observer.observe(s); });
+
+  // ---- Answer toggle for interview-tag buttons ----
+  function toggleAnswer(btn){
+    const box = btn.nextElementSibling;
+    box.classList.toggle('show');
+    btn.classList.toggle('open');
+  }
+
+  // ---- Quiz engine ----
+  const quizData = [
+    {
+      q: "What does RAG do that a plain LLM answering from memory can't?",
+      options: [
+        "Makes the model run faster",
+        "Fetches real, up-to-date facts before answering",
+        "Makes the model cheaper to run",
+        "Removes the need for any database"
+      ],
+      correct: 1,
+      explanation: "RAG's whole point is grounding answers in retrieved facts instead of relying purely on what the model memorized during training — like fetching the exact library book instead of guessing from memory."
+    },
+    {
+      q: "What's the purpose of a reranking step in a production RAG pipeline?",
+      options: [
+        "To skip chunking entirely",
+        "To reorder retrieved chunks by true relevance using a cross-encoder",
+        "To always retrieve the entire document",
+        "To turn off caching"
+      ],
+      correct: 1,
+      explanation: "Initial vector search can return results that are 'close' but not the best match. A reranker re-scores the top candidates for true relevance before they reach the model."
+    },
+    {
+      q: "When would Aurora + pgvector likely beat a dedicated vector DB like Milvus?",
+      options: [
+        "When you need billions of vectors and pure ANN speed at massive scale",
+        "When your vectors need to live alongside relational business data with transactional consistency",
+        "When you never need SQL joins",
+        "When operational simplicity doesn't matter"
+      ],
+      correct: 1,
+      explanation: "pgvector on Aurora shines when vector and relational data need to be queried together with transactional consistency and simpler ops — Milvus wins when scale and raw ANN performance dominate."
+    },
+    {
+      q: "In a supervisor-worker multi-agent pattern, what's the supervisor's job?",
+      options: [
+        "Doing all the work itself",
+        "Planning, delegating to specialist agents, and combining their results",
+        "Only logging errors",
+        "Replacing the need for guardrails"
+      ],
+      correct: 1,
+      explanation: "The supervisor plans and routes work to specialist worker agents, then combines their outputs — this pattern is popular in enterprise because it's easier to trace, debug, and audit."
+    },
+    {
+      q: "What's the core benefit of the Model Context Protocol (MCP)?",
+      options: [
+        "It makes LLMs smarter automatically",
+        "It gives agents a standard way to connect to tools and data, avoiding custom integration per tool",
+        "It replaces the need for vector databases",
+        "It's a brand-new LLM architecture"
+      ],
+      correct: 1,
+      explanation: "MCP solves the N×M integration problem — one standard interface instead of writing custom glue code for every agent-tool pairing. Think 'USB-C for agents.'"
+    },
+    {
+      q: "Why do autonomous agents need a max-step or token budget?",
+      options: [
+        "To make responses shorter",
+        "To prevent infinite loops and runaway costs from unbounded tool calls",
+        "To reduce hallucinations directly",
+        "It's a hard requirement of MCP"
+      ],
+      correct: 1,
+      explanation: "Without hard limits, an autonomous planning loop can keep calling tools indefinitely, burning time and money with no guaranteed termination — always pair autonomy with a budget."
+    },
+    {
+      q: "Where should a human-in-the-loop checkpoint generally be placed?",
+      options: [
+        "On every single agent action, no exceptions",
+        "Never — full autonomy is always better",
+        "Before irreversible, high-risk, or low-confidence actions",
+        "Only at the very end of the entire pipeline"
+      ],
+      correct: 2,
+      explanation: "Risk-based placement balances safety and speed. A human checkpoint before payments, deletions, or low-confidence decisions protects against real harm without adding friction everywhere."
+    },
+    {
+      q: "Why can't AI outputs be tested in CI/CD with simple exact-match assertions?",
+      options: [
+        "AI outputs are always identical to one fixed expected string",
+        "LLM outputs are non-deterministic, so you need eval sets and statistical thresholds instead",
+        "CI/CD doesn't work with AI systems at all",
+        "Exact-match is always more accurate for language tasks"
+      ],
+      correct: 1,
+      explanation: "The same prompt can produce differently-worded but equally correct answers each run, so evaluation needs golden datasets and LLM-as-judge scoring against a threshold, not string equality."
+    },
+    {
+      q: "What does distributed tracing give you in a multi-agent observability stack?",
+      options: [
+        "A way to make agents run faster automatically",
+        "A replayable record of what each agent did, which tools it called, and why",
+        "A replacement for guardrails",
+        "Automatically lower token costs"
+      ],
+      correct: 1,
+      explanation: "Tracing is the 'black box flight recorder' for agents — essential for debugging failures and for explaining a decision after the fact, like to a regulator or an upset customer."
+    },
+    {
+      q: "In the claims-triage example, what determines whether a claim is auto-approved or sent to a human?",
+      options: [
+        "The time of day the claim was submitted",
+        "A risk score computed by the decision agent, checked against a threshold",
+        "Whichever specialist agent responds first",
+        "The customer's typing speed"
+      ],
+      correct: 1,
+      explanation: "This is a direct application of guardrail placement — the risk score is the signal deciding whether a human needs to review before any action is taken."
+    },
+    {
+      q: "In a banking RAG system, how do you stop a call-center agent from seeing a customer's confidential credit-risk notes meant only for risk analysts?",
+      options: [
+        "Trust the LLM not to repeat sensitive information",
+        "Filter retrieval using access-control metadata tied to the requester's role, before the LLM ever sees the content",
+        "Give call-center agents a slower model",
+        "Encrypt the entire vector database with one shared key"
+      ],
+      correct: 1,
+      explanation: "Access control must be enforced at retrieval time via metadata filtering (or row-level security), mirrored from the source system's real permissions — never left to the LLM to decide what to withhold."
+    },
+    {
+      q: "Why is chunk-level hash-based change detection useful for keeping a bank's knowledge base current?",
+      options: [
+        "It makes the LLM generate longer answers",
+        "It lets the system re-embed only the chunks that actually changed instead of reprocessing everything",
+        "It automatically translates documents into other languages",
+        "It removes the need for a vector database entirely"
+      ],
+      correct: 1,
+      explanation: "Full reindexing of millions of documents is slow and costly. Hashing each chunk lets you detect exactly what changed — like one updated loan policy page — and re-embed only that piece."
+    },
+    {
+      q: "Why move dense+sparse fusion (RRF) into the vector database instead of merging the two ranked lists in Python?",
+      options: [
+        "It makes the embeddings smaller",
+        "It avoids extra round-trips and keeps fusion logic consistent, since the database now supports native hybrid queries",
+        "It removes the need for a reranker",
+        "It makes sparse search unnecessary"
+      ],
+      correct: 1,
+      explanation: "Modern vector databases can accept multiple prefetch searches (dense + sparse) plus a fusion instruction in one request, returning one merged ranked list — fewer moving parts than shuttling 100 candidates through application code."
+    },
+    {
+      q: "Why should a bank route 'total outstanding loans in Odisha' to a governed SQL query instead of embedding all spreadsheet rows for the LLM to reason over?",
+      options: [
+        "SQL queries look more professional",
+        "LLMs are unreliable at precise arithmetic over huge tables, and a SQL query gives an exact, auditable, citable result",
+        "Embedding models can't process numbers at all",
+        "SQL is always faster than any other approach regardless of the question"
+      ],
+      correct: 1,
+      explanation: "For exact aggregations over millions of rows, a governed, read-only SQL query is both more accurate and more auditable than hoping an LLM correctly sums numbers from retrieved chunks — the SQL itself becomes the citation."
+    },
+    {
+      q: "Why exclude a restricted document entirely before search, instead of retrieving it and filtering the answer afterward?",
+      options: [
+        "It saves storage space",
+        "It means there's nothing to accidentally leak — the document was never a candidate, so nothing needs to be redacted after the fact",
+        "It makes the document load faster",
+        "It's required by every vector database"
+      ],
+      correct: 1,
+      explanation: "Document-level denial removes the restricted file from the candidate set before vector search runs. Filtering after retrieval risks partial leakage (snippets, existence hints); excluding upfront leaves nothing to filter."
+    },
+    {
+      q: "Why does a production RAG system need offline evaluation, online monitoring, AND human audits — not just one?",
+      options: [
+        "Regulations always require exactly three layers",
+        "Each layer catches different failures — offline catches regressions pre-deploy, online catches live drift, humans catch subtle harms like access-control leakage",
+        "It's simply a tradition in machine learning",
+        "One layer is too slow to run alone"
+      ],
+      correct: 1,
+      explanation: "Offline eval protects against known regressions, online monitoring catches drift and edge cases the golden dataset never anticipated, and human red-teaming catches subtle failures — especially access-control leakage — that automated metrics are weakest at detecting."
+    },
+    {
+      q: "In plain terms, what does 'grounding' mean for an LLM's answer?",
+      options: [
+        "The answer is written in a formal tone",
+        "The answer is verifiably supported by the retrieved context it was given, not invented from the model's general training",
+        "The answer is shorter than 100 words",
+        "The answer was generated using a smaller, cheaper model"
+      ],
+      correct: 1,
+      explanation: "Grounding means the model's claims trace back to real, retrieved material rather than being confabulated — it's the core defense against hallucination in RAG systems."
+    },
+    {
+      q: "What's the difference between fine-tuning and prompt engineering?",
+      options: [
+        "They're the same thing with different names",
+        "Fine-tuning further trains the model's weights on new data; prompt engineering shapes behavior purely through how a request is written, with no weight changes",
+        "Prompt engineering is always more expensive",
+        "Fine-tuning only works on very small models"
+      ],
+      correct: 1,
+      explanation: "Fine-tuning changes what the model has learned (its parameters); prompt engineering changes how you ask a fixed, unchanged model — two very different levers with different cost and flexibility tradeoffs."
+    }
+  ];
+
+  let quizIndex = 0;
+  let quizScore = 0;
+  let quizAnswered = false;
+
+  function renderQuiz(){
+    const card = document.getElementById('quizCard');
+    if (quizIndex >= quizData.length){
+      card.innerHTML = `
+        <div class="quiz-result">
+          <div style="font-size:13px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;">Quiz complete</div>
+          <div class="score">${quizScore} / ${quizData.length}</div>
+          <p>${quizScore === quizData.length ? "Full marks — you're ready to talk architecture with confidence. 🏆" : quizScore >= quizData.length * 0.7 ? "Solid! Revisit the missed topics above before your interview." : "Good start — scroll back through the levels you missed and try again."}</p>
+          <button class="quiz-retake" onclick="restartQuiz()">Retake quiz</button>
+        </div>`;
+      return;
+    }
+    const item = quizData[quizIndex];
+    quizAnswered = false;
+    const pct = Math.round((quizIndex / quizData.length) * 100);
+    card.innerHTML = `
+      <div class="quiz-progress"><span>Question ${quizIndex + 1} of ${quizData.length}</span><span>Score: ${quizScore}</span></div>
+      <div class="quiz-bar"><div class="quiz-bar-fill" style="width:${pct}%;"></div></div>
+      <div class="quiz-q">${item.q}</div>
+      <div class="quiz-options" id="quizOptions"></div>
+      <div class="quiz-explain" id="quizExplain"></div>
+      <button class="quiz-next" id="quizNextBtn" onclick="nextQuiz()">Next question →</button>
+    `;
+    const optWrap = document.getElementById('quizOptions');
+    item.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'quiz-opt';
+      btn.textContent = opt;
+      btn.onclick = () => selectQuizOption(i);
+      optWrap.appendChild(btn);
+    });
+  }
+
+  function selectQuizOption(i){
+    if (quizAnswered) return;
+    quizAnswered = true;
+    const item = quizData[quizIndex];
+    const opts = document.querySelectorAll('#quizOptions .quiz-opt');
+    opts.forEach((btn, idx) => {
+      btn.disabled = true;
+      if (idx === item.correct) btn.classList.add('correct');
+      else if (idx === i) btn.classList.add('incorrect');
+    });
+    if (i === item.correct) quizScore++;
+    const explainBox = document.getElementById('quizExplain');
+    explainBox.textContent = (i === item.correct ? "✅ Correct — " : "❌ Not quite — ") + item.explanation;
+    explainBox.classList.add('show');
+    document.getElementById('quizNextBtn').classList.add('show');
+  }
+
+  function nextQuiz(){
+    quizIndex++;
+    renderQuiz();
+  }
+
+  function restartQuiz(){
+    quizIndex = 0;
+    quizScore = 0;
+    renderQuiz();
+  }
+
+  renderQuiz();
+</script>
+
+</body>
+</html>
