@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADF Academy — Azure Data Factory Zero to Hero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F5F8FC;
+    --card:#FFFFFF;
+    --ink:#0F2136;
+    --ink-soft:#51637E;
+    --line:#DCE7F5;
+    --azure:#0078D4;
+    --azure-soft:#DCEEFB;
+    --teal:#00B7C3;
+    --teal-soft:#D6F5F6;
+    --gold:#FFB900;
+    --gold-soft:#FFF4D9;
+    --purple:#8661C5;
+    --purple-soft:#EFE7FA;
+    --green:#107C10;
+    --green-soft:#E0F2E0;
+    --rose:#D13438;
+    --rose-soft:#FBE1E1;
+    --radius:18px;
+    --shadow: 0 6px 20px rgba(15,33,54,0.08);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{ margin:0; background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif; line-height:1.62; }
+  h1,h2,h3,.display{ font-family:'Sora',sans-serif; color:var(--ink); line-height:1.18; }
+  code, pre, .mono{ font-family:'JetBrains Mono',monospace; }
+  a{ color:inherit; }
+  img,svg{ max-width:100%; }
+
+  .app{ display:flex; min-height:100vh; }
+
+  .sidebar{
+    width:284px; flex-shrink:0; background:var(--card); border-right:1px solid var(--line);
+    position:sticky; top:0; height:100vh; overflow-y:auto; padding:22px 16px 40px; z-index:40;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; padding:4px 8px 18px; border-bottom:1px dashed var(--line); margin-bottom:14px; }
+  .brand .mark{
+    width:38px;height:38px;border-radius:11px; flex-shrink:0;
+    background:linear-gradient(135deg,var(--azure),var(--teal));
+    display:flex; align-items:center; justify-content:center; font-size:18px; color:#fff;
+  }
+  .brand .name{ font-family:'Sora'; font-weight:700; font-size:15.5px; }
+  .brand .sub{ font-size:11px; color:var(--ink-soft); font-weight:500; }
+
+  nav.levels{ display:flex; flex-direction:column; gap:3px; }
+  nav.levels a{
+    display:flex; align-items:center; gap:10px; text-decoration:none; padding:9px 10px;
+    border-radius:12px; font-size:13px; font-weight:600; color:var(--ink-soft);
+    transition:background .15s ease, color .15s ease;
+  }
+  nav.levels a:hover{ background:var(--bg); color:var(--ink); }
+  nav.levels a.active{ background:var(--azure-soft); color:var(--azure); }
+  nav.levels a .num{
+    width:22px;height:22px;border-radius:7px; background:var(--line); color:var(--ink);
+    font-size:10.5px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  nav.levels a.active .num{ background:var(--azure); color:#fff; }
+  .sidebar-foot{ margin-top:18px; padding-top:14px; border-top:1px dashed var(--line); font-size:11.5px; color:var(--ink-soft); }
+
+  .topbar{
+    display:none; position:sticky; top:0; z-index:50; background:var(--card); border-bottom:1px solid var(--line);
+    padding:12px 16px; align-items:center; justify-content:space-between;
+  }
+  .topbar .brand{ border:none; padding:0; margin:0; }
+  .hamburger{
+    width:40px;height:40px;border-radius:10px; border:1px solid var(--line); background:var(--bg);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:18px;
+  }
+  main{ flex:1; min-width:0; }
+
+  .hero{ padding:56px 48px 20px; max-width:1000px; }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px; background:var(--gold-soft); color:#8A5A00;
+    padding:6px 14px; border-radius:999px; font-size:12.5px; font-weight:700; margin-bottom:18px;
+  }
+  .hero h1{ font-size:clamp(30px,4.4vw,48px); margin:0 0 14px; }
+  .hero h1 .hi{ color:var(--azure); }
+  .hero p.lede{ font-size:17px; color:var(--ink-soft); max-width:660px; margin:0 0 30px; }
+
+  .canvas-strip{ display:flex; gap:14px; margin:12px 0 40px; flex-wrap:wrap; align-items:center; }
+  .canvas-strip .node{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:14px 18px; box-shadow:var(--shadow); font-size:12px; font-weight:700; color:var(--ink);
+    display:flex; align-items:center; gap:8px;
+  }
+  .canvas-strip .arrow{ color:var(--ink-soft); font-size:18px; }
+
+  section.level{ padding:54px 48px; max-width:1000px; border-top:1px dashed var(--line); scroll-margin-top:20px; }
+  section.level:first-of-type{ border-top:none; }
+
+  .level-head{ display:flex; align-items:center; gap:14px; margin-bottom:6px; }
+  .level-badge{
+    width:46px;height:46px;border-radius:14px; display:flex;align-items:center;justify-content:center;
+    font-size:22px; flex-shrink:0; box-shadow:var(--shadow);
+  }
+  .level-eyebrow{ font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); }
+  .level-head h2{ font-size:26px; margin:2px 0 0; }
+  .level-tagline{ font-size:15.5px; color:var(--ink-soft); margin:10px 0 26px; max-width:700px; }
+
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:22px 24px; box-shadow:var(--shadow); margin-bottom:20px; }
+  .card h3{ font-size:15px; margin:0 0 10px; display:flex; align-items:center; gap:8px; }
+  .card p{ margin:0; font-size:14.3px; color:var(--ink-soft); }
+  .card p + p{ margin-top:8px; }
+
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:760px){ .grid2{ grid-template-columns:1fr; } }
+
+  .analogy{ border-left:4px solid var(--gold); }
+  .analogy h3{ color:#8A5A00; }
+  .usecase{ border-left:4px solid var(--teal); }
+  .usecase h3{ color:#0B7A82; }
+
+  .diagram-wrap{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:26px; box-shadow:var(--shadow); margin:22px 0; }
+  .diagram-title{ font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); margin-bottom:14px; }
+  .diagram-caption{ font-size:12.5px; color:var(--ink-soft); text-align:center; margin-top:10px; }
+
+  pre.code{
+    background:#0B1E33; color:#DCEFEA; border-radius:14px; padding:20px 22px; overflow-x:auto;
+    font-size:12.6px; line-height:1.7; margin:20px 0; box-shadow:var(--shadow);
+  }
+  pre.code .c1{ color:#7FD8C4; }
+  pre.code .c2{ color:#FFB900; }
+  pre.code .c3{ color:#7EC8FF; }
+  pre.code .c4{ color:#9BB8CC; font-style:italic; }
+  .code-label{ display:inline-block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); margin-bottom:8px; }
+
+  .challenge{ background:var(--purple-soft); border:1px dashed var(--purple); border-radius:var(--radius); padding:20px 24px; margin-top:24px; }
+  .challenge h3{ color:#5A4396; margin:0 0 8px; }
+  .challenge p{ margin:0; font-size:14.3px; color:#4A3980; }
+
+  button.interview-tag{
+    display:inline-flex; align-items:center; gap:8px; background:var(--azure-soft); color:var(--azure);
+    font-size:12px; font-weight:700; font-family:'Inter'; padding:9px 16px; border-radius:999px; border:none;
+    cursor:pointer; margin-top:22px; transition:background .15s ease;
+  }
+  button.interview-tag:hover{ background:#C7E4F7; }
+  button.interview-tag .chevron{ display:inline-block; font-size:11px; transition:transform .2s ease; }
+  button.interview-tag.open .chevron{ transform:rotate(180deg); }
+  .answer-box{ display:none; margin-top:12px; background:var(--card); border:1px solid var(--line); border-left:4px solid var(--azure); border-radius:14px; padding:18px 22px; box-shadow:var(--shadow); }
+  .answer-box.show{ display:block; }
+  .answer-label{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--azure); margin-bottom:8px; }
+  .answer-box p{ margin:0; font-size:14.3px; color:var(--ink-soft); }
+  .answer-box p + p{ margin-top:8px; }
+
+  .qbank{ margin-top:10px; }
+  .qbank .qitem{ margin-bottom:14px; }
+
+  .recap{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:8px; }
+  @media (max-width:760px){ .recap{ grid-template-columns:1fr 1fr; } }
+  @media (max-width:520px){ .recap{ grid-template-columns:1fr; } }
+  .recap .chip{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; font-size:12.8px; font-weight:600; }
+  .recap .chip .k{ display:block; font-size:11px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; margin-bottom:4px; }
+
+  .doclinks{ display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+  .doclinks a{ font-size:13.5px; font-weight:600; color:var(--purple); text-decoration:none; }
+  .doclinks a:hover{ text-decoration:underline; }
+  .doclinks .desc{ font-weight:400; color:var(--ink-soft); font-size:12.5px; }
+
+  footer{ padding:40px 48px 70px; max-width:1000px; color:var(--ink-soft); font-size:13px; }
+
+  .quiz-card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:26px 28px; box-shadow:var(--shadow); }
+  .quiz-progress{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; font-size:12.5px; color:var(--ink-soft); font-weight:600; }
+  .quiz-bar{ height:8px; border-radius:999px; background:var(--bg); overflow:hidden; margin-bottom:22px; }
+  .quiz-bar-fill{ height:100%; background:linear-gradient(90deg,var(--azure),var(--teal)); border-radius:999px; transition:width .25s ease; }
+  .quiz-q{ font-size:16.5px; font-weight:700; margin-bottom:16px; font-family:'Sora'; }
+  .quiz-options{ display:flex; flex-direction:column; gap:10px; margin-bottom:6px; }
+  .quiz-opt{ text-align:left; padding:13px 16px; border-radius:12px; border:1.5px solid var(--line); background:var(--bg); font-size:13.6px; font-family:'Inter'; color:var(--ink); cursor:pointer; transition:border-color .15s ease, background .15s ease; }
+  .quiz-opt:hover:not(:disabled){ border-color:var(--azure); }
+  .quiz-opt:disabled{ cursor:default; }
+  .quiz-opt.correct{ background:var(--green-soft); border-color:var(--green); font-weight:700; }
+  .quiz-opt.incorrect{ background:var(--rose-soft); border-color:var(--rose); font-weight:700; }
+  .quiz-explain{ margin-top:16px; padding:16px 18px; border-radius:14px; background:var(--gold-soft); border:1px dashed var(--gold); font-size:13.2px; color:#7A5200; display:none; }
+  .quiz-explain.show{ display:block; }
+  .quiz-next{ margin-top:18px; background:var(--ink); color:#fff; border:none; padding:11px 22px; border-radius:999px; font-weight:700; font-size:13.2px; cursor:pointer; display:none; font-family:'Inter'; }
+  .quiz-next.show{ display:inline-block; }
+  .quiz-result{ text-align:center; padding:20px 0; }
+  .quiz-result .score{ font-family:'Sora'; font-size:44px; color:var(--azure); margin:6px 0; }
+  .quiz-result p{ color:var(--ink-soft); font-size:14.3px; }
+  .quiz-retake{ margin-top:16px; background:var(--azure); color:#fff; border:none; padding:11px 24px; border-radius:999px; font-weight:700; font-size:13.2px; cursor:pointer; }
+
+  .glossary-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:760px){ .glossary-grid{ grid-template-columns:1fr; } }
+  .glossary-cat-title{ font-family:'Sora'; font-size:15.5px; margin:0 0 14px; display:flex; align-items:center; gap:8px; }
+  .term{ padding:12px 0; border-top:1px dashed var(--line); }
+  .term:first-child{ border-top:none; padding-top:0; }
+  .term-name{ font-weight:700; font-size:13.6px; margin-bottom:5px; color:var(--ink); font-family:'JetBrains Mono'; }
+  .term-def{ font-size:12.3px; color:var(--ink-soft); margin:3px 0; line-height:1.55; }
+  .term-def .tag{ font-weight:700; margin-right:4px; }
+  .term-def.simple .tag{ color:#8A5A00; }
+  .term-def.tech .tag{ color:var(--purple); }
+
+  ::selection{ background:var(--azure); color:#fff; }
+
+  @media (max-width:900px){
+    .sidebar{ position:fixed; left:0; top:0; height:100%; transform:translateX(-100%); transition:transform .25s ease; width:80vw; max-width:300px; }
+    .sidebar.open{ transform:translateX(0); box-shadow:0 0 40px rgba(0,0,0,0.25); }
+    .topbar{ display:flex; }
+    .hero, section.level, footer{ padding-left:22px; padding-right:22px; }
+    .overlay{ display:none; position:fixed; inset:0; background:rgba(15,33,54,0.35); z-index:39; }
+    .overlay.show{ display:block; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="mark">🏭</div>
+    <div><div class="name">ADF Academy</div><div class="sub">Zero → Hero</div></div>
+  </div>
+  <div class="hamburger" id="hamburgerBtn">☰</div>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="mark">🏭</div>
+      <div><div class="name">ADF Academy</div><div class="sub">Zero → Hero</div></div>
+    </div>
+    <nav class="levels" id="levelNav">
+      <a href="#start"><span class="num">0</span> Start Here</a>
+      <a href="#why"><span class="num">1</span> Why Cloud Data Needs ADF</a>
+      <a href="#architecture"><span class="num">2</span> ADF Architecture</a>
+      <a href="#linkedservices"><span class="num">3</span> Linked Services &amp; Datasets</a>
+      <a href="#pipelines"><span class="num">4</span> Pipelines &amp; Activities</a>
+      <a href="#dataflows"><span class="num">5</span> Mapping Data Flows</a>
+      <a href="#triggers"><span class="num">6</span> Triggers &amp; Scheduling</a>
+      <a href="#dynamic"><span class="num">7</span> Parameters &amp; Dynamic Content</a>
+      <a href="#ir"><span class="num">8</span> Integration Runtime Deep Dive</a>
+      <a href="#monitoring"><span class="num">9</span> Monitoring &amp; Error Handling</a>
+      <a href="#security"><span class="num">10</span> Security</a>
+      <a href="#cicd"><span class="num">11</span> CI/CD &amp; DevOps</a>
+      <a href="#perf"><span class="num">12</span> Performance &amp; Cost</a>
+      <a href="#capstone"><span class="num">13</span> Capstone Pipeline</a>
+      <a href="#interviewbank"><span class="num">14</span> Senior Interview Bank</a>
+      <a href="#glossary"><span class="num">15</span> Glossary</a>
+      <a href="#quiz"><span class="num">🎯</span> Test Your Powers</a>
+      <a href="#recap"><span class="num">★</span> Recap &amp; Docs</a>
+    </nav>
+    <div class="sidebar-foot">16 levels, real pipeline JSON, and a senior interview bank — from "what's a pipeline?" to designing a bank's data platform on a whiteboard.</div>
+  </aside>
+
+  <main>
+    <div class="hero" id="start">
+      <span class="eyebrow">🏭 Zero to Hero, one pipeline at a time</span>
+      <h1>Learn <span class="hi">Azure Data Factory</span> like you're building the factory, not memorizing the manual</h1>
+      <p class="lede">Every ADF idea — Linked Services, triggers, Integration Runtimes — is a plain everyday idea wearing cloud-engineering clothes. This guide takes the costume off first with a simple analogy, then puts it back on with real pipeline JSON and the language a senior interviewer expects.</p>
+
+      <div class="canvas-strip">
+        <div class="node">📥 Source</div><div class="arrow">→</div>
+        <div class="node">🚚 Integration Runtime</div><div class="arrow">→</div>
+        <div class="node">🧪 Transform</div><div class="arrow">→</div>
+        <div class="node">📦 Sink</div><div class="arrow">→</div>
+        <div class="node">⏰ Trigger &amp; Monitor</div>
+      </div>
+    </div>
+
+    <!-- LEVEL 1 -->
+    <section class="level" id="why">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--teal-soft);">🌐</div>
+        <div><div class="level-eyebrow">Level 1</div><h2>Why Cloud Data Integration Needs ADF</h2></div>
+      </div>
+      <p class="level-tagline">Before touching a single pipeline, understand the problem ADF exists to solve: data scattered across many systems that all need to come together, automatically, on a schedule.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Imagine your school's data is scattered everywhere: attendance in one binder, grades on a computer, lunch money in the office ledger, class photos on a teacher's phone. Azure Data Factory is like a super-organized courier service — it visits each place, picks up the right data, cleans it up a bit, and delivers everything to one central library, every single night, without anyone doing it by hand.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A retail company has sales data in an on-premises SQL Server, customer data in Salesforce, and website logs in Azure Blob Storage. ADF orchestrates pulling all three into Azure Data Lake every night, transforms them into a consistent format, and loads a data warehouse — ready for tomorrow morning's reports, with zero manual exports.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Scattered data, one orchestrator</div>
+        <svg viewBox="0 0 900 210" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a1" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#51637E"/></marker></defs>
+          <g font-size="10.5" font-weight="600">
+            <rect x="10" y="10" width="150" height="46" rx="10" fill="#D6F5F6" stroke="#00B7C3"/><text x="85" y="38" text-anchor="middle" fill="#0F2136">On-prem SQL Server</text>
+            <rect x="10" y="82" width="150" height="46" rx="10" fill="#D6F5F6" stroke="#00B7C3"/><text x="85" y="110" text-anchor="middle" fill="#0F2136">Salesforce (SaaS)</text>
+            <rect x="10" y="154" width="150" height="46" rx="10" fill="#D6F5F6" stroke="#00B7C3"/><text x="85" y="182" text-anchor="middle" fill="#0F2136">Blob Storage (logs)</text>
+
+            <rect x="350" y="60" width="200" height="90" rx="16" fill="#DCEEFB" stroke="#0078D4" stroke-width="2"/>
+            <text x="450" y="98" text-anchor="middle" font-weight="700" fill="#0F2136">Azure Data Factory</text>
+            <text x="450" y="118" text-anchor="middle" font-size="9.5" font-weight="500" fill="#51637E">connect · move · transform</text>
+            <text x="450" y="134" text-anchor="middle" font-size="9.5" font-weight="500" fill="#51637E">on a schedule, automatically</text>
+
+            <rect x="700" y="60" width="190" height="90" rx="16" fill="#E0F2E0" stroke="#107C10" stroke-width="2"/>
+            <text x="795" y="98" text-anchor="middle" font-weight="700" fill="#0F2136">Data Lake /</text>
+            <text x="795" y="116" text-anchor="middle" font-weight="700" fill="#0F2136">Warehouse</text>
+            <text x="795" y="134" text-anchor="middle" font-size="9.5" font-weight="500" fill="#51637E">one unified home</text>
+          </g>
+          <g stroke="#51637E" stroke-width="2" marker-end="url(#a1)" fill="none">
+            <path d="M160 33 L 348 90"/><path d="M160 105 L 348 105"/><path d="M160 177 L 348 120"/>
+            <path d="M550 105 L 697 105"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">A glance at what a pipeline actually is</div>
+      <pre class="code"><span class="c4">// Every ADF pipeline is just a JSON recipe of steps ("activities")</span>
+{
+  <span class="c3">"name"</span>: <span class="c1">"CopySalesData"</span>,
+  <span class="c3">"properties"</span>: {
+    <span class="c3">"activities"</span>: [
+      {
+        <span class="c3">"name"</span>: <span class="c1">"CopyFromSqlToLake"</span>,
+        <span class="c3">"type"</span>: <span class="c1">"Copy"</span>,
+        <span class="c3">"inputs"</span>: [{ <span class="c3">"referenceName"</span>: <span class="c1">"SqlServerSalesDataset"</span> }],
+        <span class="c3">"outputs"</span>: [{ <span class="c3">"referenceName"</span>: <span class="c1">"DataLakeSalesDataset"</span> }]
+      }
+    ]
+  }
+}</pre>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p>ADF is an <strong>orchestration and ELT service</strong>, not a general compute engine. For light transformation it can move and reshape data itself via Copy Activity and Mapping Data Flows (which run on Azure-managed Spark behind the scenes); for heavy transformation logic, ADF typically <em>orchestrates</em> other compute — calling out to Databricks notebooks, Synapse Spark pools, or stored procedures — rather than doing the heavy lifting itself. "ADF orchestrates, something else often computes" is the core mental model to carry into every later level.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>List three different places data lives in your own life (phone, school portal, a paper notebook...). If you had to combine them into one place every night automatically, what would the "recipe" of steps look like?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "What is Azure Data Factory, in one sentence — and what is it NOT?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Azure Data Factory is a cloud-native, serverless orchestration service for building, scheduling, and monitoring data integration pipelines that connect, move, and transform data at scale. It is <em>not</em> a data warehouse, not a general-purpose compute engine, and not a full replacement for a dedicated transformation tool — heavy transformation logic is usually delegated to Mapping Data Flows (managed Spark), Databricks, or Synapse, with ADF coordinating when and how those pieces run.</p>
+        <p><em>Why this answer works:</em> defining what something is <em>not</em> is just as important as what it is — it shows you understand ADF's place in a broader architecture rather than treating it as a do-everything tool.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 2 -->
+    <section class="level" id="architecture">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--azure-soft);">🏗️</div>
+        <div><div class="level-eyebrow">Level 2</div><h2>ADF Architecture — The Building Blocks</h2></div>
+      </div>
+      <p class="level-tagline">Six terms make up almost every ADF conversation. Get these solid and everything else in this guide is just detail on top.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Think of a toy factory. The <strong>Data Factory</strong> is the whole factory. The <strong>Integration Runtime</strong> is the delivery trucks and workers who actually go fetch and move materials. A <strong>Linked Service</strong> is a supplier's address book entry (how to reach them). A <strong>Dataset</strong> is the specific labeled box to pick up from that supplier. A <strong>Pipeline</strong> is the full recipe of steps. An <strong>Activity</strong> is one single step in that recipe. A <strong>Trigger</strong> is the alarm clock that starts the recipe running.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A nightly pipeline uses a Linked Service to connect to Azure SQL, a Dataset pointing at the "Orders" table, a Copy Activity to move it, and a Schedule Trigger that fires every night at 2am — all running on the default Azure Integration Runtime since everything involved lives in the cloud.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">How the six pieces fit together</div>
+        <svg viewBox="0 0 900 260" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#51637E"/></marker></defs>
+          <rect x="20" y="10" width="860" height="60" rx="14" fill="#DCEEFB" stroke="#0078D4" stroke-width="2"/>
+          <text x="450" y="35" text-anchor="middle" font-weight="700" fill="#0F2136">Data Factory</text>
+          <text x="450" y="53" text-anchor="middle" font-size="9.5" fill="#51637E">the whole factory — a serverless control plane in Azure</text>
+
+          <rect x="60" y="100" width="240" height="60" rx="12" fill="#FFF4D9" stroke="#FFB900" stroke-width="2"/>
+          <text x="180" y="126" text-anchor="middle" font-weight="700" fill="#0F2136">Trigger ⏰</text>
+          <text x="180" y="144" text-anchor="middle" font-size="9.5" fill="#51637E">starts the pipeline</text>
+
+          <rect x="330" y="100" width="240" height="60" rx="12" fill="#EFE7FA" stroke="#8661C5" stroke-width="2"/>
+          <text x="450" y="126" text-anchor="middle" font-weight="700" fill="#0F2136">Pipeline 📋</text>
+          <text x="450" y="144" text-anchor="middle" font-size="9.5" fill="#51637E">a sequence of Activities</text>
+
+          <rect x="600" y="100" width="240" height="60" rx="12" fill="#D6F5F6" stroke="#00B7C3" stroke-width="2"/>
+          <text x="720" y="126" text-anchor="middle" font-weight="700" fill="#0F2136">Integration Runtime 🚚</text>
+          <text x="720" y="144" text-anchor="middle" font-size="9.5" fill="#51637E">the compute that actually runs it</text>
+
+          <rect x="200" y="190" width="240" height="60" rx="12" fill="#E0F2E0" stroke="#107C10" stroke-width="2"/>
+          <text x="320" y="216" text-anchor="middle" font-weight="700" fill="#0F2136">Linked Service 📇</text>
+          <text x="320" y="234" text-anchor="middle" font-size="9.5" fill="#51637E">how to connect</text>
+
+          <rect x="460" y="190" width="240" height="60" rx="12" fill="#FBE1E1" stroke="#D13438" stroke-width="2"/>
+          <text x="580" y="216" text-anchor="middle" font-weight="700" fill="#0F2136">Dataset 📦</text>
+          <text x="580" y="234" text-anchor="middle" font-size="9.5" fill="#51637E">what specifically to move</text>
+
+          <g stroke="#51637E" stroke-width="2" marker-end="url(#a2)" fill="none">
+            <line x1="180" y1="70" x2="180" y2="98"/><line x1="450" y1="70" x2="450" y2="98"/><line x1="720" y1="70" x2="720" y2="98"/>
+            <line x1="300" y1="130" x2="327" y2="130"/>
+            <path d="M420 160 L 360 188"/><path d="M480 160 L 540 188"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Data Factory itself is a <strong>serverless control plane</strong> — you never patch or scale a server just to orchestrate pipelines. The Integration Runtime is the only piece with a real infrastructure decision behind it: <strong>Azure IR</strong> (fully managed, public network), <strong>Self-Hosted IR</strong> (an agent you install inside a private network), or <strong>Azure-SSIS IR</strong> (for lift-and-shift SSIS workloads) — covered in depth in Level 8. Everything else in ADF's architecture is metadata describing connections (Linked Service), shape (Dataset), and logic (Pipeline/Activity) that gets executed by whichever IR you assign.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Two pipelines both read from the same Azure SQL database but different tables. How many Linked Services do you need? How many Datasets? (These numbers are usually different — think about why.)</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "What's the difference between a Linked Service and a Dataset?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>A Linked Service defines <em>how</em> to connect to a system — the connection string, authentication method, and endpoint, similar to a database connection profile. A Dataset defines <em>what</em> specific data to work with through that connection — a table name, file path, or query — and always references exactly one Linked Service. In practice this means one Linked Service (say, "AzureSqlProd") can be reused by many Datasets pointing at different tables, avoiding duplicated connection configuration across a factory.</p>
+        <p><em>Why this answer works:</em> it captures the "how to connect" vs. "what to fetch" distinction precisely, and shows the practical reuse benefit rather than just reciting definitions.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 3 -->
+    <section class="level" id="linkedservices">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--green-soft);">📇</div>
+        <div><div class="level-eyebrow">Level 3</div><h2>Linked Services &amp; Datasets — Connecting to the Real World</h2></div>
+      </div>
+      <p class="level-tagline">This is where ADF actually reaches out and touches real systems — and where the single most common security mistake happens.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>A Linked Service is "how to get to Grandma's house" — the address and the key to the front door. A Dataset is "which specific box in Grandma's attic to bring back." You can visit Grandma's house (one Linked Service) many times to fetch different boxes (many Datasets) without writing down her address every single time.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A bank creates one "AzureSqlProd" Linked Service, then builds five different Datasets from it — Customers, Accounts, Transactions, Loans, and Branches — each pointing at a different table through that same single, secure connection.</p>
+        </div>
+      </div>
+
+      <div class="code-label">A secure Linked Service — secret pulled from Key Vault, never hardcoded</div>
+      <pre class="code"><span class="c4">// Linked Service: HOW to connect</span>
+{
+  <span class="c3">"name"</span>: <span class="c1">"AzureSqlLinkedService"</span>,
+  <span class="c3">"properties"</span>: {
+    <span class="c3">"type"</span>: <span class="c1">"AzureSqlDatabase"</span>,
+    <span class="c3">"typeProperties"</span>: {
+      <span class="c3">"connectionString"</span>: <span class="c1">"Server=tcp:mydb.database.windows.net;Database=Sales;"</span>,
+      <span class="c3">"password"</span>: {
+        <span class="c3">"type"</span>: <span class="c1">"AzureKeyVaultSecret"</span>,
+        <span class="c3">"store"</span>: { <span class="c3">"referenceName"</span>: <span class="c1">"MyKeyVaultLS"</span>, <span class="c3">"type"</span>: <span class="c1">"LinkedServiceReference"</span> },
+        <span class="c3">"secretName"</span>: <span class="c1">"SqlAdminPassword"</span>
+      }
+    }
+  }
+}
+
+<span class="c4">// Dataset: WHAT specifically to fetch, through that Linked Service</span>
+{
+  <span class="c3">"name"</span>: <span class="c1">"CustomersTableDataset"</span>,
+  <span class="c3">"properties"</span>: {
+    <span class="c3">"type"</span>: <span class="c1">"AzureSqlTable"</span>,
+    <span class="c3">"linkedServiceName"</span>: { <span class="c3">"referenceName"</span>: <span class="c1">"AzureSqlLinkedService"</span>, <span class="c3">"type"</span>: <span class="c1">"LinkedServiceReference"</span> },
+    <span class="c3">"typeProperties"</span>: { <span class="c3">"tableName"</span>: <span class="c1">"dbo.Customers"</span> }
+  }
+}</pre>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Never hardcode a password or connection secret directly into a Linked Service — always reference Azure Key Vault, and grant ADF's Managed Identity access to read that specific secret (see Level 10). Also <strong>parameterize</strong> Linked Services and Datasets — instead of one hardcoded table name, accept a <code>tableName</code> parameter so a single generic Dataset can serve dozens of tables via a metadata-driven ForEach pipeline (see Level 4), rather than hand-building one Dataset per table.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>A team hardcodes "dbo.Customers" into 40 separate Datasets for 40 tables. Rewrite the plan using one parameterized Dataset instead — what single parameter would replace all 40 hardcoded names?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Why should Linked Service credentials always come from Key Vault instead of being typed directly into ADF?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Hardcoded secrets in a Linked Service are stored in the factory's definition — visible to anyone with read access to the factory or its Git-tracked JSON, and painful to rotate since every reference needs manual updating. Referencing Key Vault instead means the actual secret value never lives in ADF at all; ADF's Managed Identity is granted narrow, auditable access to read just that secret at runtime, secret rotation happens in one place, and access can be revoked centrally without touching pipeline definitions.</p>
+        <p><em>Why this answer works:</em> it explains the concrete operational pain (rotation, visibility, audit) that Key Vault solves, not just "it's more secure" as a vague claim.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 4 -->
+    <section class="level" id="pipelines">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--purple-soft);">📋</div>
+        <div><div class="level-eyebrow">Level 4</div><h2>Pipelines &amp; Activities</h2></div>
+      </div>
+      <p class="level-tagline">A pipeline is a recipe. Activities are the steps. Some steps move data, some steps make decisions — this is where ADF stops being "just a copy tool" and becomes real orchestration.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>A pipeline is a recipe card. The Copy Activity is "measure ingredient A and pour it into bowl B." Control-flow activities are recipe instructions like "repeat step 3 for every fruit in the basket" (ForEach), "if the batter looks too thick, add milk" (If Condition), or "keep stirring until it thickens" (Until).</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A pipeline first looks up a list of table names from a control table (Lookup), then loops over each one (ForEach) copying it to the data lake, and finally checks whether any copy failed before sending a Teams alert (If Condition) — all without hardcoding a single table name.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">A metadata-driven pipeline pattern</div>
+        <svg viewBox="0 0 900 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#51637E"/></marker></defs>
+          <g font-size="10.5" font-weight="600">
+            <rect x="10" y="55" width="150" height="55" rx="10" fill="#FBE1E1" stroke="#D13438"/><text x="85" y="78" text-anchor="middle" fill="#0F2136">Lookup</text><text x="85" y="94" text-anchor="middle" font-size="9" fill="#51637E">get table list</text>
+
+            <rect x="220" y="45" width="220" height="75" rx="12" fill="#EFE7FA" stroke="#8661C5" stroke-width="2"/>
+            <text x="330" y="70" text-anchor="middle" fill="#0F2136">ForEach table…</text>
+            <rect x="245" y="82" width="170" height="30" rx="8" fill="#DCEEFB" stroke="#0078D4"/><text x="330" y="102" text-anchor="middle" font-size="9.5" fill="#0F2136">Copy Activity</text>
+
+            <rect x="510" y="55" width="150" height="55" rx="10" fill="#FFF4D9" stroke="#FFB900"/><text x="585" y="78" text-anchor="middle" fill="#0F2136">If Condition</text><text x="585" y="94" text-anchor="middle" font-size="9" fill="#51637E">any failures?</text>
+
+            <rect x="720" y="10" width="160" height="46" rx="10" fill="#E0F2E0" stroke="#107C10"/><text x="800" y="38" text-anchor="middle" fill="#0F2136">✅ Done, log success</text>
+            <rect x="720" y="90" width="160" height="46" rx="10" fill="#FBE1E1" stroke="#D13438"/><text x="800" y="118" text-anchor="middle" fill="#0F2136">🚨 Send alert</text>
+          </g>
+          <g stroke="#51637E" stroke-width="2" marker-end="url(#a3)" fill="none">
+            <line x1="160" y1="80" x2="217" y2="80"/><line x1="440" y1="80" x2="507" y2="80"/>
+            <path d="M660 68 L 718 33"/><path d="M660 92 L 718 113"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">ForEach looping over a dynamic list</div>
+      <pre class="code">{
+  <span class="c3">"name"</span>: <span class="c1">"ForEachTableCopy"</span>,
+  <span class="c3">"type"</span>: <span class="c1">"ForEach"</span>,
+  <span class="c3">"typeProperties"</span>: {
+    <span class="c3">"items"</span>: { <span class="c3">"value"</span>: <span class="c1">"@activity('GetTableList').output.value"</span>, <span class="c3">"type"</span>: <span class="c1">"Expression"</span> },
+    <span class="c3">"activities"</span>: [
+      {
+        <span class="c3">"name"</span>: <span class="c1">"CopyOneTable"</span>,
+        <span class="c3">"type"</span>: <span class="c1">"Copy"</span>,
+        <span class="c3">"inputs"</span>: [{ <span class="c3">"referenceName"</span>: <span class="c1">"SourceTable"</span>,
+          <span class="c3">"parameters"</span>: { <span class="c3">"tableName"</span>: <span class="c1">"@item().name"</span> } }],
+        <span class="c3">"outputs"</span>: [{ <span class="c3">"referenceName"</span>: <span class="c1">"SinkBlob"</span>,
+          <span class="c3">"parameters"</span>: { <span class="c3">"fileName"</span>: <span class="c1">"@item().name"</span> } }]
+      }
+    ]
+  }
+}</pre>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Activities fall into two families: <strong>Move &amp; Transform</strong> (Copy, Data Flow, Databricks Notebook) and <strong>Control Flow</strong> (ForEach, If Condition, Switch, Until, Wait, Execute Pipeline, Set/Append Variable, Lookup, Get Metadata, Web, Filter). A pipeline is itself a small DAG — activities connect via <strong>dependency conditions</strong> (Succeeded, Failed, Completed, Skipped), which is also how ADF builds error-handling logic since it has no native try/catch keyword (Level 9). Metadata-driven pipelines — Lookup + ForEach + parameterized Datasets — are the standard pattern for handling an unknown or growing number of source tables without hand-building one pipeline per table.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>A new table gets added to the source database next month. In a metadata-driven pipeline like the one above, what — if anything — do you need to change in the pipeline itself to pick it up?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "How do you build a pipeline that processes an unknown, dynamic list of files or tables each run?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>I'd use a metadata-driven pattern: a Lookup or Get Metadata activity retrieves the current list of tables or files (from a control table, or by listing a folder), then a ForEach activity iterates over that list, and inside it a parameterized Copy Activity or Data Flow uses <code>@item()</code> to reference the current table/file name dynamically. This way, adding a new table to the source or control table is enough — the pipeline itself never needs to change, since it never hardcodes names.</p>
+        <p><em>Why this answer works:</em> it names the exact activity combination (Lookup + ForEach + parameterized Dataset) rather than a vague "make it dynamic," which is what interviewers are actually checking for.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 5 -->
+    <section class="level" id="dataflows">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--teal-soft);">🧪</div>
+        <div><div class="level-eyebrow">Level 5</div><h2>Mapping Data Flows — Visual, Code-Free Transformation</h2></div>
+      </div>
+      <p class="level-tagline">When Copy Activity isn't enough — when you actually need to filter, join, aggregate, or reshape data — Mapping Data Flows let you build that logic visually, without writing Spark code yourself.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Writing transformation code by hand is like handwriting a recipe in a foreign language. A Mapping Data Flow is a drag-and-drop recipe board — you connect boxes for "filter," "join," "add a column," "group and total" — and Azure quietly translates your drawing into real Spark code and runs it on a managed cluster for you.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A retailer needs to join raw orders with a customer lookup table, filter out test accounts, compute a full customer name, and aggregate total spend per region — all visually, in one Data Flow, with zero lines of Spark or SQL written by hand.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">A Data Flow, visually — and what it becomes underneath</div>
+        <svg viewBox="0 0 900 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a4" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#51637E"/></marker></defs>
+          <g font-size="10" font-weight="600">
+            <rect x="10" y="60" width="120" height="50" rx="10" fill="#DCEEFB" stroke="#0078D4"/><text x="70" y="89" text-anchor="middle" fill="#0F2136">Source</text>
+            <rect x="160" y="60" width="120" height="50" rx="10" fill="#FFF4D9" stroke="#FFB900"/><text x="220" y="89" text-anchor="middle" fill="#0F2136">Filter</text>
+            <rect x="310" y="60" width="120" height="50" rx="10" fill="#EFE7FA" stroke="#8661C5"/><text x="370" y="89" text-anchor="middle" fill="#0F2136">Join</text>
+            <rect x="460" y="60" width="140" height="50" rx="10" fill="#E0F2E0" stroke="#107C10"/><text x="530" y="89" text-anchor="middle" fill="#0F2136">Aggregate</text>
+            <rect x="630" y="60" width="120" height="50" rx="10" fill="#FBE1E1" stroke="#D13438"/><text x="690" y="89" text-anchor="middle" fill="#0F2136">Sink</text>
+          </g>
+          <g stroke="#51637E" stroke-width="2" marker-end="url(#a4)">
+            <line x1="130" y1="85" x2="157" y2="85"/><line x1="280" y1="85" x2="307" y2="85"/><line x1="430" y1="85" x2="457" y2="85"/><line x1="600" y1="85" x2="627" y2="85"/>
+          </g>
+          <text x="450" y="145" text-anchor="middle" font-size="10" fill="#51637E">Compiled at runtime into Spark code, executed on an Azure-managed Spark cluster</text>
+        </svg>
+      </div>
+
+      <div class="code-label">The Data Flow script, behind the visual canvas</div>
+      <pre class="code"><span class="c4">// This is what the drag-and-drop canvas above compiles to</span>
+source1 derive(fullName = concat(firstName, <span class="c1">' '</span>, lastName)) ~> DeriveFullName
+DeriveFullName filter(amount > <span class="c1">1000</span>) ~> FilterHighValue
+FilterHighValue aggregate(groupBy(branch), totalAmount = sum(amount)) ~> AggregateByBranch
+AggregateByBranch sink(allowSchemaDrift: <span class="c1">true</span>) ~> SinkToLake</pre>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Data Flows spin up a fully managed Spark cluster behind the scenes — meaning the first run in a session has real "cold start" latency (often several minutes). Set a <strong>Time To Live (TTL)</strong> on the Azure IR used by your Data Flows to keep a warm cluster available for a window of time, so a chain of nightly Data Flow activities doesn't pay the cold-start cost on every single one. For simple move-only operations with no real transformation logic, prefer plain Copy Activity — it's cheaper and simpler than spinning up Spark unnecessarily.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>A pipeline needs to just copy a file from Blob to Data Lake with no transformation at all. Would you reach for a Copy Activity or a Data Flow? Why does that choice matter for both cost and speed?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "When would you choose a Mapping Data Flow versus a Copy Activity versus calling out to Databricks?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Copy Activity for pure movement with little or no transformation — it's the cheapest and fastest option when you're just relocating or lightly reshaping data. Mapping Data Flow when you need real transformation logic — joins, aggregations, pivots, derived columns — but want to stay in ADF's visual, low-code environment without managing separate compute or writing Spark code by hand. Databricks (or Synapse Spark) when transformation logic is complex enough to need real code, custom libraries, more advanced ML/feature engineering, or when the team already has strong Spark/Python expertise and wants full control over cluster configuration and code — with ADF simply orchestrating when that notebook runs.</p>
+        <p><em>Why this answer works:</em> it gives a genuine decision framework based on transformation complexity and team skillset, not just "it depends," and shows awareness of the cost/control tradeoff between low-code and full-code options.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 6 -->
+    <section class="level" id="triggers">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--gold-soft);">⏰</div>
+        <div><div class="level-eyebrow">Level 6</div><h2>Triggers &amp; Scheduling</h2></div>
+      </div>
+      <p class="level-tagline">A pipeline sitting idle does nothing. A trigger is the alarm clock — and choosing the right kind of alarm clock matters more than it sounds.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>A <strong>Schedule trigger</strong> is a plain alarm clock: "every day at 2am." A <strong>Tumbling Window trigger</strong> is a series of back-to-back time slices, each tracked and retried independently — like grading each hour's homework as its own separate batch, so if 2pm's batch fails, it doesn't block 3pm's from starting, but you can still make 3pm wait for 2pm if you need to. An <strong>Event-based trigger</strong> doesn't wait for a clock at all — it fires the moment a real event happens, like a new box actually arriving at the loading dock (a file landing in storage).</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A finance team needs hourly reconciliation, where each hour's data must be processed exactly once, retried independently if it fails, and optionally backfilled for a missed day last month — that's a textbook Tumbling Window trigger use case, not a plain Schedule trigger.</p>
+        </div>
+      </div>
+
+      <div class="code-label">Schedule trigger — the plain alarm clock</div>
+      <pre class="code">{
+  <span class="c3">"name"</span>: <span class="c1">"DailyLoadTrigger"</span>,
+  <span class="c3">"properties"</span>: {
+    <span class="c3">"type"</span>: <span class="c1">"ScheduleTrigger"</span>,
+    <span class="c3">"typeProperties"</span>: { <span class="c3">"recurrence"</span>: { <span class="c3">"frequency"</span>: <span class="c1">"Day"</span>, <span class="c3">"interval"</span>: <span class="c1">1</span>, <span class="c3">"startTime"</span>: <span class="c1">"2026-01-01T02:00:00Z"</span> } },
+    <span class="c3">"pipelines"</span>: [ { <span class="c3">"pipelineReference"</span>: { <span class="c3">"referenceName"</span>: <span class="c1">"MainETLPipeline"</span> } } ]
+  }
+}</pre>
+
+      <div class="code-label">Event-based trigger — fires the moment a file lands</div>
+      <pre class="code">{
+  <span class="c3">"name"</span>: <span class="c1">"FileArrivalTrigger"</span>,
+  <span class="c3">"properties"</span>: {
+    <span class="c3">"type"</span>: <span class="c1">"BlobEventsTrigger"</span>,
+    <span class="c3">"typeProperties"</span>: {
+      <span class="c3">"blobPathBeginsWith"</span>: <span class="c1">"/raw/landing/"</span>,
+      <span class="c3">"blobPathEndsWith"</span>: <span class="c1">".csv"</span>,
+      <span class="c3">"events"</span>: [<span class="c1">"Microsoft.Storage.BlobCreated"</span>]
+    }
+  }
+}</pre>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Tumbling Window triggers uniquely support <strong>backfill</strong> (running historical windows on demand), <strong>maxConcurrency</strong> (how many windows run in parallel), per-window <strong>retry policies</strong>, and <strong>dependency chaining</strong> between triggers (window N of pipeline B can wait for window N of pipeline A). Choose Tumbling Window whenever "each time slice needs its own independent, trackable, retryable run" — plain Schedule triggers don't track windows as first-class objects at all, they just fire the pipeline.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>A pipeline needs to backfill three days of missed data from last week, one day at a time, with retries if any single day fails. Which trigger type makes that straightforward, and which would make it painful?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "When would you use a Tumbling Window trigger instead of a plain Schedule trigger?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>I'd reach for a Tumbling Window trigger whenever each time slice needs to be tracked, retried, and potentially backfilled independently — for example, hourly financial reconciliation windows, or a pipeline that needs <code>@trigger().outputs.windowStartTime</code>/<code>windowEndTime</code> passed in as parameters to process exactly that slice of data. A plain Schedule trigger is simpler and sufficient when you just need "run this pipeline at this time" with no per-run tracking, dependency chaining, or backfill requirement — most simple nightly batch loads don't need Tumbling Window's extra complexity.</p>
+        <p><em>Why this answer works:</em> it names the specific Tumbling Window features (window parameters, backfill, dependency chaining) that a Schedule trigger lacks, rather than a vague "it's for more complex scenarios."</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 7 -->
+    <section class="level" id="dynamic">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--azure-soft);">🧩</div>
+        <div><div class="level-eyebrow">Level 7</div><h2>Parameters, Variables &amp; Dynamic Content</h2></div>
+      </div>
+      <p class="level-tagline">This is the "programming language" of ADF — the expression syntax that turns a hardcoded pipeline into a reusable, dynamic one.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>A <strong>parameter</strong> is a blank on a form template — you fill it in fresh before using the form, and it can't change once you start. A <strong>variable</strong> is a sticky note the pipeline can update as it runs, to remember something for a later step — like jotting down today's date partway through so a later step can use it.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>The same pipeline deploys to dev, test, and prod using an "environment" parameter that changes which folder path it reads from — one pipeline definition, three different behaviors, just by changing what's filled into the blank.</p>
+        </div>
+      </div>
+
+      <div class="code-label">Parameters, variables, and expression functions in action</div>
+      <pre class="code"><span class="c4">// Pipeline parameter — the blank on the form</span>
+<span class="c3">"parameters"</span>: { <span class="c3">"environment"</span>: { <span class="c3">"type"</span>: <span class="c1">"String"</span>, <span class="c3">"defaultValue"</span>: <span class="c1">"dev"</span> } }
+
+<span class="c4">// Using it dynamically in a dataset path</span>
+<span class="c3">"folderPath"</span>: <span class="c1">"@concat('data/', pipeline().parameters.environment, '/sales/')"</span>
+
+<span class="c4">// Set Variable activity — the sticky note</span>
+{
+  <span class="c3">"name"</span>: <span class="c1">"SetRunDate"</span>,
+  <span class="c3">"type"</span>: <span class="c1">"SetVariable"</span>,
+  <span class="c3">"typeProperties"</span>: {
+    <span class="c3">"variableName"</span>: <span class="c1">"runDate"</span>,
+    <span class="c3">"value"</span>: <span class="c1">"@formatDateTime(utcnow(), 'yyyy-MM-dd')"</span>
+  }
+}
+
+<span class="c4">// Common expression functions you'll use constantly</span>
+@concat(<span class="c1">'prefix_'</span>, pipeline().RunId)
+@coalesce(pipeline().parameters.env, <span class="c1">'dev'</span>)
+@if(equals(activity(<span class="c1">'CopyData'</span>).output.rowsCopied, <span class="c1">0</span>), <span class="c1">'empty'</span>, <span class="c1">'has data'</span>)
+@activity(<span class="c1">'CopyData'</span>).output.rowsCopied</pre>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Three distinct concepts get confused constantly: <strong>Parameters</strong> — immutable per pipeline run, passed in at trigger/execution time. <strong>Variables</strong> — mutable during a single run, set/appended via activities. <strong>System variables</strong> — built-in, read-only values like <code>@pipeline().RunId</code> or <code>@utcnow()</code>. On top of these, <strong>Global Parameters</strong> are factory-wide (not pipeline-scoped) values — ideal for environment-level configuration (like a base URL or environment name) shared consistently across many pipelines without redefining it in each one.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Write the expression that would build a file path like <code>data/prod/2026-08-29/sales.csv</code> using a pipeline parameter for the environment and today's date.</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "What's the difference between a pipeline parameter and a pipeline variable?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>A parameter is set once, when the pipeline run starts, and stays fixed for that entire run — it's how you pass configuration in from a trigger or a calling pipeline. A variable is mutable during the run itself — you can Set or Append to it partway through using dedicated activities, letting a pipeline "remember" something computed in an early step (like a formatted run date, or an accumulated list) for use in a later step. Parameters answer "what was I told to do," variables answer "what have I figured out so far."</p>
+        <p><em>Why this answer works:</em> the closing line gives a crisp, memorable distinction rather than just a dry technical definition.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 8 -->
+    <section class="level" id="ir">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--teal-soft);">🚚</div>
+        <div><div class="level-eyebrow">Level 8</div><h2>Integration Runtime Deep Dive</h2></div>
+      </div>
+      <p class="level-tagline">This is the one real infrastructure decision hiding inside ADF's otherwise serverless world — and it's usually the first architecture question in an interview.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>The <strong>Azure IR</strong> is a delivery truck Microsoft owns and maintains, free to drive anywhere on the public internet or Azure network. The <strong>Self-Hosted IR</strong> is your own truck, parked inside your private warehouse (on-premises network or a private VNet), because Microsoft's public trucks simply aren't allowed past your gate. The <strong>Azure-SSIS IR</strong> is a special truck built specifically to keep running old SSIS packages you already had, without rewriting them.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A bank's core banking system lives on-premises, behind a firewall with no public internet access. ADF can't reach it directly, so a Self-Hosted Integration Runtime agent is installed on a VM inside that private network — it reaches out to Azure over an outbound connection, so no inbound firewall rule ever needs to open.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Three Integration Runtimes, three different jobs</div>
+        <svg viewBox="0 0 900 190" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <g font-size="10.5" font-weight="600">
+            <rect x="10" y="20" width="270" height="70" rx="12" fill="#DCEEFB" stroke="#0078D4" stroke-width="2"/>
+            <text x="145" y="48" text-anchor="middle" fill="#0F2136">Azure IR</text>
+            <text x="145" y="66" text-anchor="middle" font-size="9.5" font-weight="500" fill="#51637E">cloud-to-cloud, fully managed</text>
+            <text x="145" y="80" text-anchor="middle" font-size="9.5" font-weight="500" fill="#51637E">no infra to maintain</text>
+
+            <rect x="315" y="20" width="270" height="70" rx="12" fill="#D6F5F6" stroke="#00B7C3" stroke-width="2"/>
+            <text x="450" y="48" text-anchor="middle" fill="#0F2136">Self-Hosted IR</text>
+            <text x="450" y="66" text-anchor="middle" font-size="9.5" font-weight="500" fill="#51637E">agent inside your network</text>
+            <text x="450" y="80" text-anchor="middle" font-size="9.5" font-weight="500" fill="#51637E">reaches on-prem / private VNet</text>
+
+            <rect x="620" y="20" width="270" height="70" rx="12" fill="#EFE7FA" stroke="#8661C5" stroke-width="2"/>
+            <text x="755" y="48" text-anchor="middle" fill="#0F2136">Azure-SSIS IR</text>
+            <text x="755" y="66" text-anchor="middle" font-size="9.5" font-weight="500" fill="#51637E">runs legacy SSIS packages</text>
+            <text x="755" y="80" text-anchor="middle" font-size="9.5" font-weight="500" fill="#51637E">lift-and-shift from on-prem</text>
+          </g>
+          <g font-size="10" font-weight="500" fill="#51637E">
+            <text x="145" y="130" text-anchor="middle">✅ Blob, ADLS, Azure SQL,</text>
+            <text x="145" y="145" text-anchor="middle">most SaaS APIs</text>
+            <text x="450" y="130" text-anchor="middle">✅ on-prem SQL Server, file</text>
+            <text x="450" y="145" text-anchor="middle">shares, private VNet resources</text>
+            <text x="755" y="130" text-anchor="middle">✅ existing .dtsx packages,</text>
+            <text x="755" y="145" text-anchor="middle">no rewrite needed</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">Pointing a Linked Service at a specific Integration Runtime</div>
+      <pre class="code">{
+  <span class="c3">"name"</span>: <span class="c1">"OnPremSqlLinkedService"</span>,
+  <span class="c3">"properties"</span>: {
+    <span class="c3">"type"</span>: <span class="c1">"SqlServer"</span>,
+    <span class="c3">"connectVia"</span>: { <span class="c3">"referenceName"</span>: <span class="c1">"SelfHostedIR-OnPrem"</span>, <span class="c3">"type"</span>: <span class="c1">"IntegrationRuntimeReference"</span> },
+    <span class="c3">"typeProperties"</span>: { <span class="c3">"connectionString"</span>: <span class="c1">"Server=INTERNAL-SQL01;Database=Core;"</span> }
+  }
+}</pre>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Self-Hosted IR can scale to multiple nodes on different machines for both <strong>high availability</strong> (if one node goes down, others keep working) and <strong>higher throughput</strong> (more nodes process more data in parallel). The Self-Hosted IR only ever makes <em>outbound</em> connections to Azure — no inbound firewall port needs opening, which is a common security question in regulated environments. Integration Runtime choice is usually the very first architecture decision on a new ADF project: "where does the source data physically live, and can Azure's public network reach it directly?"</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>A company's file server lives inside a private VNet with no public endpoint, but their target Data Lake is in Azure. Sketch which IR you'd use and why a plain Azure IR wouldn't work here.</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "When is a Self-Hosted Integration Runtime required, and how do you make it highly available?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>A Self-Hosted IR is required whenever a data source or sink isn't reachable from Azure's public network — on-premises systems behind a firewall, or resources inside a private VNet without a public endpoint or private link configured. To make it highly available, you install the Self-Hosted IR agent on multiple machines and register them under the same logical Integration Runtime — Azure automatically load-balances and fails over between nodes, so a single node going down doesn't stop pipeline execution. Multiple nodes also increase throughput for large data movement jobs, not just availability.</p>
+        <p><em>Why this answer works:</em> it correctly separates the "when" (network reachability) from the "how" (multi-node registration for both HA and throughput), which are two different questions candidates often blur together.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 9 -->
+    <section class="level" id="monitoring">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--rose-soft);">📡</div>
+        <div><div class="level-eyebrow">Level 9</div><h2>Monitoring &amp; Error Handling</h2></div>
+      </div>
+      <p class="level-tagline">ADF has no native "try/catch" keyword. Reliable error handling is something you deliberately design using dependency conditions — not something that happens automatically.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>The Monitor tab is the courier service's tracking page, showing every delivery's live status. A retry policy is "if the driver misses the delivery, try again in 5 minutes, up to 3 times" before finally giving up and calling someone. Since ADF has no built-in "try/catch," you build it yourself: "if this step fails, run this other cleanup step instead" — like a backup plan written directly into the recipe.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A nightly Copy Activity is configured to retry 3 times on transient network errors before giving up. If it still fails, a separate "On Failure" branch sends a Teams alert with the error message and pipeline run ID, so someone can investigate before the next business day.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Building "try/catch" out of dependency conditions</div>
+        <svg viewBox="0 0 900 160" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a5" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#51637E"/></marker></defs>
+          <g font-size="10.5" font-weight="600">
+            <rect x="20" y="55" width="180" height="55" rx="10" fill="#DCEEFB" stroke="#0078D4"/><text x="110" y="78" text-anchor="middle" fill="#0F2136">Copy Activity</text><text x="110" y="94" text-anchor="middle" font-size="9" fill="#51637E">retry: 3x, 30s apart</text>
+
+            <rect x="330" y="10" width="200" height="50" rx="10" fill="#E0F2E0" stroke="#107C10"/><text x="430" y="38" text-anchor="middle" fill="#0F2136">On Success →</text><text x="430" y="52" text-anchor="middle" font-size="9" fill="#51637E">continue pipeline</text>
+
+            <rect x="330" y="100" width="200" height="50" rx="10" fill="#FBE1E1" stroke="#D13438"/><text x="430" y="128" text-anchor="middle" fill="#0F2136">On Failure →</text><text x="430" y="142" text-anchor="middle" font-size="9" fill="#51637E">Web Activity: send alert</text>
+          </g>
+          <g stroke="#51637E" stroke-width="2" marker-end="url(#a5)" fill="none">
+            <path d="M200 75 L 328 35"/><path d="M200 90 L 328 125"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">Retry policy and an "On Failure" alert branch</div>
+      <pre class="code">{
+  <span class="c3">"name"</span>: <span class="c1">"CopyData"</span>,
+  <span class="c3">"type"</span>: <span class="c1">"Copy"</span>,
+  <span class="c3">"policy"</span>: { <span class="c3">"retry"</span>: <span class="c1">3</span>, <span class="c3">"retryIntervalInSeconds"</span>: <span class="c1">30</span>, <span class="c3">"timeout"</span>: <span class="c1">"0.12:00:00"</span> }
+},
+{
+  <span class="c3">"name"</span>: <span class="c1">"SendFailureAlert"</span>,
+  <span class="c3">"type"</span>: <span class="c1">"WebActivity"</span>,
+  <span class="c3">"dependsOn"</span>: [ { <span class="c3">"activity"</span>: <span class="c1">"CopyData"</span>, <span class="c3">"dependencyConditions"</span>: [<span class="c1">"Failed"</span>] } ],
+  <span class="c3">"typeProperties"</span>: {
+    <span class="c3">"url"</span>: <span class="c1">"https://mycompany.webhook.office.com/..."</span>,
+    <span class="c3">"method"</span>: <span class="c1">"POST"</span>,
+    <span class="c3">"body"</span>: <span class="c1">"@concat('Pipeline failed: ', pipeline().RunId, ' - ', activity('CopyData').Error.message)"</span>
+  }
+}</pre>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Production monitoring layers Azure Monitor / Log Analytics on top of ADF's built-in Monitor tab — piping pipeline run metrics and diagnostic logs into a workspace where you can set proper alert rules (failure rate thresholds, run duration anomalies) rather than relying on someone manually checking a dashboard. The "Try-Catch-Finally" pattern in ADF is entirely built from activity <strong>dependency conditions</strong>: a "Finally" equivalent uses a dependency condition of <code>Completed</code> (runs regardless of success or failure) rather than <code>Succeeded</code> or <code>Failed</code> alone.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>You need a cleanup step (like deleting a temp file) to run whether the Copy Activity before it succeeds or fails. Which dependency condition would you use on the cleanup activity?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "ADF doesn't have a native try/catch block — how do you build reliable error handling anyway?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>I build it from activity dependency conditions. An activity following the "risky" one with a <code>Failed</code> dependency condition acts as the "catch" branch — running only if the previous activity failed, typically to log the error, send an alert, or attempt a fallback. A dependency condition of <code>Completed</code> acts as "finally" — running regardless of success or failure, useful for cleanup steps. I also configure retry policies directly on transient-error-prone activities (like network calls) so temporary issues resolve themselves before ever reaching the failure branch, and I capture <code>@activity('Name').Error.message</code> in the failure branch so alerts include the actual error, not just "something failed."</p>
+        <p><em>Why this answer works:</em> it correctly maps Failed → catch and Completed → finally, which is the exact mechanical detail interviewers use to filter out people who've only read about ADF versus actually built pipelines with it.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 10 -->
+    <section class="level" id="security">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--green-soft);">🔐</div>
+        <div><div class="level-eyebrow">Level 10</div><h2>Security</h2></div>
+      </div>
+      <p class="level-tagline">In a bank, a hospital, or any regulated environment, this level matters as much as everything else in this guide combined.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>A <strong>Managed Identity</strong> is giving ADF its own ID badge, so it can prove who it is to other Azure services without carrying around a written password. <strong>Key Vault</strong> is the school safe where every password lives — only ID-badge holders with the right permission can open it. A <strong>Private Endpoint</strong> is a private hallway connecting ADF directly to a resource, instead of walking out through the public street (the internet) to get there.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A bank's Data Factory reads and writes to Azure Data Lake using its Managed Identity, granted the "Storage Blob Data Contributor" role via Azure RBAC — no storage account key ever exists in any pipeline definition, and all traffic between ADF and the Data Lake flows over Private Endpoints, never touching the public internet.</p>
+        </div>
+      </div>
+
+      <div class="code-label">Using Managed Identity instead of secrets</div>
+      <pre class="code">{
+  <span class="c3">"name"</span>: <span class="c1">"ADLSGen2LinkedService"</span>,
+  <span class="c3">"properties"</span>: {
+    <span class="c3">"type"</span>: <span class="c1">"AzureBlobFS"</span>,
+    <span class="c3">"typeProperties"</span>: {
+      <span class="c3">"url"</span>: <span class="c1">"https://mydatalake.dfs.core.windows.net"</span>
+    }
+    <span class="c4">// no account key or SAS token here at all —</span>
+    <span class="c4">// ADF's System-Assigned Managed Identity is granted</span>
+    <span class="c4">// "Storage Blob Data Contributor" on the storage account via RBAC</span>
+  }
+}</pre>
+
+      <div class="card usecase">
+        <h3>🛡️ The security layers, stacked</h3>
+        <p><strong>Managed Identity + RBAC</strong> — eliminate secrets wherever the target service supports Azure AD authentication. <strong>Key Vault</strong> — for the remaining cases where a real secret is unavoidable (third-party API keys, legacy on-prem systems). <strong>Private Endpoints + Managed Virtual Network</strong> — keep all traffic between ADF and its data sources off the public internet entirely. <strong>Azure RBAC on the Data Factory itself</strong> — control who can view, edit, or publish pipelines, separate from what the pipelines themselves can access.</p>
+      </div>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p>The strongest posture combines all four layers: pipelines authenticate to data services using Managed Identity (no secrets at all where possible), any unavoidable secrets live in Key Vault referenced — never typed — into Linked Services, ADF's Managed Virtual Network routes Data Flow and Copy Activity traffic through Private Endpoints so nothing crosses the public internet, and factory-level RBAC restricts who can publish changes to production pipelines, separate from what those pipelines are allowed to touch at runtime.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>List every place a secret could theoretically leak in an ADF pipeline — pipeline JSON, activity logs, Git history, a Teams alert message. For each, what's the fix?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "How would you design a fully 'no secrets in plaintext, no public internet exposure' ADF architecture for a bank?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>I'd authenticate to every Azure-native service (Data Lake, Azure SQL, Synapse) using ADF's Managed Identity granted narrow RBAC roles, eliminating stored secrets for those connections entirely. For any remaining connection that truly requires a secret (a third-party SaaS API, for instance), that secret lives in Key Vault and is referenced by name — never typed into a Linked Service directly — with ADF's Managed Identity granted read access to just that secret. I'd enable ADF's Managed Virtual Network and configure Private Endpoints to every data source and sink, so Data Flow and Copy Activity traffic never traverses the public internet. Finally, I'd lock down factory-level RBAC so only specific roles can publish to the production factory, with changes flowing through CI/CD (Level 11) rather than direct manual edits.</p>
+        <p><em>Why this answer works:</em> it addresses "no secrets" and "no public internet" as two separate requirements with two separate concrete mechanisms (Managed Identity/Key Vault vs. Private Endpoints/Managed VNet), rather than conflating them into one vague answer.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 11 -->
+    <section class="level" id="cicd">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--purple-soft);">🔁</div>
+        <div><div class="level-eyebrow">Level 11</div><h2>CI/CD &amp; DevOps for ADF</h2></div>
+      </div>
+      <p class="level-tagline">Building pipelines by clicking around in the ADF UI directly in production doesn't scale past a hobby project — real teams version, review, and promote changes like any other software.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Git integration for ADF is like keeping your recipe book in a shared, version-tracked binder instead of one loose copy on the kitchen counter — you can see every past edit, undo a bad change, and let more than one cook work on it without erasing each other's work. An ARM template is a shopping list precise enough that someone else could recreate your exact kitchen setup in a different building automatically.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A team develops pipelines in a "Dev" Data Factory connected to Git, working in feature branches reviewed via pull requests into a collaboration branch. A release pipeline in Azure DevOps then deploys the generated ARM template into separate Test and Production Data Factories, swapping in environment-specific connection strings via parameter files — no one ever manually rebuilds a pipeline in production.</p>
+        </div>
+      </div>
+
+      <div class="code-label">Deploying an ADF ARM template to a new environment</div>
+      <pre class="code"><span class="c4"># Promote Dev's published ARM template into Production, with prod-specific parameters</span>
+az deployment group create \
+  --resource-group rg-prod-adf \
+  --template-file ARMTemplateForFactory.json \
+  --parameters ARMTemplateParametersForFactory.json \
+  --parameters factoryName=<span class="c1">adf-prod-bank</span></pre>
+
+      <div class="card usecase">
+        <h3>🔀 The standard dev → test → prod flow</h3>
+        <p>Developers work in a Git-connected <strong>Dev</strong> Data Factory using feature branches and pull requests into a collaboration branch (commonly <code>main</code>). Publishing from the collaboration branch generates ARM templates into an <code>adf_publish</code> branch. A CI/CD release pipeline (Azure DevOps, GitHub Actions) then deploys those ARM templates into separate <strong>Test</strong> and <strong>Production</strong> Data Factories, swapping environment-specific values (connection strings, folder paths) via parameter files — keeping Dev, Test, and Prod as genuinely separate Data Factory resources, promoted through automation rather than manually rebuilt.</p>
+      </div>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Only the <strong>Dev</strong> Data Factory should be Git-connected in most setups — Test and Prod factories are deployment <em>targets</em>, not places anyone edits directly. ARM template parameterization should cover anything that differs by environment: connection strings, folder paths, trigger start times (triggers are often deployed in a stopped state and started deliberately post-deployment to avoid accidental early runs). Modern setups increasingly build the ARM template via the ADF CLI/npm package in a proper CI build step rather than relying solely on the UI's "Publish" button, enabling fully automated pipelines without a human clicking Publish at all.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>A junior engineer asks why Test and Prod Data Factories shouldn't just be connected to Git too, so people can "fix things quickly" directly in production. What would you tell them?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Walk me through how you'd set up CI/CD for ADF across dev, test, and production." <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Only the Dev Data Factory is connected to Git. Developers work in feature branches, merge via pull request into a collaboration branch, and publishing from that branch generates ARM templates. A CI/CD pipeline then takes those ARM templates and deploys them into separate Test and Production Data Factories — which are never directly edited or Git-connected themselves — using environment-specific parameter files for things like connection strings and folder paths. Triggers typically deploy in a stopped state and get started as an explicit post-deployment step, to avoid a newly deployed pipeline firing before it's been validated. This keeps environments consistent, changes reviewable, and production changes fully auditable through the same process as any other software release.</p>
+        <p><em>Why this answer works:</em> it explicitly states that Test/Prod are deployment targets rather than editable environments, and calls out the "triggers deploy stopped" detail — a small but telling operational nuance that shows real production experience.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 12 -->
+    <section class="level" id="perf">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--gold-soft);">⚡</div>
+        <div><div class="level-eyebrow">Level 12</div><h2>Performance &amp; Cost Optimization</h2></div>
+      </div>
+      <p class="level-tagline">ADF bills for what it actually uses — which means performance tuning and cost control are often the exact same conversation.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>A DIU (Data Integration Unit) is how many "workers" get assigned to one Copy Activity — more workers move data faster, but you pay more per hour they're working. Parallel copy is splitting one big delivery job among several trucks driving at the same time instead of one truck making many separate trips.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A nightly load moving 2TB from an on-prem SQL Server was taking 6 hours on default settings. Enabling physical partition-based parallel copy and raising the DIU allocation cut it to 40 minutes — at a modest extra hourly cost, but a huge win against the overnight processing window.</p>
+        </div>
+      </div>
+
+      <div class="code-label">Tuning a Copy Activity for throughput</div>
+      <pre class="code">{
+  <span class="c3">"typeProperties"</span>: {
+    <span class="c3">"source"</span>: {
+      <span class="c3">"type"</span>: <span class="c1">"AzureSqlSource"</span>,
+      <span class="c3">"partitionOption"</span>: <span class="c1">"PhysicalPartitionsOfTable"</span>
+    },
+    <span class="c3">"sink"</span>: { <span class="c3">"type"</span>: <span class="c1">"ParquetSink"</span> },
+    <span class="c3">"dataIntegrationUnits"</span>: <span class="c1">16</span>,
+    <span class="c3">"parallelCopies"</span>: <span class="c1">8</span>
+  }
+}</pre>
+
+      <div class="card usecase">
+        <h3>💰 The cost/performance checklist</h3>
+        <p><strong>DIUs</strong> — right-size rather than maxing out; more DIUs cost more per hour and only help if the source/sink can actually feed data that fast. <strong>Data Flow cluster TTL</strong> — keep a warm cluster across a chain of nightly Data Flows instead of paying repeated cold-start cost. <strong>Copy over Data Flow</strong> — when there's no real transformation, plain Copy Activity is cheaper and simpler than spinning up Spark. <strong>Source partitioning</strong> — split large table reads for parallelism instead of one single-threaded read. <strong>Azure Cost Management</strong> — tag and monitor spend by Data Factory resource to catch runaway jobs early.</p>
+      </div>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Cost problems in ADF are almost always one of three things: an oversized, always-on Data Flow Integration Runtime with a long TTL running far more often than needed; DIUs or parallel copy settings tuned far beyond what the source/sink can actually sustain (paying for parallelism that's bottlenecked elsewhere anyway); or unnecessary Data Flow usage where a plain Copy Activity would have done the same job for less. Diagnosing starts the same way as PySpark tuning: look at actual run metrics (duration, DIU usage, cluster start time) in the Monitor tab before guessing at a fix.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>A pipeline runs 12 small Data Flow activities back-to-back every night, each taking 3 minutes to start a fresh Spark cluster. What single setting would you change first, and roughly how much startup time would it save across the whole run?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "A nightly Data Flow job costs far more than expected — what levers would you check first?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>First, I'd check whether Data Flow was even necessary for the transformation being done — if it's largely just moving data with minor reshaping, switching to Copy Activity alone can cut cost significantly. If Data Flow genuinely is needed, I'd check the Integration Runtime's cluster size and Time To Live setting — an oversized cluster, or a TTL that's either too short (repeated cold starts) or unnecessarily long (paying for idle warm time), are the most common cost culprits. I'd also check whether multiple Data Flow activities in the same pipeline run window could share one warm cluster instead of each spinning up independently, and confirm the compute size actually matches data volume rather than being left at an oversized default.</p>
+        <p><em>Why this answer works:</em> it starts by questioning whether Data Flow was the right tool at all before diving into tuning knobs — showing judgment about tool selection, not just parameter twiddling.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 13 -->
+    <section class="level" id="capstone">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--azure-soft);">🏆</div>
+        <div><div class="level-eyebrow">Level 13 — Capstone</div><h2>End-to-End Pipeline: Medallion Architecture in ADF</h2></div>
+      </div>
+      <p class="level-tagline">Everything so far combines into the pattern almost every real ADF platform follows — and this exact diagram is the whiteboard question you'll likely get asked in a senior interview.</p>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">On-prem + SaaS + files → Bronze → Silver → Gold → BI</div>
+        <svg viewBox="0 0 940 260" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a6" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#51637E"/></marker></defs>
+          <g font-size="9.5" font-weight="600">
+            <rect x="10" y="10" width="130" height="40" rx="8" fill="#D6F5F6" stroke="#00B7C3"/><text x="75" y="34" text-anchor="middle" fill="#0F2136">On-prem SQL</text>
+            <rect x="10" y="60" width="130" height="40" rx="8" fill="#D6F5F6" stroke="#00B7C3"/><text x="75" y="84" text-anchor="middle" fill="#0F2136">SaaS APIs</text>
+            <rect x="10" y="110" width="130" height="40" rx="8" fill="#D6F5F6" stroke="#00B7C3"/><text x="75" y="134" text-anchor="middle" fill="#0F2136">Landing files</text>
+          </g>
+          <rect x="180" y="55" width="130" height="50" rx="10" fill="#DCEEFB" stroke="#0078D4" stroke-width="2"/>
+          <text x="245" y="76" text-anchor="middle" font-size="9.5" font-weight="700" fill="#0F2136">Self-Hosted</text>
+          <text x="245" y="90" text-anchor="middle" font-size="9.5" font-weight="700" fill="#0F2136">+ Azure IR</text>
+
+          <g font-size="10" font-weight="700">
+            <rect x="350" y="15" width="140" height="55" rx="10" fill="#FFE4D9" stroke="#FF6B35"/><text x="420" y="38" text-anchor="middle" fill="#0F2136">🥉 Bronze</text><text x="420" y="55" text-anchor="middle" font-size="9" font-weight="500" fill="#51637E">raw, Copy Activity</text>
+
+            <rect x="350" y="90" width="140" height="55" rx="10" fill="#D7D7D7" stroke="#8892A6"/><text x="420" y="113" text-anchor="middle" fill="#0F2136">🥈 Silver</text><text x="420" y="130" text-anchor="middle" font-size="9" font-weight="500" fill="#51637E">Data Flow: clean, join</text>
+
+            <rect x="350" y="165" width="140" height="55" rx="10" fill="#FFF4D9" stroke="#FFB900"/><text x="420" y="188" text-anchor="middle" fill="#0F2136">🥇 Gold</text><text x="420" y="205" text-anchor="middle" font-size="9" font-weight="500" fill="#51637E">Data Flow: aggregate</text>
+
+            <rect x="560" y="90" width="150" height="55" rx="10" fill="#E0F2E0" stroke="#107C10"/><text x="635" y="113" text-anchor="middle" fill="#0F2136">Synapse / Power BI</text><text x="635" y="130" text-anchor="middle" font-size="9" font-weight="500" fill="#51637E">reporting layer</text>
+          </g>
+
+          <g font-size="9.5" font-weight="600">
+            <rect x="760" y="15" width="170" height="45" rx="8" fill="#FFF4D9" stroke="#FFB900"/><text x="845" y="42" text-anchor="middle" fill="#0F2136">⏰ Tumbling Window Trigger</text>
+            <rect x="760" y="70" width="170" height="45" rx="8" fill="#FBE1E1" stroke="#D13438"/><text x="845" y="97" text-anchor="middle" fill="#0F2136">📡 Monitor + Alert on failure</text>
+            <rect x="760" y="125" width="170" height="45" rx="8" fill="#EFE7FA" stroke="#8661C5"/><text x="845" y="152" text-anchor="middle" fill="#0F2136">🔐 Managed Identity + Key Vault</text>
+          </g>
+
+          <g stroke="#51637E" stroke-width="2" marker-end="url(#a6)" fill="none">
+            <path d="M140 30 L 178 65"/><path d="M140 80 L 178 80"/><path d="M140 130 L 178 95"/>
+            <line x1="310" y1="80" x2="347" y2="42"/><line x1="310" y1="80" x2="347" y2="117"/>
+            <path d="M420 70 L 420 88"/><path d="M420 145 L 420 163"/>
+            <path d="M490 117 L 557 117"/>
+          </g>
+        </svg>
+        <div class="diagram-caption">A master orchestration pipeline (Lookup + ForEach + Execute Pipeline) ties Bronze → Silver → Gold together, started by a trigger, wrapped in monitoring, and secured end-to-end.</div>
+      </div>
+
+      <div class="code-label">The master orchestration pipeline, compact</div>
+      <pre class="code"><span class="c4">// A parent pipeline that calls child pipelines for each medallion layer, in order</span>
+{
+  <span class="c3">"name"</span>: <span class="c1">"MasterMedallionOrchestrator"</span>,
+  <span class="c3">"properties"</span>: {
+    <span class="c3">"activities"</span>: [
+      {
+        <span class="c3">"name"</span>: <span class="c1">"RunBronzeIngestion"</span>,
+        <span class="c3">"type"</span>: <span class="c1">"ExecutePipeline"</span>,
+        <span class="c3">"typeProperties"</span>: { <span class="c3">"pipeline"</span>: { <span class="c3">"referenceName"</span>: <span class="c1">"Bronze_IngestAllSources"</span> } }
+      },
+      {
+        <span class="c3">"name"</span>: <span class="c1">"RunSilverTransform"</span>,
+        <span class="c3">"type"</span>: <span class="c1">"ExecutePipeline"</span>,
+        <span class="c3">"dependsOn"</span>: [ { <span class="c3">"activity"</span>: <span class="c1">"RunBronzeIngestion"</span>, <span class="c3">"dependencyConditions"</span>: [<span class="c1">"Succeeded"</span>] } ],
+        <span class="c3">"typeProperties"</span>: { <span class="c3">"pipeline"</span>: { <span class="c3">"referenceName"</span>: <span class="c1">"Silver_CleanAndJoin"</span> } }
+      },
+      {
+        <span class="c3">"name"</span>: <span class="c1">"RunGoldAggregate"</span>,
+        <span class="c3">"type"</span>: <span class="c1">"ExecutePipeline"</span>,
+        <span class="c3">"dependsOn"</span>: [ { <span class="c3">"activity"</span>: <span class="c1">"RunSilverTransform"</span>, <span class="c3">"dependencyConditions"</span>: [<span class="c1">"Succeeded"</span>] } ],
+        <span class="c3">"typeProperties"</span>: { <span class="c3">"pipeline"</span>: { <span class="c3">"referenceName"</span>: <span class="c1">"Gold_AggregateForBI"</span> } }
+      },
+      {
+        <span class="c3">"name"</span>: <span class="c1">"AlertOnAnyFailure"</span>,
+        <span class="c3">"type"</span>: <span class="c1">"WebActivity"</span>,
+        <span class="c3">"dependsOn"</span>: [ { <span class="c3">"activity"</span>: <span class="c1">"RunGoldAggregate"</span>, <span class="c3">"dependencyConditions"</span>: [<span class="c1">"Failed"</span>] } ]
+      }
+    ]
+  }
+}</pre>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Splitting Bronze, Silver, and Gold into <strong>separate child pipelines</strong> called via Execute Pipeline (rather than one giant monolithic pipeline) means any layer can be re-run, debugged, or backfilled independently — the same isolation benefit medallion architecture gives at the storage layer, extended to orchestration. Combined with Self-Hosted IR reaching on-prem sources, Managed Identity + Key Vault for secretless authentication, a Tumbling Window trigger for tracked/retryable scheduling, and On-Failure alerting wired throughout — this is a genuinely production-grade design, not a toy example.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>The Silver layer's join logic has a bug discovered a week after deployment. Because Bronze, Silver, and Gold are separate child pipelines, what's your recovery plan — and why is it much easier than if everything were one monolithic pipeline?</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 14 -->
+    <section class="level" id="interviewbank">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--rose-soft);">🎯</div>
+        <div><div class="level-eyebrow">Level 14 — Senior Bank</div><h2>Interview Questions for 15+ Years of Experience</h2></div>
+      </div>
+      <p class="level-tagline">Every earlier level had one interview question woven in. These are the harder, more open-ended ones a senior/architect-level panel actually asks.</p>
+
+      <div class="qbank">
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "ADF vs. Synapse Pipelines vs. Databricks Workflows — how do you decide?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>Synapse Pipelines is essentially the same orchestration engine as ADF, embedded inside Synapse Analytics — the decision often comes down to whether the broader platform is Synapse-centric (unified SQL/Spark/pipelines in one workspace) or a more heterogeneous multi-service architecture where a standalone Data Factory makes more sense as the central orchestrator. Databricks Workflows is orchestration scoped to the Databricks platform itself — ideal when the vast majority of work is already Spark notebooks/jobs and you don't need ADF's breadth of 100+ native connectors. I'd choose ADF/Synapse Pipelines when orchestrating across many heterogeneous systems (on-prem, SaaS, multiple clouds) is the priority, and lean toward Databricks Workflows when the pipeline is Databricks-native end to end and doesn't need that broader connector reach.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How do you design incremental (delta) loading in ADF instead of full reloads every time?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>The standard pattern is watermark-based: store the last successfully loaded value (a timestamp or incrementing ID) in a control table, use a Lookup activity to read it at pipeline start, pass it as a parameter into the source query's WHERE clause (e.g. <code>WHERE ModifiedDate > @watermark</code>), and after a successful load, update the control table with the new high-water mark via a Stored Procedure or Script activity. For sources without a reliable modified-date column, Change Data Capture (CDC) — either native database CDC or ADF's CDC connectors — provides a more robust row-level change feed instead of relying on a timestamp comparison.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How do you handle schema drift in a source system feeding ADF pipelines?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>Mapping Data Flows have a built-in "Allow schema drift" option on sources and sinks, letting the flow accept new or reordered columns without failing, and "Auto mapping" propagates drifted columns through without every transformation needing explicit column definitions. For Copy Activity, I'd design the sink to be schema-flexible (e.g. Parquet with schema evolution support, or a staging table that's widened via automated DDL) rather than a rigid fixed-column table that breaks the moment a source adds a field. Either way, I'd still want alerting on <em>unexpected</em> drift (a column disappearing, a type changing) even while tolerating additive drift gracefully — silent full tolerance can hide real upstream problems.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How do you avoid Data Flow's cold-start cost across a chain of many small nightly loads?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>Set a Time To Live (TTL) on the Azure Integration Runtime used by the Data Flow activities, keeping the Spark cluster warm for a window after the first activity starts it — subsequent Data Flow activities in the same nightly run window reuse that warm cluster instead of each paying a multi-minute cold start. I'd size the TTL to just cover the expected pipeline window (not indefinitely, which wastes cost on idle time), and where a step genuinely doesn't need Spark-level transformation, I'd replace it with a Copy Activity to avoid touching the Data Flow cluster at all for that step.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How would you implement a Slowly Changing Dimension (SCD Type 2) pattern using ADF?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>A Mapping Data Flow with an "Alter Row" transformation is the standard approach: incoming records are compared against the current dimension table (via a lookup/join on business key), and rows are classified as new inserts, unchanged, or changed. For changed rows, the existing "current" record is updated to set an end-date and is-current flag to false, and a new row is inserted with the new attribute values, a fresh start-date, and is-current set to true — all handled by the Alter Row policies (Insert/Update conditions) feeding a sink configured for upsert. This keeps full history of attribute changes over time, which is the whole point of SCD Type 2.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "What's your approach to disaster recovery / business continuity for a Data Factory?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>Because ADF pipeline definitions are just JSON stored in Git, the "backup" is really the Git repository itself plus the CI/CD deployment pipeline — recreating a factory in a new region is a matter of redeploying the same ARM templates there. For actual regional failover of running workloads, I'd design for it explicitly: keep source/sink storage geo-redundant, ensure Self-Hosted IR nodes exist in more than one location if on-prem connectivity is critical, and have a documented (ideally tested) runbook for redeploying the factory and re-pointing triggers in a secondary region. I'd also make sure control tables (watermarks, run history) used for incremental loads are themselves resilient, since losing that state complicates a clean recovery.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How do you prevent secret leakage in ADF pipelines that call external APIs?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>API keys and tokens live in Key Vault, referenced by name in the Linked Service or Web Activity configuration rather than typed inline. I'm careful about where dynamic content might inadvertently echo a secret — for example, never building an alert message or log string that concatenates a full connection string or API response containing a token. I also review Web Activity bodies and headers specifically, since they're a common place for someone to paste a raw key "just to get it working" during development and forget to move it to Key Vault before publishing.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How would you migrate 200 legacy SSIS packages into Azure — lift-and-shift or rebuild?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>I wouldn't treat it as all-or-nothing. Packages that are simple, stable, and rarely touched are strong lift-and-shift candidates onto Azure-SSIS IR — fast migration, minimal risk, minimal rewrite cost. Packages that are business-critical, frequently modified, or already causing maintenance pain are better rebuilt natively as ADF pipelines (or Data Flows), since that unlocks parameterization, better monitoring, and cheaper long-term operation without the SSIS runtime dependency. I'd triage the 200 packages by complexity and change-frequency first, lift-and-shift the low-risk majority quickly to get off any on-prem infrastructure deadline, and prioritize native rebuilds for the highest-value, highest-friction packages over time.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How do you handle a pipeline that needs to process files that arrive out of order or late?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>I'd avoid relying purely on file arrival order and instead make processing idempotent and keyed by the file's actual business date/identifier embedded in its name or content, not by when it happened to land. An event-based trigger combined with a control table tracking which business dates have been fully processed lets a late file simply trigger reprocessing of its specific date's Silver/Gold outputs via an upsert pattern, without corrupting or double-counting already-processed data. For genuinely time-windowed aggregations, a Tumbling Window trigger's backfill capability handles a late-arriving window cleanly, since each window is independently trackable and re-runnable.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How do you enforce naming conventions and governance across dozens of pipelines built by different teams?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>I'd document a naming/tagging standard (pipeline, activity, dataset, trigger prefixes tied to layer and domain) and enforce it structurally rather than by asking nicely — a PR template/checklist in the Git-based CI process, and ideally an automated linting step in the CI pipeline that scans exported ARM templates or pipeline JSON for naming pattern violations before allowing a merge. I'd also standardize on shared, parameterized Linked Services and a small set of reusable pipeline templates for common patterns (metadata-driven copy, SCD Type 2) so teams aren't reinventing slightly-different versions of the same pipeline, which is where governance tends to erode fastest.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LEVEL 15: GLOSSARY -->
+    <section class="level" id="glossary">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--gold-soft);">📖</div>
+        <div><div class="level-eyebrow">Level 15 — Reference</div><h2>Glossary — Speak Like a Pro</h2></div>
+      </div>
+      <p class="level-tagline">Every term gets two definitions: the simple one, and the one you'd use in front of a hiring panel.</p>
+
+      <div class="glossary-grid">
+        <div class="card">
+          <h3 class="glossary-cat-title">🏗️ Core Concepts</h3>
+          <div class="term"><div class="term-name">Data Factory</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>the whole toy factory that holds everything else.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>the top-level Azure resource — a serverless control plane hosting pipelines, datasets, linked services, and triggers.</div>
+          </div>
+          <div class="term"><div class="term-name">Pipeline</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a recipe — a sequence of steps to run.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a logical grouping of activities that together perform a task, executed as a unit and tracked as a single "pipeline run."</div>
+          </div>
+          <div class="term"><div class="term-name">Activity</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>one single step in the recipe.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a single processing step within a pipeline — Move &amp; Transform (Copy, Data Flow) or Control Flow (ForEach, If, Lookup, etc.).</div>
+          </div>
+          <div class="term"><div class="term-name">Linked Service</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>the address book entry for how to reach a system.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a connection definition (endpoint, authentication) to an external or Azure-native data store or compute service.</div>
+          </div>
+          <div class="term"><div class="term-name">Dataset</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>the specific labeled box to fetch through that connection.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a named view of data (table, file path, query) referencing exactly one Linked Service, used as an activity's input or output.</div>
+          </div>
+          <div class="term"><div class="term-name">Trigger</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>the alarm clock that starts a pipeline.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>an event that initiates a pipeline run — Schedule, Tumbling Window, Event-based, or Manual.</div>
+          </div>
+          <div class="term"><div class="term-name">Integration Runtime</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>the delivery truck that actually does the moving.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>the compute infrastructure executing activities — Azure IR (managed), Self-Hosted IR (on-prem/private network agent), or Azure-SSIS IR.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="glossary-cat-title">🚚 Data Movement &amp; Transform</h3>
+          <div class="term"><div class="term-name">Copy Activity</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>move data from A to B.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>the core data-movement activity, supporting 100+ connectors, with tunable parallelism (DIUs, parallel copies, partitioning).</div>
+          </div>
+          <div class="term"><div class="term-name">Mapping Data Flow</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a drag-and-drop way to filter, join, and total data.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a visually authored transformation, compiled to Spark and executed on an ADF-managed cluster.</div>
+          </div>
+          <div class="term"><div class="term-name">DIU</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>how many "workers" are assigned to one copy job.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>Data Integration Unit — a measure of compute power (CPU, memory, network) allocated to a Copy Activity, billed per hour used.</div>
+          </div>
+          <div class="term"><div class="term-name">Source / Sink</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>where data comes from (source) and where it ends up (sink).</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>the input and output endpoints of a Copy Activity or Data Flow, each configured via a Dataset and Linked Service.</div>
+          </div>
+          <div class="term"><div class="term-name">Schema drift</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>when a source's columns change without warning.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>unplanned changes in source structure (new/removed/renamed columns) that a pipeline must tolerate or explicitly handle, especially in Data Flows via "Allow schema drift."</div>
+          </div>
+          <div class="term"><div class="term-name">SCD Type 2</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>keeping a full history every time something about a record changes.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a Slowly Changing Dimension pattern that preserves historical attribute values via new rows with start/end dates and an is-current flag, typically built with a Data Flow's Alter Row transformation.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="glossary-cat-title">🧩 Orchestration &amp; Control</h3>
+          <div class="term"><div class="term-name">ForEach</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>repeat a step for every item in a list.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a control-flow activity that iterates over a dynamic array, running nested activities once per item via <code>@item()</code>.</div>
+          </div>
+          <div class="term"><div class="term-name">Lookup</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>go check a list or a single value before deciding what to do next.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>an activity that retrieves a dataset or single value (e.g. a query result, a control table row) for use later in the pipeline.</div>
+          </div>
+          <div class="term"><div class="term-name">Execute Pipeline</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>calling another recipe from inside this one.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>an activity that invokes a child pipeline from a parent, enabling modular, independently-runnable pipeline design.</div>
+          </div>
+          <div class="term"><div class="term-name">Dependency condition</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>the rule for when the next step is allowed to run.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>the condition (Succeeded, Failed, Completed, Skipped) linking two activities, used to build ADF's try/catch/finally-style error handling.</div>
+          </div>
+          <div class="term"><div class="term-name">Parameter vs. Variable</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a blank you fill in before starting (parameter) vs. a sticky note you update while running (variable).</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>parameters are immutable per pipeline run and passed in at execution; variables are mutable during a run via Set/Append Variable activities.</div>
+          </div>
+          <div class="term"><div class="term-name">Global Parameter</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a setting shared by the whole factory, not just one pipeline.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a factory-scoped (not pipeline-scoped) constant, useful for environment-level configuration referenced across many pipelines.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="glossary-cat-title">🔐 Production &amp; Governance</h3>
+          <div class="term"><div class="term-name">Managed Identity</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>ADF's own ID badge, so it doesn't need a written password.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>an Azure AD identity automatically assigned to the Data Factory, used to authenticate to other Azure services via RBAC instead of stored credentials.</div>
+          </div>
+          <div class="term"><div class="term-name">Key Vault</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>the shared safe where every password lives.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>an Azure service for securely storing and controlling access to secrets, keys, and certificates, referenced by Linked Services instead of hardcoding credentials.</div>
+          </div>
+          <div class="term"><div class="term-name">Git integration / CI/CD</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>keeping your recipe book version-tracked and promoting changes carefully instead of editing live.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>connecting the Dev Data Factory to a Git repo for source control, with ARM template-based automated deployment promoting changes to Test/Prod.</div>
+          </div>
+          <div class="term"><div class="term-name">ARM Template</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a shopping list precise enough to rebuild the exact same setup elsewhere.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a JSON infrastructure-as-code definition of a Data Factory's resources, generated on publish and deployed via CI/CD with environment-specific parameters.</div>
+          </div>
+          <div class="term"><div class="term-name">Watermark</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a bookmark tracking how far you've already read.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a stored value (timestamp/ID) marking the last successfully loaded record, used to drive incremental/delta loading instead of full reloads.</div>
+          </div>
+          <div class="term"><div class="term-name">Monitor tab</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>the tracking page showing every delivery's live status.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>ADF's built-in UI for viewing pipeline/trigger run history, durations, and errors — often paired with Azure Monitor/Log Analytics for alerting at scale.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUIZ -->
+    <section class="level" id="quiz">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--rose-soft);">🎯</div>
+        <div><div class="level-eyebrow">Level 16</div><h2>Test Your Powers — Hero Quiz</h2></div>
+      </div>
+      <p class="level-tagline">18 questions spanning everything above. Every answer — right or wrong — comes with an explanation.</p>
+      <div class="quiz-card" id="quizCard"></div>
+    </section>
+
+    <!-- RECAP -->
+    <section class="level" id="recap">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--gold-soft);">⭐</div>
+        <div><div class="level-eyebrow">Hero status</div><h2>One-Page Recap &amp; Official Docs</h2></div>
+      </div>
+      <p class="level-tagline">If you only remember one line per topic, remember these — then bookmark the real documentation below.</p>
+
+      <div class="recap">
+        <div class="chip"><span class="k">Pipeline</span>A recipe of activities, run as one tracked unit.</div>
+        <div class="chip"><span class="k">Linked Service</span>How to connect. Dataset: what to fetch through it.</div>
+        <div class="chip"><span class="k">Integration Runtime</span>The truck that actually moves the data — cloud, on-prem, or SSIS.</div>
+        <div class="chip"><span class="k">Copy vs Data Flow</span>Pure movement vs. real Spark-powered transformation.</div>
+        <div class="chip"><span class="k">Trigger</span>The alarm clock — Schedule, Tumbling Window, or Event-based.</div>
+        <div class="chip"><span class="k">Dependency condition</span>Failed = catch. Completed = finally.</div>
+        <div class="chip"><span class="k">Managed Identity</span>ADF's own ID badge — no stored passwords.</div>
+        <div class="chip"><span class="k">Key Vault</span>The shared safe for the secrets you can't avoid.</div>
+        <div class="chip"><span class="k">CI/CD</span>Only Dev is Git-connected — Test/Prod are deployment targets.</div>
+        <div class="chip"><span class="k">DIU</span>How many workers you pay for on a Copy Activity.</div>
+        <div class="chip"><span class="k">Watermark</span>The bookmark that makes incremental loads possible.</div>
+        <div class="chip"><span class="k">Medallion</span>Bronze → Silver → Gold, each layer independently fixable.</div>
+      </div>
+
+      <div class="card" style="margin-top:22px;">
+        <h3>📚 Official documentation &amp; further learning</h3>
+        <div class="doclinks">
+          <a href="https://learn.microsoft.com/en-us/azure/data-factory/" target="_blank" rel="noopener">Azure Data Factory Documentation <span class="desc">— the canonical reference for every concept in this guide</span></a>
+          <a href="https://learn.microsoft.com/en-us/azure/data-factory/concepts-pipelines-activities" target="_blank" rel="noopener">Pipelines and Activities Concepts <span class="desc">— the full activity type reference</span></a>
+          <a href="https://learn.microsoft.com/en-us/azure/data-factory/concepts-data-flow-overview" target="_blank" rel="noopener">Mapping Data Flow Overview <span class="desc">— transformations, Alter Row, and performance tuning</span></a>
+          <a href="https://learn.microsoft.com/en-us/azure/data-factory/copy-activity-performance" target="_blank" rel="noopener">Copy Activity Performance Guide <span class="desc">— DIUs, parallel copy, and partitioning in depth</span></a>
+          <a href="https://learn.microsoft.com/en-us/azure/data-factory/continuous-integration-delivery" target="_blank" rel="noopener">CI/CD for Azure Data Factory <span class="desc">— Git integration and ARM template deployment</span></a>
+          <a href="https://learn.microsoft.com/en-us/azure/data-factory/create-self-hosted-integration-runtime" target="_blank" rel="noopener">Self-Hosted Integration Runtime Guide <span class="desc">— setup, scaling, and high availability</span></a>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Built to take you from "what's a pipeline?" to confidently whiteboarding a bank's data platform in a 15+ year architect interview. Explain the simple version out loud first, then the architect-level version — that's the fastest way to sound like you've actually run this in production. 🏭
+    </footer>
+  </main>
+</div>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+  const hamburger = document.getElementById('hamburgerBtn');
+  function openSidebar(){ sidebar.classList.add('open'); overlay.classList.add('show'); }
+  function closeSidebar(){ sidebar.classList.remove('open'); overlay.classList.remove('show'); }
+  hamburger.addEventListener('click', () => { sidebar.classList.contains('open') ? closeSidebar() : openSidebar(); });
+  overlay.addEventListener('click', closeSidebar);
+  document.querySelectorAll('#levelNav a').forEach(a => a.addEventListener('click', closeSidebar));
+
+  const links = Array.from(document.querySelectorAll('#levelNav a'));
+  const sections = links.map(a => document.querySelector(a.getAttribute('href')));
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = '#' + entry.target.id;
+        links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === id));
+      }
+    });
+  }, { rootMargin: '-40% 0px -50% 0px', threshold: 0 });
+  sections.forEach(s => { if (s) observer.observe(s); });
+
+  function toggleAnswer(btn){
+    const box = btn.nextElementSibling;
+    box.classList.toggle('show');
+    btn.classList.toggle('open');
+  }
+
+  const quizData = [
+    { q: "In one sentence, what is Azure Data Factory primarily used for?",
+      options: ["Storing large datasets permanently", "Orchestrating, moving, and transforming data across many different sources on a schedule", "Hosting website front-ends", "Running virtual machines"],
+      correct: 1,
+      explanation: "ADF is a cloud-native orchestration service — it connects, moves, and transforms data at scale via pipelines, not a storage or general compute/hosting service." },
+    { q: "What's the difference between a Linked Service and a Dataset?",
+      options: ["They are the same thing with two names", "A Linked Service defines how to connect to a system; a Dataset defines what specific data to fetch through that connection", "A Dataset defines credentials; a Linked Service defines table names", "Linked Services are only used for triggers"],
+      correct: 1,
+      explanation: "Linked Service = connection info (how). Dataset = the specific table/file/query (what), always referencing exactly one Linked Service." },
+    { q: "Why should secrets in a Linked Service reference Azure Key Vault instead of being typed in directly?",
+      options: ["Key Vault makes pipelines run faster", "It avoids storing secrets in plaintext in the factory's definition, centralizes rotation, and enables auditable, revocable access", "It's required for every Linked Service type with no exceptions", "It removes the need for a Managed Identity"],
+      correct: 1,
+      explanation: "Hardcoded secrets are visible in the factory JSON/Git history and painful to rotate. Key Vault centralizes secret storage, rotation, and access auditing instead." },
+    { q: "What does a ForEach activity do in an ADF pipeline?",
+      options: ["It deletes duplicate rows automatically", "It repeats a set of nested activities once for each item in a dynamic array", "It only runs once, regardless of input size", "It's used exclusively for error handling"],
+      correct: 1,
+      explanation: "ForEach iterates over a dynamic list (e.g. from a Lookup activity), running its nested activities once per item, accessed via @item() — key to metadata-driven pipelines." },
+    { q: "What does Mapping Data Flow actually run on behind its visual drag-and-drop interface?",
+      options: ["A single-threaded Python script", "A managed Apache Spark cluster, compiled from the visual design at runtime", "Azure Functions", "An on-premises SQL Server instance"],
+      correct: 1,
+      explanation: "Data Flows compile the visual transformation graph into Spark code, executed on an Azure-managed Spark cluster — which is why the first run has a real 'cold start' delay." },
+    { q: "When would you prefer a Copy Activity over a Mapping Data Flow?",
+      options: ["Whenever any transformation logic is needed, no matter how simple", "When you just need to move data with little or no transformation — it's cheaper and avoids spinning up a Spark cluster", "Copy Activity is always slower, so it should be avoided", "Only when the source is on-premises"],
+      correct: 1,
+      explanation: "Copy Activity is the cheapest, fastest option for pure data movement. Data Flow makes sense once you need real transformation logic like joins or aggregations." },
+    { q: "What's the key difference between a Schedule trigger and a Tumbling Window trigger?",
+      options: ["They are functionally identical", "Tumbling Window tracks each time slice as an independently retryable, backfillable unit; Schedule just fires the pipeline at set times", "Schedule triggers cost more to run", "Tumbling Window can only run once per day"],
+      correct: 1,
+      explanation: "Tumbling Window treats each time slice as a first-class, trackable object supporting backfill, per-window retries, and dependency chaining — a plain Schedule trigger doesn't." },
+    { q: "What's the difference between a pipeline parameter and a pipeline variable?",
+      options: ["No real difference — interchangeable terms", "A parameter is set once at run start and stays fixed; a variable can be updated mid-run via Set/Append Variable activities", "Variables can only hold numbers", "Parameters can be changed mid-run, variables cannot"],
+      correct: 1,
+      explanation: "Parameters are immutable per run, passed in at the start. Variables are mutable during the run itself, letting the pipeline 'remember' something computed partway through." },
+    { q: "When is a Self-Hosted Integration Runtime required?",
+      options: ["Whenever you use a Copy Activity", "When a data source or sink isn't reachable from Azure's public network, such as on-premises systems or private VNet resources", "Only when using Mapping Data Flows", "It's required for every single ADF pipeline"],
+      correct: 1,
+      explanation: "Self-Hosted IR is needed specifically when Azure's public network can't directly reach the source/sink — its agent runs inside the private network and makes outbound-only connections to Azure." },
+    { q: "How do you make a Self-Hosted Integration Runtime highly available?",
+      options: ["You can't — it's a single point of failure by design", "Install the agent on multiple machines registered under the same logical Integration Runtime, enabling load balancing and failover", "Switch to Azure IR instead", "Increase the DIU setting"],
+      correct: 1,
+      explanation: "Registering multiple nodes under one Self-Hosted IR gives both failover (if one node goes down) and increased throughput (more nodes processing in parallel)." },
+    { q: "Since ADF has no native try/catch keyword, how is a 'catch' branch typically built?",
+      options: ["It's impossible to handle errors in ADF", "An activity following the risky one with a 'Failed' dependency condition, so it only runs if the previous activity failed", "By setting retry count to 0", "By using only Copy Activities, which never fail"],
+      correct: 1,
+      explanation: "A 'Failed' dependency condition on a downstream activity makes it act as the catch branch — it only executes when the upstream activity failed. 'Completed' acts as a finally branch." },
+    { q: "What does a retry policy on an activity actually control?",
+      options: ["How many times the whole pipeline restarts from the beginning", "How many times that specific activity automatically re-attempts itself after a failure, and the interval between attempts", "The maximum size of data it can move", "Which Integration Runtime it uses"],
+      correct: 1,
+      explanation: "A retry policy is scoped to a single activity — it automatically re-attempts that activity a set number of times with a configured interval before considering it truly failed." },
+    { q: "What's the main benefit of using ADF's Managed Identity instead of storing connection secrets?",
+      options: ["It makes pipelines run in parallel automatically", "It lets ADF authenticate to other Azure services via RBAC roles, eliminating stored credentials entirely for supported services", "It's required for all on-premises connections", "It automatically encrypts all pipeline logs"],
+      correct: 1,
+      explanation: "Managed Identity is ADF's own Azure AD identity — granting it RBAC roles on target services (like Storage Blob Data Contributor) removes the need for stored keys or passwords for those connections." },
+    { q: "In a standard ADF CI/CD setup, which Data Factory environment is typically connected directly to Git?",
+      options: ["All environments equally — Dev, Test, and Prod", "Only Dev — Test and Prod are deployment targets via ARM templates, not directly edited", "Only Prod, for audit purposes", "None — Git integration isn't used with ADF"],
+      correct: 1,
+      explanation: "Only the Dev factory is Git-connected in the standard pattern. Test and Prod receive changes exclusively through automated ARM template deployment, never direct manual edits." },
+    { q: "What does a DIU (Data Integration Unit) control in a Copy Activity?",
+      options: ["The number of Linked Services allowed", "The amount of compute power (CPU, memory, network) allocated to that copy job, affecting both speed and cost", "How often the pipeline triggers", "The maximum number of pipelines in a factory"],
+      correct: 1,
+      explanation: "DIUs measure the compute power assigned to a Copy Activity — more DIUs can move data faster, at a higher hourly cost, but only help if the source/sink can actually sustain that throughput." },
+    { q: "What's a practical way to reduce repeated Data Flow cold-start cost across several nightly Data Flow activities?",
+      options: ["Disable Adaptive Query Execution", "Set a Time To Live (TTL) on the Data Flow's Integration Runtime so the Spark cluster stays warm across the run window", "Switch every Data Flow to a Copy Activity regardless of logic needed", "Increase the number of DIUs"],
+      correct: 1,
+      explanation: "TTL keeps the underlying Spark cluster warm for a configured window, so subsequent Data Flow activities in the same run reuse it instead of each paying a multi-minute cold start." },
+    { q: "What's the core idea behind watermark-based incremental loading?",
+      options: ["Reloading the entire source table every single run", "Storing the last successfully loaded value and filtering the next run's source query to only rows newer than that value", "Randomly sampling a percentage of rows each run", "Always loading exactly the last 24 hours of data regardless of gaps"],
+      correct: 1,
+      explanation: "A watermark (timestamp or ID) marks how far incremental loading has already progressed — the next run filters source data to only what's newer, avoiding a full reload every time." },
+    { q: "In the Medallion architecture as implemented in ADF, what's the main benefit of splitting Bronze, Silver, and Gold into separate child pipelines?",
+      options: ["It's required by Azure and cannot be done any other way", "Any layer can be independently re-run, debugged, or backfilled without needing to redo the others", "It reduces the number of Linked Services needed to zero", "Separate pipelines always run faster than one combined pipeline"],
+      correct: 1,
+      explanation: "Isolating each layer into its own pipeline mirrors the storage-layer isolation benefit of Bronze/Silver/Gold — a bug in Silver can be fixed and rerun without re-ingesting Bronze or recomputing Gold from scratch unnecessarily." }
+  ];
+
+  let quizIndex = 0;
+  let quizScore = 0;
+  let quizAnswered = false;
+
+  function renderQuiz(){
+    const card = document.getElementById('quizCard');
+    if (quizIndex >= quizData.length){
+      card.innerHTML = `
+        <div class="quiz-result">
+          <div style="font-size:13px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;">Quiz complete</div>
+          <div class="score">${quizScore} / ${quizData.length}</div>
+          <p>${quizScore === quizData.length ? "Full marks — you're ready to whiteboard an ADF architecture with confidence. 🏭" : quizScore >= quizData.length * 0.7 ? "Solid! Revisit the levels you missed before your interview." : "Good start — scroll back through the levels you missed and try again."}</p>
+          <button class="quiz-retake" onclick="restartQuiz()">Retake quiz</button>
+        </div>`;
+      return;
+    }
+    const item = quizData[quizIndex];
+    quizAnswered = false;
+    const pct = Math.round((quizIndex / quizData.length) * 100);
+    card.innerHTML = `
+      <div class="quiz-progress"><span>Question ${quizIndex + 1} of ${quizData.length}</span><span>Score: ${quizScore}</span></div>
+      <div class="quiz-bar"><div class="quiz-bar-fill" style="width:${pct}%;"></div></div>
+      <div class="quiz-q">${item.q}</div>
+      <div class="quiz-options" id="quizOptions"></div>
+      <div class="quiz-explain" id="quizExplain"></div>
+      <button class="quiz-next" id="quizNextBtn" onclick="nextQuiz()">Next question →</button>
+    `;
+    const optWrap = document.getElementById('quizOptions');
+    item.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'quiz-opt';
+      btn.textContent = opt;
+      btn.onclick = () => selectQuizOption(i);
+      optWrap.appendChild(btn);
+    });
+  }
+
+  function selectQuizOption(i){
+    if (quizAnswered) return;
+    quizAnswered = true;
+    const item = quizData[quizIndex];
+    const opts = document.querySelectorAll('#quizOptions .quiz-opt');
+    opts.forEach((btn, idx) => {
+      btn.disabled = true;
+      if (idx === item.correct) btn.classList.add('correct');
+      else if (idx === i) btn.classList.add('incorrect');
+    });
+    if (i === item.correct) quizScore++;
+    const explainBox = document.getElementById('quizExplain');
+    explainBox.textContent = (i === item.correct ? "✅ Correct — " : "❌ Not quite — ") + item.explanation;
+    explainBox.classList.add('show');
+    document.getElementById('quizNextBtn').classList.add('show');
+  }
+
+  function nextQuiz(){ quizIndex++; renderQuiz(); }
+  function restartQuiz(){ quizIndex = 0; quizScore = 0; renderQuiz(); }
+
+  renderQuiz();
+</script>
+</body>
+</html>
