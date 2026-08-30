@@ -1,0 +1,1646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lakehouse Academy — Databricks Zero to Hero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F7F6F4;
+    --card:#FFFFFF;
+    --ink:#22262E;
+    --ink-soft:#5B6472;
+    --line:#E4E1DC;
+    --flame:#FF3621;
+    --flame-soft:#FFE0DA;
+    --lake:#1B6FA8;
+    --lake-soft:#DCEEF8;
+    --gold:#F2B705;
+    --gold-soft:#FDF1CC;
+    --violet:#7A5FD1;
+    --violet-soft:#EDE7FB;
+    --green:#2E8B57;
+    --green-soft:#E2F3EA;
+    --radius:18px;
+    --shadow: 0 6px 20px rgba(34,38,46,0.08);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{ margin:0; background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif; line-height:1.62; }
+  h1,h2,h3,.display{ font-family:'Manrope',sans-serif; color:var(--ink); line-height:1.18; }
+  code, pre, .mono{ font-family:'JetBrains Mono',monospace; }
+  a{ color:inherit; }
+  img,svg{ max-width:100%; }
+
+  .app{ display:flex; min-height:100vh; }
+
+  .sidebar{
+    width:284px; flex-shrink:0; background:var(--card); border-right:1px solid var(--line);
+    position:sticky; top:0; height:100vh; overflow-y:auto; padding:22px 16px 40px; z-index:40;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; padding:4px 8px 18px; border-bottom:1px dashed var(--line); margin-bottom:14px; }
+  .brand .mark{
+    width:38px;height:38px;border-radius:11px; flex-shrink:0;
+    background:linear-gradient(135deg,var(--flame),var(--gold));
+    display:flex; align-items:center; justify-content:center; font-size:18px; color:#fff;
+  }
+  .brand .name{ font-family:'Manrope'; font-weight:700; font-size:15px; }
+  .brand .sub{ font-size:11px; color:var(--ink-soft); font-weight:500; }
+
+  nav.levels{ display:flex; flex-direction:column; gap:3px; }
+  nav.levels a{
+    display:flex; align-items:center; gap:10px; text-decoration:none; padding:9px 10px;
+    border-radius:12px; font-size:12.8px; font-weight:600; color:var(--ink-soft);
+    transition:background .15s ease, color .15s ease;
+  }
+  nav.levels a:hover{ background:var(--bg); color:var(--ink); }
+  nav.levels a.active{ background:var(--flame-soft); color:var(--flame); }
+  nav.levels a .num{
+    width:22px;height:22px;border-radius:7px; background:var(--line); color:var(--ink);
+    font-size:10.5px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  nav.levels a.active .num{ background:var(--flame); color:#fff; }
+  .sidebar-foot{ margin-top:18px; padding-top:14px; border-top:1px dashed var(--line); font-size:11.5px; color:var(--ink-soft); }
+
+  .topbar{
+    display:none; position:sticky; top:0; z-index:50; background:var(--card); border-bottom:1px solid var(--line);
+    padding:12px 16px; align-items:center; justify-content:space-between;
+  }
+  .topbar .brand{ border:none; padding:0; margin:0; }
+  .hamburger{
+    width:40px;height:40px;border-radius:10px; border:1px solid var(--line); background:var(--bg);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:18px;
+  }
+  main{ flex:1; min-width:0; }
+
+  .hero{ padding:56px 48px 20px; max-width:1000px; }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px; background:var(--gold-soft); color:#8A6300;
+    padding:6px 14px; border-radius:999px; font-size:12.5px; font-weight:700; margin-bottom:18px;
+  }
+  .hero h1{ font-size:clamp(30px,4.4vw,48px); margin:0 0 14px; }
+  .hero h1 .hi{ color:var(--flame); }
+  .hero p.lede{ font-size:17px; color:var(--ink-soft); max-width:660px; margin:0 0 30px; }
+
+  .lakehouse-strip{ display:flex; gap:14px; margin:12px 0 40px; flex-wrap:wrap; }
+  .lakehouse-strip .node{
+    flex:1; min-width:130px; background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:14px 16px; box-shadow:var(--shadow); position:relative; overflow:hidden;
+  }
+  .lakehouse-strip .node::before{ content:''; position:absolute; top:0; left:0; width:100%; height:3px; }
+  .lakehouse-strip .node .n{ font-family:'Manrope'; font-weight:800; font-size:14.5px; }
+  .lakehouse-strip .node .l{ font-size:11px; color:var(--ink-soft); font-weight:600; margin-top:2px; }
+
+  section.level{ padding:54px 48px; max-width:1000px; border-top:1px dashed var(--line); scroll-margin-top:20px; }
+  section.level:first-of-type{ border-top:none; }
+
+  .level-head{ display:flex; align-items:center; gap:14px; margin-bottom:6px; }
+  .level-badge{
+    width:46px;height:46px;border-radius:14px; display:flex;align-items:center;justify-content:center;
+    font-size:22px; flex-shrink:0; box-shadow:var(--shadow);
+  }
+  .level-eyebrow{ font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); }
+  .level-head h2{ font-size:26px; margin:2px 0 0; }
+  .level-tagline{ font-size:15.5px; color:var(--ink-soft); margin:10px 0 26px; max-width:700px; }
+
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:22px 24px; box-shadow:var(--shadow); margin-bottom:20px; }
+  .card h3{ font-size:15px; margin:0 0 10px; display:flex; align-items:center; gap:8px; }
+  .card p{ margin:0; font-size:14.3px; color:var(--ink-soft); }
+  .card p + p{ margin-top:8px; }
+
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:760px){ .grid2{ grid-template-columns:1fr; } }
+
+  .analogy{ border-left:4px solid var(--gold); }
+  .analogy h3{ color:#8A6300; }
+  .usecase{ border-left:4px solid var(--lake); }
+  .usecase h3{ color:#12547E; }
+
+  .diagram-wrap{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:26px; box-shadow:var(--shadow); margin:22px 0; }
+  .diagram-title{ font-size:12.5px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); margin-bottom:14px; }
+  .diagram-caption{ font-size:12.5px; color:var(--ink-soft); text-align:center; margin-top:10px; }
+
+  pre.code{
+    background:#1A1D23; color:#E8EAED; border-radius:14px; padding:20px 22px; overflow-x:auto;
+    font-size:12.6px; line-height:1.7; margin:20px 0; box-shadow:var(--shadow);
+  }
+  pre.code .c1{ color:#7FD8A8; }
+  pre.code .c2{ color:#F2B705; }
+  pre.code .c3{ color:#FF8A73; }
+  pre.code .c4{ color:#9AA5B1; font-style:italic; }
+  .code-label{ display:inline-block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); margin-bottom:8px; }
+
+  .challenge{ background:var(--violet-soft); border:1px dashed var(--violet); border-radius:var(--radius); padding:20px 24px; margin-top:24px; }
+  .challenge h3{ color:#5641A5; margin:0 0 8px; }
+  .challenge p{ margin:0; font-size:14.3px; color:#4A3990; }
+
+  button.interview-tag{
+    display:inline-flex; align-items:center; gap:8px; background:var(--flame-soft); color:var(--flame);
+    font-size:12px; font-weight:700; font-family:'Inter'; padding:9px 16px; border-radius:999px; border:none;
+    cursor:pointer; margin-top:22px; transition:background .15s ease;
+  }
+  button.interview-tag:hover{ background:#FFC9BE; }
+  button.interview-tag .chevron{ display:inline-block; font-size:11px; transition:transform .2s ease; }
+  button.interview-tag.open .chevron{ transform:rotate(180deg); }
+  .answer-box{ display:none; margin-top:12px; background:var(--card); border:1px solid var(--line); border-left:4px solid var(--flame); border-radius:14px; padding:18px 22px; box-shadow:var(--shadow); }
+  .answer-box.show{ display:block; }
+  .answer-label{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--flame); margin-bottom:8px; }
+  .answer-box p{ margin:0; font-size:14.3px; color:var(--ink-soft); }
+  .answer-box p + p{ margin-top:8px; }
+
+  .qbank{ margin-top:10px; }
+  .qbank .qitem{ margin-bottom:14px; }
+
+  .project-card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:26px 28px; margin-bottom:24px; }
+  .project-tag{ display:inline-block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; padding:5px 12px; border-radius:999px; margin-bottom:12px; }
+
+  .recap{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:8px; }
+  @media (max-width:760px){ .recap{ grid-template-columns:1fr 1fr; } }
+  @media (max-width:520px){ .recap{ grid-template-columns:1fr; } }
+  .recap .chip{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; font-size:12.8px; font-weight:600; }
+  .recap .chip .k{ display:block; font-size:11px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; margin-bottom:4px; }
+
+  .doclinks{ display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+  .doclinks a{ font-size:13.5px; font-weight:600; color:var(--violet); text-decoration:none; }
+  .doclinks a:hover{ text-decoration:underline; }
+  .doclinks .desc{ font-weight:400; color:var(--ink-soft); font-size:12.5px; }
+
+  footer{ padding:40px 48px 70px; max-width:1000px; color:var(--ink-soft); font-size:13px; }
+
+  .quiz-card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:26px 28px; box-shadow:var(--shadow); }
+  .quiz-progress{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; font-size:12.5px; color:var(--ink-soft); font-weight:600; }
+  .quiz-bar{ height:8px; border-radius:999px; background:var(--bg); overflow:hidden; margin-bottom:22px; }
+  .quiz-bar-fill{ height:100%; background:linear-gradient(90deg,var(--flame),var(--gold)); border-radius:999px; transition:width .25s ease; }
+  .quiz-q{ font-size:16.5px; font-weight:700; margin-bottom:16px; font-family:'Manrope'; }
+  .quiz-options{ display:flex; flex-direction:column; gap:10px; margin-bottom:6px; }
+  .quiz-opt{ text-align:left; padding:13px 16px; border-radius:12px; border:1.5px solid var(--line); background:var(--bg); font-size:13.6px; font-family:'Inter'; color:var(--ink); cursor:pointer; transition:border-color .15s ease, background .15s ease; }
+  .quiz-opt:hover:not(:disabled){ border-color:var(--flame); }
+  .quiz-opt:disabled{ cursor:default; }
+  .quiz-opt.correct{ background:var(--green-soft); border-color:var(--green); font-weight:700; }
+  .quiz-opt.incorrect{ background:var(--flame-soft); border-color:var(--flame); font-weight:700; }
+  .quiz-explain{ margin-top:16px; padding:16px 18px; border-radius:14px; background:var(--gold-soft); border:1px dashed var(--gold); font-size:13.2px; color:#7A5200; display:none; }
+  .quiz-explain.show{ display:block; }
+  .quiz-next{ margin-top:18px; background:var(--ink); color:#fff; border:none; padding:11px 22px; border-radius:999px; font-weight:700; font-size:13.2px; cursor:pointer; display:none; font-family:'Inter'; }
+  .quiz-next.show{ display:inline-block; }
+  .quiz-result{ text-align:center; padding:20px 0; }
+  .quiz-result .score{ font-family:'Manrope'; font-size:44px; color:var(--flame); margin:6px 0; }
+  .quiz-result p{ color:var(--ink-soft); font-size:14.3px; }
+  .quiz-retake{ margin-top:16px; background:var(--flame); color:#fff; border:none; padding:11px 24px; border-radius:999px; font-weight:700; font-size:13.2px; cursor:pointer; }
+
+  .glossary-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:760px){ .glossary-grid{ grid-template-columns:1fr; } }
+  .glossary-cat-title{ font-family:'Manrope'; font-size:15.5px; margin:0 0 14px; display:flex; align-items:center; gap:8px; }
+  .term{ padding:12px 0; border-top:1px dashed var(--line); }
+  .term:first-child{ border-top:none; padding-top:0; }
+  .term-name{ font-weight:700; font-size:13.6px; margin-bottom:5px; color:var(--ink); font-family:'JetBrains Mono'; }
+  .term-def{ font-size:12.3px; color:var(--ink-soft); margin:3px 0; line-height:1.55; }
+  .term-def .tag{ font-weight:700; margin-right:4px; }
+  .term-def.simple .tag{ color:#8A6300; }
+  .term-def.tech .tag{ color:var(--violet); }
+
+  ::selection{ background:var(--flame); color:#fff; }
+
+  @media (max-width:900px){
+    .sidebar{ position:fixed; left:0; top:0; height:100%; transform:translateX(-100%); transition:transform .25s ease; width:80vw; max-width:300px; }
+    .sidebar.open{ transform:translateX(0); box-shadow:0 0 40px rgba(0,0,0,0.25); }
+    .topbar{ display:flex; }
+    .hero, section.level, footer{ padding-left:22px; padding-right:22px; }
+    .overlay{ display:none; position:fixed; inset:0; background:rgba(34,38,46,0.35); z-index:39; }
+    .overlay.show{ display:block; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="mark">🧱</div>
+    <div><div class="name">Lakehouse Academy</div><div class="sub">Zero → Hero</div></div>
+  </div>
+  <div class="hamburger" id="hamburgerBtn">☰</div>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="mark">🧱</div>
+      <div><div class="name">Lakehouse Academy</div><div class="sub">Zero → Hero</div></div>
+    </div>
+    <nav class="levels" id="levelNav">
+      <a href="#start"><span class="num">0</span> Start Here</a>
+      <a href="#why"><span class="num">1</span> Why Databricks — The Lakehouse</a>
+      <a href="#architecture"><span class="num">2</span> Databricks Architecture</a>
+      <a href="#notebooks"><span class="num">3</span> Notebooks &amp; Clusters</a>
+      <a href="#delta"><span class="num">4</span> Delta Lake Deep Dive</a>
+      <a href="#unity"><span class="num">5</span> Unity Catalog — Governance</a>
+      <a href="#autoloader"><span class="num">6</span> Auto Loader &amp; Ingestion</a>
+      <a href="#workflows"><span class="num">7</span> Databricks Workflows</a>
+      <a href="#dlt"><span class="num">8</span> Delta Live Tables</a>
+      <a href="#perf"><span class="num">9</span> Performance Optimization</a>
+      <a href="#mlflow"><span class="num">10</span> MLflow &amp; Machine Learning</a>
+      <a href="#security"><span class="num">11</span> Security &amp; Networking</a>
+      <a href="#cicd"><span class="num">12</span> CI/CD — Repos &amp; Bundles</a>
+      <a href="#cost"><span class="num">13</span> Cost Optimization</a>
+      <a href="#projects"><span class="num">14</span> Use-Case Projects</a>
+      <a href="#interviewbank"><span class="num">15</span> Senior Interview Bank</a>
+      <a href="#glossary"><span class="num">16</span> Glossary</a>
+      <a href="#quiz"><span class="num">🎯</span> Test Your Powers</a>
+      <a href="#recap"><span class="num">★</span> Recap &amp; Docs</a>
+    </nav>
+    <div class="sidebar-foot">17 levels, real notebook code, 3 hands-on use-case projects, and a senior interview bank — from "what's a lakehouse?" to architecting one on a whiteboard.</div>
+  </aside>
+
+  <main>
+    <div class="hero" id="start">
+      <span class="eyebrow">🧱 Zero to Hero, one notebook at a time</span>
+      <h1>Learn <span class="hi">Databricks</span> like you're building the lakehouse, not memorizing the docs</h1>
+      <p class="lede">Every Databricks idea — Delta Lake, Unity Catalog, Auto Loader — is a plain everyday idea wearing cloud-engineering clothes. This guide takes the costume off first with a simple analogy, then puts it back on with real notebook code, three hands-on projects, and the language a senior interviewer expects.</p>
+
+      <div class="lakehouse-strip">
+        <div class="node" style="border-top:3px solid var(--flame);"><div class="n">🏗️ Platform</div><div class="l">Architecture, notebooks, clusters</div></div>
+        <div class="node" style="border-top:3px solid var(--lake);"><div class="n">🧱 Lakehouse Core</div><div class="l">Delta Lake, Unity Catalog, ingestion</div></div>
+        <div class="node" style="border-top:3px solid var(--gold);"><div class="n">⚙️ Production</div><div class="l">Workflows, DLT, performance, ML</div></div>
+        <div class="node" style="border-top:3px solid var(--violet);"><div class="n">🚀 Mastery</div><div class="l">Projects, security, CI/CD, interviews</div></div>
+      </div>
+    </div>
+
+    <!-- LEVEL 1 -->
+    <section class="level" id="why">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--lake-soft);">🌊</div>
+        <div><div class="level-eyebrow">Level 1</div><h2>Why Databricks — The Lakehouse Story</h2></div>
+      </div>
+      <p class="level-tagline">Before touching a notebook, understand the problem Databricks exists to solve: for years, companies had to choose between a cheap-but-messy data lake and an expensive-but-reliable data warehouse. Databricks exists to end that choice.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Imagine two rooms. One is a huge, cheap storage garage where you can dump literally anything — but it's messy, and you can never be 100% sure what's actually in there or if two people accidentally overwrote each other's stuff. The other is a neat, organized library — reliable and trustworthy, but expensive and picky about what it accepts. A "Lakehouse" is what happens when someone finally builds a garage that's <em>also</em> as organized and trustworthy as the library — Databricks is the company that builds that garage-library combo, powered by a technology called Delta Lake.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A retail company used to dump raw sales data into a cheap data lake, then separately pay for an expensive data warehouse just to get reliable reports. With Databricks, both jobs happen on the <em>same</em> data, in the <em>same</em> place — data engineers, analysts, and data scientists all work off one trustworthy copy instead of three disconnected ones.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Data Lake + Data Warehouse = Lakehouse</div>
+        <svg viewBox="0 0 900 200" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a1" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5B6472"/></marker></defs>
+          <g font-size="11" font-weight="700">
+            <rect x="10" y="30" width="260" height="90" rx="14" fill="#DCEEF8" stroke="#1B6FA8" stroke-width="2"/>
+            <text x="140" y="65" text-anchor="middle" fill="#22262E">Data Lake</text>
+            <text x="140" y="83" text-anchor="middle" font-size="9.5" font-weight="500" fill="#5B6472">cheap, flexible, any format</text>
+            <text x="140" y="98" text-anchor="middle" font-size="9.5" font-weight="500" fill="#5B6472">but messy, no reliability guarantees</text>
+
+            <rect x="630" y="30" width="260" height="90" rx="14" fill="#FDF1CC" stroke="#F2B705" stroke-width="2"/>
+            <text x="760" y="65" text-anchor="middle" fill="#22262E">Data Warehouse</text>
+            <text x="760" y="83" text-anchor="middle" font-size="9.5" font-weight="500" fill="#5B6472">reliable, structured, fast SQL</text>
+            <text x="760" y="98" text-anchor="middle" font-size="9.5" font-weight="500" fill="#5B6472">but expensive, rigid, siloed</text>
+
+            <rect x="330" y="130" width="240" height="55" rx="14" fill="#FFE0DA" stroke="#FF3621" stroke-width="2"/>
+            <text x="450" y="153" text-anchor="middle" fill="#22262E">🧱 Lakehouse</text>
+            <text x="450" y="170" text-anchor="middle" font-size="9.5" font-weight="500" fill="#5B6472">the reliability of both, the cost of neither</text>
+          </g>
+          <g stroke="#5B6472" stroke-width="2" marker-end="url(#a1)" fill="none">
+            <path d="M270 90 L 400 145"/><path d="M630 90 L 500 145"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">Your first Databricks notebook cell</div>
+      <pre class="code"><span class="c4"># Notebooks come pre-connected to a Spark cluster — "spark" is already available</span>
+df = spark.read.format(<span class="c3">"delta"</span>).load(<span class="c3">"/mnt/lake/bronze/sales"</span>)
+
+<span class="c1"># Instantly see results, right below the cell — this is the interactive "notebook" workflow</span>
+display(df.limit(<span class="c3">10</span>))
+
+print(<span class="c3">"Total rows:"</span>, df.count())</pre>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Databricks is built by the original creators of Apache Spark and layers three things on top of open-source Spark: <strong>Delta Lake</strong> (ACID transactions and reliability on top of cheap object storage — the technical foundation that actually makes "lakehouse" possible, not just a marketing word), a <strong>collaborative workspace</strong> (notebooks, Repos, Jobs) unifying data engineering, analytics, and ML on one platform, and <strong>managed, optimized compute</strong> (including the Photon execution engine — a native, vectorized rewrite of Spark's engine, often several times faster than open-source Spark for SQL workloads).</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Think of two "rooms" in your own life that are similarly split — one flexible-but-messy, one reliable-but-restrictive. What would combining them into one "best of both" actually look like?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "What is a Lakehouse, and what problem does it actually solve?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>A Lakehouse is an architecture that brings data-warehouse-style reliability — ACID transactions, schema enforcement, fast structured queries — directly on top of cheap, flexible data lake storage (like Azure Data Lake Storage or S3), instead of maintaining two separate systems. It solves the historical tradeoff where teams had to pick between a cheap-but-unreliable data lake and an expensive-but-rigid data warehouse, often ending up paying for both and syncing data between them. Delta Lake's transaction log is the concrete technology that makes this possible — it's what lets plain files in cheap object storage behave with database-grade reliability.</p>
+        <p><em>Why this answer works:</em> it names the specific mechanism (Delta Lake's transaction log) rather than treating "lakehouse" as a vague marketing buzzword, which signals real hands-on understanding.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 2 -->
+    <section class="level" id="architecture">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--flame-soft);">🏗️</div>
+        <div><div class="level-eyebrow">Level 2</div><h2>Databricks Architecture</h2></div>
+      </div>
+      <p class="level-tagline">Databricks splits itself into two halves living in two different places — understanding that split explains almost every security and networking question you'll ever get asked.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Think of Databricks like ordering from a restaurant's app. The app on your phone (the <strong>Control Plane</strong>, managed entirely by Databricks) handles the menu, your order, and the receipt. The actual kitchen cooking your food (the <strong>Data Plane</strong>) is physically located inside <em>your own</em> restaurant building — your Azure subscription — where your ingredients (data) never have to leave.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A bank using Azure Databricks keeps every byte of customer data inside its own Azure subscription and virtual network at all times — Databricks' Control Plane only ever sees metadata (notebook code, job configuration, cluster status), never the actual sensitive data flowing through the clusters.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Control Plane vs. Data Plane</div>
+        <svg viewBox="0 0 900 220" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5B6472"/></marker></defs>
+          <rect x="10" y="10" width="400" height="200" rx="16" fill="#EDE7FB" stroke="#7A5FD1" stroke-width="2"/>
+          <text x="210" y="35" text-anchor="middle" font-weight="700" fill="#22262E">Control Plane (Databricks-managed)</text>
+          <g font-size="10" font-weight="600">
+            <rect x="30" y="55" width="160" height="45" rx="8" fill="#fff" stroke="#7A5FD1"/><text x="110" y="82" text-anchor="middle" fill="#22262E">Workspace UI</text>
+            <rect x="210" y="55" width="160" height="45" rx="8" fill="#fff" stroke="#7A5FD1"/><text x="290" y="82" text-anchor="middle" fill="#22262E">Job Scheduler</text>
+            <rect x="30" y="115" width="160" height="45" rx="8" fill="#fff" stroke="#7A5FD1"/><text x="110" y="142" text-anchor="middle" fill="#22262E">Notebook code</text>
+            <rect x="210" y="115" width="160" height="45" rx="8" fill="#fff" stroke="#7A5FD1"/><text x="290" y="142" text-anchor="middle" fill="#22262E">Cluster manager</text>
+          </g>
+          <text x="210" y="195" text-anchor="middle" font-size="9.5" fill="#5B6472">sees metadata only — never your actual data</text>
+
+          <rect x="480" y="10" width="410" height="200" rx="16" fill="#DCEEF8" stroke="#1B6FA8" stroke-width="2"/>
+          <text x="685" y="35" text-anchor="middle" font-weight="700" fill="#22262E">Data Plane (in YOUR Azure subscription)</text>
+          <g font-size="10" font-weight="600">
+            <rect x="510" y="55" width="170" height="60" rx="8" fill="#fff" stroke="#1B6FA8"/><text x="595" y="80" text-anchor="middle" fill="#22262E">Spark Clusters</text><text x="595" y="96" text-anchor="middle" font-size="8.5" fill="#5B6472">actual compute</text>
+            <rect x="700" y="55" width="170" height="60" rx="8" fill="#fff" stroke="#1B6FA8"/><text x="785" y="80" text-anchor="middle" fill="#22262E">Your VNet</text><text x="785" y="96" text-anchor="middle" font-size="8.5" fill="#5B6472">network you control</text>
+            <rect x="510" y="130" width="360" height="55" rx="8" fill="#fff" stroke="#1B6FA8"/><text x="690" y="153" text-anchor="middle" fill="#22262E">ADLS Gen2 — your actual data, always</text><text x="690" y="169" text-anchor="middle" font-size="8.5" fill="#5B6472">never leaves your subscription</text>
+          </g>
+
+          <g stroke="#5B6472" stroke-width="2" marker-end="url(#a2)">
+            <line x1="410" y1="80" x2="478" y2="80"/>
+            <line x1="410" y1="140" x2="478" y2="140"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>This Control Plane / Data Plane split is exactly why Azure Databricks feels different from a typical SaaS product: when you deploy it, Databricks provisions a <strong>managed resource group</strong> inside your own Azure subscription containing the Data Plane resources (a VNet, storage, and the actual VMs backing your clusters). For regulated workloads, <strong>VNet injection</strong> lets you deploy that Data Plane into a VNet you fully control (custom subnets, NSGs, existing peering) instead of the Databricks-managed default, and <strong>Private Link</strong> keeps Control Plane ↔ Data Plane traffic off the public internet entirely.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>If Databricks' own servers were ever compromised, what could an attacker actually see about your data, given the Control Plane only handles metadata? What would they still <em>not</em> be able to see?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Explain the Control Plane / Data Plane split in Azure Databricks, and why it matters for security." <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>The Control Plane is fully managed by Databricks and handles the workspace UI, notebook source code, job scheduling, and cluster orchestration metadata — but it never touches actual customer data. The Data Plane — the Spark clusters and the storage they read/write — runs entirely inside the customer's own Azure subscription, in a Databricks-managed (or, with VNet injection, customer-controlled) resource group. This means the actual sensitive data never leaves the customer's Azure tenant, which is central to Azure Databricks satisfying data residency and compliance requirements for regulated industries. VNet injection and Private Link further let a security team control network paths and keep Control Plane communication off the public internet.</p>
+        <p><em>Why this answer works:</em> it correctly locates <em>where</em> data physically lives (customer subscription) versus what Databricks' own infrastructure ever sees (metadata only) — the exact distinction compliance-focused interviewers are probing for.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 3 -->
+    <section class="level" id="notebooks">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--gold-soft);">📓</div>
+        <div><div class="level-eyebrow">Level 3</div><h2>Notebooks &amp; Clusters</h2></div>
+      </div>
+      <p class="level-tagline">A notebook is where you write code. A cluster is what actually runs it. Getting the cluster choice right is half of being good at Databricks.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>A notebook is like a lab journal where you write an experiment step by step and immediately see the result of each step, mixing code, charts, and notes together. A cluster is the actual science lab (the computers) running your experiment — you can rent a small lab for quick tests or a huge lab for a massive experiment, and shut it down the moment you're done to stop paying for it.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A data engineer develops and tests a transformation interactively on a small "All-Purpose" cluster in a notebook, then schedules the finished, working code to run automatically every night on a fresh, auto-terminating "Job Cluster" — cheaper and cleaner than leaving an interactive cluster running 24/7.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">All-Purpose cluster vs. Job cluster</div>
+        <svg viewBox="0 0 900 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <g font-size="10.5" font-weight="600">
+            <rect x="20" y="20" width="380" height="120" rx="14" fill="#FDF1CC" stroke="#F2B705" stroke-width="2"/>
+            <text x="210" y="48" text-anchor="middle" fill="#22262E">All-Purpose Cluster</text>
+            <text x="210" y="68" text-anchor="middle" font-size="9.5" font-weight="500" fill="#5B6472">for interactive notebook development</text>
+            <text x="210" y="84" text-anchor="middle" font-size="9.5" font-weight="500" fill="#5B6472">shared by a team, stays up between runs</text>
+            <text x="210" y="100" text-anchor="middle" font-size="9.5" font-weight="500" fill="#5B6472">costs more per hour — pay for convenience</text>
+
+            <rect x="500" y="20" width="380" height="120" rx="14" fill="#DCEEF8" stroke="#1B6FA8" stroke-width="2"/>
+            <text x="690" y="48" text-anchor="middle" fill="#22262E">Job Cluster</text>
+            <text x="690" y="68" text-anchor="middle" font-size="9.5" font-weight="500" fill="#5B6472">created fresh for one scheduled job</text>
+            <text x="690" y="84" text-anchor="middle" font-size="9.5" font-weight="500" fill="#5B6472">auto-terminates the moment the job ends</text>
+            <text x="690" y="100" text-anchor="middle" font-size="9.5" font-weight="500" fill="#5B6472">cheaper — the standard for production</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">Common cluster configuration knobs</div>
+      <pre class="code"><span class="c4"># Cluster config (Databricks CLI / Jobs API JSON — conceptually what the UI sets)</span>
+{
+  <span class="c3">"spark_version"</span>: <span class="c3">"14.3.x-scala2.12"</span>,
+  <span class="c3">"node_type_id"</span>: <span class="c3">"Standard_DS4_v2"</span>,
+  <span class="c3">"autoscale"</span>: { <span class="c3">"min_workers"</span>: <span class="c2">2</span>, <span class="c3">"max_workers"</span>: <span class="c2">8</span> },
+  <span class="c3">"autotermination_minutes"</span>: <span class="c2">30</span>,
+  <span class="c3">"spark_conf"</span>: { <span class="c3">"spark.databricks.delta.optimizeWrite.enabled"</span>: <span class="c3">"true"</span> }
+}</pre>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p><strong>Cluster pools</strong> keep a set of idle, pre-warmed VMs ready so new clusters spin up in seconds instead of minutes — useful when many short-lived job clusters launch throughout the day. <strong>Autoscaling</strong> lets a cluster grow/shrink worker count based on load, avoiding both under-provisioning (slow jobs) and over-provisioning (wasted cost). <strong>Cluster policies</strong> let admins restrict what configurations (node types, max size, allowed libraries) different teams can even choose — a governance lever as much as a cost one. The general rule: interactive/shared work uses All-Purpose clusters; anything scheduled and production-facing uses Job clusters.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>A team leaves a large All-Purpose cluster running 24/7 "just in case," even though nightly jobs only need it for 2 hours. Roughly how much of that spend is waste, and what would you change first?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "When would you use an All-Purpose cluster versus a Job cluster?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>All-Purpose clusters are for interactive work — a data engineer or analyst developing and debugging in a notebook, often shared across a small team, staying up between sessions for convenience. Job clusters are created fresh specifically for a scheduled job run and automatically terminate the moment that job completes, which makes them meaningfully cheaper for production workloads since you never pay for idle time. The standard practice is: develop and explore on an All-Purpose cluster, then schedule the finished pipeline to run on ephemeral Job clusters — never leave a large All-Purpose cluster running unattended as a de facto production scheduler.</p>
+        <p><em>Why this answer works:</em> it ties the technical distinction directly to a cost consequence, which is what actually matters in a real production environment.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 4 -->
+    <section class="level" id="delta">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--flame-soft);">💎</div>
+        <div><div class="level-eyebrow">Level 4</div><h2>Delta Lake Deep Dive</h2></div>
+      </div>
+      <p class="level-tagline">This is the single most important technology in the entire Databricks platform — the thing that actually makes "Lakehouse" more than a marketing word.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Plain files in storage are like loose Word documents anyone could accidentally overwrite while someone else is editing. Delta Lake adds a shared, tracked history on top — like switching to a Google Doc with full version history, where you can always see who changed what, undo a mistake, and never worry about two people's edits colliding and corrupting the file.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A bank needs to correct yesterday's loan interest rates while an analyst is simultaneously running a report against the same table. Plain Parquet can't safely handle that overlap — Delta Lake's transaction log makes it safe, and if the correction itself turns out to be wrong, "time travel" lets you instantly query yesterday's version to compare.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">The Delta transaction log — the whole trick, in one picture</div>
+        <svg viewBox="0 0 900 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5B6472"/></marker></defs>
+          <g font-size="10" font-weight="600">
+            <rect x="10" y="20" width="120" height="40" rx="8" fill="#DCEEF8" stroke="#1B6FA8"/><text x="70" y="45" text-anchor="middle" fill="#22262E">Parquet file 1</text>
+            <rect x="10" y="70" width="120" height="40" rx="8" fill="#DCEEF8" stroke="#1B6FA8"/><text x="70" y="95" text-anchor="middle" fill="#22262E">Parquet file 2</text>
+            <rect x="10" y="120" width="120" height="40" rx="8" fill="#DCEEF8" stroke="#1B6FA8"/><text x="70" y="145" text-anchor="middle" fill="#22262E">Parquet file 3</text>
+
+            <rect x="330" y="45" width="240" height="90" rx="14" fill="#FFE0DA" stroke="#FF3621" stroke-width="2"/>
+            <text x="450" y="75" text-anchor="middle" font-weight="700" fill="#22262E">_delta_log/</text>
+            <text x="450" y="93" text-anchor="middle" font-size="9.5" font-weight="500" fill="#5B6472">an ordered record of every</text>
+            <text x="450" y="108" text-anchor="middle" font-size="9.5" font-weight="500" fill="#5B6472">add/remove — the transaction log</text>
+
+            <rect x="670" y="20" width="220" height="40" rx="8" fill="#E2F3EA" stroke="#2E8B57"/><text x="780" y="45" text-anchor="middle" fill="#22262E">ACID guarantees</text>
+            <rect x="670" y="70" width="220" height="40" rx="8" fill="#E2F3EA" stroke="#2E8B57"/><text x="780" y="95" text-anchor="middle" fill="#22262E">Time travel</text>
+            <rect x="670" y="120" width="220" height="40" rx="8" fill="#E2F3EA" stroke="#2E8B57"/><text x="780" y="145" text-anchor="middle" fill="#22262E">Schema enforcement</text>
+          </g>
+          <g stroke="#5B6472" stroke-width="2" marker-end="url(#a3)" fill="none">
+            <path d="M130 40 L 328 80"/><path d="M130 90 L 328 90"/><path d="M130 140 L 328 100"/>
+            <line x1="570" y1="90" x2="667" y2="90"/>
+          </g>
+        </svg>
+        <div class="diagram-caption">Delta Lake is just Parquet files plus one extra folder — <code>_delta_log</code> — recording every change as an atomic, ordered transaction.</div>
+      </div>
+
+      <div class="code-label">The core Delta Lake operations</div>
+      <pre class="code">df.write.format(<span class="c3">"delta"</span>).mode(<span class="c3">"overwrite"</span>).save(<span class="c3">"/mnt/lake/silver/loans"</span>)
+
+<span class="c4"># Upsert (merge) — update matching rows, insert new ones, atomically</span>
+spark.sql(<span class="c3">"""</span>
+<span class="c3">  MERGE INTO silver.loans AS target</span>
+<span class="c3">  USING updates AS source</span>
+<span class="c3">  ON target.loan_id = source.loan_id</span>
+<span class="c3">  WHEN MATCHED THEN UPDATE SET *</span>
+<span class="c3">  WHEN NOT MATCHED THEN INSERT *</span>
+<span class="c3">"""</span>)
+
+<span class="c4"># Time travel — query any earlier version, for audits or debugging</span>
+old = spark.read.format(<span class="c3">"delta"</span>).option(<span class="c3">"versionAsOf"</span>, <span class="c2">5</span>).load(<span class="c3">"/mnt/lake/silver/loans"</span>)
+
+<span class="c4"># Compact many small files into fewer large ones — huge for read performance</span>
+spark.sql(<span class="c3">"OPTIMIZE silver.loans ZORDER BY (branch)"</span>)
+
+<span class="c4"># Clean up old, no-longer-needed file versions (careful — this is permanent!)</span>
+spark.sql(<span class="c3">"VACUUM silver.loans RETAIN 168 HOURS"</span>)</pre>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Delta Lake provides <strong>ACID transactions</strong> via optimistic concurrency control on the transaction log — writers check for conflicts before committing, retrying if another writer committed first. <strong>Schema enforcement</strong> rejects writes that don't match the table's schema by default (preventing silent data corruption); <strong>schema evolution</strong> (<code>mergeSchema</code>) explicitly opts into accepting new columns when that's actually intended. <code>OPTIMIZE</code> compacts small files (a chronic problem with frequent small writes) and <code>ZORDER</code> co-locates related data physically on disk for a given column, dramatically speeding up filtered queries on that column. <code>VACUUM</code> permanently removes old file versions beyond the retention window — run it carefully, since it breaks time travel past that point.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Two people try to update the same Delta table at the exact same moment. Based on what you now know about the transaction log, does one silently overwrite the other, or does something else happen?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "What specific problems does Delta Lake solve that plain Parquet doesn't?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Plain Parquet has no transaction log — there's no atomic multi-file commit, so concurrent writers can corrupt each other's output, and there's no safe way to update or delete individual rows without rewriting entire files. Delta Lake adds a transaction log (<code>_delta_log</code>) on top of ordinary Parquet files that provides ACID guarantees, so concurrent readers and writers are safe; it supports row-level <code>MERGE</code>/<code>UPDATE</code>/<code>DELETE</code>; it enforces schema by default while still allowing controlled evolution; and it enables time travel, letting you query or roll back to any prior table version for debugging or audit purposes.</p>
+        <p><em>Why this answer works:</em> it lists the specific plain-Parquet failure modes before listing Delta's fixes, showing understanding of the underlying problem rather than reciting a feature list.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 5 -->
+    <section class="level" id="unity">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--violet-soft);">🗝️</div>
+        <div><div class="level-eyebrow">Level 5</div><h2>Unity Catalog — Governance for the Whole Lakehouse</h2></div>
+      </div>
+      <p class="level-tagline">Without Unity Catalog, every workspace and cluster manages its own permissions separately — a governance nightmare at scale. Unity Catalog is the single source of truth for who can see what, everywhere.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Imagine a school where every classroom kept its own separate list of who's allowed in the supply closet — confusing, and easy to get wrong. Unity Catalog is one central school-wide rulebook: "these students can access these specific supplies," enforced consistently no matter which classroom (workspace) they're standing in.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A bank grants its Fraud team read access to a <code>fraud_signals</code> table and nothing else, and its Marketing team access to <code>customer_segments</code> only — enforced centrally by Unity Catalog across every workspace and cluster in the organization, with a full audit log of every query that ever touched sensitive data.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">The three-level namespace: Catalog → Schema → Table</div>
+        <svg viewBox="0 0 900 160" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a4" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5B6472"/></marker></defs>
+          <g font-size="10.5" font-weight="700">
+            <rect x="10" y="55" width="200" height="55" rx="10" fill="#FFE0DA" stroke="#FF3621" stroke-width="2"/><text x="110" y="80" text-anchor="middle" fill="#22262E">Catalog</text><text x="110" y="97" text-anchor="middle" font-size="9" font-weight="500" fill="#5B6472">e.g. "prod"</text>
+
+            <rect x="300" y="55" width="200" height="55" rx="10" fill="#FDF1CC" stroke="#F2B705" stroke-width="2"/><text x="400" y="80" text-anchor="middle" fill="#22262E">Schema</text><text x="400" y="97" text-anchor="middle" font-size="9" font-weight="500" fill="#5B6472">e.g. "prod.finance"</text>
+
+            <rect x="590" y="55" width="200" height="55" rx="10" fill="#DCEEF8" stroke="#1B6FA8" stroke-width="2"/><text x="690" y="80" text-anchor="middle" fill="#22262E">Table</text><text x="690" y="97" text-anchor="middle" font-size="9" font-weight="500" fill="#5B6472">e.g. "prod.finance.loans"</text>
+          </g>
+          <g stroke="#5B6472" stroke-width="2" marker-end="url(#a4)">
+            <line x1="210" y1="82" x2="297" y2="82"/><line x1="500" y1="82" x2="587" y2="82"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">Granting access, the SQL way</div>
+      <pre class="code"><span class="c4">-- Full three-level naming: catalog.schema.table</span>
+GRANT SELECT ON TABLE prod.finance.loans TO `fraud-analysts`;
+GRANT USE CATALOG ON CATALOG prod TO `fraud-analysts`;
+GRANT USE SCHEMA ON SCHEMA prod.finance TO `fraud-analysts`;
+
+<span class="c4">-- Row-level and column-level security via a security policy function</span>
+CREATE FUNCTION mask_ssn(ssn STRING)
+RETURN CASE WHEN is_account_group_member(<span class="c3">'compliance-team'</span>) THEN ssn ELSE <span class="c3">'***-**-****'</span> END;
+
+ALTER TABLE prod.finance.customers ALTER COLUMN ssn SET MASK mask_ssn;</pre>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Unity Catalog governs three levels of namespace (<code>catalog.schema.table</code>), unifies access control across <em>every</em> workspace in an account (not per-workspace ACLs), and provides automatic <strong>data lineage</strong> — tracking exactly which tables/columns feed into which downstream tables and dashboards, invaluable for impact analysis and debugging. It also centralizes <strong>audit logging</strong> (every query, by whom, against what) and supports fine-grained <strong>row-level and column-level security</strong> via masking functions and row filters, without needing separate views per role.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>A table gets an unexpected spike in null values downstream in a dashboard. How would Unity Catalog's lineage feature help you find the source of the problem faster than manually tracing through pipeline code?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "What problem does Unity Catalog solve that per-workspace access control didn't?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Before Unity Catalog, access control and metadata were scoped per-workspace, meaning permissions had to be redefined and kept in sync across every workspace an organization ran — a governance and audit nightmare at scale, and a real risk of inconsistent, drifted permissions. Unity Catalog centralizes governance at the account level: one place to define catalogs, schemas, tables, and their permissions, enforced consistently across every workspace and cluster. It adds automatic lineage tracking, centralized audit logs, and fine-grained row/column-level security, turning what used to be scattered, manually-maintained access rules into one auditable, consistent source of truth.</p>
+        <p><em>Why this answer works:</em> it names the concrete pain point (per-workspace drift and duplicated permission management) that Unity Catalog was built to eliminate, not just a list of its features.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 6 -->
+    <section class="level" id="autoloader">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--lake-soft);">📥</div>
+        <div><div class="level-eyebrow">Level 6</div><h2>Auto Loader &amp; Incremental Ingestion</h2></div>
+      </div>
+      <p class="level-tagline">New files land in cloud storage constantly. Auto Loader is Databricks' answer to "how do I process only the new ones, efficiently, without reprocessing everything every time?"</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Imagine checking your school mailbox by dumping out and re-reading every letter you've ever received, every single day, just to find today's new one. That's what naively re-scanning a whole folder for new files feels like at scale. Auto Loader is like a mail carrier who remembers exactly what's already been delivered and only hands you today's new letters.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>An IoT platform receives millions of small sensor-reading files landing in cloud storage every hour. Auto Loader efficiently detects and ingests only the new files as they arrive — using cloud-native notification services under the hood — instead of listing an ever-growing folder from scratch on every run.</p>
+        </div>
+      </div>
+
+      <div class="code-label">Auto Loader — streaming ingestion of new files as they land</div>
+      <pre class="code">df = (spark.readStream
+    .format(<span class="c3">"cloudFiles"</span>)
+    .option(<span class="c3">"cloudFiles.format"</span>, <span class="c3">"json"</span>)
+    .option(<span class="c3">"cloudFiles.schemaLocation"</span>, <span class="c3">"/mnt/lake/_schemas/sensor_readings"</span>)
+    .load(<span class="c3">"/mnt/lake/raw/sensor_readings/"</span>))
+
+(df.writeStream
+    .option(<span class="c3">"checkpointLocation"</span>, <span class="c3">"/mnt/lake/_checkpoints/sensor_readings"</span>)
+    .trigger(availableNow=<span class="c2">True</span>)  <span class="c4"># process everything currently available, then stop</span>
+    .table(<span class="c3">"bronze.sensor_readings"</span>))</pre>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Auto Loader uses cloud-native file notification services (e.g. Azure Event Grid queues) instead of repeatedly listing a directory, making it efficient even at millions of files where a naive directory listing would become painfully slow and expensive over time. <strong>Schema inference and evolution</strong> are handled automatically, tracked via the <code>schemaLocation</code>. The <code>trigger(availableNow=True)</code> pattern runs a streaming source as a finite batch — process everything currently available, then stop — which is the standard way to schedule "streaming" ingestion logic inside a nightly or hourly Databricks Job without leaving a cluster running continuously.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Why would repeatedly listing a folder containing 50 million small files become a real performance and cost problem over time — and how does Auto Loader's notification-based approach avoid it?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "How does Auto Loader efficiently detect new files at massive scale, and why does that matter?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Instead of repeatedly listing an entire directory to find new files — which gets slower and more expensive as the folder grows into millions of files — Auto Loader can subscribe to cloud-native file notification events (like Azure Event Grid) that fire the moment a new file lands. This turns file discovery into an efficient, incremental, event-driven process rather than an ever-growing full scan. It also tracks schema in a dedicated schema location, enabling automatic inference and controlled evolution as new fields appear over time, and it integrates with Structured Streaming's checkpointing for exactly-once processing guarantees on ingestion.</p>
+        <p><em>Why this answer works:</em> it explains the specific mechanical reason (notification-based vs. listing-based discovery) that gives Auto Loader its scalability advantage, not just "it's optimized for streaming."</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 7 -->
+    <section class="level" id="workflows">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--gold-soft);">🔗</div>
+        <div><div class="level-eyebrow">Level 7</div><h2>Databricks Workflows — Orchestration Inside the Platform</h2></div>
+      </div>
+      <p class="level-tagline">A single notebook is a step. Real pipelines need many steps run in the right order, on a schedule, with retries — that's what Workflows (Jobs) are for.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>If a notebook is one recipe step, a Workflow is the whole cooking schedule for the night — "first prep the ingredients, then cook the main dish, then, only if that succeeds, plate dessert" — each task can depend on the ones before it, and if a step burns, the recipe can retry it or stop before ruining dinner.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A nightly Workflow runs an ingestion notebook, then — only if that succeeds — a transformation notebook, then a data-quality-check notebook, and finally triggers a downstream ML training job, all on a fresh Job cluster that spins up for the run and terminates afterward.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">A multi-task Workflow, with dependencies</div>
+        <svg viewBox="0 0 900 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a5" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5B6472"/></marker></defs>
+          <g font-size="10.5" font-weight="600">
+            <rect x="10" y="65" width="150" height="50" rx="10" fill="#DCEEF8" stroke="#1B6FA8"/><text x="85" y="94" text-anchor="middle" fill="#22262E">Ingest task</text>
+            <rect x="230" y="65" width="150" height="50" rx="10" fill="#FDF1CC" stroke="#F2B705"/><text x="305" y="94" text-anchor="middle" fill="#22262E">Transform task</text>
+            <rect x="450" y="10" width="150" height="50" rx="10" fill="#E2F3EA" stroke="#2E8B57"/><text x="525" y="39" text-anchor="middle" fill="#22262E">Quality check</text>
+            <rect x="450" y="120" width="150" height="50" rx="10" fill="#FFE0DA" stroke="#FF3621"/><text x="525" y="149" text-anchor="middle" fill="#22262E">🚨 Alert on failure</text>
+            <rect x="670" y="10" width="200" height="50" rx="10" fill="#EDE7FB" stroke="#7A5FD1"/><text x="770" y="39" text-anchor="middle" fill="#22262E">Trigger ML training</text>
+          </g>
+          <g stroke="#5B6472" stroke-width="2" marker-end="url(#a5)" fill="none">
+            <line x1="160" y1="90" x2="227" y2="90"/>
+            <path d="M380 80 L 447 35"/><path d="M380 100 L 447 145"/>
+            <line x1="600" y1="35" x2="667" y2="35"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">A Workflow (job) definition, conceptually</div>
+      <pre class="code">{
+  <span class="c3">"name"</span>: <span class="c3">"NightlySalesPipeline"</span>,
+  <span class="c3">"tasks"</span>: [
+    { <span class="c3">"task_key"</span>: <span class="c3">"ingest"</span>, <span class="c3">"notebook_path"</span>: <span class="c3">"/pipelines/01_ingest"</span> },
+    { <span class="c3">"task_key"</span>: <span class="c3">"transform"</span>, <span class="c3">"depends_on"</span>: [{<span class="c3">"task_key"</span>: <span class="c3">"ingest"</span>}],
+      <span class="c3">"notebook_path"</span>: <span class="c3">"/pipelines/02_transform"</span> },
+    { <span class="c3">"task_key"</span>: <span class="c3">"quality_check"</span>, <span class="c3">"depends_on"</span>: [{<span class="c3">"task_key"</span>: <span class="c3">"transform"</span>}],
+      <span class="c3">"notebook_path"</span>: <span class="c3">"/pipelines/03_quality_check"</span> }
+  ],
+  <span class="c3">"schedule"</span>: { <span class="c3">"quartz_cron_expression"</span>: <span class="c3">"0 0 2 * * ?"</span>, <span class="c3">"timezone_id"</span>: <span class="c3">"UTC"</span> },
+  <span class="c3">"job_clusters"</span>: [{ <span class="c3">"job_cluster_key"</span>: <span class="c3">"main"</span>, <span class="c3">"new_cluster"</span>: { <span class="c3">"num_workers"</span>: <span class="c2">4</span> } }]
+}</pre>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Workflows support task-level retries, timeouts, and conditional branching (run-if logic based on a prior task's outcome), and a single job can mix task types — notebooks, JAR/Python scripts, SQL queries, DLT pipeline triggers, and even other jobs. For a team already invested in Airflow or another external orchestrator, Databricks Workflows can either replace it entirely for Databricks-native pipelines, or coexist — with Airflow triggering Databricks Jobs as one step in a broader cross-platform orchestration graph.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Sketch a 4-task Workflow for a use case you know well (school project, a hobby, work) — what depends on what, and where would a failure need to trigger an alert instead of silently continuing?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Would you use Databricks Workflows or an external orchestrator like Airflow — how do you decide?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>For pipelines that live entirely within Databricks — notebooks, DLT pipelines, SQL tasks — Workflows is usually simpler: no separate infrastructure to run and maintain, tight native integration with clusters and lineage, and lower operational overhead. I'd reach for an external orchestrator like Airflow when a single pipeline genuinely spans multiple platforms beyond Databricks — say, coordinating a Databricks job alongside an ADF pipeline and a separate API call — where a platform-agnostic orchestrator that treats Databricks as just one node in a larger graph makes more sense than trying to force everything into Databricks Workflows.</p>
+        <p><em>Why this answer works:</em> it frames the decision around whether the orchestration scope is Databricks-native or genuinely cross-platform, rather than treating it as a matter of personal preference.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 8 -->
+    <section class="level" id="dlt">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--flame-soft);">🛠️</div>
+        <div><div class="level-eyebrow">Level 8</div><h2>Delta Live Tables — Declarative Pipelines</h2></div>
+      </div>
+      <p class="level-tagline">Instead of writing step-by-step imperative code for every pipeline stage, Delta Live Tables lets you declare <em>what</em> each table should look like — and lets Databricks figure out how to build and maintain it.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Writing a normal pipeline is like giving someone turn-by-turn driving directions — "go straight, turn left, then right." Delta Live Tables is like just telling them the destination address on a map and letting a smart GPS figure out the best route, reroute automatically if something changes, and warn you if a road is closed (bad data) before you drive into a wall.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A retailer declares three DLT tables — raw orders, cleaned orders, and daily revenue — and DLT automatically figures out the dependency order, incrementally processes only new data, and enforces a data quality rule that halts bad records ("negative order amount") from silently corrupting downstream tables.</p>
+        </div>
+      </div>
+
+      <div class="code-label">A DLT pipeline — declared, not scripted step-by-step</div>
+      <pre class="code"><span class="c2">import</span> dlt
+<span class="c2">from</span> pyspark.sql.functions <span class="c2">import</span> col
+
+<span class="c1">@dlt.table(comment=<span class="c3">"Raw orders, ingested as-is"</span>)</span>
+<span class="c2">def</span> bronze_orders():
+    <span class="c2">return</span> spark.readStream.format(<span class="c3">"cloudFiles"</span>).option(<span class="c3">"cloudFiles.format"</span>, <span class="c3">"json"</span>) \
+        .load(<span class="c3">"/mnt/lake/raw/orders/"</span>)
+
+<span class="c1">@dlt.table(comment=<span class="c3">"Cleaned, validated orders"</span>)</span>
+<span class="c1">@dlt.expect_or_drop(<span class="c3">"valid_amount"</span>, <span class="c3">"amount > 0"</span>)</span>  <span class="c4"># data quality gate</span>
+<span class="c2">def</span> silver_orders():
+    <span class="c2">return</span> dlt.read_stream(<span class="c3">"bronze_orders"</span>).filter(col(<span class="c3">"amount"</span>).isNotNull())
+
+<span class="c1">@dlt.table(comment=<span class="c3">"Daily revenue by region"</span>)</span>
+<span class="c2">def</span> gold_daily_revenue():
+    <span class="c2">return</span> (dlt.read(<span class="c3">"silver_orders"</span>)
+        .groupBy(<span class="c3">"region"</span>, <span class="c3">"order_date"</span>)
+        .agg({<span class="c3">"amount"</span>: <span class="c3">"sum"</span>}))</pre>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>DLT automatically infers the dependency graph from which tables reference which (<code>dlt.read</code>/<code>dlt.read_stream</code> calls), manages incremental processing so unchanged upstream data doesn't get reprocessed, and provides <strong>expectations</strong> (<code>expect</code>, <code>expect_or_drop</code>, <code>expect_or_fail</code>) as a first-class, declarative data quality mechanism — with violation metrics visible directly in the pipeline's UI, rather than being buried in custom validation code. This is a genuinely different authoring model from hand-written Workflows: you describe the desired end state of each table, not the imperative steps to get there.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>What's the difference in behavior between <code>expect_or_drop</code> and <code>expect_or_fail</code> for a data quality rule? Which would you use for a "just a warning" rule versus a "this must never happen" rule?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "When would you choose Delta Live Tables over a hand-written Databricks Workflow?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>DLT shines for multi-stage ETL pipelines — Bronze/Silver/Gold style — where you want dependency management, incremental processing, and data quality enforcement handled declaratively rather than hand-coded in every notebook. The built-in expectations framework alone is a strong reason: instead of writing custom validation logic and manually tracking failure rates, you declare rules and get quality metrics visible directly in the pipeline UI. I'd still reach for plain Workflows when the "pipeline" is really a sequence of heterogeneous tasks that aren't naturally expressed as a table dependency graph — for example, orchestrating a notebook, then an external API call, then an ML training job — where DLT's table-centric model doesn't fit as naturally.</p>
+        <p><em>Why this answer works:</em> it identifies the specific shape of problem (table dependency graphs with quality gates) DLT is designed for, and is honest about where a plain Workflow remains the better fit.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 9 -->
+    <section class="level" id="perf">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--lake-soft);">⚡</div>
+        <div><div class="level-eyebrow">Level 9</div><h2>Performance Optimization</h2></div>
+      </div>
+      <p class="level-tagline">Databricks adds several performance levers on top of everything you already know from plain Spark tuning — Photon and Delta-specific tricks chief among them.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Photon is like swapping a car's regular engine for a much more efficient one built specifically for the roads it drives on most — same destination, same driver, noticeably faster trip, especially for SQL-style workloads. Z-Ordering is like organizing a library's shelves so books frequently searched together sit physically next to each other, instead of scattered randomly.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A BI team's dashboard queries filtering by <code>branch</code> and <code>date</code> sped up dramatically after Z-Ordering the underlying Delta table on those exact columns — Spark could skip huge swaths of files it previously had to scan entirely.</p>
+        </div>
+      </div>
+
+      <div class="code-label">Turning on Photon, and the key Delta performance commands</div>
+      <pre class="code"><span class="c4"># Photon is a cluster-level setting (often on by default on newer runtimes)</span>
+<span class="c4"># enabled via the cluster's runtime selection — no code changes needed</span>
+
+<span class="c4">-- Compact small files AND co-locate data for fast filtered reads</span>
+OPTIMIZE prod.finance.loans ZORDER BY (branch, loan_date);
+
+<span class="c4">-- Auto-optimize on every write, instead of running OPTIMIZE manually</span>
+ALTER TABLE prod.finance.loans SET TBLPROPERTIES (
+  delta.autoOptimize.optimizeWrite = <span class="c2">true</span>,
+  delta.autoOptimize.autoCompact = <span class="c2">true</span>
+);</pre>
+
+      <div class="card usecase">
+        <h3>🔧 The Databricks-specific tuning checklist</h3>
+        <p><strong>Photon</strong> — a native, vectorized query engine (a C++ rewrite of much of Spark SQL's execution), often multiple times faster than the JVM-based engine for SQL and DataFrame workloads, with no code changes required. <strong>OPTIMIZE + ZORDER</strong> — compact small files and physically co-locate frequently-filtered columns. <strong>Auto Optimize</strong> — apply file compaction automatically on write instead of a separate scheduled job. <strong>Delta Caching</strong> — automatically caches remote files on local cluster disk, speeding up repeated reads of the same data within a session. <strong>Liquid Clustering</strong> (newer) — an evolution beyond Z-Order that adapts clustering keys without a full table rewrite.</p>
+      </div>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Everything from the PySpark performance level still applies underneath Databricks — shuffle management, broadcast joins, AQE, skew handling — Databricks doesn't replace that knowledge, it adds Delta- and Photon-specific levers on top. The highest-leverage, lowest-effort win for most teams is simply enabling <strong>Auto Optimize</strong> and running periodic <code>OPTIMIZE ZORDER</code> on frequently-filtered tables — the "small files problem" from streaming/frequent writes is one of the most common real-world Databricks performance complaints, and it has a near-trivial fix.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>A Delta table accumulates thousands of tiny files from frequent streaming writes, and queries against it have gotten noticeably slower over months. What single command would you run first, and why does file count — not just data volume — matter for query speed?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "What is Photon, and why does it matter for performance?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Photon is Databricks' native execution engine — a vectorized, C++ rewrite of large parts of Spark SQL's execution layer, designed to be a drop-in replacement for the JVM-based engine with no code changes required. It processes data in a columnar, batched fashion that's much closer to the CPU's native execution model, which is particularly effective for SQL and DataFrame-heavy workloads — scans, joins, aggregations — often delivering multi-times speedups over the standard engine for those patterns. It's less impactful for workloads dominated by Python UDFs, since those still pay the same JVM-to-Python serialization cost Photon doesn't change.</p>
+        <p><em>Why this answer works:</em> it correctly scopes where Photon helps most (SQL/DataFrame operators) versus where it doesn't (Python UDF-heavy code), showing calibrated understanding rather than treating it as a universal speed boost.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 10 -->
+    <section class="level" id="mlflow">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--violet-soft);">🧪</div>
+        <div><div class="level-eyebrow">Level 10</div><h2>MLflow &amp; Machine Learning</h2></div>
+      </div>
+      <p class="level-tagline">Training a model is the easy part. Remembering which of your 200 experiments actually worked, and reliably shipping the winner — that's what MLflow exists for.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Imagine baking 50 different batches of cookies, each with slightly different ingredients, and trying to remember by memory which exact combination made the best batch. MLflow is a lab notebook that automatically records every batch's exact ingredients and how good it turned out — so you can always find and reproduce your best result, and hand the winning recipe to someone else with confidence.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A data science team trials 40 different combinations of features and hyperparameters for a fraud-detection model. MLflow automatically logs each run's parameters, accuracy, and the trained model artifact itself — letting the team compare all 40 runs side by side and promote the single best one to production with full traceability.</p>
+        </div>
+      </div>
+
+      <div class="code-label">Tracking experiments and registering a model</div>
+      <pre class="code"><span class="c2">import</span> mlflow
+<span class="c2">import</span> mlflow.sklearn
+<span class="c2">from</span> sklearn.ensemble <span class="c2">import</span> RandomForestClassifier
+
+<span class="c2">with</span> mlflow.start_run():
+    model = RandomForestClassifier(n_estimators=<span class="c2">100</span>, max_depth=<span class="c2">8</span>)
+    model.fit(X_train, y_train)
+    accuracy = model.score(X_test, y_test)
+
+    <span class="c1"># Every important detail gets logged automatically, tied to this run</span>
+    mlflow.log_param(<span class="c3">"n_estimators"</span>, <span class="c2">100</span>)
+    mlflow.log_param(<span class="c3">"max_depth"</span>, <span class="c2">8</span>)
+    mlflow.log_metric(<span class="c3">"accuracy"</span>, accuracy)
+    mlflow.sklearn.log_model(model, <span class="c3">"fraud_model"</span>)
+
+<span class="c4"># Register the best run's model into the shared Model Registry</span>
+mlflow.register_model(<span class="c3">"runs:/&lt;run_id&gt;/fraud_model"</span>, <span class="c3">"FraudDetectionModel"</span>)</pre>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>MLflow has four components: <strong>Tracking</strong> (logging parameters, metrics, and artifacts per run), the <strong>Model Registry</strong> (versioned models with lifecycle stages — Staging, Production, Archived — enabling controlled promotion and rollback), <strong>Projects</strong> (packaging reproducible training code), and <strong>Models</strong> (a standard packaging format that lets a trained model be deployed consistently across batch, real-time REST endpoint, or streaming serving — without rewriting deployment code per framework). Unity Catalog can now also govern ML models as first-class catalog objects, extending the same access-control and lineage story from Level 5 to models, not just tables.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Two model versions are both in "Staging." What questions would you want MLflow's tracked metrics to answer before promoting either one to "Production"?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "What problem does the MLflow Model Registry solve that just saving model files doesn't?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Saving model files ad hoc gives you no structured way to know which version is currently in production, no controlled promotion process, and no easy rollback if a new version underperforms. The Model Registry adds versioning with named lifecycle stages — a model moves from Staging to Production deliberately, with the registry tracking exactly which version is where, who approved the transition, and full history if you need to roll back to a previous version. Combined with Tracking, it also ties every registered model version back to the exact training run — parameters, metrics, and code — that produced it, which is essential for reproducibility and audit in a regulated environment.</p>
+        <p><em>Why this answer works:</em> it contrasts the specific operational gaps (no version tracking, no controlled promotion, no rollback) that ad hoc file saving leaves open, rather than just describing the Registry's features in isolation.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 11 -->
+    <section class="level" id="security">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--flame-soft);">🔐</div>
+        <div><div class="level-eyebrow">Level 11</div><h2>Security &amp; Networking</h2></div>
+      </div>
+      <p class="level-tagline">This level combines Unity Catalog's data-level governance with network- and secret-level controls — together, what a bank or hospital would actually require before going live.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>VNet injection is choosing to build the kitchen (Data Plane) inside a building whose doors, walls, and security cameras you fully control, instead of accepting a standard pre-built kitchen. Private Link is a private hallway connecting two buildings directly, so deliveries never have to walk out onto the public street. Secret scopes are a lockbox for API keys and passwords that notebooks can use without ever displaying the actual value on screen.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A bank deploys Azure Databricks with VNet injection into a pre-approved, security-team-managed VNet, uses Private Link so all Control Plane ↔ Data Plane and Data Plane ↔ storage traffic stays off the public internet, and stores every third-party API key in an Azure Key Vault-backed secret scope so no key is ever visible in notebook code or logs.</p>
+        </div>
+      </div>
+
+      <div class="code-label">Using a secret in a notebook — never a hardcoded key</div>
+      <pre class="code"><span class="c4"># A secret scope backed by Azure Key Vault, referenced by name</span>
+api_key = dbutils.secrets.get(scope=<span class="c3">"prod-secrets"</span>, key=<span class="c3">"fraud-api-key"</span>)
+
+<span class="c4"># If a notebook ever tries to print a secret value directly, Databricks</span>
+<span class="c4"># automatically redacts it in the output as [REDACTED]</span>
+print(api_key)  <span class="c4"># --> [REDACTED]</span></pre>
+
+      <div class="card usecase">
+        <h3>🛡️ The layered security posture</h3>
+        <p><strong>Unity Catalog</strong> (Level 5) — who can query which tables/columns. <strong>VNet injection</strong> — deploy the Data Plane into a network your security team controls, with custom subnets and NSGs. <strong>Private Link</strong> — keep Control Plane and storage traffic off the public internet. <strong>Secret scopes</strong> (Key Vault-backed) — no credentials ever hardcoded in notebooks or job configs. <strong>Cluster policies</strong> — restrict which cluster configurations, and which users/groups, can even be used, preventing an accidentally over-permissioned cluster from being spun up.</p>
+      </div>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>A fully locked-down Azure Databricks deployment combines: <strong>VNet injection</strong> with no public IPs on cluster nodes ("secure cluster connectivity," on by default in newer deployments), <strong>Private Link</strong> for both the front-end (user ↔ workspace) and back-end (Data Plane ↔ Control Plane) connections, <strong>Unity Catalog</strong> for all data governance and audit logging, <strong>customer-managed keys</strong> for encryption at rest where required by compliance, and <strong>cluster policies</strong> restricting instance types, autoscaling limits, and library installation to prevent both cost overruns and security drift from ungoverned cluster configurations.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>A notebook needs to call a third-party payment API. List every place a hardcoded API key could accidentally end up visible (code, Git history, logs, error messages) — and how a secret scope avoids each one.</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "How would you design a fully locked-down Azure Databricks deployment for a regulated bank?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>I'd deploy with VNet injection into a security-team-controlled VNet with no public IPs on cluster nodes, and enable Private Link so both front-end workspace access and back-end Data-Plane-to-Control-Plane traffic stay off the public internet. All data governance — table/column access, row-level security, audit logging — runs through Unity Catalog as the single source of truth across every workspace. Any credentials notebooks need go through Key Vault-backed secret scopes, never hardcoded, with Databricks' automatic secret redaction in notebook output as a backstop. Finally, cluster policies restrict which node types, library sources, and autoscaling limits different teams can even select, preventing both cost surprises and accidental over-permissioned or non-compliant cluster configurations from ever being created.</p>
+        <p><em>Why this answer works:</em> it layers network, identity/data, secrets, and governance controls together as a coherent system rather than naming isolated features, which is what "design a locked-down deployment" is actually asking for.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 12 -->
+    <section class="level" id="cicd">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--lake-soft);">🔁</div>
+        <div><div class="level-eyebrow">Level 12</div><h2>CI/CD — Repos &amp; Asset Bundles</h2></div>
+      </div>
+      <p class="level-tagline">Clicking around a production workspace directly doesn't scale past a hobby project — Databricks Repos and Asset Bundles bring real software engineering discipline to notebooks and pipelines.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Databricks Repos is keeping your notebooks in the same shared, version-tracked binder as any other code — pull requests, code review, and history included — instead of one loose copy sitting in someone's personal workspace folder. Databricks Asset Bundles are a shipping label precise enough that an automated system can package and deploy your whole project — notebooks, jobs, DLT pipelines — into dev, test, or prod exactly the same way every time.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A team develops notebooks in a Git-backed Repo, opens pull requests for review, and a CI pipeline uses a Databricks Asset Bundle to deploy the validated project — notebooks, job definitions, and cluster configs together — into a Test workspace, then Production, with environment-specific settings swapped automatically.</p>
+        </div>
+      </div>
+
+      <div class="code-label">A Databricks Asset Bundle configuration</div>
+      <pre class="code"><span class="c4"># databricks.yml — defines the project and how it deploys per environment</span>
+bundle:
+  name: sales-pipeline
+
+resources:
+  jobs:
+    nightly_sales_job:
+      name: <span class="c3">"Nightly Sales Pipeline"</span>
+      tasks:
+        - task_key: ingest
+          notebook_task:
+            notebook_path: ./notebooks/01_ingest.py
+
+targets:
+  dev:
+    workspace: { host: https://dev-workspace.azuredatabricks.net }
+  prod:
+    workspace: { host: https://prod-workspace.azuredatabricks.net }
+    mode: production</pre>
+
+      <pre class="code"><span class="c4"># Deploy the same project to different environments via the CLI</span>
+databricks bundle deploy --target dev
+databricks bundle deploy --target prod</pre>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Databricks Asset Bundles (DABs) are Databricks' answer to "infrastructure as code" for the platform — one YAML-defined project bundling notebooks, Jobs, DLT pipelines, and cluster configs, deployable consistently across environments via CLI, integrable into any standard CI/CD tool (GitHub Actions, Azure DevOps). This is the modern replacement for older, more manual notebook-export-based promotion workflows, giving genuine version control, environment parameterization, and repeatable deployments — the same rigor ADF gets from ARM templates and Git integration (see the ADF guide's Level 11), applied to Databricks projects.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>A team currently promotes notebooks to production by manually exporting and re-importing them into a different workspace. List two concrete risks with that process that Asset Bundles + CI/CD would eliminate.</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "How would you set up CI/CD for a Databricks project across dev, test, and production?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Development happens in a Git-backed Databricks Repo, with feature branches and pull request review before merging into the main branch. The project itself is defined as a Databricks Asset Bundle — one YAML configuration describing notebooks, jobs, and pipeline resources, with per-environment targets (dev/test/prod) specifying which workspace and what environment-specific settings apply. A CI/CD pipeline (GitHub Actions or Azure DevOps) runs on merge, validating the bundle and deploying it via the Databricks CLI to Test, and after validation, to Production — with production deployments typically gated behind manual approval. This gives the same reviewable, auditable, repeatable promotion process any other software gets, instead of manually exporting and re-importing notebooks between workspaces.</p>
+        <p><em>Why this answer works:</em> it names the specific modern tooling (Repos + Asset Bundles + CLI) rather than a generic "use Git and CI/CD," and explicitly contrasts it with the risky manual export/import pattern it replaces.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 13 -->
+    <section class="level" id="cost">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--gold-soft);">💰</div>
+        <div><div class="level-eyebrow">Level 13</div><h2>Cost Optimization</h2></div>
+      </div>
+      <p class="level-tagline">Databricks bills for compute you actually use — which means most cost problems trace back to compute left running, oversized, or used inefficiently.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Leaving a big All-Purpose cluster running overnight "just in case" is like leaving every light and appliance in a huge house on while nobody's home — you're paying for capacity nobody's using. Auto-termination is an automatic light switch that turns everything off the moment the room's been empty for a while.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A team cut their monthly Databricks bill by roughly a third just by enabling auto-termination on all interactive clusters, switching scheduled jobs from a shared All-Purpose cluster to ephemeral Job clusters, and moving a handful of ad hoc SQL analysts onto a Serverless SQL Warehouse that scales to zero when idle.</p>
+        </div>
+      </div>
+
+      <div class="card usecase">
+        <h3>💸 The cost optimization checklist</h3>
+        <p><strong>Auto-termination</strong> — every interactive cluster should have an idle timeout; there's rarely a good reason to leave one running unattended. <strong>Job clusters over All-Purpose</strong> — for anything scheduled, ephemeral clusters that terminate after the run avoid paying for idle time entirely. <strong>Spot/preemptible instances</strong> — for fault-tolerant workloads (worker nodes, not the driver), spot pricing can cut compute cost significantly, with Spark's lineage-based recomputation handling occasional preemption gracefully. <strong>Serverless SQL Warehouses</strong> — for BI/analyst workloads, scale-to-zero compute avoids paying for idle capacity between queries. <strong>Right-sizing</strong> — check actual cluster utilization metrics rather than defaulting to oversized node types "to be safe." <strong>Cluster policies</strong> — cap what teams can spin up in the first place, preventing accidental oversized clusters at the source.</p>
+      </div>
+
+      <div class="code-label">Enforcing cost discipline via cluster policy</div>
+      <pre class="code">{
+  <span class="c3">"autotermination_minutes"</span>: {
+    <span class="c3">"type"</span>: <span class="c3">"range"</span>, <span class="c3">"maxValue"</span>: <span class="c2">60</span>, <span class="c3">"defaultValue"</span>: <span class="c2">30</span>
+  },
+  <span class="c3">"node_type_id"</span>: {
+    <span class="c3">"type"</span>: <span class="c3">"allowlist"</span>, <span class="c3">"values"</span>: [<span class="c3">"Standard_DS3_v2"</span>, <span class="c3">"Standard_DS4_v2"</span>]
+  },
+  <span class="c3">"autoscale.max_workers"</span>: { <span class="c3">"type"</span>: <span class="c3">"range"</span>, <span class="c3">"maxValue"</span>: <span class="c2">10</span> }
+}</pre>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Cost governance at scale means never relying on individual engineers to remember to shut things down — it means enforcing limits structurally through <strong>cluster policies</strong> (capping autotermination timeout, node types, and max cluster size per team), tagging every cluster/job for cost attribution in Azure Cost Management, and periodically reviewing utilization (not just spend) to catch clusters that are running but underused, not just ones running unnecessarily. The biggest single lever for most organizations is simply the All-Purpose-vs-Job-cluster discipline from Level 3 — it's astonishing how much spend traces back to production jobs quietly running on always-on interactive clusters.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>A monthly Databricks bill is 40% higher than expected. List three things you'd check first, in order of how likely each is to be the actual culprit based on what you've learned in this guide.</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "A team's Databricks costs have grown 3x in six months with no corresponding data growth — how do you investigate?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>I'd start with the cluster-level breakdown in the account console: is spend concentrated in a few large, long-running All-Purpose clusters rather than ephemeral Job clusters? That's the single most common cause of unexplained growth — someone scheduling production jobs against a shared interactive cluster instead of Job clusters, or forgetting to enable auto-termination. Next I'd check for oversized node types or unnecessarily high autoscale ceilings relative to actual utilization metrics — teams often default to "safe" oversized configs rather than right-sizing from real usage data. I'd also check whether Data Flow-equivalent workloads (DLT/notebook jobs using Photon or larger clusters) grew disproportionately versus data volume, which could point to inefficient code — missing partition pruning, unnecessary shuffles, or UDFs where a built-in function would do — rather than a genuine compute needs increase.</p>
+        <p><em>Why this answer works:</em> it prioritizes the checks by likelihood based on common real-world causes, rather than listing every possible lever with no sense of where to actually look first.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 14: USE-CASE PROJECTS -->
+    <section class="level" id="projects">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--flame-soft);">🚀</div>
+        <div><div class="level-eyebrow">Level 14 — Hands-On</div><h2>Use-Case Projects: Build Three Real Pipelines</h2></div>
+      </div>
+      <p class="level-tagline">Everything from Levels 1-13 combines into three realistic, end-to-end projects — the exact shape of thing you'd build in a real job, and the exact shape of thing an interviewer might ask you to design on a whiteboard.</p>
+
+      <div class="project-card">
+        <span class="project-tag" style="background:var(--lake-soft); color:#12547E;">PROJECT 1 · BATCH ETL</span>
+        <h3 style="font-size:19px; margin-bottom:10px;">🛒 Retail Sales Analytics — Medallion Pipeline</h3>
+        <p style="margin-bottom:16px;"><strong>The problem:</strong> A retailer has daily POS export files (CSV) and online order data (JSON) landing in cloud storage every night. Leadership wants a reliable daily revenue-by-region dashboard by 6am — with bad records (negative amounts, missing IDs) automatically caught, not silently corrupting the numbers.</p>
+
+        <div class="diagram-wrap" style="margin:16px 0;">
+          <svg viewBox="0 0 900 130" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+            <defs><marker id="p1" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5B6472"/></marker></defs>
+            <g font-size="10" font-weight="600">
+              <rect x="10" y="40" width="130" height="46" rx="8" fill="#DCEEF8" stroke="#1B6FA8"/><text x="75" y="68" text-anchor="middle" fill="#22262E">POS + Orders</text>
+              <rect x="180" y="40" width="130" height="46" rx="8" fill="#FFE0DA" stroke="#FF3621"/><text x="245" y="63" text-anchor="middle" fill="#22262E">🥉 Bronze</text><text x="245" y="78" text-anchor="middle" font-size="8.5" fill="#5B6472">Auto Loader</text>
+              <rect x="350" y="40" width="130" height="46" rx="8" fill="#D7D7D7" stroke="#8892A6"/><text x="415" y="63" text-anchor="middle" fill="#22262E">🥈 Silver</text><text x="415" y="78" text-anchor="middle" font-size="8.5" fill="#5B6472">DLT expectations</text>
+              <rect x="520" y="40" width="130" height="46" rx="8" fill="#FDF1CC" stroke="#F2B705"/><text x="585" y="63" text-anchor="middle" fill="#22262E">🥇 Gold</text><text x="585" y="78" text-anchor="middle" font-size="8.5" fill="#5B6472">revenue by region</text>
+              <rect x="690" y="40" width="180" height="46" rx="8" fill="#E2F3EA" stroke="#2E8B57"/><text x="780" y="68" text-anchor="middle" fill="#22262E">Dashboard by 6am</text>
+            </g>
+            <g stroke="#5B6472" stroke-width="2" marker-end="url(#p1)">
+              <line x1="140" y1="63" x2="177" y2="63"/><line x1="310" y1="63" x2="347" y2="63"/><line x1="480" y1="63" x2="517" y2="63"/><line x1="650" y1="63" x2="687" y2="63"/>
+            </g>
+          </svg>
+        </div>
+
+        <div class="code-label">The core DLT pipeline (compact)</div>
+        <pre class="code"><span class="c2">import</span> dlt
+<span class="c2">from</span> pyspark.sql.functions <span class="c2">import</span> col, sum <span class="c2">as</span> _sum
+
+<span class="c1">@dlt.table</span>
+<span class="c2">def</span> bronze_pos():
+    <span class="c2">return</span> (spark.readStream.format(<span class="c3">"cloudFiles"</span>).option(<span class="c3">"cloudFiles.format"</span>, <span class="c3">"csv"</span>)
+        .load(<span class="c3">"/mnt/lake/raw/pos/"</span>))
+
+<span class="c1">@dlt.table</span>
+<span class="c1">@dlt.expect_or_drop(<span class="c3">"valid_amount"</span>, <span class="c3">"amount > 0"</span>)</span>
+<span class="c1">@dlt.expect_or_drop(<span class="c3">"has_store_id"</span>, <span class="c3">"store_id IS NOT NULL"</span>)</span>
+<span class="c2">def</span> silver_sales():
+    <span class="c2">return</span> dlt.read_stream(<span class="c3">"bronze_pos"</span>).select(<span class="c3">"store_id"</span>, <span class="c3">"region"</span>, <span class="c3">"amount"</span>, <span class="c3">"sale_date"</span>)
+
+<span class="c1">@dlt.table</span>
+<span class="c2">def</span> gold_daily_revenue():
+    <span class="c2">return</span> dlt.read(<span class="c3">"silver_sales"</span>).groupBy(<span class="c3">"region"</span>, <span class="c3">"sale_date"</span>).agg(_sum(<span class="c3">"amount"</span>).alias(<span class="c3">"revenue"</span>))</pre>
+
+        <div class="card" style="border-left:4px solid var(--violet); margin-top:14px; margin-bottom:0;">
+          <h3>🎯 What this project demonstrates</h3>
+          <p>Auto Loader (Level 6) for incremental ingestion, DLT (Level 8) for declarative dependency management and data quality gates, and a Workflow (Level 7) scheduling the whole thing nightly on a Job cluster — the exact combination a "design a batch pipeline" interview question is testing for.</p>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <span class="project-tag" style="background:var(--flame-soft); color:var(--flame);">PROJECT 2 · REAL-TIME STREAMING</span>
+        <h3 style="font-size:19px; margin-bottom:10px;">🏭 IoT Sensor Monitoring — Real-Time Anomaly Alerts</h3>
+        <p style="margin-bottom:16px;"><strong>The problem:</strong> A factory has 5,000 sensors streaming temperature readings continuously. Operations needs to know within seconds if any sensor's 5-minute rolling average crosses a danger threshold — a nightly batch report would be far too slow to prevent equipment damage.</p>
+
+        <div class="diagram-wrap" style="margin:16px 0;">
+          <svg viewBox="0 0 900 130" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+            <defs><marker id="p2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5B6472"/></marker></defs>
+            <g font-size="10" font-weight="600">
+              <rect x="10" y="40" width="140" height="46" rx="8" fill="#DCEEF8" stroke="#1B6FA8"/><text x="80" y="63" text-anchor="middle" fill="#22262E">Event Hub /</text><text x="80" y="78" text-anchor="middle" font-size="8.5" fill="#5B6472">Kafka stream</text>
+              <rect x="190" y="40" width="140" height="46" rx="8" fill="#FDF1CC" stroke="#F2B705"/><text x="260" y="63" text-anchor="middle" fill="#22262E">Structured</text><text x="260" y="78" text-anchor="middle" font-size="8.5" fill="#5B6472">Streaming + watermark</text>
+              <rect x="370" y="40" width="150" height="46" rx="8" fill="#EDE7FB" stroke="#7A5FD1"/><text x="445" y="63" text-anchor="middle" fill="#22262E">5-min window</text><text x="445" y="78" text-anchor="middle" font-size="8.5" fill="#5B6472">rolling average</text>
+              <rect x="560" y="40" width="140" height="46" rx="8" fill="#FFE0DA" stroke="#FF3621"/><text x="630" y="63" text-anchor="middle" fill="#22262E">foreachBatch</text><text x="630" y="78" text-anchor="middle" font-size="8.5" fill="#5B6472">threshold check</text>
+              <rect x="740" y="40" width="140" height="46" rx="8" fill="#E2F3EA" stroke="#2E8B57"/><text x="810" y="63" text-anchor="middle" fill="#22262E">🚨 Alert</text><text x="810" y="78" text-anchor="middle" font-size="8.5" fill="#5B6472">within seconds</text>
+            </g>
+            <g stroke="#5B6472" stroke-width="2" marker-end="url(#p2)">
+              <line x1="150" y1="63" x2="187" y2="63"/><line x1="330" y1="63" x2="367" y2="63"/><line x1="520" y1="63" x2="557" y2="63"/><line x1="700" y1="63" x2="737" y2="63"/>
+            </g>
+          </svg>
+        </div>
+
+        <div class="code-label">Windowed streaming aggregation with a custom alert action</div>
+        <pre class="code"><span class="c2">from</span> pyspark.sql.functions <span class="c2">import</span> avg, window
+
+readings = (spark.readStream.format(<span class="c3">"kafka"</span>)
+    .option(<span class="c3">"kafka.bootstrap.servers"</span>, <span class="c3">"eventhub:9093"</span>)
+    .option(<span class="c3">"subscribe"</span>, <span class="c3">"sensor-readings"</span>)
+    .load())
+
+parsed = readings.selectExpr(<span class="c3">"CAST(value AS STRING) as json"</span>) \
+    .select(F.from_json(<span class="c3">"json"</span>, schema).alias(<span class="c3">"d"</span>)).select(<span class="c3">"d.*"</span>)
+
+rolling_avg = (parsed
+    .withWatermark(<span class="c3">"event_time"</span>, <span class="c3">"10 minutes"</span>)
+    .groupBy(window(<span class="c3">"event_time"</span>, <span class="c3">"5 minutes"</span>), <span class="c3">"sensor_id"</span>)
+    .agg(avg(<span class="c3">"temperature"</span>).alias(<span class="c3">"avg_temp"</span>)))
+
+<span class="c2">def</span> check_and_alert(batch_df, batch_id):
+    danger = batch_df.filter(<span class="c3">"avg_temp > 90"</span>)
+    <span class="c2">if</span> danger.count() > <span class="c2">0</span>:
+        send_alert(danger.collect())  <span class="c4"># e.g. call a webhook/Teams alert</span>
+    danger.write.format(<span class="c3">"delta"</span>).mode(<span class="c3">"append"</span>).saveAsTable(<span class="c3">"gold.temperature_alerts"</span>)
+
+rolling_avg.writeStream.foreachBatch(check_and_alert) \
+    .option(<span class="c3">"checkpointLocation"</span>, <span class="c3">"/mnt/lake/_checkpoints/sensor_alerts"</span>).start()</pre>
+
+        <div class="card" style="border-left:4px solid var(--violet); margin-top:14px; margin-bottom:0;">
+          <h3>🎯 What this project demonstrates</h3>
+          <p>Structured Streaming with watermarking for late-data handling (same concept as the PySpark guide's Level 10), and <code>foreachBatch</code> — a common real-world pattern for running custom logic (alerts, writes to multiple sinks) per micro-batch that doesn't fit a simple <code>writeStream</code> call.</p>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <span class="project-tag" style="background:var(--violet-soft); color:var(--violet);">PROJECT 3 · MACHINE LEARNING</span>
+        <h3 style="font-size:19px; margin-bottom:10px;">📉 Customer Churn Prediction — Governed, Tracked, Registered</h3>
+        <p style="margin-bottom:16px;"><strong>The problem:</strong> A telecom company wants to predict which customers are likely to cancel next month, using historical usage and billing data, and needs the whole process — from raw data to a scored prediction table — to be governed, reproducible, and safely promotable to production.</p>
+
+        <div class="diagram-wrap" style="margin:16px 0;">
+          <svg viewBox="0 0 900 130" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+            <defs><marker id="p3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5B6472"/></marker></defs>
+            <g font-size="10" font-weight="600">
+              <rect x="10" y="40" width="140" height="46" rx="8" fill="#DCEEF8" stroke="#1B6FA8"/><text x="80" y="63" text-anchor="middle" fill="#22262E">Unity Catalog</text><text x="80" y="78" text-anchor="middle" font-size="8.5" fill="#5B6472">governed feature tables</text>
+              <rect x="190" y="40" width="140" height="46" rx="8" fill="#FDF1CC" stroke="#F2B705"/><text x="260" y="63" text-anchor="middle" fill="#22262E">Feature</text><text x="260" y="78" text-anchor="middle" font-size="8.5" fill="#5B6472">engineering</text>
+              <rect x="370" y="40" width="140" height="46" rx="8" fill="#EDE7FB" stroke="#7A5FD1"/><text x="440" y="63" text-anchor="middle" fill="#22262E">MLflow</text><text x="440" y="78" text-anchor="middle" font-size="8.5" fill="#5B6472">tracked training runs</text>
+              <rect x="550" y="40" width="150" height="46" rx="8" fill="#FFE0DA" stroke="#FF3621"/><text x="625" y="63" text-anchor="middle" fill="#22262E">Model Registry</text><text x="625" y="78" text-anchor="middle" font-size="8.5" fill="#5B6472">Staging → Production</text>
+              <rect x="740" y="40" width="150" height="46" rx="8" fill="#E2F3EA" stroke="#2E8B57"/><text x="815" y="63" text-anchor="middle" fill="#22262E">Batch scoring</text><text x="815" y="78" text-anchor="middle" font-size="8.5" fill="#5B6472">nightly Workflow</text>
+            </g>
+            <g stroke="#5B6472" stroke-width="2" marker-end="url(#p3)">
+              <line x1="150" y1="63" x2="187" y2="63"/><line x1="330" y1="63" x2="367" y2="63"/><line x1="510" y1="63" x2="547" y2="63"/><line x1="700" y1="63" x2="737" y2="63"/>
+            </g>
+          </svg>
+        </div>
+
+        <div class="code-label">Training, tracking, registering, and batch scoring</div>
+        <pre class="code"><span class="c2">import</span> mlflow
+<span class="c2">from</span> sklearn.ensemble <span class="c2">import</span> GradientBoostingClassifier
+
+features = spark.table(<span class="c3">"prod.telecom.customer_features"</span>).toPandas()  <span class="c4"># governed by Unity Catalog</span>
+X, y = features.drop(<span class="c3">"churned"</span>, axis=<span class="c2">1</span>), features[<span class="c3">"churned"</span>]
+
+<span class="c2">with</span> mlflow.start_run(run_name=<span class="c3">"churn_v3"</span>):
+    model = GradientBoostingClassifier(n_estimators=<span class="c2">150</span>).fit(X, y)
+    mlflow.log_metric(<span class="c3">"auc"</span>, evaluate_auc(model, X, y))
+    mlflow.sklearn.log_model(model, <span class="c3">"model"</span>,
+        registered_model_name=<span class="c3">"ChurnPredictor"</span>)  <span class="c4"># auto-registers a new version</span>
+
+<span class="c4"># Nightly batch scoring job — loads the current "Production" model version</span>
+model = mlflow.pyfunc.load_model(<span class="c3">"models:/ChurnPredictor/Production"</span>)
+new_customers = spark.table(<span class="c3">"prod.telecom.customer_features"</span>)
+scored = new_customers.withColumn(<span class="c3">"churn_risk"</span>, predict_udf(<span class="c3">"*"</span>))
+scored.write.format(<span class="c3">"delta"</span>).mode(<span class="c3">"overwrite"</span>).saveAsTable(<span class="c3">"gold.churn_predictions"</span>)</pre>
+
+        <div class="card" style="border-left:4px solid var(--violet); margin-top:14px; margin-bottom:0;">
+          <h3>🎯 What this project demonstrates</h3>
+          <p>Unity Catalog governing the feature table (Level 5), MLflow tracking and registering the model (Level 10), and a scheduled Workflow (Level 7) running batch inference against whichever model version is currently marked "Production" — so promoting a better model never requires touching the scoring job's code at all.</p>
+        </div>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Pick one of these three projects and sketch how you'd extend it: add a data quality alert to Project 1, add a second sensor metric to Project 2, or add a model performance monitoring step to Project 3 that flags when live accuracy drifts from training accuracy.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 15 -->
+    <section class="level" id="interviewbank">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--flame-soft);">🎯</div>
+        <div><div class="level-eyebrow">Level 15 — Senior Bank</div><h2>Interview Questions for 15+ Years of Experience</h2></div>
+      </div>
+      <p class="level-tagline">Every earlier level had one interview question woven in. These are the harder, more open-ended ones a senior/architect-level panel actually asks.</p>
+
+      <div class="qbank">
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "Databricks vs. a traditional cloud data warehouse like Snowflake — how do you decide?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>Both are strong modern platforms, and the gap has narrowed a lot as each has added the other's strengths. I'd lean toward Databricks when the workload genuinely spans data engineering, streaming, and ML/data science on the same platform, or when very large-scale, code-first Spark transformation logic is central to the work. I'd lean toward a warehouse-first platform like Snowflake when the primary user base is SQL analysts and BI tools, simplicity and low operational overhead matter more than flexibility, and heavy custom Spark/ML workloads aren't the core need. Many organizations genuinely run both — Databricks for engineering/ML, a warehouse for governed BI — with Unity Catalog or similar increasingly blurring that line further.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How would you design a Delta table strategy to avoid the 'small files' and 'too much history' problems at scale?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>For small files, I'd enable Auto Optimize (optimizeWrite + autoCompact) on tables receiving frequent small writes — especially streaming sinks — and schedule periodic <code>OPTIMIZE ZORDER</code> on the columns most commonly filtered by downstream queries. For unbounded history growth, I'd run <code>VACUUM</code> on a defined retention schedule (balancing storage cost against how far back time-travel/rollback actually needs to reach), and disable time-travel-breaking operations from running accidentally by setting appropriate retention properties. For very high-churn tables, I'd also evaluate Liquid Clustering as a newer alternative to Z-Order that avoids full-table rewrites when clustering needs change.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How do you implement a Slowly Changing Dimension (SCD Type 2) pattern natively in Delta Lake?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>A <code>MERGE</code> statement with conditional logic: match incoming records against the current dimension table on business key where <code>is_current = true</code>; for matched rows with changed attributes, set the existing row's <code>end_date</code> and <code>is_current = false</code>; then insert new rows for both genuinely new records and the updated versions of changed records, with a fresh <code>start_date</code> and <code>is_current = true</code>. In practice this is often expressed as two MERGE passes (one to close out changed rows, one to insert new versions) or via a Data Flow/DLT Alter Row-equivalent pattern — the underlying mechanism is Delta's atomic MERGE giving you a safe way to do this without partial-update risk.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "A Unity Catalog table shows a spike of unauthorized access attempts in the audit log — walk me through your response." <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>First, confirm whether these are genuinely unauthorized attempts (denied by UC's access control, which is actually the system working as intended) versus a misconfigured grant that's letting something through it shouldn't. I'd check the audit log for the specific principal, the exact table/column, and the pattern of attempts — a single user repeatedly probing different tables looks very different from a service principal with a legitimately misconfigured grant. If it's a genuine access control gap, I'd immediately tighten the grant and review what else that principal has access to. If it's a compromised credential, I'd rotate it and check Unity Catalog's lineage to see what data that principal actually touched successfully before detection, to scope the incident accurately.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How do you handle schema evolution in a Delta table feeding multiple downstream consumers without breaking them?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>I'd distinguish additive changes (new columns) from breaking changes (renamed/removed/type-changed columns). Additive changes can generally use Delta's schema evolution (<code>mergeSchema</code>) safely, since existing consumers selecting specific columns aren't affected by new ones appearing. Breaking changes need a deliberate migration path — often a new table version or a transition period where both old and new schemas are supported via a view, with downstream consumers migrated on a schedule before the old shape is retired. I'd also use DLT expectations or explicit schema validation at ingestion to catch and quarantine genuinely unexpected schema changes (like a type flip) rather than silently accepting them.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How would you design a multi-workspace Databricks environment for a large enterprise with multiple business units?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>I'd use Unity Catalog as the account-level governance layer shared across all workspaces, so data access policies stay consistent regardless of which workspace a user connects through. Workspaces themselves would likely be split by environment (dev/test/prod) and potentially by business unit if isolation, cost attribution, or compliance boundaries require it — with catalogs within Unity Catalog providing logical data separation even when workspaces are shared. Cluster policies would be centrally defined and applied per business unit to control cost and prevent configuration drift, and CI/CD (Asset Bundles) would promote consistent job/pipeline definitions across the environment-scoped workspaces rather than each business unit reinventing its own deployment process.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How do you approach disaster recovery for a Databricks lakehouse spanning multiple Azure regions?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>Since Delta tables are ultimately files in ADLS Gen2, geo-redundant storage (GRS) is the foundation — the data itself survives a regional outage. For the platform layer, I'd keep infrastructure-as-code (Asset Bundles, Terraform) for the workspace, cluster policies, and job definitions so a secondary-region workspace can be stood up quickly rather than manually reconstructed. Unity Catalog metastore replication/failover strategy needs explicit planning since it's the governance source of truth. I'd document and periodically test an actual failover runbook rather than assuming DR readiness from architecture diagrams alone — the biggest real-world DR risk is usually an untested plan, not a missing technical capability.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "When would you use Photon versus when might it not help much?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>Photon gives the biggest wins on SQL and DataFrame-heavy workloads — scans, filters, joins, aggregations — where its vectorized, columnar execution directly replaces the standard JVM engine's operators. It helps far less on workloads dominated by row-at-a-time Python UDFs, since those still pay the same Python-JVM serialization cost regardless of the underlying engine — the bottleneck there is the UDF boundary, not the SQL execution engine. So for a pipeline heavy on custom Python logic, I'd prioritize rewriting UDFs as Pandas UDFs or native functions before expecting Photon alone to solve a performance problem.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How do you decide between Delta Live Tables and hand-written Structured Streaming code for a new streaming pipeline?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>DLT is a strong default when the pipeline is expressible as a clear table dependency graph with standard incremental processing needs and benefits from built-in data quality expectations and automatic lineage. I'd drop to hand-written Structured Streaming when the pipeline needs fine-grained control DLT doesn't expose as cleanly — complex stateful logic, custom <code>foreachBatch</code> side effects (like the alerting pattern in Project 2), or integration patterns that don't map naturally onto DLT's table-centric model. In practice, teams often use both: DLT for the core Bronze/Silver/Gold transformation graph, and a plain Structured Streaming job for a specialized task like real-time alerting that sits alongside it.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "What's your process for right-sizing Databricks clusters for a brand-new production workload?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>I don't guess a final configuration upfront. I run the workload against a representative data volume with autoscaling enabled and generous bounds, then use the Spark UI and cluster metrics (CPU, memory, shuffle volume, spill) to identify the actual bottleneck — the same diagnostic process as plain Spark tuning, since Databricks doesn't change the underlying execution model. From there I tighten the autoscale range to match observed real usage, consider whether Photon or a different node family (memory-optimized vs. compute-optimized) better fits the workload's actual profile, and treat the first production run as a calibration run rather than a final answer — revisiting sizing periodically as data volume and shape evolve.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LEVEL 16: GLOSSARY -->
+    <section class="level" id="glossary">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--gold-soft);">📖</div>
+        <div><div class="level-eyebrow">Level 16 — Reference</div><h2>Glossary — Speak Like a Pro</h2></div>
+      </div>
+      <p class="level-tagline">Every term gets two definitions: the simple one, and the one you'd use in front of a hiring panel.</p>
+
+      <div class="glossary-grid">
+        <div class="card">
+          <h3 class="glossary-cat-title">🏗️ Platform Core</h3>
+          <div class="term"><div class="term-name">Lakehouse</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a data lake that behaves as reliably as a data warehouse.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>an architecture combining ACID transactions, schema enforcement, and fast structured queries directly on top of cheap object storage, powered by Delta Lake.</div>
+          </div>
+          <div class="term"><div class="term-name">Control Plane / Data Plane</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>the app (Control Plane) vs. the actual kitchen (Data Plane) doing the cooking.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>Databricks-managed orchestration/UI (Control Plane) versus customer-subscription-hosted compute and storage (Data Plane) — the split underpinning Azure Databricks' security model.</div>
+          </div>
+          <div class="term"><div class="term-name">Notebook</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>an interactive lab journal mixing code, results, and notes.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a web-based, cell-by-cell interactive development environment supporting multiple languages (Python, SQL, Scala, R) against an attached cluster.</div>
+          </div>
+          <div class="term"><div class="term-name">All-Purpose vs. Job Cluster</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a shared, always-up lab (All-Purpose) vs. a fresh lab built for one experiment then torn down (Job).</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>interactive, longer-lived compute for development vs. ephemeral compute auto-provisioned for a single scheduled job run, then terminated.</div>
+          </div>
+          <div class="term"><div class="term-name">Photon</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a faster engine swapped in under the hood, same car.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>Databricks' native, vectorized C++ execution engine — a drop-in replacement for much of Spark SQL's JVM-based execution, fastest on SQL/DataFrame-heavy workloads.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="glossary-cat-title">💎 Delta Lake &amp; Governance</h3>
+          <div class="term"><div class="term-name">_delta_log</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>the shared history binder tracking every change.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>the ordered transaction log directory backing every Delta table, recording atomic add/remove file operations that enable ACID guarantees and time travel.</div>
+          </div>
+          <div class="term"><div class="term-name">OPTIMIZE / ZORDER</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>tidying up small files and shelving related data together.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>OPTIMIZE compacts small files into larger ones; ZORDER co-locates data by specified columns to speed up filtered reads via data skipping.</div>
+          </div>
+          <div class="term"><div class="term-name">Time travel</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>going back to see what a table looked like yesterday.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>querying a Delta table as of a prior version or timestamp, enabled by the transaction log retaining historical file references until VACUUMed.</div>
+          </div>
+          <div class="term"><div class="term-name">Unity Catalog</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>one school-wide rulebook for who can access what.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>Databricks' account-level governance layer unifying access control, audit logging, and lineage across all workspaces via a three-level catalog.schema.table namespace.</div>
+          </div>
+          <div class="term"><div class="term-name">Lineage</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a map showing which tables feed into which other tables.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>automatically tracked table/column-level dependency graphs in Unity Catalog, used for impact analysis and root-cause debugging.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="glossary-cat-title">⚙️ Ingestion &amp; Orchestration</h3>
+          <div class="term"><div class="term-name">Auto Loader</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a mail carrier who only hands you today's new letters.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>an incremental file ingestion source (<code>cloudFiles</code>) using cloud-native notification services for efficient new-file discovery at massive scale.</div>
+          </div>
+          <div class="term"><div class="term-name">Databricks Workflows</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>the whole night's cooking schedule, not just one recipe step.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>Databricks' native orchestration service for scheduling multi-task jobs with dependencies, retries, and conditional branching.</div>
+          </div>
+          <div class="term"><div class="term-name">Delta Live Tables (DLT)</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>declaring your destination and letting a smart GPS find the route.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a declarative framework for building ETL pipelines as a table dependency graph, with automatic incremental processing and built-in data quality expectations.</div>
+          </div>
+          <div class="term"><div class="term-name">Expectations</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a data quality rule that can warn, drop, or block bad rows.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>DLT's declarative data quality constraints (<code>expect</code>, <code>expect_or_drop</code>, <code>expect_or_fail</code>) with violation metrics surfaced in the pipeline UI.</div>
+          </div>
+          <div class="term"><div class="term-name">foreachBatch</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>running custom logic on each little chunk of a streaming pipeline.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a Structured Streaming sink method exposing each micro-batch as a static DataFrame, enabling custom side effects like multi-sink writes or external alerting.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="glossary-cat-title">🔐 ML, Security &amp; Ops</h3>
+          <div class="term"><div class="term-name">MLflow Tracking</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a lab notebook automatically recording every experiment.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>logging of parameters, metrics, and artifacts per training run, enabling comparison and reproducibility across experiments.</div>
+          </div>
+          <div class="term"><div class="term-name">Model Registry</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a filing system tracking which recipe version is currently "the one we serve."</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>MLflow's versioned model store with lifecycle stages (Staging, Production, Archived) enabling controlled promotion and rollback.</div>
+          </div>
+          <div class="term"><div class="term-name">Secret scope</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a lockbox for passwords notebooks can use without displaying them.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a Databricks-managed or Key Vault-backed store for credentials, referenced by name and automatically redacted in notebook output.</div>
+          </div>
+          <div class="term"><div class="term-name">VNet injection</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>building the kitchen inside a building whose security you fully control.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>deploying the Data Plane into a customer-managed VNet with custom subnets/NSGs instead of the Databricks-managed default network.</div>
+          </div>
+          <div class="term"><div class="term-name">Databricks Asset Bundle</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a shipping label precise enough to rebuild your whole project elsewhere.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a YAML-defined, CLI-deployable project format bundling notebooks, jobs, and pipelines with per-environment target configuration for CI/CD.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUIZ -->
+    <section class="level" id="quiz">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--flame-soft);">🎯</div>
+        <div><div class="level-eyebrow">Level 17</div><h2>Test Your Powers — Hero Quiz</h2></div>
+      </div>
+      <p class="level-tagline">18 questions spanning everything above, including the three projects. Every answer — right or wrong — comes with an explanation.</p>
+      <div class="quiz-card" id="quizCard"></div>
+    </section>
+
+    <!-- RECAP -->
+    <section class="level" id="recap">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--gold-soft);">⭐</div>
+        <div><div class="level-eyebrow">Hero status</div><h2>One-Page Recap &amp; Official Docs</h2></div>
+      </div>
+      <p class="level-tagline">If you only remember one line per topic, remember these — then bookmark the real documentation below.</p>
+
+      <div class="recap">
+        <div class="chip"><span class="k">Lakehouse</span>A data lake with warehouse-grade reliability, via Delta Lake.</div>
+        <div class="chip"><span class="k">Control/Data Plane</span>Metadata stays with Databricks. Your data stays in your subscription.</div>
+        <div class="chip"><span class="k">Delta Lake</span>Parquet + a transaction log = ACID, time travel, safe concurrent writes.</div>
+        <div class="chip"><span class="k">Unity Catalog</span>One rulebook for access, audit, and lineage across every workspace.</div>
+        <div class="chip"><span class="k">Auto Loader</span>Only the new mail, never the whole mailbox re-read.</div>
+        <div class="chip"><span class="k">DLT</span>Declare the destination table; let Databricks find the route.</div>
+        <div class="chip"><span class="k">Photon</span>A faster engine, biggest win on SQL/DataFrame workloads.</div>
+        <div class="chip"><span class="k">MLflow</span>A lab notebook for experiments, plus a registry for what's live.</div>
+        <div class="chip"><span class="k">Job cluster</span>Spins up for one run, terminates after — the cheap default for production.</div>
+        <div class="chip"><span class="k">Asset Bundles</span>One YAML project, deployed identically to dev/test/prod.</div>
+        <div class="chip"><span class="k">VNet injection</span>Your kitchen, your walls, your security cameras.</div>
+        <div class="chip"><span class="k">OPTIMIZE ZORDER</span>Fewer files, and related data shelved together.</div>
+      </div>
+
+      <div class="card" style="margin-top:22px;">
+        <h3>📚 Official documentation &amp; further learning</h3>
+        <div class="doclinks">
+          <a href="https://learn.microsoft.com/en-us/azure/databricks/" target="_blank" rel="noopener">Azure Databricks Documentation <span class="desc">— the canonical reference for every concept in this guide</span></a>
+          <a href="https://docs.databricks.com/en/delta/index.html" target="_blank" rel="noopener">Delta Lake Documentation <span class="desc">— MERGE, time travel, OPTIMIZE, and schema evolution in depth</span></a>
+          <a href="https://docs.databricks.com/en/data-governance/unity-catalog/index.html" target="_blank" rel="noopener">Unity Catalog Guide <span class="desc">— governance, lineage, and fine-grained access control</span></a>
+          <a href="https://docs.databricks.com/en/delta-live-tables/index.html" target="_blank" rel="noopener">Delta Live Tables Guide <span class="desc">— declarative pipelines and data quality expectations</span></a>
+          <a href="https://mlflow.org/docs/latest/index.html" target="_blank" rel="noopener">MLflow Documentation <span class="desc">— experiment tracking, Model Registry, and deployment</span></a>
+          <a href="https://docs.databricks.com/en/dev-tools/bundles/index.html" target="_blank" rel="noopener">Databricks Asset Bundles Guide <span class="desc">— CI/CD and infrastructure-as-code for Databricks projects</span></a>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Built to take you from "what's a lakehouse?" to confidently whiteboarding a governed, production-grade Databricks platform in a 15+ year architect interview. Explain the simple version out loud first, then the architect-level version — that's the fastest way to sound like you've actually run this in production. 🧱
+    </footer>
+  </main>
+</div>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+  const hamburger = document.getElementById('hamburgerBtn');
+  function openSidebar(){ sidebar.classList.add('open'); overlay.classList.add('show'); }
+  function closeSidebar(){ sidebar.classList.remove('open'); overlay.classList.remove('show'); }
+  hamburger.addEventListener('click', () => { sidebar.classList.contains('open') ? closeSidebar() : openSidebar(); });
+  overlay.addEventListener('click', closeSidebar);
+  document.querySelectorAll('#levelNav a').forEach(a => a.addEventListener('click', closeSidebar));
+
+  const links = Array.from(document.querySelectorAll('#levelNav a'));
+  const sections = links.map(a => document.querySelector(a.getAttribute('href')));
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = '#' + entry.target.id;
+        links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === id));
+      }
+    });
+  }, { rootMargin: '-40% 0px -50% 0px', threshold: 0 });
+  sections.forEach(s => { if (s) observer.observe(s); });
+
+  function toggleAnswer(btn){
+    const box = btn.nextElementSibling;
+    box.classList.toggle('show');
+    btn.classList.toggle('open');
+  }
+
+  const quizData = [
+    { q: "In one sentence, what does 'Lakehouse' mean?",
+      options: ["A data warehouse hosted next to a physical lake", "An architecture bringing warehouse-grade reliability (ACID, schema enforcement) directly on top of cheap data lake storage", "A synonym for a NoSQL database", "A type of data visualization dashboard"],
+      correct: 1,
+      explanation: "Lakehouse combines the cost/flexibility of a data lake with the reliability (ACID transactions, schema enforcement, fast queries) of a data warehouse — made possible by Delta Lake's transaction log." },
+    { q: "In Azure Databricks, where does your actual data live and get processed?",
+      options: ["Entirely within Databricks' own infrastructure, outside your control", "In the Data Plane, which runs inside your own Azure subscription", "In the Control Plane, alongside notebook metadata", "It varies randomly per query"],
+      correct: 1,
+      explanation: "The Data Plane — clusters and storage — runs inside the customer's own Azure subscription. The Control Plane, managed by Databricks, only ever handles metadata like notebook code and job scheduling." },
+    { q: "What's the key difference between an All-Purpose cluster and a Job cluster?",
+      options: ["They are functionally identical, just named differently", "All-Purpose is for interactive/shared development and stays up between uses; Job clusters spin up for one scheduled run and auto-terminate afterward", "Job clusters are always more expensive per hour", "All-Purpose clusters cannot run notebooks"],
+      correct: 1,
+      explanation: "All-Purpose clusters suit interactive development and are often shared/long-lived; Job clusters are ephemeral, created for a single scheduled run and terminated afterward, which is cheaper for production workloads." },
+    { q: "What is the _delta_log folder, and why does it matter?",
+      options: ["A folder for storing error logs only", "The transaction log recording every add/remove file operation, giving Delta tables ACID guarantees and time travel", "A backup copy of the raw Parquet files", "A configuration file for cluster settings"],
+      correct: 1,
+      explanation: "_delta_log is the ordered, atomic transaction log underlying every Delta table — it's the actual mechanism that turns plain Parquet files into a reliable, ACID-compliant table." },
+    { q: "What does the OPTIMIZE ZORDER BY command actually do?",
+      options: ["It deletes old data permanently", "It compacts small files and physically co-locates data by the specified columns, speeding up filtered queries", "It encrypts the table", "It creates a backup of the table"],
+      correct: 1,
+      explanation: "OPTIMIZE compacts many small files into fewer larger ones; ZORDER additionally co-locates related data by the given columns on disk, enabling more effective data skipping for filtered queries." },
+    { q: "What governance problem does Unity Catalog solve that per-workspace access control created?",
+      options: ["It makes queries run faster", "It centralizes access control, audit logging, and lineage at the account level instead of duplicating and drifting across separate workspaces", "It removes the need for a data lake entirely", "It replaces the need for clusters"],
+      correct: 1,
+      explanation: "Before Unity Catalog, permissions were defined per-workspace, risking drift and duplication. Unity Catalog centralizes governance consistently across every workspace in an account." },
+    { q: "Why does Auto Loader use cloud-native file notifications instead of just listing a folder repeatedly?",
+      options: ["Notifications are required by Azure for all storage accounts", "Repeatedly listing a folder becomes slow and expensive as file counts grow into the millions; notifications make new-file discovery efficient and incremental", "It's purely a cosmetic difference with no performance impact", "Folder listing doesn't work at all in Databricks"],
+      correct: 1,
+      explanation: "At massive file counts, repeated full directory listings become a real performance and cost bottleneck. Event-based notifications let Auto Loader discover new files efficiently without re-scanning everything." },
+    { q: "In Delta Live Tables, what does the expect_or_drop data quality constraint do?",
+      options: ["It stops the entire pipeline immediately on any violation", "It silently drops rows that violate the rule while letting the pipeline continue, tracking violation metrics", "It automatically fixes the bad data", "It only logs a warning with no other effect"],
+      correct: 1,
+      explanation: "expect_or_drop removes violating rows from the output while the pipeline keeps running, with violation counts visible in the pipeline UI — useful for tolerable data quality issues rather than pipeline-halting ones." },
+    { q: "What is Photon, and where does it help most?",
+      options: ["A new programming language for Databricks", "A vectorized native execution engine, most impactful on SQL/DataFrame-heavy workloads like scans, joins, and aggregations", "A replacement for Unity Catalog", "A tool exclusively for machine learning training"],
+      correct: 1,
+      explanation: "Photon is a vectorized, native rewrite of much of Spark SQL's execution engine — it speeds up SQL/DataFrame operators significantly but doesn't help much with row-at-a-time Python UDF-heavy code." },
+    { q: "What does the MLflow Model Registry add beyond simply saving trained model files?",
+      options: ["Nothing beyond what manual file saving already provides", "Versioning with lifecycle stages (Staging/Production), controlled promotion, and rollback tied to the exact training run that produced each version", "It automatically improves model accuracy", "It replaces the need for a training dataset"],
+      correct: 1,
+      explanation: "The Model Registry adds structured versioning, lifecycle stage tracking, and traceability back to the exact training run — giving a controlled promotion and rollback process that ad hoc file saving doesn't provide." },
+    { q: "In the IoT streaming project, what is foreachBatch used for?",
+      options: ["To slow down the streaming query intentionally", "To run custom logic — like checking a threshold and sending an alert — against each streaming micro-batch as a static DataFrame", "It's only used for batch jobs, never streaming", "To automatically restart a failed stream"],
+      correct: 1,
+      explanation: "foreachBatch exposes each micro-batch as a regular DataFrame, enabling custom side effects (alerts, multi-sink writes) that don't fit a standard writeStream call — exactly the pattern used for the anomaly alert in Project 2." },
+    { q: "What does VNet injection let an organization do in Azure Databricks?",
+      options: ["Increase cluster CPU speed", "Deploy the Data Plane into a customer-controlled virtual network with custom subnets and network security groups", "Skip the need for Unity Catalog", "Automatically encrypt all notebook code"],
+      correct: 1,
+      explanation: "VNet injection deploys the Data Plane into a VNet the customer's own security team controls, instead of the Databricks-managed default network — important for regulated environments needing custom network security controls." },
+    { q: "Why should API keys be stored in a Databricks secret scope instead of hardcoded in notebook cells?",
+      options: ["Secret scopes make code run faster", "Hardcoded secrets risk exposure in code, Git history, and logs; secret scopes centralize storage and Databricks auto-redacts secret values in notebook output", "It's a purely cosmetic best practice with no real risk reduction", "Secret scopes are required for all notebook cells regardless of content"],
+      correct: 1,
+      explanation: "Hardcoded secrets can leak through code, version control history, or accidental print statements. Secret scopes centralize credential storage and Databricks automatically redacts secret values if a notebook tries to display them." },
+    { q: "What's the main advantage of Databricks Asset Bundles over manually exporting and re-importing notebooks between workspaces?",
+      options: ["Bundles make notebooks run faster", "Bundles provide version-controlled, repeatable, environment-parameterized deployment through CI/CD, rather than an error-prone manual process", "Manual export/import is actually the recommended production approach", "Bundles eliminate the need for a Git repository"],
+      correct: 1,
+      explanation: "Asset Bundles define a project (notebooks, jobs, pipelines) as YAML, deployable consistently to different environments via CLI/CI/CD — replacing a manual, error-prone, hard-to-audit export/import promotion process." },
+    { q: "Why does leaving a large All-Purpose cluster running 24/7 for scheduled jobs typically waste money?",
+      options: ["It doesn't — All-Purpose clusters are always cheaper", "It pays for idle compute time between job runs, unlike a Job cluster which only exists for the duration of its run and then terminates", "Scheduled jobs cannot run on All-Purpose clusters at all", "All-Purpose clusters have a fixed monthly fee regardless of usage"],
+      correct: 1,
+      explanation: "An always-on All-Purpose cluster charges for every hour it's running, including idle time between scheduled jobs. A Job cluster only exists for the run itself and auto-terminates immediately after, avoiding that idle cost entirely." },
+    { q: "In the churn prediction project, what does loading 'models:/ChurnPredictor/Production' in the scoring job accomplish?",
+      options: ["It retrains the model from scratch every time it's called", "It loads whichever model version is currently marked Production in the Model Registry, so promoting a new model never requires changing the scoring job's code", "It deletes all older model versions automatically", "It only works with a specific hardcoded run ID"],
+      correct: 1,
+      explanation: "Referencing the Production-stage alias means the scoring job always uses the currently-promoted model version — a new model can be promoted to Production in the Registry without any change needed to the batch scoring code itself." },
+    { q: "Why is watermarking important in the IoT sensor streaming project?",
+      options: ["It encrypts the sensor data in transit", "It bounds how long Structured Streaming waits for late-arriving readings before finalizing a time window, controlling memory usage and correctness", "It automatically fixes malfunctioning sensors", "It's only relevant for batch jobs, not streaming"],
+      correct: 1,
+      explanation: "Watermarking defines how late an event can arrive and still be counted in its time window — without it, window state could grow unbounded waiting indefinitely for stragglers, and with too tight a watermark, genuinely late-but-valid data gets dropped." },
+    { q: "Why does the retail analytics project use DLT expectations instead of just filtering bad rows manually in plain PySpark code?",
+      options: ["Expectations run faster than any manual filter could", "Expectations are declarative, automatically tracked with violation metrics visible in the pipeline UI, and integrate with DLT's dependency management", "Manual filtering is impossible in Databricks notebooks", "Expectations automatically fix bad data instead of dropping it"],
+      correct: 1,
+      explanation: "While a manual filter can achieve similar row-dropping behavior, DLT expectations are declarative, automatically tracked with visible violation counts in the pipeline UI, and integrate cleanly with DLT's broader dependency and incremental-processing management — better observability with less custom code." }
+  ];
+
+  let quizIndex = 0;
+  let quizScore = 0;
+  let quizAnswered = false;
+
+  function renderQuiz(){
+    const card = document.getElementById('quizCard');
+    if (quizIndex >= quizData.length){
+      card.innerHTML = `
+        <div class="quiz-result">
+          <div style="font-size:13px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;">Quiz complete</div>
+          <div class="score">${quizScore} / ${quizData.length}</div>
+          <p>${quizScore === quizData.length ? "Full marks — you're ready to whiteboard a lakehouse architecture with confidence. 🧱" : quizScore >= quizData.length * 0.7 ? "Solid! Revisit the levels you missed before your interview." : "Good start — scroll back through the levels you missed and try again."}</p>
+          <button class="quiz-retake" onclick="restartQuiz()">Retake quiz</button>
+        </div>`;
+      return;
+    }
+    const item = quizData[quizIndex];
+    quizAnswered = false;
+    const pct = Math.round((quizIndex / quizData.length) * 100);
+    card.innerHTML = `
+      <div class="quiz-progress"><span>Question ${quizIndex + 1} of ${quizData.length}</span><span>Score: ${quizScore}</span></div>
+      <div class="quiz-bar"><div class="quiz-bar-fill" style="width:${pct}%;"></div></div>
+      <div class="quiz-q">${item.q}</div>
+      <div class="quiz-options" id="quizOptions"></div>
+      <div class="quiz-explain" id="quizExplain"></div>
+      <button class="quiz-next" id="quizNextBtn" onclick="nextQuiz()">Next question →</button>
+    `;
+    const optWrap = document.getElementById('quizOptions');
+    item.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'quiz-opt';
+      btn.textContent = opt;
+      btn.onclick = () => selectQuizOption(i);
+      optWrap.appendChild(btn);
+    });
+  }
+
+  function selectQuizOption(i){
+    if (quizAnswered) return;
+    quizAnswered = true;
+    const item = quizData[quizIndex];
+    const opts = document.querySelectorAll('#quizOptions .quiz-opt');
+    opts.forEach((btn, idx) => {
+      btn.disabled = true;
+      if (idx === item.correct) btn.classList.add('correct');
+      else if (idx === i) btn.classList.add('incorrect');
+    });
+    if (i === item.correct) quizScore++;
+    const explainBox = document.getElementById('quizExplain');
+    explainBox.textContent = (i === item.correct ? "✅ Correct — " : "❌ Not quite — ") + item.explanation;
+    explainBox.classList.add('show');
+    document.getElementById('quizNextBtn').classList.add('show');
+  }
+
+  function nextQuiz(){ quizIndex++; renderQuiz(); }
+  function restartQuiz(){ quizIndex = 0; quizScore = 0; renderQuiz(); }
+
+  renderQuiz();
+</script>
+</body>
+</html>
