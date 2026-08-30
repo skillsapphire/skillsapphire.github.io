@@ -1,0 +1,1866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neural Academy — AI, ML & Deep Learning Zero to Hero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F5FA;
+    --card:#FFFFFF;
+    --ink:#1E1B2E;
+    --ink-soft:#5C5872;
+    --line:#E3E0EF;
+    --violet:#6C4FF6;
+    --violet-soft:#EAE4FE;
+    --cyan:#00C2D1;
+    --cyan-soft:#D8F7FA;
+    --coral:#FF6B6B;
+    --coral-soft:#FFE3E3;
+    --gold:#FFC145;
+    --gold-soft:#FFF2D9;
+    --green:#34C38F;
+    --green-soft:#E1F8EE;
+    --radius:18px;
+    --shadow: 0 6px 20px rgba(30,27,46,0.08);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{ margin:0; background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif; line-height:1.62; }
+  h1,h2,h3,.display{ font-family:'Space Grotesk',sans-serif; color:var(--ink); line-height:1.18; }
+  code, pre, .mono{ font-family:'JetBrains Mono',monospace; }
+  a{ color:inherit; }
+  img,svg{ max-width:100%; }
+
+  .app{ display:flex; min-height:100vh; }
+
+  .sidebar{
+    width:284px; flex-shrink:0; background:var(--card); border-right:1px solid var(--line);
+    position:sticky; top:0; height:100vh; overflow-y:auto; padding:22px 16px 40px; z-index:40;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; padding:4px 8px 18px; border-bottom:1px dashed var(--line); margin-bottom:14px; }
+  .brand .mark{
+    width:38px;height:38px;border-radius:11px; flex-shrink:0;
+    background:linear-gradient(135deg,var(--violet),var(--cyan));
+    display:flex; align-items:center; justify-content:center; font-size:18px; color:#fff;
+  }
+  .brand .name{ font-family:'Space Grotesk'; font-weight:700; font-size:14.5px; }
+  .brand .sub{ font-size:11px; color:var(--ink-soft); font-weight:500; }
+
+  nav.levels{ display:flex; flex-direction:column; gap:2px; }
+  nav.levels a{
+    display:flex; align-items:center; gap:9px; text-decoration:none; padding:8px 9px;
+    border-radius:12px; font-size:12.3px; font-weight:600; color:var(--ink-soft);
+    transition:background .15s ease, color .15s ease;
+  }
+  nav.levels a:hover{ background:var(--bg); color:var(--ink); }
+  nav.levels a.active{ background:var(--violet-soft); color:var(--violet); }
+  nav.levels a .num{
+    width:20px;height:20px;border-radius:6px; background:var(--line); color:var(--ink);
+    font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  nav.levels a.active .num{ background:var(--violet); color:#fff; }
+  .sidebar-foot{ margin-top:18px; padding-top:14px; border-top:1px dashed var(--line); font-size:11px; color:var(--ink-soft); }
+
+  .topbar{
+    display:none; position:sticky; top:0; z-index:50; background:var(--card); border-bottom:1px solid var(--line);
+    padding:12px 16px; align-items:center; justify-content:space-between;
+  }
+  .topbar .brand{ border:none; padding:0; margin:0; }
+  .hamburger{
+    width:40px;height:40px;border-radius:10px; border:1px solid var(--line); background:var(--bg);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:18px;
+  }
+  main{ flex:1; min-width:0; }
+
+  .hero{ padding:56px 48px 20px; max-width:1000px; }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px; background:var(--gold-soft); color:#8A6300;
+    padding:6px 14px; border-radius:999px; font-size:12.5px; font-weight:700; margin-bottom:18px;
+  }
+  .hero h1{ font-size:clamp(29px,4.3vw,46px); margin:0 0 14px; }
+  .hero h1 .hi{ color:var(--violet); }
+  .hero p.lede{ font-size:16.5px; color:var(--ink-soft); max-width:660px; margin:0 0 30px; }
+
+  .brain-strip{ display:flex; gap:14px; margin:12px 0 40px; flex-wrap:wrap; }
+  .brain-strip .node{
+    flex:1; min-width:130px; background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:14px 16px; box-shadow:var(--shadow); position:relative; overflow:hidden;
+  }
+  .brain-strip .node::before{ content:''; position:absolute; top:0; left:0; width:100%; height:3px; }
+  .brain-strip .node .n{ font-family:'Space Grotesk'; font-weight:800; font-size:14px; }
+  .brain-strip .node .l{ font-size:10.5px; color:var(--ink-soft); font-weight:600; margin-top:2px; }
+
+  section.level{ padding:52px 48px; max-width:1000px; border-top:1px dashed var(--line); scroll-margin-top:20px; }
+  section.level:first-of-type{ border-top:none; }
+
+  .level-head{ display:flex; align-items:center; gap:14px; margin-bottom:6px; }
+  .level-badge{
+    width:46px;height:46px;border-radius:14px; display:flex;align-items:center;justify-content:center;
+    font-size:22px; flex-shrink:0; box-shadow:var(--shadow);
+  }
+  .level-eyebrow{ font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); }
+  .level-head h2{ font-size:25px; margin:2px 0 0; }
+  .level-tagline{ font-size:15px; color:var(--ink-soft); margin:10px 0 26px; max-width:700px; }
+
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:22px 24px; box-shadow:var(--shadow); margin-bottom:20px; }
+  .card h3{ font-size:14.5px; margin:0 0 10px; display:flex; align-items:center; gap:8px; }
+  .card p{ margin:0; font-size:14px; color:var(--ink-soft); }
+  .card p + p{ margin-top:8px; }
+
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:760px){ .grid2{ grid-template-columns:1fr; } }
+
+  .analogy{ border-left:4px solid var(--gold); }
+  .analogy h3{ color:#8A6300; }
+  .usecase{ border-left:4px solid var(--cyan); }
+  .usecase h3{ color:#007A85; }
+
+  .diagram-wrap{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:24px; box-shadow:var(--shadow); margin:20px 0; }
+  .diagram-title{ font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); margin-bottom:14px; }
+  .diagram-caption{ font-size:12px; color:var(--ink-soft); text-align:center; margin-top:10px; }
+
+  pre.code{
+    background:#161320; color:#E8E6F0; border-radius:14px; padding:20px 22px; overflow-x:auto;
+    font-size:12.4px; line-height:1.7; margin:20px 0; box-shadow:var(--shadow);
+  }
+  pre.code .c1{ color:#7FE0C4; }
+  pre.code .c2{ color:#FFC145; }
+  pre.code .c3{ color:#8FC7FF; }
+  pre.code .c4{ color:#9C97B5; font-style:italic; }
+  .code-label{ display:inline-block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); margin-bottom:8px; }
+
+  .challenge{ background:var(--coral-soft); border:1px dashed var(--coral); border-radius:var(--radius); padding:20px 24px; margin-top:24px; }
+  .challenge h3{ color:#B23A3A; margin:0 0 8px; }
+  .challenge p{ margin:0; font-size:14px; color:#9C3333; }
+
+  button.interview-tag{
+    display:inline-flex; align-items:center; gap:8px; background:var(--violet-soft); color:var(--violet);
+    font-size:12px; font-weight:700; font-family:'Inter'; padding:9px 16px; border-radius:999px; border:none;
+    cursor:pointer; margin-top:22px; transition:background .15s ease;
+  }
+  button.interview-tag:hover{ background:#D9CDFE; }
+  button.interview-tag .chevron{ display:inline-block; font-size:11px; transition:transform .2s ease; }
+  button.interview-tag.open .chevron{ transform:rotate(180deg); }
+  .answer-box{ display:none; margin-top:12px; background:var(--card); border:1px solid var(--line); border-left:4px solid var(--violet); border-radius:14px; padding:18px 22px; box-shadow:var(--shadow); }
+  .answer-box.show{ display:block; }
+  .answer-label{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--violet); margin-bottom:8px; }
+  .answer-box p{ margin:0; font-size:14px; color:var(--ink-soft); }
+  .answer-box p + p{ margin-top:8px; }
+
+  .qbank{ margin-top:10px; }
+  .qbank .qitem{ margin-bottom:14px; }
+
+  .project-card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:26px 28px; margin-bottom:24px; }
+  .project-tag{ display:inline-block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; padding:5px 12px; border-radius:999px; margin-bottom:12px; }
+
+  .recap{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:8px; }
+  @media (max-width:760px){ .recap{ grid-template-columns:1fr 1fr; } }
+  @media (max-width:520px){ .recap{ grid-template-columns:1fr; } }
+  .recap .chip{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; font-size:12.5px; font-weight:600; }
+  .recap .chip .k{ display:block; font-size:11px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; margin-bottom:4px; }
+
+  .doclinks{ display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+  .doclinks a{ font-size:13.3px; font-weight:600; color:var(--violet); text-decoration:none; }
+  .doclinks a:hover{ text-decoration:underline; }
+  .doclinks .desc{ font-weight:400; color:var(--ink-soft); font-size:12.3px; }
+
+  footer{ padding:40px 48px 70px; max-width:1000px; color:var(--ink-soft); font-size:13px; }
+
+  .quiz-card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:26px 28px; box-shadow:var(--shadow); }
+  .quiz-progress{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; font-size:12.3px; color:var(--ink-soft); font-weight:600; }
+  .quiz-bar{ height:8px; border-radius:999px; background:var(--bg); overflow:hidden; margin-bottom:22px; }
+  .quiz-bar-fill{ height:100%; background:linear-gradient(90deg,var(--violet),var(--cyan)); border-radius:999px; transition:width .25s ease; }
+  .quiz-q{ font-size:16px; font-weight:700; margin-bottom:16px; font-family:'Space Grotesk'; }
+  .quiz-options{ display:flex; flex-direction:column; gap:10px; margin-bottom:6px; }
+  .quiz-opt{ text-align:left; padding:13px 16px; border-radius:12px; border:1.5px solid var(--line); background:var(--bg); font-size:13.4px; font-family:'Inter'; color:var(--ink); cursor:pointer; transition:border-color .15s ease, background .15s ease; }
+  .quiz-opt:hover:not(:disabled){ border-color:var(--violet); }
+  .quiz-opt:disabled{ cursor:default; }
+  .quiz-opt.correct{ background:var(--green-soft); border-color:var(--green); font-weight:700; }
+  .quiz-opt.incorrect{ background:var(--coral-soft); border-color:var(--coral); font-weight:700; }
+  .quiz-explain{ margin-top:16px; padding:16px 18px; border-radius:14px; background:var(--gold-soft); border:1px dashed var(--gold); font-size:13px; color:#7A5200; display:none; }
+  .quiz-explain.show{ display:block; }
+  .quiz-next{ margin-top:18px; background:var(--ink); color:#fff; border:none; padding:11px 22px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer; display:none; font-family:'Inter'; }
+  .quiz-next.show{ display:inline-block; }
+  .quiz-result{ text-align:center; padding:20px 0; }
+  .quiz-result .score{ font-family:'Space Grotesk'; font-size:44px; color:var(--violet); margin:6px 0; }
+  .quiz-result p{ color:var(--ink-soft); font-size:14px; }
+  .quiz-retake{ margin-top:16px; background:var(--violet); color:#fff; border:none; padding:11px 24px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer; }
+
+  .glossary-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:760px){ .glossary-grid{ grid-template-columns:1fr; } }
+  .glossary-cat-title{ font-family:'Space Grotesk'; font-size:15px; margin:0 0 14px; display:flex; align-items:center; gap:8px; }
+  .term{ padding:12px 0; border-top:1px dashed var(--line); }
+  .term:first-child{ border-top:none; padding-top:0; }
+  .term-name{ font-weight:700; font-size:13.4px; margin-bottom:5px; color:var(--ink); font-family:'JetBrains Mono'; }
+  .term-def{ font-size:12.1px; color:var(--ink-soft); margin:3px 0; line-height:1.55; }
+  .term-def .tag{ font-weight:700; margin-right:4px; }
+  .term-def.simple .tag{ color:#8A6300; }
+  .term-def.tech .tag{ color:var(--violet); }
+
+  ::selection{ background:var(--violet); color:#fff; }
+
+  @media (max-width:900px){
+    .sidebar{ position:fixed; left:0; top:0; height:100%; transform:translateX(-100%); transition:transform .25s ease; width:80vw; max-width:300px; }
+    .sidebar.open{ transform:translateX(0); box-shadow:0 0 40px rgba(0,0,0,0.25); }
+    .topbar{ display:flex; }
+    .hero, section.level, footer{ padding-left:22px; padding-right:22px; }
+    .overlay{ display:none; position:fixed; inset:0; background:rgba(30,27,46,0.35); z-index:39; }
+    .overlay.show{ display:block; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="mark">🧠</div>
+    <div><div class="name">Neural Academy</div><div class="sub">Zero → Hero</div></div>
+  </div>
+  <div class="hamburger" id="hamburgerBtn">☰</div>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="mark">🧠</div>
+      <div><div class="name">Neural Academy</div><div class="sub">Zero → Hero</div></div>
+    </div>
+    <nav class="levels" id="levelNav">
+      <a href="#start"><span class="num">0</span> Start Here</a>
+      <a href="#whatis"><span class="num">1</span> What is AI, ML &amp; DL?</a>
+      <a href="#howlearn"><span class="num">2</span> How a Machine Learns</a>
+      <a href="#linreg"><span class="num">3</span> Linear Regression</a>
+      <a href="#logreg"><span class="num">4</span> Logistic Regression</a>
+      <a href="#trees"><span class="num">5</span> Decision Trees &amp; Forests</a>
+      <a href="#classic"><span class="num">6</span> KNN, Naive Bayes &amp; SVM</a>
+      <a href="#unsupervised"><span class="num">7</span> Clustering &amp; PCA</a>
+      <a href="#boosting"><span class="num">8</span> Gradient Boosting</a>
+      <a href="#evaluation"><span class="num">9</span> Overfitting &amp; Evaluation</a>
+      <a href="#neuralnets"><span class="num">10</span> Neural Networks</a>
+      <a href="#cnn"><span class="num">11</span> CNNs — Seeing Images</a>
+      <a href="#rnn"><span class="num">12</span> RNNs &amp; LSTMs</a>
+      <a href="#attention"><span class="num">13</span> The Attention Mechanism</a>
+      <a href="#transformer"><span class="num">14</span> The Transformer</a>
+      <a href="#gpt"><span class="num">15</span> GPT &amp; Large Language Models</a>
+      <a href="#projects"><span class="num">16</span> Use-Case Projects</a>
+      <a href="#interviewbank"><span class="num">17</span> Senior Interview Bank</a>
+      <a href="#glossary"><span class="num">18</span> Glossary</a>
+      <a href="#quiz"><span class="num">🎯</span> Test Your Powers</a>
+      <a href="#recap"><span class="num">★</span> Recap &amp; Docs</a>
+    </nav>
+    <div class="sidebar-foot">19 levels, real runnable code, 3 hands-on projects, and a senior interview bank — from "what's a prediction?" to explaining GPT on a whiteboard.</div>
+  </aside>
+
+  <main>
+    <div class="hero" id="start">
+      <span class="eyebrow">🧠 Zero to Hero, one algorithm at a time</span>
+      <h1>Learn <span class="hi">AI, ML &amp; Deep Learning</span> like you're building the brain, not memorizing the textbook</h1>
+      <p class="lede">Every AI idea — from a simple line of best fit to GPT itself — is a plain everyday idea wearing a mathematical costume. This guide takes the costume off first with a simple analogy, then puts it back on with real runnable code, three hands-on projects, and the language a senior interviewer expects.</p>
+
+      <div class="brain-strip">
+        <div class="node" style="border-top:3px solid var(--gold);"><div class="n">🎯 Foundations</div><div class="l">What learning even means</div></div>
+        <div class="node" style="border-top:3px solid var(--cyan);"><div class="n">📊 Classic ML</div><div class="l">Regression, trees, clustering, boosting</div></div>
+        <div class="node" style="border-top:3px solid var(--violet);"><div class="n">🧠 Deep Learning</div><div class="l">Neural nets, CNNs, RNNs, attention</div></div>
+        <div class="node" style="border-top:3px solid var(--coral);"><div class="n">🚀 Modern AI</div><div class="l">Transformers, GPT, real projects</div></div>
+      </div>
+    </div>
+
+    <!-- LEVEL 1 -->
+    <section class="level" id="whatis">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--violet-soft);">🪆</div>
+        <div><div class="level-eyebrow">Level 1</div><h2>What is AI, ML &amp; Deep Learning?</h2></div>
+      </div>
+      <p class="level-tagline">Before any code, get the big picture straight — these three words get used interchangeably, but they're nested inside each other like Russian dolls.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p><strong>Artificial Intelligence</strong> is the biggest doll — any computer program that does something we'd normally call "smart" (even a simple chess program with hand-written rules counts). <strong>Machine Learning</strong> is a smaller doll inside it — programs that get smart not from hand-written rules, but by looking at lots of examples and figuring out the pattern themselves. <strong>Deep Learning</strong> is the smallest doll inside that — machine learning using a particular structure loosely inspired by neurons in a brain, especially good at messy data like images, sound, and language.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A simple spam filter using hand-written rules ("block if it contains 'FREE MONEY'") is AI, but not ML. A spam filter that studies 100,000 real emails and learns the pattern of what spam looks like is ML. A spam filter using a deep neural network to understand the actual meaning and tone of the email text is Deep Learning.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Three nested dolls: AI ⊃ ML ⊃ Deep Learning</div>
+        <svg viewBox="0 0 900 260" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <circle cx="450" cy="140" r="120" fill="#EAE4FE" stroke="#6C4FF6" stroke-width="2"/>
+          <circle cx="450" cy="150" r="82" fill="#D8F7FA" stroke="#00C2D1" stroke-width="2"/>
+          <circle cx="450" cy="160" r="46" fill="#FFE3E3" stroke="#FF6B6B" stroke-width="2"/>
+          <text x="450" y="45" text-anchor="middle" font-size="13" font-weight="700" fill="#1E1B2E">Artificial Intelligence</text>
+          <text x="450" y="60" text-anchor="middle" font-size="9.5" fill="#5C5872">any "smart" program — rules or learning</text>
+          <text x="450" y="95" text-anchor="middle" font-size="12" font-weight="700" fill="#1E1B2E">Machine Learning</text>
+          <text x="450" y="109" text-anchor="middle" font-size="9" fill="#5C5872">learns patterns from examples</text>
+          <text x="450" y="155" text-anchor="middle" font-size="11" font-weight="700" fill="#1E1B2E">Deep</text>
+          <text x="450" y="169" text-anchor="middle" font-size="11" font-weight="700" fill="#1E1B2E">Learning</text>
+        </svg>
+      </div>
+
+      <div class="code-label">A taste of what's coming — training your very first model</div>
+      <pre class="code"><span class="c4"># You'll understand every line of this by the end of Level 3</span>
+<span class="c2">from</span> sklearn.linear_model <span class="c2">import</span> LinearRegression
+
+<span class="c1"># "Examples" the model learns from: house size -> house price</span>
+sizes = [[<span class="c3">800</span>], [<span class="c3">1200</span>], [<span class="c3">1500</span>], [<span class="c3">2000</span>]]
+prices = [<span class="c3">150000</span>, <span class="c3">220000</span>, <span class="c3">270000</span>, <span class="c3">340000</span>]
+
+model = LinearRegression()
+model.fit(sizes, prices)  <span class="c4"># this IS "learning"</span>
+
+print(model.predict([[<span class="c3">1700</span>]]))  <span class="c4"># --> predicts a price for a new house</span></pre>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>The formal distinction: AI is the broad goal (machines performing tasks that typically require human intelligence). ML is a specific approach to AI — algorithms that improve their performance on a task through experience (data), rather than being explicitly programmed with rules for every case. Deep Learning is a subset of ML using artificial neural networks with many ("deep") layers, which turned out to be extraordinarily effective at automatically learning useful features directly from raw, unstructured data (pixels, audio waveforms, raw text) — removing the need for humans to hand-engineer features, which dominated pre-2012 ML practice.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Sort these into AI, ML, or Deep Learning: a thermostat that turns on heat below 68°F; Netflix recommending movies based on what you've watched; a chatbot that writes essays in your writing style.</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "How would you explain the difference between AI, ML, and Deep Learning to a non-technical stakeholder?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>AI is the umbrella goal — any system that performs tasks we associate with human intelligence. Machine Learning is a way of achieving that goal: instead of programmers writing explicit rules for every situation, the system learns patterns directly from historical examples. Deep Learning is a particular, very powerful family of ML techniques using layered neural networks, which excel at raw, unstructured data like images and language precisely because they learn their own useful representations of the data rather than requiring humans to hand-design them.</p>
+        <p><em>Why this answer works:</em> it gives concrete, ordered nesting rather than three vague overlapping definitions, and explains <em>why</em> deep learning matters (automatic feature learning) rather than just naming it.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 2 -->
+    <section class="level" id="howlearn">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--cyan-soft);">🔁</div>
+        <div><div class="level-eyebrow">Level 2</div><h2>How a Machine Actually "Learns"</h2></div>
+      </div>
+      <p class="level-tagline">Every algorithm in this entire guide — from the simplest to GPT itself — follows the exact same four-step loop. Understand this loop once, and you understand the whole field.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Imagine learning to throw a basketball into a hoop, blindfolded. You throw (guess), someone tells you how far off you were (measure the error), you adjust your aim a little based on that (learn from the mistake), and you throw again. Repeat hundreds of times, and your aim gets better and better. That's exactly how a machine "learns" — guess, measure the mistake, adjust, repeat.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A model predicting house prices starts by guessing randomly — wildly wrong. It compares its guess to the actual sale price (the error), nudges its internal numbers slightly in the direction that would have reduced that error, and repeats this thousands of times across thousands of houses until its guesses become genuinely useful.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">The universal training loop</div>
+        <svg viewBox="0 0 900 190" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a1" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5C5872"/></marker></defs>
+          <g font-size="11" font-weight="600">
+            <rect x="10" y="65" width="180" height="55" rx="10" fill="#D8F7FA" stroke="#00C2D1"/><text x="100" y="88" text-anchor="middle" fill="#1E1B2E">1. Guess (predict)</text><text x="100" y="105" text-anchor="middle" font-size="9" fill="#5C5872">using current parameters</text>
+
+            <rect x="240" y="65" width="180" height="55" rx="10" fill="#FFE3E3" stroke="#FF6B6B"/><text x="330" y="88" text-anchor="middle" fill="#1E1B2E">2. Measure error</text><text x="330" y="105" text-anchor="middle" font-size="9" fill="#5C5872">"loss function"</text>
+
+            <rect x="470" y="65" width="180" height="55" rx="10" fill="#FFF2D9" stroke="#FFC145"/><text x="560" y="88" text-anchor="middle" fill="#1E1B2E">3. Adjust slightly</text><text x="560" y="105" text-anchor="middle" font-size="9" fill="#5C5872">"gradient descent"</text>
+
+            <rect x="700" y="65" width="180" height="55" rx="10" fill="#EAE4FE" stroke="#6C4FF6"/><text x="790" y="88" text-anchor="middle" fill="#1E1B2E">4. Repeat</text><text x="790" y="105" text-anchor="middle" font-size="9" fill="#5C5872">thousands of times</text>
+          </g>
+          <g stroke="#5C5872" stroke-width="2" marker-end="url(#a1)" fill="none">
+            <line x1="190" y1="92" x2="237" y2="92"/><line x1="420" y1="92" x2="467" y2="92"/><line x1="650" y1="92" x2="697" y2="92"/>
+            <path d="M790 65 C 790 20, 100 20, 100 62"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">The training loop, spelled out in code</div>
+      <pre class="code"><span class="c4"># A tiny, from-scratch version of "learning" — no library magic, just the loop itself</span>
+weight = <span class="c3">0.0</span>  <span class="c4"># the model's one adjustable "aim"</span>
+learning_rate = <span class="c3">0.0001</span>
+
+<span class="c2">for</span> epoch <span class="c2">in</span> range(<span class="c3">1000</span>):  <span class="c4"># repeat many times</span>
+    <span class="c2">for</span> size, actual_price <span class="c2">in</span> zip(sizes, prices):
+        guess = weight * size            <span class="c4"># 1. guess</span>
+        error = guess - actual_price     <span class="c4"># 2. measure error</span>
+        weight = weight - learning_rate * error * size  <span class="c4"># 3. adjust</span>
+                                          <span class="c4"># 4. loop repeats</span>
+
+print(<span class="c3">"Learned weight:"</span>, weight)</pre>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Formally: a <strong>loss function</strong> quantifies how wrong the model's predictions are (mean squared error for regression, cross-entropy for classification). <strong>Gradient descent</strong> computes the derivative of that loss with respect to each parameter — the direction that would most reduce the error — and nudges each parameter a small step (the <strong>learning rate</strong>) in that direction. This exact loop, scaled up to millions or billions of parameters and run via an optimizer like Adam, is <em>literally</em> how every neural network — including GPT — is trained. The math scales; the core loop never changes.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>If the learning rate above were 1000x bigger, what do you think would happen to the training — would it learn faster, or could it "overshoot" and get worse? (This exact question comes up constantly in real training.)</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Explain gradient descent and what the learning rate controls." <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Gradient descent is the optimization algorithm that adjusts a model's parameters to minimize its loss function. At each step, it computes the gradient — the direction of steepest increase in loss with respect to each parameter — and moves the parameters in the opposite direction, since that's the direction that decreases loss fastest. The learning rate controls the size of that step. Too small, and training crawls, taking far more iterations than necessary to converge. Too large, and updates can overshoot the minimum, causing the loss to oscillate or even diverge instead of settling down — which is why learning rate is one of the first hyperparameters tuned when training doesn't go well.</p>
+        <p><em>Why this answer works:</em> it explains both failure modes of a bad learning rate (too slow vs. unstable), not just the definition, which is what distinguishes someone who has actually debugged a training run.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 3 -->
+    <section class="level" id="linreg">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--cyan-soft);">📈</div>
+        <div><div class="level-eyebrow">Level 3</div><h2>Linear Regression — Predicting a Number</h2></div>
+      </div>
+      <p class="level-tagline">The simplest possible ML algorithm, and secretly the foundation for understanding almost everything else in this guide.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Imagine plotting dozens of dots on a graph — house size on one axis, price on the other. Linear regression is simply finding the single straight line that passes as close as possible to all those dots. Once you have that line, you can point to any new house size and read off a predicted price, even for a size you've never seen before.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A real estate site predicts a home's estimated value from square footage, number of bedrooms, and location — combining several "lines" (one weight per feature) into one formula that outputs a single predicted price.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">The line of best fit</div>
+        <svg viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <rect x="0" y="0" width="600" height="260" rx="16" fill="#F9F8FC"/>
+          <line x1="50" y1="220" x2="560" y2="220" stroke="#5C5872" stroke-width="1.5"/>
+          <line x1="50" y1="220" x2="50" y2="20" stroke="#5C5872" stroke-width="1.5"/>
+          <text x="300" y="248" text-anchor="middle" font-size="11" fill="#5C5872">house size →</text>
+          <text x="20" y="120" text-anchor="middle" font-size="11" fill="#5C5872" transform="rotate(-90 20 120)">price →</text>
+          <g fill="#00C2D1">
+            <circle cx="110" cy="190" r="6"/><circle cx="180" cy="150" r="6"/><circle cx="230" cy="165" r="6"/>
+            <circle cx="290" cy="120" r="6"/><circle cx="340" cy="100" r="6"/><circle cx="400" cy="80" r="6"/>
+            <circle cx="460" cy="60" r="6"/><circle cx="510" cy="40" r="6"/>
+          </g>
+          <line x1="90" y1="205" x2="530" y2="35" stroke="#6C4FF6" stroke-width="3"/>
+          <text x="470" y="30" font-size="10" font-weight="700" fill="#6C4FF6">the learned line</text>
+        </svg>
+      </div>
+
+      <div class="code-label">Linear regression in scikit-learn</div>
+      <pre class="code"><span class="c2">from</span> sklearn.linear_model <span class="c2">import</span> LinearRegression
+<span class="c2">from</span> sklearn.model_selection <span class="c2">import</span> train_test_split
+
+X = house_data[[<span class="c3">"size_sqft"</span>, <span class="c3">"bedrooms"</span>, <span class="c3">"location_score"</span>]]
+y = house_data[<span class="c3">"price"</span>]
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=<span class="c3">0.2</span>)
+
+model = LinearRegression()
+model.fit(X_train, y_train)  <span class="c4"># finds the best-fit weights for each feature</span>
+
+print(<span class="c3">"Weights:"</span>, model.coef_)     <span class="c4"># how much each feature matters</span>
+print(<span class="c3">"R² score:"</span>, model.score(X_test, y_test))  <span class="c4"># how good the fit is</span></pre>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Linear regression finds weights minimizing <strong>Mean Squared Error</strong> — either via a closed-form solution (the "normal equation," fast for small datasets) or via gradient descent (scales to huge datasets). It assumes a linear relationship between features and target, which is a real limitation — but its interpretability (each weight directly tells you a feature's effect) makes it a strong baseline and often a regulatory requirement in finance/insurance, where "black box" models can face legal scrutiny. <strong>R²</strong> measures the proportion of variance in the target explained by the model — 1.0 is a perfect fit, 0 means no better than just guessing the average every time.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>If a linear regression model learns a weight of 150 for "size_sqft," what does that number actually mean in plain English about how price relates to size?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "When would you choose linear regression over a more complex model?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>When interpretability matters — being able to say "increasing size by 1 sqft increases predicted price by $150, all else equal" is valuable in regulated domains like lending or insurance, where you often need to explain exactly why a model made a decision. It's also a strong first baseline: if a complex model only marginally outperforms linear regression, that's a signal the relationship in the data may genuinely be close to linear, and the added complexity might not be worth the loss of interpretability and increased overfitting risk. I'd move to more complex models specifically when there's evidence of real non-linear relationships or interactions between features that a straight line genuinely can't capture.</p>
+        <p><em>Why this answer works:</em> it gives concrete business reasons (regulatory interpretability, baseline comparison) rather than treating linear regression as merely "the simple option."</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 4 -->
+    <section class="level" id="logreg">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--coral-soft);">🎯</div>
+        <div><div class="level-eyebrow">Level 4</div><h2>Logistic Regression — Predicting a Category</h2></div>
+      </div>
+      <p class="level-tagline">What happens when you want a yes/no answer instead of a number — and the surprisingly small tweak that gets you there from linear regression.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Linear regression draws a straight line. But "will this email be spam?" isn't a number — it's yes or no. Logistic regression takes that same straight-line idea and squishes the output through an S-shaped curve that always lands between 0 and 1 — read as "probability of yes." Above 0.5, call it spam; below, call it not spam.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A bank predicts whether a loan applicant will default, using income, credit score, and existing debt as inputs — outputting a probability like "12% chance of default" that a loan officer can weigh against the bank's risk tolerance, rather than a rigid yes/no.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">The sigmoid curve — squishing any number into a 0-to-1 probability</div>
+        <svg viewBox="0 0 600 220" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <rect x="0" y="0" width="600" height="220" rx="16" fill="#F9F8FC"/>
+          <line x1="50" y1="190" x2="560" y2="190" stroke="#5C5872" stroke-width="1.5"/>
+          <line x1="300" y1="190" x2="300" y2="20" stroke="#5C5872" stroke-width="1.5"/>
+          <text x="300" y="30" font-size="10" fill="#5C5872">1.0</text>
+          <text x="565" y="195" font-size="10" fill="#5C5872">input →</text>
+          <path d="M 60 175 C 200 175, 250 30, 300 105 C 350 180, 400 35, 540 35" fill="none" stroke="#FF6B6B" stroke-width="3"/>
+          <line x1="50" y1="105" x2="560" y2="105" stroke="#00C2D1" stroke-dasharray="4 6" stroke-width="1.5"/>
+          <text x="565" y="102" font-size="10" fill="#00C2D1">0.5 threshold</text>
+        </svg>
+      </div>
+
+      <div class="code-label">Logistic regression in scikit-learn</div>
+      <pre class="code"><span class="c2">from</span> sklearn.linear_model <span class="c2">import</span> LogisticRegression
+
+X = loan_data[[<span class="c3">"income"</span>, <span class="c3">"credit_score"</span>, <span class="c3">"debt_ratio"</span>]]
+y = loan_data[<span class="c3">"defaulted"</span>]  <span class="c4"># 0 or 1</span>
+
+model = LogisticRegression()
+model.fit(X_train, y_train)
+
+probabilities = model.predict_proba(X_test)  <span class="c4"># e.g. [0.88, 0.12] --> 12% default risk</span>
+predictions = model.predict(X_test)           <span class="c4"># thresholded at 0.5 by default --> 0 or 1</span></pre>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Logistic regression applies the <strong>sigmoid function</strong> to a linear combination of inputs, and is trained by minimizing <strong>log loss (cross-entropy)</strong> instead of mean squared error — a loss function specifically shaped to heavily penalize confident-but-wrong predictions. The 0.5 decision threshold isn't fixed — in imbalanced problems (like fraud, where positives are rare), it's often shifted based on the real business cost of false positives versus false negatives, evaluated via a precision-recall curve rather than accuracy alone.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>For fraud detection, would you rather set the decision threshold higher or lower than 0.5 — and what's the tradeoff either way in terms of false alarms versus missed fraud?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Why isn't accuracy always a good metric for a classification model?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Accuracy can be deeply misleading on imbalanced datasets. If only 1% of transactions are fraudulent, a model that predicts "not fraud" for everything achieves 99% accuracy while being completely useless. In those cases, precision (of predicted positives, how many are truly positive) and recall (of actual positives, how many did we catch) — or a combined metric like F1 or AUC-PR — give a much more honest picture of performance. The right metric ultimately depends on the real business cost of each error type: missing a fraud case is usually far more costly than a false alarm, which should shape both the metric chosen and the decision threshold.</p>
+        <p><em>Why this answer works:</em> it uses a concrete numeric example (99% accuracy from a useless model) that makes the failure mode viscerally clear, then ties metric choice back to business cost.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 5 -->
+    <section class="level" id="trees">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--gold-soft);">🌳</div>
+        <div><div class="level-eyebrow">Level 5</div><h2>Decision Trees &amp; Random Forests</h2></div>
+      </div>
+      <p class="level-tagline">An algorithm that makes decisions exactly the way a human would — by asking a series of yes/no questions — and then a trick that makes a whole forest of them smarter than any one tree alone.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>A decision tree is a game of 20 Questions: "Is the income above $50k? If yes, is the credit score above 700? If yes, approve." Each question splits the group into smaller, more similar groups until you reach a final answer. A Random Forest is asking that same game to hundreds of slightly different trees — each seeing a random slice of the data and features — and then taking a vote. One tree can be wrong in a quirky way; a crowd of different trees rarely agrees on the same mistake.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A hospital predicts patient readmission risk using a Random Forest, because it handles a messy mix of numeric (age, blood pressure) and categorical (diagnosis code) features well, and — unlike a single tree — is far less likely to have memorized quirks of the training data.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">One tree's questions, and a forest's vote</div>
+        <svg viewBox="0 0 900 210" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5C5872"/></marker></defs>
+          <g font-size="10" font-weight="600">
+            <rect x="60" y="10" width="160" height="40" rx="8" fill="#D8F7FA" stroke="#00C2D1"/><text x="140" y="34" text-anchor="middle" fill="#1E1B2E">Income &gt; $50k?</text>
+            <rect x="10" y="80" width="130" height="40" rx="8" fill="#FFF2D9" stroke="#FFC145"/><text x="75" y="104" text-anchor="middle" fill="#1E1B2E">No → Deny</text>
+            <rect x="160" y="80" width="180" height="40" rx="8" fill="#D8F7FA" stroke="#00C2D1"/><text x="250" y="104" text-anchor="middle" fill="#1E1B2E">Yes → Credit &gt; 700?</text>
+            <rect x="160" y="150" width="130" height="40" rx="8" fill="#FFF2D9" stroke="#FFC145"/><text x="225" y="174" text-anchor="middle" fill="#1E1B2E">No → Review</text>
+            <rect x="310" y="150" width="130" height="40" rx="8" fill="#E1F8EE" stroke="#34C38F"/><text x="375" y="174" text-anchor="middle" fill="#1E1B2E">Yes → Approve</text>
+          </g>
+          <g stroke="#5C5872" stroke-width="2" marker-end="url(#a2)" fill="none">
+            <path d="M110 50 L 75 78"/><path d="M170 50 L 250 78"/><path d="M230 120 L 225 148"/><path d="M290 120 L 375 148"/>
+          </g>
+          <g font-size="10" font-weight="600">
+            <rect x="560" y="20" width="90" height="34" rx="6" fill="#EAE4FE" stroke="#6C4FF6"/><text x="605" y="41" text-anchor="middle" fill="#1E1B2E">Tree 1: Approve</text>
+            <rect x="560" y="65" width="90" height="34" rx="6" fill="#EAE4FE" stroke="#6C4FF6"/><text x="605" y="86" text-anchor="middle" fill="#1E1B2E">Tree 2: Approve</text>
+            <rect x="560" y="110" width="90" height="34" rx="6" fill="#EAE4FE" stroke="#6C4FF6"/><text x="605" y="131" text-anchor="middle" fill="#1E1B2E">Tree 3: Deny</text>
+            <rect x="770" y="60" width="120" height="50" rx="10" fill="#E1F8EE" stroke="#34C38F" stroke-width="2"/><text x="830" y="82" text-anchor="middle" fill="#1E1B2E">Vote:</text><text x="830" y="98" text-anchor="middle" fill="#1E1B2E">Approve ✅</text>
+          </g>
+          <g stroke="#5C5872" stroke-width="1.5" marker-end="url(#a2)">
+            <line x1="650" y1="37" x2="768" y2="70"/><line x1="650" y1="82" x2="768" y2="82"/><line x1="650" y1="127" x2="768" y2="95"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">Decision tree and random forest in scikit-learn</div>
+      <pre class="code"><span class="c2">from</span> sklearn.tree <span class="c2">import</span> DecisionTreeClassifier
+<span class="c2">from</span> sklearn.ensemble <span class="c2">import</span> RandomForestClassifier
+
+tree = DecisionTreeClassifier(max_depth=<span class="c3">5</span>)  <span class="c4"># limit depth to avoid memorizing training data</span>
+tree.fit(X_train, y_train)
+
+forest = RandomForestClassifier(n_estimators=<span class="c3">200</span>)  <span class="c4"># 200 trees, each on a random subset</span>
+forest.fit(X_train, y_train)
+
+print(<span class="c3">"Feature importance:"</span>, forest.feature_importances_)  <span class="c4"># which features mattered most</span></pre>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Trees split nodes to maximize information gain (or minimize Gini impurity) at each step. A single unconstrained tree will happily grow deep enough to perfectly memorize the training data — severe overfitting — which is why <code>max_depth</code>, minimum samples per leaf, and pruning matter. Random Forest fixes this via <strong>bagging</strong> (each tree trains on a random bootstrap sample of the data) plus <strong>feature randomness</strong> (each split only considers a random subset of features) — both reduce correlation between trees, so their individual errors are more likely to cancel out in the vote rather than compound.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Why would training 200 trees on the exact same data with no randomness produce a much weaker forest than 200 trees each trained on a slightly different random slice?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Why does a Random Forest usually outperform a single Decision Tree?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>A single deep decision tree tends to overfit — it can carve out rules that perfectly fit training data's noise and quirks, which don't generalize. Random Forest reduces this by training many trees on different random bootstrap samples of the data (bagging) and only considering a random subset of features at each split, which decorrelates the trees' errors — each tree makes somewhat different mistakes. Averaging (regression) or voting (classification) across many decorrelated trees cancels out individual trees' idiosyncratic errors while preserving the signal they all agree on, which is why the ensemble typically generalizes better than any single tree in it.</p>
+        <p><em>Why this answer works:</em> it names the two specific randomization mechanisms (bagging + feature subsampling) rather than a vague "many trees are better than one," and explains the statistical reasoning (decorrelated errors cancel out).</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 6 -->
+    <section class="level" id="classic">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--green-soft);">🧮</div>
+        <div><div class="level-eyebrow">Level 6</div><h2>KNN, Naive Bayes &amp; SVM — Other Classic Classifiers</h2></div>
+      </div>
+      <p class="level-tagline">Three more foundational algorithms, each with a genuinely different core idea about what "learning" even means.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply — KNN</h3>
+          <p><strong>K-Nearest Neighbors</strong> doesn't really "learn" anything in advance — it just remembers every example. To classify something new, it looks at the K most similar examples already seen and copies the majority answer. It's like guessing a new kid's favorite music by asking their 5 closest friends and going with whatever most of them like.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🧸 Explain it simply — Naive Bayes &amp; SVM</h3>
+          <p><strong>Naive Bayes</strong> is pure probability: "emails with the word 'free' were spam 90% of the time before — so this new one probably is too," combining many such clues (naively assuming they're independent). <strong>SVM</strong> draws the widest possible empty "street" between two categories of dots, so new points falling on either side are classified with maximum confidence, even if the boundary between them isn't a simple straight line.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">SVM: the widest possible street between two classes</div>
+        <svg viewBox="0 0 600 220" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <rect x="0" y="0" width="600" height="220" rx="16" fill="#F9F8FC"/>
+          <g fill="#00C2D1"><circle cx="100" cy="60" r="7"/><circle cx="150" cy="90" r="7"/><circle cx="80" cy="120" r="7"/><circle cx="170" cy="50" r="7"/></g>
+          <g fill="#FF6B6B"><circle cx="420" cy="140" r="7"/><circle cx="480" cy="100" r="7"/><circle cx="450" cy="170" r="7"/><circle cx="520" cy="130" r="7"/></g>
+          <line x1="230" y1="10" x2="360" y2="210" stroke="#6C4FF6" stroke-width="3"/>
+          <line x1="190" y1="10" x2="320" y2="210" stroke="#6C4FF6" stroke-width="1.5" stroke-dasharray="4 6"/>
+          <line x1="270" y1="10" x2="400" y2="210" stroke="#6C4FF6" stroke-width="1.5" stroke-dasharray="4 6"/>
+          <text x="295" y="30" font-size="10" font-weight="700" fill="#6C4FF6">widest margin</text>
+        </svg>
+      </div>
+
+      <div class="code-label">All three, in scikit-learn</div>
+      <pre class="code"><span class="c2">from</span> sklearn.neighbors <span class="c2">import</span> KNeighborsClassifier
+<span class="c2">from</span> sklearn.naive_bayes <span class="c2">import</span> GaussianNB
+<span class="c2">from</span> sklearn.svm <span class="c2">import</span> SVC
+
+knn = KNeighborsClassifier(n_neighbors=<span class="c3">5</span>).fit(X_train, y_train)
+nb = GaussianNB().fit(X_train, y_train)
+svm = SVC(kernel=<span class="c3">"rbf"</span>).fit(X_train, y_train)  <span class="c4"># "rbf" kernel handles non-linear boundaries</span></pre>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>KNN is a "lazy learner" — no training phase at all, just distance computation at prediction time, which makes it simple but slow and memory-heavy at scale, and sensitive to feature scaling (always normalize features first). Naive Bayes' "naive" independence assumption is almost always technically false in real data, yet it works surprisingly well in practice, especially for text classification — it's fast, needs little training data, and is a strong baseline. SVM's real power is the <strong>kernel trick</strong> — it can implicitly project data into a much higher-dimensional space where a non-linear boundary in the original space becomes a simple straight line, without ever explicitly computing that expensive transformation.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Why would KNN give badly wrong results if one feature is measured in dollars (0-500,000) and another in years (0-100), without scaling them first?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "What's the 'kernel trick' in SVMs, and why does it matter?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Many real datasets aren't linearly separable in their original feature space — no straight line or flat plane can cleanly divide the classes. The kernel trick lets an SVM effectively operate as if the data had been projected into a much higher-dimensional space where it <em>would</em> become linearly separable, without ever actually computing that expensive, potentially infinite-dimensional transformation explicitly. It works because SVM's math only ever needs the dot product between pairs of points, and kernel functions (like RBF) compute what that dot product would be in the higher-dimensional space directly and efficiently, from the original low-dimensional inputs.</p>
+        <p><em>Why this answer works:</em> it explains the actual computational trick (avoiding explicit transformation via dot products) rather than just saying "it handles non-linear data," which is the level of detail that separates genuine understanding from a memorized buzzword.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 7 -->
+    <section class="level" id="unsupervised">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--violet-soft);">🔮</div>
+        <div><div class="level-eyebrow">Level 7</div><h2>Unsupervised Learning — Clustering &amp; PCA</h2></div>
+      </div>
+      <p class="level-tagline">Everything so far had "correct answers" to learn from (labels). What happens when nobody tells you the right answer at all?</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p><strong>Clustering (K-Means)</strong> is like being dropped into a huge crowd with no name tags and asked to sort people into similar groups purely by looking — no one tells you the "correct" groups, you just find natural clumps. <strong>PCA (dimensionality reduction)</strong> is like taking a photo of a 3D sculpture from the one angle that shows the most detail — you lose some information, but you compress it down to something much simpler to look at, keeping what matters most.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>An e-commerce company clusters customers by purchase behavior into groups like "bargain hunters," "loyal high-spenders," and "one-time buyers" — with no one manually labeling a single customer — then targets each group with different marketing. PCA is used beforehand to compress hundreds of behavioral features down to a handful that still capture most of the meaningful variation, making the clustering faster and more stable.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">K-Means: finding natural groups with no labels</div>
+        <svg viewBox="0 0 600 220" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <rect x="0" y="0" width="600" height="220" rx="16" fill="#F9F8FC"/>
+          <g fill="#00C2D1"><circle cx="100" cy="60" r="6"/><circle cx="130" cy="90" r="6"/><circle cx="90" cy="110" r="6"/><circle cx="140" cy="50" r="6"/></g>
+          <circle cx="115" cy="80" r="45" fill="none" stroke="#00C2D1" stroke-width="1.5" stroke-dasharray="4 5"/>
+          <g fill="#FF6B6B"><circle cx="400" cy="70" r="6"/><circle cx="440" cy="90" r="6"/><circle cx="420" cy="50" r="6"/><circle cx="460" cy="60" r="6"/></g>
+          <circle cx="430" cy="68" r="45" fill="none" stroke="#FF6B6B" stroke-width="1.5" stroke-dasharray="4 5"/>
+          <g fill="#FFC145"><circle cx="250" cy="170" r="6"/><circle cx="290" cy="190" r="6"/><circle cx="270" cy="150" r="6"/><circle cx="310" cy="175" r="6"/></g>
+          <circle cx="280" cy="172" r="45" fill="none" stroke="#FFC145" stroke-width="1.5" stroke-dasharray="4 5"/>
+        </svg>
+      </div>
+
+      <div class="code-label">K-Means and PCA in scikit-learn</div>
+      <pre class="code"><span class="c2">from</span> sklearn.cluster <span class="c2">import</span> KMeans
+<span class="c2">from</span> sklearn.decomposition <span class="c2">import</span> PCA
+
+<span class="c1"># Find 3 natural customer groups — no labels needed at all</span>
+kmeans = KMeans(n_clusters=<span class="c3">3</span>)
+customer_data[<span class="c3">"segment"</span>] = kmeans.fit_predict(customer_data)
+
+<span class="c1"># Compress 50 behavioral features down to the 2 that capture the most variation</span>
+pca = PCA(n_components=<span class="c3">2</span>)
+compressed = pca.fit_transform(customer_data)
+print(<span class="c3">"Variance captured:"</span>, pca.explained_variance_ratio_.sum())</pre>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>K-Means iterates: randomly place K "centers," assign every point to its nearest center, move each center to the average position of its assigned points, and repeat until stable — it's the same guess/measure/adjust loop from Level 2, just without a "correct" label to check against. The number of clusters (K) isn't learned automatically; it's typically chosen via the "elbow method" (plotting error versus K and looking for diminishing returns) or domain knowledge. PCA finds the directions (principal components) of maximum variance in the data via eigendecomposition of the covariance matrix — useful for visualization, noise reduction, and speeding up downstream models by reducing feature count.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>If you ran K-Means with K=3 on data that actually has 5 natural groups, what do you think the results would look like? What if K=10 on data with only 3 real groups?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "How do you choose the number of clusters K in K-Means?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>There's no single "correct" K found automatically by the algorithm — it has to be chosen. The most common approach is the elbow method: run K-Means across a range of K values, plot the within-cluster error (inertia) against K, and look for the point where adding more clusters stops meaningfully reducing error — the "elbow" in the curve. Silhouette score is another metric, measuring how well-separated and internally cohesive clusters are for a given K. In practice, I'd combine these quantitative signals with domain knowledge — if the business genuinely needs exactly 4 customer segments to act on, that constraint matters as much as the mathematically "optimal" K.</p>
+        <p><em>Why this answer works:</em> it acknowledges K-Means doesn't self-determine K, names concrete selection methods, and grounds the final choice in business usability rather than a purely mathematical answer.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 8 -->
+    <section class="level" id="boosting">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--coral-soft);">🚀</div>
+        <div><div class="level-eyebrow">Level 8</div><h2>Gradient Boosting — Learning From Mistakes, On Purpose</h2></div>
+      </div>
+      <p class="level-tagline">Random Forest builds many trees independently and votes. Boosting builds trees one at a time, each one specifically trying to fix the previous trees' mistakes — and it's usually the most accurate classic ML approach on tabular data.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Imagine a team of tutors helping a student improve an essay. The first tutor gives general feedback. The second tutor doesn't start over — they specifically focus on whatever mistakes the first tutor's advice didn't fully fix. The third focuses on what's still wrong after tutors one and two. Each tutor is a specialist in the group's <em>remaining</em> weaknesses, and together they produce a much better essay than any single tutor could alone.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>XGBoost, a highly optimized gradient boosting implementation, is the single most common winning approach in tabular-data machine learning competitions — used heavily in credit scoring, insurance pricing, and click-through-rate prediction, wherever the data comes as structured rows and columns rather than images or text.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Boosting: each new tree targets the previous trees' errors</div>
+        <svg viewBox="0 0 900 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5C5872"/></marker></defs>
+          <g font-size="10" font-weight="600">
+            <rect x="10" y="40" width="150" height="55" rx="10" fill="#D8F7FA" stroke="#00C2D1"/><text x="85" y="65" text-anchor="middle" fill="#1E1B2E">Tree 1</text><text x="85" y="82" text-anchor="middle" font-size="8.5" fill="#5C5872">rough first guess</text>
+            <rect x="245" y="40" width="150" height="55" rx="10" fill="#FFF2D9" stroke="#FFC145"/><text x="320" y="65" text-anchor="middle" fill="#1E1B2E">Tree 2</text><text x="320" y="82" text-anchor="middle" font-size="8.5" fill="#5C5872">fixes Tree 1's errors</text>
+            <rect x="480" y="40" width="150" height="55" rx="10" fill="#FFE3E3" stroke="#FF6B6B"/><text x="555" y="65" text-anchor="middle" fill="#1E1B2E">Tree 3</text><text x="555" y="82" text-anchor="middle" font-size="8.5" fill="#5C5872">fixes what's still wrong</text>
+            <rect x="715" y="40" width="170" height="55" rx="10" fill="#E1F8EE" stroke="#34C38F" stroke-width="2"/><text x="800" y="65" text-anchor="middle" fill="#1E1B2E">Sum of all trees</text><text x="800" y="82" text-anchor="middle" font-size="8.5" fill="#5C5872">= final prediction</text>
+          </g>
+          <g stroke="#5C5872" stroke-width="2" marker-end="url(#a3)">
+            <line x1="160" y1="67" x2="242" y2="67"/><line x1="395" y1="67" x2="477" y2="67"/><line x1="630" y1="67" x2="712" y2="67"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">Gradient boosting with XGBoost</div>
+      <pre class="code"><span class="c2">import</span> xgboost <span class="c2">as</span> xgb
+
+model = xgb.XGBClassifier(
+    n_estimators=<span class="c3">300</span>,       <span class="c4"># how many trees to add, one after another</span>
+    learning_rate=<span class="c3">0.05</span>,      <span class="c4"># how much each new tree corrects — smaller = more careful</span>
+    max_depth=<span class="c3">4</span>               <span class="c4"># keep each individual tree simple</span>
+)
+model.fit(X_train, y_train,
+    eval_set=[(X_val, y_val)],
+    early_stopping_rounds=<span class="c3">20</span>)  <span class="c4"># stop adding trees once validation stops improving</span></pre>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Each new tree is fit not to the original targets, but to the <strong>residual errors</strong> (or more precisely, the gradient of the loss) left by the ensemble so far — literally gradient descent, but taking steps in "tree space" instead of parameter space. <code>learning_rate</code> shrinks each tree's contribution, trading training speed for better generalization; <code>early_stopping</code> halts training once validation performance plateaus, preventing the ensemble from eventually overfitting as more and more trees get added. Gradient boosting (XGBoost, LightGBM, CatBoost) remains the dominant approach for structured/tabular data even in the deep learning era, since neural networks generally need far more data to match boosted trees' performance on tables of rows and columns.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>If you set <code>learning_rate</code> very high (like 1.0) with only a few trees, would you expect the model to underfit or overfit compared to a low learning rate with many trees?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Random Forest vs. Gradient Boosting — how do you decide?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Random Forest trains trees independently and averages/votes — it's more robust to overfitting out of the box, easier to parallelize (trees don't depend on each other), and a solid, low-maintenance default. Gradient Boosting trains trees sequentially, each correcting the previous ensemble's errors, which typically achieves higher accuracy on tabular data but requires more careful tuning (learning rate, number of trees, early stopping) to avoid overfitting, since boosting can keep chasing noise if left unchecked. In practice, I'd start with Random Forest as a fast, hard-to-mess-up baseline, then move to XGBoost/LightGBM when squeezing out additional accuracy matters enough to justify the extra tuning effort and training time.</p>
+        <p><em>Why this answer works:</em> it frames the choice as a tradeoff between ease-of-use and peak performance rather than declaring one universally better, and gives a sensible practical workflow (baseline first, then optimize).</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 9 -->
+    <section class="level" id="evaluation">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--gold-soft);">⚖️</div>
+        <div><div class="level-eyebrow">Level 9</div><h2>Overfitting, Regularization &amp; Model Evaluation</h2></div>
+      </div>
+      <p class="level-tagline">This is the level that separates someone who can train a model from someone who can trust one. Every algorithm above can fail silently in the same way — memorizing instead of learning.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p><strong>Overfitting</strong> is like a student who memorizes the exact answers to last year's practice test instead of actually understanding the subject — they'll ace that exact test, but bomb this year's exam with slightly different questions. <strong>Underfitting</strong> is a student who barely studied at all and does poorly on everything. Good learning is somewhere in between: understanding the actual pattern well enough to handle new, unseen questions.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A model predicting hospital readmission scores 99% accuracy on the data it was trained on, but only 61% on new patients — a textbook sign of overfitting. The fix isn't a fancier model; it's constraining the model (regularization), getting more diverse training data, or simplifying the features.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Underfitting vs. just right vs. overfitting</div>
+        <svg viewBox="0 0 900 200" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <g font-size="10.5" font-weight="700">
+            <rect x="10" y="10" width="270" height="170" rx="12" fill="#FFF2D9" stroke="#FFC145" stroke-width="2"/>
+            <text x="145" y="30" text-anchor="middle" fill="#1E1B2E">Underfitting</text>
+            <line x1="30" y1="150" x2="260" y2="60" stroke="#FFC145" stroke-width="3"/>
+            <g fill="#5C5872"><circle cx="60" cy="90" r="4"/><circle cx="100" cy="140" r="4"/><circle cx="150" cy="70" r="4"/><circle cx="200" cy="110" r="4"/><circle cx="230" cy="80" r="4"/></g>
+            <text x="145" y="170" text-anchor="middle" font-size="8.5" font-weight="500" fill="#5C5872">too simple — misses the pattern</text>
+
+            <rect x="315" y="10" width="270" height="170" rx="12" fill="#E1F8EE" stroke="#34C38F" stroke-width="2"/>
+            <text x="450" y="30" text-anchor="middle" fill="#1E1B2E">Just right</text>
+            <path d="M335 140 Q 450 40, 565 90" fill="none" stroke="#34C38F" stroke-width="3"/>
+            <g fill="#5C5872"><circle cx="365" cy="95" r="4"/><circle cx="405" cy="145" r="4"/><circle cx="455" cy="65" r="4"/><circle cx="505" cy="115" r="4"/><circle cx="535" cy="85" r="4"/></g>
+            <text x="450" y="170" text-anchor="middle" font-size="8.5" font-weight="500" fill="#5C5872">captures the real pattern</text>
+
+            <rect x="620" y="10" width="270" height="170" rx="12" fill="#FFE3E3" stroke="#FF6B6B" stroke-width="2"/>
+            <text x="755" y="30" text-anchor="middle" fill="#1E1B2E">Overfitting</text>
+            <path d="M640 95 Q 660 145, 690 145 Q 720 60, 750 65 Q 790 150, 810 115 Q 830 60, 870 90" fill="none" stroke="#FF6B6B" stroke-width="3"/>
+            <g fill="#5C5872"><circle cx="670" cy="95" r="4"/><circle cx="710" cy="145" r="4"/><circle cx="760" cy="65" r="4"/><circle cx="810" cy="115" r="4"/><circle cx="840" cy="85" r="4"/></g>
+            <text x="755" y="170" text-anchor="middle" font-size="8.5" font-weight="500" fill="#5C5872">memorized every dot exactly</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">Cross-validation and regularization</div>
+      <pre class="code"><span class="c2">from</span> sklearn.model_selection <span class="c2">import</span> cross_val_score
+<span class="c2">from</span> sklearn.linear_model <span class="c2">import</span> Ridge
+
+<span class="c1"># Test on 5 different train/test splits instead of just one — more trustworthy</span>
+scores = cross_val_score(model, X, y, cv=<span class="c3">5</span>)
+print(<span class="c3">"Average accuracy:"</span>, scores.mean(), <span class="c3">"+/-"</span>, scores.std())
+
+<span class="c1"># Regularization: penalize overly large weights, discouraging over-complex fits</span>
+ridge_model = Ridge(alpha=<span class="c3">1.0</span>)  <span class="c4"># higher alpha = stronger penalty = simpler model</span>
+ridge_model.fit(X_train, y_train)</pre>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>This is the <strong>bias-variance tradeoff</strong> in one sentence: high bias (underfitting) means the model is too simple to capture the true pattern; high variance (overfitting) means it's so flexible it captures noise as if it were signal. <strong>Regularization</strong> (L1/Lasso shrinks some weights to exactly zero, useful for feature selection; L2/Ridge shrinks all weights smoothly) directly constrains model complexity. <strong>Cross-validation</strong> gives a far more reliable performance estimate than a single train/test split, since it averages over multiple different splits, reducing the risk that a lucky (or unlucky) split misleads you. The train/validation/test split discipline matters too: validation tunes hyperparameters, test is touched exactly once at the very end to report honest, unbiased final performance.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>A model gets 95% accuracy on training data and 94% on test data. Another gets 99.9% on training and 71% on test. Which one would you actually trust more, and why?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Explain the bias-variance tradeoff, and how you'd diagnose which one a model is suffering from." <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Bias is error from a model being too simple to capture the underlying pattern — it underfits, performing poorly on both training and test data similarly. Variance is error from a model being too sensitive to the specific training data — it overfits, performing very well on training data but much worse on unseen test data, because it's captured noise rather than signal. To diagnose: if training and validation error are both high and similar, that's high bias — the fix is a more expressive model, more features, or less regularization. If training error is low but validation error is much higher, that's high variance — the fix is more training data, regularization, or a simpler model. Plotting a learning curve (error vs. training set size) is a standard way to visualize which regime you're in.</p>
+        <p><em>Why this answer works:</em> it gives a concrete diagnostic procedure (compare train vs. validation error patterns) rather than just defining the two terms, which is what "how would you diagnose" is actually asking for.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 10 -->
+    <section class="level" id="neuralnets">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--violet-soft);">🕸️</div>
+        <div><div class="level-eyebrow">Level 10</div><h2>Neural Networks — From One Neuron to Deep Learning</h2></div>
+      </div>
+      <p class="level-tagline">Everything from here to GPT is built from one repeated building block, stacked in layers. Understand the single neuron, and the rest is just "more of them, connected cleverly."</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>A single artificial neuron is like one committee member: it looks at several inputs, weighs how much it cares about each one, adds them up, and decides "yes" or "no" (or some number in between). A neural network is a whole company of these committee members arranged in layers — each layer's decisions become the next layer's inputs — so simple individual decisions combine into surprisingly sophisticated overall judgments.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A neural network predicting whether a customer will churn takes in usage stats, support ticket count, and billing history — early layers learn simple combinations ("low usage AND many tickets"), and later layers combine those into a more nuanced overall risk score than any single simple rule could capture.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">A neuron, and a network of them</div>
+        <svg viewBox="0 0 900 220" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a4" markerWidth="8" markerHeight="8" refX="6" refY="2.5" orient="auto"><path d="M0,0 L6,2.5 L0,5 Z" fill="#5C5872"/></marker></defs>
+          <g font-size="10" font-weight="600">
+            <circle cx="60" cy="60" r="16" fill="#D8F7FA" stroke="#00C2D1"/><text x="20" y="64" text-anchor="end" fill="#1E1B2E" font-size="9">x1</text>
+            <circle cx="60" cy="110" r="16" fill="#D8F7FA" stroke="#00C2D1"/><text x="20" y="114" text-anchor="end" fill="#1E1B2E" font-size="9">x2</text>
+            <circle cx="60" cy="160" r="16" fill="#D8F7FA" stroke="#00C2D1"/><text x="20" y="164" text-anchor="end" fill="#1E1B2E" font-size="9">x3</text>
+            <circle cx="200" cy="110" r="26" fill="#EAE4FE" stroke="#6C4FF6" stroke-width="2"/><text x="200" y="115" text-anchor="middle" font-size="9" fill="#1E1B2E">Σ + f</text>
+            <text x="200" y="160" text-anchor="middle" font-size="8.5" fill="#5C5872">weigh, sum, activate</text>
+          </g>
+          <g stroke="#5C5872" stroke-width="1.5" marker-end="url(#a4)">
+            <line x1="76" y1="60" x2="176" y2="98"/><line x1="76" y1="110" x2="172" y2="110"/><line x1="76" y1="160" x2="176" y2="122"/>
+          </g>
+          <line x1="226" y1="110" x2="290" y2="110" stroke="#5C5872" stroke-width="1.5" marker-end="url(#a4)"/>
+          <text x="255" y="102" text-anchor="middle" font-size="8.5" fill="#5C5872">output</text>
+
+          <g font-size="9.5" font-weight="600">
+            <text x="440" y="20" text-anchor="middle" fill="#5C5872">Input layer</text>
+            <text x="600" y="20" text-anchor="middle" fill="#5C5872">Hidden layer(s)</text>
+            <text x="770" y="20" text-anchor="middle" fill="#5C5872">Output</text>
+          </g>
+          <g fill="#D8F7FA" stroke="#00C2D1"><circle cx="440" cy="60" r="13"/><circle cx="440" cy="110" r="13"/><circle cx="440" cy="160" r="13"/></g>
+          <g fill="#EAE4FE" stroke="#6C4FF6"><circle cx="600" cy="45" r="13"/><circle cx="600" cy="85" r="13"/><circle cx="600" cy="125" r="13"/><circle cx="600" cy="165" r="13"/></g>
+          <g fill="#FFE3E3" stroke="#FF6B6B"><circle cx="770" cy="110" r="16"/></g>
+          <g stroke="#DAD6EE" stroke-width="1">
+            <line x1="453" y1="60" x2="587" y2="45"/><line x1="453" y1="60" x2="587" y2="85"/><line x1="453" y1="60" x2="587" y2="125"/><line x1="453" y1="60" x2="587" y2="165"/>
+            <line x1="453" y1="110" x2="587" y2="45"/><line x1="453" y1="110" x2="587" y2="85"/><line x1="453" y1="110" x2="587" y2="125"/><line x1="453" y1="110" x2="587" y2="165"/>
+            <line x1="453" y1="160" x2="587" y2="45"/><line x1="453" y1="160" x2="587" y2="85"/><line x1="453" y1="160" x2="587" y2="125"/><line x1="453" y1="160" x2="587" y2="165"/>
+            <line x1="613" y1="45" x2="756" y2="110"/><line x1="613" y1="85" x2="756" y2="110"/><line x1="613" y1="125" x2="756" y2="110"/><line x1="613" y1="165" x2="756" y2="110"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">A tiny neural network in PyTorch</div>
+      <pre class="code"><span class="c2">import</span> torch.nn <span class="c2">as</span> nn
+
+model = nn.Sequential(
+    nn.Linear(<span class="c3">3</span>, <span class="c3">8</span>),   <span class="c4"># input layer: 3 features -> 8 hidden neurons</span>
+    nn.ReLU(),          <span class="c4"># activation function — adds non-linearity</span>
+    nn.Linear(<span class="c3">8</span>, <span class="c3">1</span>),   <span class="c4"># hidden layer -> 1 output neuron</span>
+    nn.Sigmoid()        <span class="c4"># squish to a 0-1 probability, just like Level 4</span>
+)
+
+<span class="c1"># Training is the exact same loop from Level 2, just with more parameters</span>
+loss_fn = nn.BCELoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=<span class="c3">0.001</span>)
+
+<span class="c2">for</span> epoch <span class="c2">in</span> range(<span class="c3">100</span>):
+    predictions = model(X_train)
+    loss = loss_fn(predictions, y_train)
+    optimizer.zero_grad()
+    loss.backward()       <span class="c4"># computes the gradient automatically ("backpropagation")</span>
+    optimizer.step()       <span class="c4"># the "adjust" step from Level 2</span></pre>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p><strong>Activation functions</strong> (ReLU, sigmoid, tanh) are essential — without them, stacking linear layers would collapse mathematically into just one bigger linear layer, no matter how many layers you add. <strong>Backpropagation</strong> is the algorithm that efficiently computes the gradient of the loss with respect to every weight in every layer, using the chain rule to propagate error signals backward from the output layer to the input layer — this is what makes training deep networks with millions of parameters computationally feasible. A network needs to be "deep" (many layers) specifically to build up hierarchical representations — early layers learn simple patterns, later layers combine them into increasingly abstract concepts.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>If you removed all the activation functions (ReLU/sigmoid) from a 10-layer network, what do you think would happen to its ability to learn complex, non-linear patterns?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Why do we need activation functions in a neural network?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Without a non-linear activation function between layers, stacking any number of linear layers mathematically collapses into a single linear transformation — a 10-layer network with no activations is exactly equivalent to one linear regression, no matter how many parameters it has. Activation functions like ReLU introduce non-linearity, which is what actually gives deep networks their expressive power to model complex, non-linear relationships in data. ReLU specifically is popular because it's computationally cheap and helps avoid the "vanishing gradient" problem that plagued earlier activations like sigmoid in very deep networks, since its gradient doesn't shrink toward zero for positive inputs.</p>
+        <p><em>Why this answer works:</em> it explains the precise mathematical reason (linear layers collapse without non-linearity) rather than a vague "they add complexity," and adds the practical detail about why ReLU specifically became the default choice.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 11 -->
+    <section class="level" id="cnn">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--cyan-soft);">🖼️</div>
+        <div><div class="level-eyebrow">Level 11</div><h2>CNNs — Teaching a Computer to See</h2></div>
+      </div>
+      <p class="level-tagline">A plain neural network treats every pixel as an unrelated number. CNNs are built around one key insight: nearby pixels matter to each other, and the same small pattern (an edge, a curve) can appear anywhere in an image.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Imagine looking for your friend's face in a crowd photo using a small magnifying glass, sliding it across every part of the photo, looking for the same specific shapes — eyes, a nose, a smile — no matter where in the picture they appear. A CNN does exactly that with small learned "filters" that slide across an image, each one specializing in detecting a specific simple pattern (edges, corners, textures), and stacking those simple detections into recognition of complex objects.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A medical imaging CNN scans X-rays for signs of pneumonia — early layers detect simple edges and textures, middle layers combine those into shapes like "cloudy patches," and later layers combine those into a final diagnosis, learned entirely from thousands of labeled X-ray examples rather than hand-coded medical rules.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">A filter sliding across an image, detecting a pattern</div>
+        <svg viewBox="0 0 900 190" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a5" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5C5872"/></marker></defs>
+          <g>
+            <rect x="10" y="20" width="200" height="150" fill="#F9F8FC" stroke="#DAD6EE"/>
+            <g stroke="#DAD6EE" stroke-width="0.5">
+              <line x1="60" y1="20" x2="60" y2="170"/><line x1="110" y1="20" x2="110" y2="170"/><line x1="160" y1="20" x2="160" y2="170"/>
+              <line x1="10" y1="70" x2="210" y2="70"/><line x1="10" y1="120" x2="210" y2="120"/>
+            </g>
+            <rect x="60" y="70" width="50" height="50" fill="none" stroke="#FF6B6B" stroke-width="3"/>
+            <text x="110" y="185" text-anchor="middle" font-size="9.5" fill="#5C5872">image — filter scans across it</text>
+          </g>
+          <line x1="220" y1="95" x2="290" y2="95" stroke="#5C5872" stroke-width="2" marker-end="url(#a5)"/>
+          <g font-size="9" font-weight="600">
+            <rect x="300" y="60" width="90" height="70" rx="8" fill="#FFE3E3" stroke="#FF6B6B"/><text x="345" y="98" text-anchor="middle" fill="#1E1B2E">Edge</text><text x="345" y="112" text-anchor="middle" fill="#1E1B2E">detector</text>
+          </g>
+          <line x1="390" y1="95" x2="460" y2="95" stroke="#5C5872" stroke-width="2" marker-end="url(#a5)"/>
+          <g font-size="9" font-weight="600">
+            <rect x="470" y="60" width="110" height="70" rx="8" fill="#FFF2D9" stroke="#FFC145"/><text x="525" y="98" text-anchor="middle" fill="#1E1B2E">Shape</text><text x="525" y="112" text-anchor="middle" fill="#1E1B2E">(eye, nose)</text>
+          </g>
+          <line x1="580" y1="95" x2="650" y2="95" stroke="#5C5872" stroke-width="2" marker-end="url(#a5)"/>
+          <g font-size="9" font-weight="600">
+            <rect x="660" y="55" width="130" height="80" rx="8" fill="#E1F8EE" stroke="#34C38F" stroke-width="2"/><text x="725" y="90" text-anchor="middle" fill="#1E1B2E">"It's a face"</text><text x="725" y="105" text-anchor="middle" font-size="8" fill="#5C5872">final classification</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">A small CNN in PyTorch</div>
+      <pre class="code"><span class="c2">import</span> torch.nn <span class="c2">as</span> nn
+
+cnn = nn.Sequential(
+    nn.Conv2d(<span class="c3">3</span>, <span class="c3">16</span>, kernel_size=<span class="c3">3</span>),  <span class="c4"># 16 filters, each 3x3, sliding across the image</span>
+    nn.ReLU(),
+    nn.MaxPool2d(<span class="c3">2</span>),                 <span class="c4"># shrink the image, keep the strongest signals</span>
+    nn.Conv2d(<span class="c3">16</span>, <span class="c3">32</span>, kernel_size=<span class="c3">3</span>), <span class="c4"># more filters, detecting more complex patterns now</span>
+    nn.ReLU(),
+    nn.MaxPool2d(<span class="c3">2</span>),
+    nn.Flatten(),
+    nn.Linear(<span class="c3">32</span> * <span class="c3">6</span> * <span class="c3">6</span>, <span class="c3">10</span>)     <span class="c4"># final classification, e.g. 10 categories</span>
+)</pre>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Convolutional filters exploit two key properties of images: <strong>local connectivity</strong> (a pixel is mostly related to its neighbors, not the whole image) and <strong>parameter sharing</strong> (the same edge detector is useful whether the edge appears top-left or bottom-right, so one filter's weights are reused everywhere — dramatically fewer parameters than a fully-connected layer would need). <strong>Pooling</strong> layers progressively shrink the spatial resolution while keeping the strongest activations, building spatial invariance (a cat is still a cat if it shifts a few pixels) and reducing compute. Modern architectures (ResNet, EfficientNet) stack dozens to hundreds of these conv+pool blocks, with skip connections solving the vanishing gradient problem that made very deep CNNs hard to train before ~2015.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Why would a plain fully-connected neural network (no convolutions) need vastly more parameters to process a 1000x1000 pixel image than a CNN would, for roughly the same task?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Why are CNNs better suited for images than a plain fully-connected network?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>A fully-connected layer treats every pixel as independent, connecting each one to every neuron in the next layer — for a modestly sized image this explodes into millions of parameters, ignores the fact that nearby pixels are spatially related, and has no way to recognize the same pattern if it shifts position in the image. CNNs exploit local connectivity (filters only look at small neighborhoods at a time) and parameter sharing (the same filter slides across the whole image, reused everywhere), which dramatically reduces the parameter count, builds in the assumption that spatial patterns matter, and gives the network translation invariance — a learned edge or shape detector works no matter where in the image that pattern appears.</p>
+        <p><em>Why this answer works:</em> it names both specific architectural properties (local connectivity, parameter sharing) and their direct consequences (fewer parameters, translation invariance), rather than a vague "CNNs are made for images."</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 12 -->
+    <section class="level" id="rnn">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--gold-soft);">🔄</div>
+        <div><div class="level-eyebrow">Level 12</div><h2>RNNs &amp; LSTMs — Remembering What Came Before</h2></div>
+      </div>
+      <p class="level-tagline">CNNs are great at images, where position matters but order doesn't flow in one direction. Language, speech, and time-series data are different — order and memory of what came before is everything.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Reading a sentence one word at a time while keeping a running mental summary of everything so far is exactly what a Recurrent Neural Network (RNN) does — it processes a sequence step by step, carrying a "memory" (hidden state) forward from each word to the next. The problem: like a person trying to remember the start of a very long paragraph by the time they reach the end, plain RNNs tend to "forget" things from many steps back. An LSTM adds a deliberate memory mechanism — gates that decide what to keep, what to forget, and what to pass along — much better at holding onto important information over long sequences.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>Before Transformers took over, Google Translate used LSTM-based sequence models — reading an entire sentence in one language word by word (building up context), then generating the translated sentence word by word, using that accumulated context to keep translations grammatically and semantically coherent.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">An RNN unrolled across a sequence</div>
+        <svg viewBox="0 0 900 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a6" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5C5872"/></marker></defs>
+          <g font-size="10" font-weight="600">
+            <rect x="30" y="60" width="110" height="50" rx="10" fill="#EAE4FE" stroke="#6C4FF6"/><text x="85" y="90" text-anchor="middle" fill="#1E1B2E">"The"</text>
+            <rect x="230" y="60" width="110" height="50" rx="10" fill="#EAE4FE" stroke="#6C4FF6"/><text x="285" y="90" text-anchor="middle" fill="#1E1B2E">"cat"</text>
+            <rect x="430" y="60" width="110" height="50" rx="10" fill="#EAE4FE" stroke="#6C4FF6"/><text x="485" y="90" text-anchor="middle" fill="#1E1B2E">"sat"</text>
+            <rect x="630" y="60" width="130" height="50" rx="10" fill="#FFE3E3" stroke="#FF6B6B" stroke-width="2"/><text x="695" y="90" text-anchor="middle" fill="#1E1B2E">next word?</text>
+          </g>
+          <g stroke="#5C5872" stroke-width="2" marker-end="url(#a6)" fill="none">
+            <path d="M140 85 C 170 40, 200 40, 227 62"/><path d="M340 85 C 370 40, 400 40, 427 62"/><path d="M540 85 C 570 40, 600 40, 627 62"/>
+          </g>
+          <text x="450" y="30" text-anchor="middle" font-size="9.5" fill="#5C5872">hidden state carries "memory" forward, one step at a time</text>
+        </svg>
+      </div>
+
+      <div class="code-label">An LSTM for sequence modeling in PyTorch</div>
+      <pre class="code"><span class="c2">import</span> torch.nn <span class="c2">as</span> nn
+
+lstm = nn.LSTM(input_size=<span class="c3">300</span>, hidden_size=<span class="c3">128</span>, batch_first=<span class="c2">True</span>)
+classifier = nn.Linear(<span class="c3">128</span>, <span class="c3">2</span>)  <span class="c4"># e.g. positive/negative sentiment</span>
+
+<span class="c1"># A sentence, as a sequence of word embeddings, processed word by word</span>
+output, (hidden_state, cell_state) = lstm(sentence_embeddings)
+sentiment = classifier(hidden_state[-<span class="c3">1</span>])  <span class="c4"># use the FINAL hidden state, which has "read" the whole sentence</span></pre>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Plain RNNs suffer from the <strong>vanishing gradient problem</strong> across long sequences — during backpropagation through time, gradients shrink exponentially the further back they need to travel, making it hard to learn dependencies between distant words. LSTMs (and the simpler GRU variant) solve this with explicit <strong>gates</strong> — a forget gate, input gate, and output gate — that learn what to retain, discard, and expose at each step, giving much more stable long-range memory. The critical limitation that motivated Transformers: RNNs process sequentially, one token at a time, which is inherently slow to train (can't parallelize across the sequence) and still struggles with very long-range dependencies — exactly the two problems attention (Level 13) was designed to fix.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Why would training an RNN on a 10,000-word document be much slower to compute than training a CNN on an image with a similar number of pixels, even on the same hardware?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "What specific problems with RNNs/LSTMs did Transformers set out to solve?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Two main problems. First, RNNs process sequences strictly one step at a time — each step depends on the previous step's hidden state — which means you can't parallelize computation across the sequence during training, making them slow to train on the large datasets and long sequences modern language modeling needs. Second, even with LSTM's gating mechanisms, very long-range dependencies (information from far earlier in a long document) remain genuinely hard to preserve, since information still has to flow sequentially through every intermediate step. The attention mechanism, and Transformers built around it, let every position in a sequence directly attend to every other position in a single step — fully parallelizable across the sequence, and with a direct path between any two positions regardless of distance.</p>
+        <p><em>Why this answer works:</em> it names the two distinct problems (parallelization and long-range dependency) separately, since conflating them is a common shallow answer — and directly sets up why attention was the fix, which is exactly what the next level covers.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 13 -->
+    <section class="level" id="attention">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--coral-soft);">👁️</div>
+        <div><div class="level-eyebrow">Level 13</div><h2>The Attention Mechanism — The Idea That Changed Everything</h2></div>
+      </div>
+      <p class="level-tagline">One idea, published in a 2017 paper literally titled "Attention Is All You Need," is directly responsible for every major AI breakthrough since — including GPT.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>When you read the sentence "The trophy didn't fit in the suitcase because <em>it</em> was too big," your brain doesn't process "it" using only the word right before it — you instantly glance back and decide "it" refers to "the trophy," not "the suitcase," by weighing relevance across the whole sentence. Attention gives a model that exact same superpower: for every word, it computes how much to "pay attention to" every other word in the sequence, and blends information from the most relevant ones — no matter how far away they are.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>Translating "The bank approved the loan" versus "The bank of the river was muddy" requires understanding "bank" completely differently based on distant context words ("loan" vs. "river"). Attention lets the model directly weigh those distant, disambiguating words when interpreting "bank," rather than relying on a memory trail that's had to survive many sequential steps.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Attention weights — how much each word looks at every other word</div>
+        <svg viewBox="0 0 700 220" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <g font-size="10" font-weight="600">
+            <text x="80" y="30" text-anchor="middle" fill="#1E1B2E">The</text>
+            <text x="200" y="30" text-anchor="middle" fill="#1E1B2E">trophy</text>
+            <text x="320" y="30" text-anchor="middle" fill="#1E1B2E">didn't</text>
+            <text x="440" y="30" text-anchor="middle" fill="#1E1B2E">fit</text>
+            <text x="560" y="30" text-anchor="middle" fill="#FF6B6B">it</text>
+          </g>
+          <g stroke="#6C4FF6" fill="none">
+            <path d="M560 40 C 500 90, 300 90, 200 40" stroke-width="4" opacity="0.85"/>
+            <path d="M560 40 C 520 120, 340 120, 320 40" stroke-width="1.5" opacity="0.35"/>
+            <path d="M560 40 C 540 150, 460 150, 440 40" stroke-width="1.5" opacity="0.3"/>
+            <path d="M560 40 C 480 170, 130 170, 80 40" stroke-width="1" opacity="0.2"/>
+          </g>
+          <text x="200" y="200" text-anchor="middle" font-size="10" font-weight="700" fill="#6C4FF6">"it" pays the most attention to "trophy" — the thick line</text>
+        </svg>
+      </div>
+
+      <div class="code-label">Self-attention, conceptually in code</div>
+      <pre class="code"><span class="c1"># Every word produces a Query (what am I looking for?), Key (what do I offer?),</span>
+<span class="c1"># and Value (what info do I actually contain?)</span>
+Q = words @ W_query    <span class="c4"># each word's "question"</span>
+K = words @ W_key       <span class="c4"># each word's "label"</span>
+V = words @ W_value     <span class="c4"># each word's "content"</span>
+
+<span class="c1"># How relevant is every word to every other word? (a similarity score)</span>
+attention_scores = softmax(Q @ K.T / sqrt(d_k))
+
+<span class="c1"># Blend each word's Value, weighted by how relevant it is</span>
+output = attention_scores @ V</pre>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Self-attention computes, for every position, a weighted sum over <em>all</em> positions' values — the weights (via <code>softmax(QKᵀ/√d_k)</code>) representing learned relevance. Crucially, this happens in <strong>one parallelizable matrix operation</strong> across the whole sequence, not step-by-step like an RNN — solving both of Level 12's problems at once: full parallelization, and a direct, constant-length path between any two positions regardless of distance. <strong>Multi-head attention</strong> runs several attention computations in parallel with different learned projections, letting the model attend to different <em>kinds</em> of relationships simultaneously (e.g. one head tracking grammatical subject-verb agreement, another tracking pronoun reference).</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>In the sentence "The cat that chased the mouse was hungry," which word should "was" pay the most attention to when deciding it should be singular, not "were"? Why does that require looking past several nearby words?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Explain self-attention, and why softmax(QKᵀ/√d_k)V is structured that way." <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Each token is projected into a Query, Key, and Value vector. The dot product QKᵀ measures similarity between every pair of tokens' Query and Key — high similarity means "this token is relevant to that one." Dividing by √d_k rescales these scores to prevent them from growing too large as dimensionality increases, which would otherwise push softmax into regions with extremely small gradients. Softmax then converts the raw scores into a proper probability distribution — attention weights summing to 1 for each token — and multiplying by V produces a weighted blend of every token's actual content, weighted by relevance. The whole operation is a single matrix multiplication across the entire sequence, which is what makes it fully parallelizable, unlike an RNN's sequential processing.</p>
+        <p><em>Why this answer works:</em> it explains the purpose of every piece of the formula (why divide by √d_k, why softmax, why V at the end) rather than just naming the formula, and closes on the parallelization payoff that connects directly back to why this architecture won.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 14 -->
+    <section class="level" id="transformer">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--violet-soft);">🏛️</div>
+        <div><div class="level-eyebrow">Level 14</div><h2>The Transformer Architecture</h2></div>
+      </div>
+      <p class="level-tagline">Attention is the key idea. The Transformer is the full blueprint that assembles attention, plus a few essential supporting pieces, into the architecture behind essentially every major AI model since 2018.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>If attention is one superpower (instantly relating any word to any other word), the Transformer is the whole team built around that superpower: a way to remember word <em>order</em> (since attention alone has no sense of sequence), stacked layers that each refine understanding a bit further, and small "cleanup crews" (normalization, feed-forward layers) between them that keep the whole system stable as it gets deeper.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>The original 2017 Transformer was built for machine translation — an Encoder reads the full source sentence (attending to itself), and a Decoder generates the translated sentence word by word, attending both to what it's generated so far and to the encoded source sentence. That same encoder/decoder blueprint, in various configurations, now underlies translation, summarization, code generation, and — stripped down to just the decoder half — GPT itself.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Inside one Transformer block</div>
+        <svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a7" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5C5872"/></marker></defs>
+          <g font-size="10.5" font-weight="600">
+            <rect x="180" y="10" width="340" height="40" rx="8" fill="#EAE4FE" stroke="#6C4FF6"/><text x="350" y="35" text-anchor="middle" fill="#1E1B2E">Input embeddings + positional encoding</text>
+
+            <rect x="180" y="70" width="340" height="45" rx="8" fill="#D8F7FA" stroke="#00C2D1" stroke-width="2"/><text x="350" y="97" text-anchor="middle" fill="#1E1B2E">Multi-Head Self-Attention</text>
+
+            <rect x="180" y="135" width="340" height="35" rx="8" fill="#FFF2D9" stroke="#FFC145"/><text x="350" y="157" text-anchor="middle" fill="#1E1B2E">Add &amp; Normalize</text>
+
+            <rect x="180" y="190" width="340" height="40" rx="8" fill="#FFE3E3" stroke="#FF6B6B"/><text x="350" y="215" text-anchor="middle" fill="#1E1B2E">Feed-Forward Network</text>
+          </g>
+          <text x="560" y="150" font-size="9.5" fill="#5C5872" transform="rotate(90 560 150)">stacked N times</text>
+          <g stroke="#5C5872" stroke-width="2" marker-end="url(#a7)">
+            <line x1="350" y1="50" x2="350" y2="68"/><line x1="350" y1="115" x2="350" y2="133"/><line x1="350" y1="170" x2="350" y2="188"/>
+          </g>
+        </svg>
+        <div class="diagram-caption">Attention lets tokens exchange information; the feed-forward layer processes each token's result further; normalization keeps values stable across many stacked layers.</div>
+      </div>
+
+      <div class="code-label">A minimal Transformer block, structurally</div>
+      <pre class="code"><span class="c2">class</span> TransformerBlock(nn.Module):
+    <span class="c2">def</span> __init__(<span class="c2">self</span>, dim, n_heads):
+        <span class="c2">super</span>().__init__()
+        <span class="c2">self</span>.attention = nn.MultiheadAttention(dim, n_heads)
+        <span class="c2">self</span>.norm1 = nn.LayerNorm(dim)
+        <span class="c2">self</span>.feed_forward = nn.Sequential(nn.Linear(dim, dim*<span class="c3">4</span>), nn.ReLU(), nn.Linear(dim*<span class="c3">4</span>, dim))
+        <span class="c2">self</span>.norm2 = nn.LayerNorm(dim)
+
+    <span class="c2">def</span> forward(<span class="c2">self</span>, x):
+        x = x + <span class="c2">self</span>.attention(x, x, x)[<span class="c3">0</span>]  <span class="c4"># attend, then "add" the original back in (a "residual" connection)</span>
+        x = <span class="c2">self</span>.norm1(x)
+        x = x + <span class="c2">self</span>.feed_forward(x)
+        x = <span class="c2">self</span>.norm2(x)
+        <span class="c2">return</span> x</pre>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p><strong>Positional encoding</strong> is essential because self-attention itself has no inherent notion of word order — it treats a sequence as a set unless order is injected explicitly (via sinusoidal functions in the original paper, or learned embeddings in most modern models). <strong>Residual connections</strong> (the <code>x + ...</code> pattern) let gradients flow directly through many stacked layers without vanishing, making very deep Transformers (dozens of layers) trainable. The encoder-decoder split matters architecturally: BERT-style models use only the encoder (bidirectional context — good for understanding tasks like classification), GPT-style models use only the decoder with <strong>masked</strong> self-attention (each token can only attend to earlier tokens, not future ones — essential for generating text one word at a time).</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Why would GPT — which generates text one word at a time, left to right — need "masked" attention that prevents a word from looking at words that come after it, while a translation-understanding model wouldn't need that restriction?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "What's the difference between an encoder-only, decoder-only, and encoder-decoder Transformer, and when is each used?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Encoder-only models (like BERT) use bidirectional self-attention — every token can attend to every other token, including ones after it — making them strong at <em>understanding</em> tasks: classification, sentiment analysis, extracting information from text. Decoder-only models (like GPT) use masked (causal) self-attention — each token can only attend to itself and earlier tokens — which is exactly what's needed for autoregressive text generation, predicting one word at a time based only on what's come before. Encoder-decoder models (like the original Transformer, or T5) combine both: an encoder builds a full bidirectional understanding of an input sequence, and a decoder generates an output sequence, attending both to its own previous outputs and to the encoder's representation — well suited to translation and summarization, where you need to fully understand an input before generating a related but different output.</p>
+        <p><em>Why this answer works:</em> it ties each architecture variant directly to the type of task it's structurally suited for, rather than just listing three names — showing you understand <em>why</em> the field split into these three families.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 15 -->
+    <section class="level" id="gpt">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--coral-soft);">🤖</div>
+        <div><div class="level-eyebrow">Level 15</div><h2>GPT &amp; Large Language Models</h2></div>
+      </div>
+      <p class="level-tagline">The summit of this whole journey: GPT is "just" a decoder-only Transformer, trained at a scale and with techniques that turned a simple next-word predictor into something that can write essays, code, and hold conversations.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>GPT (Generative Pre-trained Transformer) is fundamentally an incredibly well-practiced "guess the next word" game. Imagine reading literally a significant fraction of the internet, and after every single sentence, pausing to guess what word comes next, checking if you were right, and getting a tiny bit better at guessing — repeated billions of times. Do that enough, across enough text, and the "next word predictor" implicitly has to learn grammar, facts, reasoning patterns, and writing styles, simply because predicting the next word well requires understanding all of that.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>When you ask an LLM-based coding assistant to "write a function that reverses a string," it's generating that function one token at a time, each token chosen based on everything written so far (your question, plus every token it's already generated) — the exact same masked self-attention mechanism from Level 14, just running at a scale of billions of parameters trained on enormous amounts of text and code.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">From next-word prediction to a helpful assistant — the training pipeline</div>
+        <svg viewBox="0 0 900 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a8" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5C5872"/></marker></defs>
+          <g font-size="10" font-weight="600">
+            <rect x="10" y="55" width="200" height="60" rx="10" fill="#EAE4FE" stroke="#6C4FF6" stroke-width="2"/><text x="110" y="80" text-anchor="middle" fill="#1E1B2E">Pretraining</text><text x="110" y="97" text-anchor="middle" font-size="8.5" fill="#5C5872">predict next word, on huge text</text>
+
+            <rect x="260" y="55" width="200" height="60" rx="10" fill="#D8F7FA" stroke="#00C2D1" stroke-width="2"/><text x="360" y="80" text-anchor="middle" fill="#1E1B2E">Supervised Fine-Tuning</text><text x="360" y="97" text-anchor="middle" font-size="8.5" fill="#5C5872">learn from example Q&amp;A pairs</text>
+
+            <rect x="510" y="55" width="200" height="60" rx="10" fill="#FFF2D9" stroke="#FFC145" stroke-width="2"/><text x="610" y="80" text-anchor="middle" fill="#1E1B2E">RLHF</text><text x="610" y="97" text-anchor="middle" font-size="8.5" fill="#5C5872">humans rank outputs, model improves</text>
+
+            <rect x="760" y="55" width="130" height="60" rx="10" fill="#E1F8EE" stroke="#34C38F" stroke-width="2"/><text x="825" y="90" text-anchor="middle" fill="#1E1B2E">Helpful assistant</text>
+          </g>
+          <g stroke="#5C5872" stroke-width="2" marker-end="url(#a8)">
+            <line x1="210" y1="85" x2="257" y2="85"/><line x1="460" y1="85" x2="507" y2="85"/><line x1="710" y1="85" x2="757" y2="85"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">Text generation is repeated next-token prediction</div>
+      <pre class="code"><span class="c4"># Simplified — this is conceptually what "generation" is doing under the hood</span>
+prompt = <span class="c3">"The capital of France is"</span>
+tokens = tokenizer.encode(prompt)
+
+<span class="c2">for</span> _ <span class="c2">in</span> range(<span class="c3">20</span>):  <span class="c4"># generate up to 20 more tokens</span>
+    logits = model(tokens)                       <span class="c4"># predict a probability for every possible next token</span>
+    next_token = sample(logits[-<span class="c3">1</span>], temperature=<span class="c3">0.7</span>)  <span class="c4"># pick one, with some randomness</span>
+    tokens.append(next_token)
+    <span class="c2">if</span> next_token == END_TOKEN:
+        <span class="c2">break</span>
+
+print(tokenizer.decode(tokens))  <span class="c4"># --> "The capital of France is Paris."</span></pre>
+
+      <div class="card usecase">
+        <h3>🎛️ Key concepts that make GPT usable, not just impressive</h3>
+        <p><strong>Pretraining</strong> — self-supervised next-token prediction on massive text corpora, requiring no human labeling at all, is what teaches the model language, facts, and reasoning patterns. <strong>Fine-tuning</strong> — further training on curated example conversations teaches it to follow instructions in a helpful format. <strong>RLHF (Reinforcement Learning from Human Feedback)</strong> — humans rank multiple model outputs by quality, and that preference signal further trains the model to prefer genuinely helpful, honest, harmless responses over merely plausible-sounding ones. <strong>Prompting</strong> — how you phrase a request to a trained model, without changing its weights at all, still dramatically affects output quality — few-shot examples, clear instructions, and structured formats all measurably help.</p>
+      </div>
+
+      <div class="card" style="border-left:4px solid var(--violet);">
+        <h3>🎓 Architect-level version</h3>
+        <p>GPT is architecturally "just" a stack of decoder-only Transformer blocks (Level 14) with masked self-attention, scaled to billions of parameters and trained on trillions of tokens — the core innovation is less about a fundamentally new architecture and more about scale plus the three-stage training pipeline (pretrain → fine-tune → RLHF) that turns a raw next-token predictor into an aligned, instruction-following assistant. "Hallucination" is a direct, expected consequence of the underlying objective: the model is fundamentally optimized to produce plausible-sounding continuations, not to only state verified facts — which is exactly why RAG (retrieval-augmented generation, grounding answers in real retrieved documents) exists as a mitigation, rather than something baked into the base model's training objective.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Explain in your own words why a model trained purely to "predict the most plausible next word" would sometimes confidently state something false — connect it back to what the training objective actually optimizes for.</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Why do large language models hallucinate, and how does that connect to their training objective?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>The pretraining objective is next-token prediction — the model is optimized to produce statistically plausible, fluent continuations of text, not to verify factual accuracy against ground truth. Fine-tuning and RLHF push the model toward being more helpful and honest, but they don't fundamentally change the underlying mechanism: the model is still generating each token based on learned patterns of what plausibly comes next, and for facts it hasn't reliably memorized (or that don't exist), it can generate confident, fluent, but false text — because "fluent and confident" is exactly what the training signal rewarded, with no built-in mechanism to say "I don't actually know this." This is precisely why grounding techniques like RAG matter in production: they inject real, retrieved facts into the context so the model's very strong "generate plausible continuation of what's in front of me" behavior is anchored to something true, rather than relying purely on its parametric memory.</p>
+        <p><em>Why this answer works:</em> it traces the failure mode directly back to the training objective (plausibility, not verified truth) rather than treating hallucination as a mysterious bug, and connects it to a concrete production mitigation (RAG) — tying this whole guide back to the very first level of the earlier Agentic AI guide.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 16: USE-CASE PROJECTS -->
+    <section class="level" id="projects">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--violet-soft);">🚀</div>
+        <div><div class="level-eyebrow">Level 16 — Hands-On</div><h2>Use-Case Projects: Build Three Real Models</h2></div>
+      </div>
+      <p class="level-tagline">Everything from Levels 1-15 combines into three realistic, end-to-end projects — one classic ML, one deep learning, one modern Transformer-based — the exact shape of thing you'd build in a real job or on a take-home interview assignment.</p>
+
+      <div class="project-card">
+        <span class="project-tag" style="background:var(--cyan-soft); color:#007A85;">PROJECT 1 · CLASSIC ML</span>
+        <h3 style="font-size:19px; margin-bottom:10px;">🏠 House Price Prediction — Regression Showdown</h3>
+        <p style="margin-bottom:16px;"><strong>The problem:</strong> A real estate startup wants to estimate a fair listing price from square footage, bedrooms, location, and age of the house — and wants to know whether a simple, explainable model is "good enough" compared to a more complex one.</p>
+
+        <div class="code-label">End-to-end: load, split, train two models, compare</div>
+        <pre class="code"><span class="c2">import</span> pandas <span class="c2">as</span> pd
+<span class="c2">from</span> sklearn.model_selection <span class="c2">import</span> train_test_split
+<span class="c2">from</span> sklearn.linear_model <span class="c2">import</span> LinearRegression
+<span class="c2">from</span> sklearn.ensemble <span class="c2">import</span> RandomForestRegressor
+<span class="c2">from</span> sklearn.metrics <span class="c2">import</span> mean_absolute_error
+
+data = pd.read_csv(<span class="c3">"houses.csv"</span>)
+X = data[[<span class="c3">"sqft"</span>, <span class="c3">"bedrooms"</span>, <span class="c3">"location_score"</span>, <span class="c3">"age_years"</span>]]
+y = data[<span class="c3">"price"</span>]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=<span class="c3">0.2</span>, random_state=<span class="c3">42</span>)
+
+<span class="c1"># Model A: simple, explainable</span>
+linear = LinearRegression().fit(X_train, y_train)
+print(<span class="c3">"Linear MAE:"</span>, mean_absolute_error(y_test, linear.predict(X_test)))
+
+<span class="c1"># Model B: more flexible, less explainable</span>
+forest = RandomForestRegressor(n_estimators=<span class="c3">300</span>).fit(X_train, y_train)
+print(<span class="c3">"Forest MAE:"</span>, mean_absolute_error(y_test, forest.predict(X_test)))
+
+<span class="c1"># Which features actually drove the forest's predictions?</span>
+print(dict(zip(X.columns, forest.feature_importances_)))</pre>
+
+        <div class="card" style="border-left:4px solid var(--violet); margin-top:14px; margin-bottom:0;">
+          <h3>🎯 What this project demonstrates</h3>
+          <p>Linear regression (Level 3), Random Forest (Level 5), train/test splitting and MAE as an evaluation metric (Level 9), and the real-world decision between interpretability and raw accuracy — often the forest wins on error, but the startup may still ship linear regression if it needs to explain every price to a customer.</p>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <span class="project-tag" style="background:var(--gold-soft); color:#8A6300;">PROJECT 2 · DEEP LEARNING</span>
+        <h3 style="font-size:19px; margin-bottom:10px;">✍️ Handwritten Digit Recognition — Your First CNN</h3>
+        <p style="margin-bottom:16px;"><strong>The problem:</strong> A postal service wants to automatically read handwritten ZIP codes from envelope images — classic "hello world" of computer vision, using the famous MNIST dataset of 70,000 labeled handwritten digit images.</p>
+
+        <div class="code-label">Training a CNN to recognize digits 0-9</div>
+        <pre class="code"><span class="c2">import</span> torch
+<span class="c2">import</span> torch.nn <span class="c2">as</span> nn
+<span class="c2">from</span> torchvision <span class="c2">import</span> datasets, transforms
+
+train_data = datasets.MNIST(root=<span class="c3">"data"</span>, train=<span class="c2">True</span>, download=<span class="c2">True</span>, transform=transforms.ToTensor())
+train_loader = torch.utils.data.DataLoader(train_data, batch_size=<span class="c3">64</span>, shuffle=<span class="c2">True</span>)
+
+cnn = nn.Sequential(
+    nn.Conv2d(<span class="c3">1</span>, <span class="c3">16</span>, <span class="c3">3</span>), nn.ReLU(), nn.MaxPool2d(<span class="c3">2</span>),
+    nn.Conv2d(<span class="c3">16</span>, <span class="c3">32</span>, <span class="c3">3</span>), nn.ReLU(), nn.MaxPool2d(<span class="c3">2</span>),
+    nn.Flatten(), nn.Linear(<span class="c3">32</span>*<span class="c3">5</span>*<span class="c3">5</span>, <span class="c3">10</span>)  <span class="c4"># 10 output classes: digits 0-9</span>
+)
+
+optimizer = torch.optim.Adam(cnn.parameters(), lr=<span class="c3">0.001</span>)
+loss_fn = nn.CrossEntropyLoss()
+
+<span class="c2">for</span> epoch <span class="c2">in</span> range(<span class="c3">5</span>):
+    <span class="c2">for</span> images, labels <span class="c2">in</span> train_loader:
+        predictions = cnn(images)
+        loss = loss_fn(predictions, labels)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+    print(f<span class="c3">"Epoch {epoch}: loss = {loss.item():.4f}"</span>)</pre>
+
+        <div class="card" style="border-left:4px solid var(--violet); margin-top:14px; margin-bottom:0;">
+          <h3>🎯 What this project demonstrates</h3>
+          <p>The full CNN architecture from Level 11 (conv layers, pooling, flatten, classify), the training loop from Level 2 and 10 applied to a real dataset, and cross-entropy loss — the standard choice for multi-class classification, generalizing the binary log loss from Level 4 to more than two categories.</p>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <span class="project-tag" style="background:var(--violet-soft); color:var(--violet);">PROJECT 3 · TRANSFORMERS</span>
+        <h3 style="font-size:19px; margin-bottom:10px;">💬 Movie Review Sentiment — Fine-Tuning a Real Transformer</h3>
+        <p style="margin-bottom:16px;"><strong>The problem:</strong> A streaming service wants to automatically classify thousands of daily user reviews as positive or negative, without training a language model from scratch — using transfer learning to fine-tune an already-pretrained Transformer.</p>
+
+        <div class="code-label">Fine-tuning a pretrained Transformer with Hugging Face</div>
+        <pre class="code"><span class="c2">from</span> transformers <span class="c2">import</span> AutoTokenizer, AutoModelForSequenceClassification, Trainer, TrainingArguments
+<span class="c2">from</span> datasets <span class="c2">import</span> load_dataset
+
+<span class="c1"># Start from a model already pretrained on huge amounts of text — Level 15's pretraining, done for us</span>
+tokenizer = AutoTokenizer.from_pretrained(<span class="c3">"distilbert-base-uncased"</span>)
+model = AutoModelForSequenceClassification.from_pretrained(<span class="c3">"distilbert-base-uncased"</span>, num_labels=<span class="c3">2</span>)
+
+reviews = load_dataset(<span class="c3">"imdb"</span>)
+<span class="c2">def</span> tokenize(batch):
+    <span class="c2">return</span> tokenizer(batch[<span class="c3">"text"</span>], padding=<span class="c2">True</span>, truncation=<span class="c2">True</span>)
+tokenized = reviews.map(tokenize, batched=<span class="c2">True</span>)
+
+<span class="c1"># Fine-tuning: only a LITTLE more training, adapting the pretrained model to OUR task</span>
+trainer = Trainer(
+    model=model,
+    args=TrainingArguments(output_dir=<span class="c3">"./results"</span>, num_train_epochs=<span class="c3">2</span>, per_device_train_batch_size=<span class="c3">16</span>),
+    train_dataset=tokenized[<span class="c3">"train"</span>],
+    eval_dataset=tokenized[<span class="c3">"test"</span>],
+)
+trainer.train()
+
+<span class="c1"># Now it classifies NEW reviews it's never seen</span>
+review = tokenizer(<span class="c3">"This movie completely blew me away!"</span>, return_tensors=<span class="c3">"pt"</span>)
+prediction = model(**review).logits.argmax()  <span class="c4"># --> 1 (positive)</span></pre>
+
+        <div class="card" style="border-left:4px solid var(--violet); margin-top:14px; margin-bottom:0;">
+          <h3>🎯 What this project demonstrates</h3>
+          <p><strong>Transfer learning</strong>: rather than training a Transformer from scratch (which needs enormous data and compute), you start from a model that already went through pretraining (Level 15) and fine-tune it briefly on your specific task — the exact same pretrain→fine-tune pipeline that produces production assistants, just applied to a smaller classification task instead of open-ended generation.</p>
+        </div>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Pick one of these three projects and sketch how you'd extend it: add a regularization term to Project 1 to reduce overfitting, add a confusion matrix to Project 2 to see which digits get confused most, or swap Project 3's sentiment task for a 5-star rating prediction — what would need to change?</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 17 -->
+    <section class="level" id="interviewbank">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--coral-soft);">🎯</div>
+        <div><div class="level-eyebrow">Level 17 — Senior Bank</div><h2>Interview Questions for 15+ Years of Experience</h2></div>
+      </div>
+      <p class="level-tagline">Every earlier level had one interview question woven in. These are the harder, more open-ended ones a senior/staff-level panel actually asks.</p>
+
+      <div class="qbank">
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How would you handle a severely imbalanced dataset — say, 0.5% fraud cases out of millions of transactions?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>First, I'd throw out accuracy entirely as a metric and use precision, recall, F1, or AUC-PR instead, since a model predicting "never fraud" would score 99.5% accuracy while being useless. On the modeling side: class weighting (penalizing misclassified minority-class examples more heavily), resampling techniques like SMOTE (synthetically generating minority-class examples) or careful undersampling of the majority class, and choosing algorithms that handle imbalance reasonably well natively, like gradient boosting with tuned class weights. Just as important is threshold tuning after training — moving the decision threshold based on the actual business cost of false positives versus false negatives, rather than defaulting to 0.5.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How do you detect and respond to model drift once a model is in production?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>I'd monitor two distinct kinds of drift: data drift (the distribution of incoming features changing from what the model was trained on — e.g. customer behavior shifting) and concept drift (the actual relationship between features and target changing — e.g. what predicts fraud changes as fraudsters adapt). Statistical tests (like population stability index or KL divergence) on feature distributions catch data drift; monitoring live model performance against ground truth (where available, even with a lag) catches concept drift. The response is usually a scheduled or trigger-based retraining pipeline, with a champion/challenger deployment pattern so a new model is validated against real traffic before fully replacing the current production model.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How would you explain a black-box model's individual prediction to a non-technical stakeholder or regulator?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>I'd use model-agnostic explainability tools — SHAP (Shapley values) is my default, since it gives a theoretically grounded breakdown of exactly how much each feature contributed, positively or negatively, to one specific prediction, and can be visualized simply ("your application was denied primarily due to debt-to-income ratio, partially offset by strong credit history"). LIME is a lighter-weight alternative that approximates a complex model locally with a simple, interpretable one around a specific prediction. For regulated domains, I'd also keep a simpler, fully interpretable model (like logistic regression) as a documented benchmark, so the organization can show the complex model's behavior is reasonable and defensible relative to a transparent baseline.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "When would you choose fine-tuning an LLM versus prompt engineering versus RAG for a new use case?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>Prompt engineering first, always — it's the cheapest and fastest lever, and modern models are surprisingly capable with well-structured instructions and few-shot examples alone. RAG when the core problem is knowledge the model doesn't reliably have or that changes over time — grounding responses in retrieved, current documents solves the "doesn't know this fact" or "hallucinates" problem far more directly and cheaply than fine-tuning. Fine-tuning when the problem is genuinely about behavior or format, not knowledge — teaching a consistent output style, domain-specific terminology usage, or a narrow task the model handles inconsistently despite good prompting — and even then, only after confirming prompting and RAG alone weren't sufficient, since fine-tuning is the most expensive and highest-maintenance option of the three.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How do you decide between a simpler model and a more complex one when both perform similarly on your metric?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>All else equal, I default to the simpler model — it's easier to debug, faster to retrain and serve, more interpretable, and less prone to subtle overfitting that only shows up later on genuinely new data. I'd only justify the added complexity of a more sophisticated model with a real, meaningful, and reproducible performance gap — validated across multiple random seeds and cross-validation folds, not a one-off lucky split — and only when that gap actually matters for the business outcome (a fraud model where 1% more recall prevents real losses justifies complexity; a marginal internal reporting metric usually doesn't).</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How would you design an A/B test to validate that a new ML model actually improves business outcomes, not just offline metrics?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>Offline metrics (accuracy, AUC) measure prediction quality on historical data, but the real question is whether the model improves a business outcome once it's actually influencing decisions — which can differ due to feedback loops, distribution shift between historical and live data, or the offline metric simply not capturing what matters. I'd randomly split live traffic between the current production model (control) and the new model (treatment), define the actual business metric upfront (revenue, churn rate, fraud losses prevented — not just accuracy), run long enough to reach statistical significance given the expected effect size and traffic volume, and watch for novelty effects or seasonality that could bias a short test window.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How do you think about bias and fairness in a model used for a high-stakes decision like loan approval or hiring?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>I'd start by explicitly checking whether the model's error rates or approval rates differ meaningfully across protected groups (gender, race, age), even if those attributes aren't direct model inputs — proxies (like zip code correlating with race) can smuggle bias in indirectly. I'd audit the training data itself for historical bias, since a model trained on biased historical decisions will learn and often amplify that bias, not correct it. Beyond detection, mitigation might include reweighting training data, adjusting decision thresholds per group to equalize a chosen fairness metric (there are genuinely competing definitions of "fair" — equalized odds vs. demographic parity — and the right one is a policy decision, not purely a technical one), or in some cases removing certain features entirely if their marginal predictive value doesn't justify the fairness risk.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How would you decide whether a problem needs a large, general model or a small, specialized one?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>I'd weigh task complexity against latency, cost, and data availability constraints. A narrow, well-defined task with abundant labeled data (like classifying support tickets into 10 categories) is often better served by a small, fine-tuned model — cheaper to run at scale, faster, and easier to control — than by calling a large general-purpose LLM for every request. A large general model earns its cost when the task genuinely requires broad world knowledge, flexible reasoning across varied inputs, or the task specification itself is too fluid to justify building and maintaining a dedicated smaller model. In production, I've also seen model cascades work well: route simple, high-confidence cases to a small fast model, and escalate only genuinely ambiguous cases to a larger, more expensive one.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "Walk me through how you'd debug a model that performs well in offline evaluation but poorly once deployed." <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>The most common cause is train-serve skew — a mismatch between how features are computed during training versus at inference time (different code paths, different data freshness, subtle timezone or unit bugs). I'd first verify the exact feature values the live model actually receives match what the offline pipeline would have produced for the same input. Second, I'd check for data leakage in the original offline evaluation — a feature that inadvertently contained information from the future or the label itself, inflating offline performance in a way that can't hold up live. Third, distribution shift: is live traffic genuinely different from the training/test distribution (new user segment, seasonal shift, a changed upstream system)? I'd compare feature distributions between the offline validation set and recent live traffic to check.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "What's your mental model for when deep learning is worth it versus classic ML (like gradient boosting) for a tabular business problem?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>For genuinely tabular, structured business data — the kind that lives in rows and columns — gradient boosting (XGBoost/LightGBM) is still my default and usually wins on both accuracy and training efficiency, since deep learning typically needs far more data to match it on this data type, and offers less interpretability for comparable performance. I'd reach for deep learning when the input is inherently unstructured — images, audio, free text, or when the task involves sequential/temporal patterns better captured by architectures designed for them — or when there's a specific reason to expect deep learning's automatic feature learning to beat hand-engineered tabular features, which is genuinely rare for classic structured business data.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LEVEL 18: GLOSSARY -->
+    <section class="level" id="glossary">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--gold-soft);">📖</div>
+        <div><div class="level-eyebrow">Level 18 — Reference</div><h2>Glossary — Speak Like a Pro</h2></div>
+      </div>
+      <p class="level-tagline">Every term gets two definitions: the simple one, and the one you'd use in front of a hiring panel.</p>
+
+      <div class="glossary-grid">
+        <div class="card">
+          <h3 class="glossary-cat-title">🎯 ML Foundations</h3>
+          <div class="term"><div class="term-name">Feature</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>one piece of information used to make a prediction.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>an individual measurable input variable fed into a model — a column in a tabular dataset.</div>
+          </div>
+          <div class="term"><div class="term-name">Loss function</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a scorecard for how wrong a prediction was.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a differentiable function quantifying prediction error, minimized during training (e.g. MSE for regression, cross-entropy for classification).</div>
+          </div>
+          <div class="term"><div class="term-name">Gradient descent</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>adjusting your aim a little after every missed throw.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>an iterative optimization algorithm updating parameters in the direction that most reduces the loss function.</div>
+          </div>
+          <div class="term"><div class="term-name">Overfitting</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>memorizing the practice test instead of learning the subject.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a model fitting training data (including its noise) so closely that it generalizes poorly to unseen data — high variance.</div>
+          </div>
+          <div class="term"><div class="term-name">Regularization</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a rule that discourages a model from getting too complicated.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a penalty added to the loss function (L1/L2) that constrains model complexity to reduce overfitting.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="glossary-cat-title">📊 Classic Algorithms</h3>
+          <div class="term"><div class="term-name">Linear/Logistic Regression</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>drawing a line (linear) or an S-curve (logistic) to fit the data.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>linear models predicting a continuous value or, via sigmoid, a class probability from a weighted sum of features.</div>
+          </div>
+          <div class="term"><div class="term-name">Decision Tree / Random Forest</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a game of 20 Questions (tree), or a crowd vote of many trees (forest).</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a tree splits data via feature thresholds to minimize impurity; a forest ensembles many trees on bootstrapped samples with feature randomness (bagging).</div>
+          </div>
+          <div class="term"><div class="term-name">Gradient Boosting</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a team of tutors, each fixing the last one's remaining mistakes.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>an ensemble method training trees sequentially, each fit to the residual gradient of the current ensemble's loss (e.g. XGBoost).</div>
+          </div>
+          <div class="term"><div class="term-name">K-Means</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>sorting a crowd into groups with no name tags, just by similarity.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>an unsupervised clustering algorithm iteratively assigning points to the nearest of K centroids, then updating centroids to the mean of assigned points.</div>
+          </div>
+          <div class="term"><div class="term-name">Cross-validation</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>testing on several different practice exams instead of just one.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>evaluating a model across multiple train/validation splits (e.g. k-fold) to get a more reliable performance estimate.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="glossary-cat-title">🧠 Deep Learning</h3>
+          <div class="term"><div class="term-name">Neuron / Activation function</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a committee member weighing inputs, then deciding yes/no.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a unit computing a weighted sum of inputs passed through a non-linear function (ReLU, sigmoid), enabling networks to model non-linear relationships.</div>
+          </div>
+          <div class="term"><div class="term-name">Backpropagation</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>tracing a mistake backward to figure out who's responsible for how much.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>the chain-rule-based algorithm computing loss gradients with respect to every parameter across all layers, enabling gradient descent in deep networks.</div>
+          </div>
+          <div class="term"><div class="term-name">Convolution</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a small magnifying glass sliding across an image, looking for a pattern.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a learned filter applied across local regions of an input with shared weights, exploiting spatial locality and translation invariance.</div>
+          </div>
+          <div class="term"><div class="term-name">RNN / LSTM</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>reading word by word while keeping a running mental summary.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>architectures processing sequences step-by-step with a carried hidden state; LSTMs add gating mechanisms to better preserve long-range dependencies.</div>
+          </div>
+          <div class="term"><div class="term-name">Vanishing gradient</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a whisper getting quieter and quieter as it passes down a long line of people.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>gradients shrinking exponentially across many layers/timesteps during backpropagation, stalling learning in early layers or distant timesteps.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="glossary-cat-title">🏛️ Transformers &amp; LLMs</h3>
+          <div class="term"><div class="term-name">Self-attention</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>every word instantly checking in on every other word for relevance.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a mechanism computing weighted relevance (via Query/Key/Value projections) between all pairs of tokens in a sequence, in one parallelizable operation.</div>
+          </div>
+          <div class="term"><div class="term-name">Positional encoding</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a stamp telling the model where each word sits in line.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>information injected into token embeddings to give self-attention (which is otherwise order-agnostic) a sense of sequence position.</div>
+          </div>
+          <div class="term"><div class="term-name">Pretraining / Fine-tuning</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>reading almost everything first (pretraining), then studying one subject closely (fine-tuning).</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>pretraining learns general representations via self-supervised objectives on huge data; fine-tuning further trains on a smaller, task-specific dataset.</div>
+          </div>
+          <div class="term"><div class="term-name">RLHF</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>humans grading the AI's answers so it learns what "good" looks like.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>Reinforcement Learning from Human Feedback — using human preference rankings of model outputs as a reward signal to further align model behavior.</div>
+          </div>
+          <div class="term"><div class="term-name">Hallucination</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>the AI confidently making something up.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>fluent, plausible-sounding output unsupported by fact, an expected consequence of a next-token-prediction training objective without built-in fact verification.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUIZ -->
+    <section class="level" id="quiz">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--coral-soft);">🎯</div>
+        <div><div class="level-eyebrow">Level 19</div><h2>Test Your Powers — Hero Quiz</h2></div>
+      </div>
+      <p class="level-tagline">18 questions spanning everything above, including the three projects. Every answer — right or wrong — comes with an explanation.</p>
+      <div class="quiz-card" id="quizCard"></div>
+    </section>
+
+    <!-- RECAP -->
+    <section class="level" id="recap">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--gold-soft);">⭐</div>
+        <div><div class="level-eyebrow">Hero status</div><h2>One-Page Recap &amp; Official Docs</h2></div>
+      </div>
+      <p class="level-tagline">If you only remember one line per topic, remember these — then bookmark the real resources below.</p>
+
+      <div class="recap">
+        <div class="chip"><span class="k">AI ⊃ ML ⊃ DL</span>Three nested dolls — the goal, an approach, and a powerful subset.</div>
+        <div class="chip"><span class="k">Training loop</span>Guess, measure the error, adjust, repeat — every algorithm in this guide.</div>
+        <div class="chip"><span class="k">Linear/Logistic</span>A line for numbers, an S-curve for probabilities.</div>
+        <div class="chip"><span class="k">Random Forest</span>Many decorrelated trees voting beats any one tree.</div>
+        <div class="chip"><span class="k">Boosting</span>Each new tree fixes the last ensemble's mistakes.</div>
+        <div class="chip"><span class="k">Overfitting</span>Memorizing the practice test, not the subject.</div>
+        <div class="chip"><span class="k">Backpropagation</span>Tracing the mistake backward through every layer.</div>
+        <div class="chip"><span class="k">CNN</span>A magnifying glass sliding across the image, everywhere.</div>
+        <div class="chip"><span class="k">RNN/LSTM</span>Reading word by word, carrying memory forward.</div>
+        <div class="chip"><span class="k">Attention</span>Every word instantly checks in on every other word.</div>
+        <div class="chip"><span class="k">Transformer</span>Attention + position + stacked layers, in parallel.</div>
+        <div class="chip"><span class="k">GPT</span>A next-word predictor, scaled, tuned, and aligned.</div>
+      </div>
+
+      <div class="card" style="margin-top:22px;">
+        <h3>📚 Foundational papers, docs &amp; further learning</h3>
+        <div class="doclinks">
+          <a href="https://scikit-learn.org/stable/user_guide.html" target="_blank" rel="noopener">scikit-learn User Guide <span class="desc">— the canonical reference for every classic ML algorithm in this guide</span></a>
+          <a href="https://pytorch.org/tutorials/" target="_blank" rel="noopener">PyTorch Tutorials <span class="desc">— hands-on neural network and CNN/RNN implementation guides</span></a>
+          <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener">"Attention Is All You Need" (2017) <span class="desc">— the original Transformer paper</span></a>
+          <a href="https://huggingface.co/docs" target="_blank" rel="noopener">Hugging Face Documentation <span class="desc">— pretrained Transformers, fine-tuning, and the Trainer API used in Project 3</span></a>
+          <a href="https://xgboost.readthedocs.io/en/stable/" target="_blank" rel="noopener">XGBoost Documentation <span class="desc">— gradient boosting parameters and tuning in depth</span></a>
+          <a href="https://www.deeplearningbook.org/" target="_blank" rel="noopener">Deep Learning (Goodfellow, Bengio, Courville) <span class="desc">— the standard deep learning theory reference</span></a>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Built to take you from "what's a prediction?" to confidently whiteboarding how GPT actually works in a senior AI/ML interview. Explain the simple version out loud first, then the architect-level version — that's the fastest way to sound like you've actually built this, not just read about it. 🧠
+    </footer>
+  </main>
+</div>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+  const hamburger = document.getElementById('hamburgerBtn');
+  function openSidebar(){ sidebar.classList.add('open'); overlay.classList.add('show'); }
+  function closeSidebar(){ sidebar.classList.remove('open'); overlay.classList.remove('show'); }
+  hamburger.addEventListener('click', () => { sidebar.classList.contains('open') ? closeSidebar() : openSidebar(); });
+  overlay.addEventListener('click', closeSidebar);
+  document.querySelectorAll('#levelNav a').forEach(a => a.addEventListener('click', closeSidebar));
+
+  const links = Array.from(document.querySelectorAll('#levelNav a'));
+  const sections = links.map(a => document.querySelector(a.getAttribute('href')));
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = '#' + entry.target.id;
+        links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === id));
+      }
+    });
+  }, { rootMargin: '-40% 0px -50% 0px', threshold: 0 });
+  sections.forEach(s => { if (s) observer.observe(s); });
+
+  function toggleAnswer(btn){
+    const box = btn.nextElementSibling;
+    box.classList.toggle('show');
+    btn.classList.toggle('open');
+  }
+
+  const quizData = [
+    { q: "What's the correct nesting relationship between AI, ML, and Deep Learning?",
+      options: ["They are three unrelated, separate fields", "Deep Learning is a subset of Machine Learning, which is a subset of AI", "AI is a subset of Machine Learning", "Deep Learning and AI are the same thing"],
+      correct: 1,
+      explanation: "AI is the broadest goal (any 'smart' program). ML is an approach to AI — learning from data instead of hand-written rules. Deep Learning is a specific, powerful subset of ML using layered neural networks." },
+    { q: "In the universal training loop (guess, measure error, adjust, repeat), what does the learning rate control?",
+      options: ["How many features the model uses", "The size of the adjustment step taken after each error measurement", "How the data is split into train/test", "The number of layers in the model"],
+      correct: 1,
+      explanation: "The learning rate scales how big a step gradient descent takes when adjusting parameters. Too small is slow to converge; too large can overshoot and destabilize training." },
+    { q: "What does the sigmoid function do in logistic regression?",
+      options: ["It removes outliers from the data", "It squishes any input into a probability between 0 and 1", "It selects the most important features automatically", "It splits data into training and test sets"],
+      correct: 1,
+      explanation: "Sigmoid takes the linear combination of inputs and maps it to a value between 0 and 1, interpretable as a probability — which linear regression's raw, unbounded output can't directly provide." },
+    { q: "Why does a Random Forest typically outperform a single Decision Tree?",
+      options: ["It always uses a deeper tree than a single tree would", "Averaging/voting across many trees trained on different random samples reduces overfitting by canceling out individual trees' errors", "Random Forests don't actually use decision trees at all", "It only works on numeric data, avoiding categorical noise"],
+      correct: 1,
+      explanation: "Bagging (random samples) and feature randomness decorrelate the trees' errors, so voting/averaging across many trees cancels out individual mistakes while preserving shared signal — reducing the overfitting a single deep tree is prone to." },
+    { q: "What does K-Means clustering NOT require, unlike linear or logistic regression?",
+      options: ["Numeric input features", "Labeled target data — it finds groups without being told the 'correct' answer", "A distance metric", "Multiple data points"],
+      correct: 1,
+      explanation: "K-Means is unsupervised — it finds natural groupings using only the input features, with no labels or 'correct answers' provided, unlike supervised algorithms like regression." },
+    { q: "In gradient boosting, what is each new tree actually trained to predict?",
+      options: ["The exact same target as every other tree, independently", "The residual errors (or loss gradient) left by the ensemble of trees built so far", "A random subset of the original labels", "The output of a completely different algorithm"],
+      correct: 1,
+      explanation: "Unlike Random Forest's independent trees, boosting trains each new tree specifically to correct the mistakes/residuals still present after all previous trees' combined predictions." },
+    { q: "A model scores 99% on training data but only 68% on test data. What does this most likely indicate?",
+      options: ["Underfitting — the model is too simple", "Overfitting — the model has memorized training data rather than learning generalizable patterns", "The test data is corrupted", "The model needs more training epochs to fix it"],
+      correct: 1,
+      explanation: "A large gap between excellent training performance and poor test performance is the classic signature of overfitting — high variance, where the model captured training noise rather than the true underlying pattern." },
+    { q: "Why are non-linear activation functions (like ReLU) necessary in neural networks?",
+      options: ["They make training run on a GPU instead of CPU", "Without them, stacking any number of linear layers mathematically collapses into a single linear transformation", "They are only needed for classification, not regression", "They reduce the total number of parameters"],
+      correct: 1,
+      explanation: "Linear layers stacked without non-linear activations between them collapse into one equivalent linear layer, no matter how many you stack — activation functions are what actually give deep networks non-linear expressive power." },
+    { q: "What key properties do CNNs exploit that make them well-suited for images?",
+      options: ["Random weight initialization only", "Local connectivity and parameter sharing (the same filter reused across the whole image)", "They require labeled bounding boxes for every pixel", "They only work on black-and-white images"],
+      correct: 1,
+      explanation: "CNNs assume nearby pixels are related (local connectivity) and that a useful pattern (like an edge) is useful no matter where it appears (parameter sharing via sliding filters) — both dramatically reduce parameters versus a fully-connected approach." },
+    { q: "What is the vanishing gradient problem, and which architecture was specifically designed to reduce it in sequences?",
+      options: ["Gradients randomly becoming negative; fixed by Random Forest", "Gradients shrinking toward zero across many layers/timesteps, making distant dependencies hard to learn; LSTMs address this with gating mechanisms", "A GPU memory error; fixed by using smaller batch sizes", "An issue only affecting image data, fixed by CNNs"],
+      correct: 1,
+      explanation: "Vanishing gradients shrink exponentially as they backpropagate through many sequential steps, crippling learning of long-range dependencies. LSTMs introduce explicit gates (forget/input/output) to preserve important information over longer sequences." },
+    { q: "What two problems with RNNs did the attention mechanism and Transformers primarily solve?",
+      options: ["Too many parameters and slow inference only", "Inability to parallelize training across a sequence, and difficulty preserving very long-range dependencies", "Only works for images, not text", "Requires labeled data, unlike RNNs"],
+      correct: 1,
+      explanation: "RNNs process sequentially (blocking parallelization) and still struggle with long-range dependencies even with LSTM gating. Self-attention computes relationships between all positions in one parallelizable operation, with a direct path between any two positions." },
+    { q: "In the self-attention formula softmax(QKᵀ/√d_k)V, what does the softmax step accomplish?",
+      options: ["It converts raw similarity scores into a probability distribution of attention weights summing to 1", "It removes all but the top word from consideration", "It performs the positional encoding", "It trains the model's weights directly"],
+      correct: 1,
+      explanation: "Softmax normalizes the raw QKᵀ similarity scores into proper attention weights (all positive, summing to 1), which are then used to compute a weighted blend of the Value vectors." },
+    { q: "Why is positional encoding necessary in a Transformer?",
+      options: ["To reduce the model's total parameter count", "Because self-attention alone has no inherent sense of token order — it treats a sequence like an unordered set unless position is explicitly injected", "It's needed only for image inputs, not text", "To prevent overfitting during training"],
+      correct: 1,
+      explanation: "Self-attention computes relevance between all pairs of tokens regardless of position — without positional encoding, the model couldn't distinguish 'dog bites man' from 'man bites dog.'" },
+    { q: "What's the key architectural difference between GPT (decoder-only) and BERT (encoder-only)?",
+      options: ["GPT doesn't use attention at all", "GPT uses masked (causal) self-attention so each token only sees earlier tokens, suited for generation; BERT uses full bidirectional attention, suited for understanding tasks", "BERT can only process images", "There is no meaningful architectural difference"],
+      correct: 1,
+      explanation: "GPT's causal masking prevents a token from attending to future tokens — essential for left-to-right text generation. BERT's bidirectional attention lets every token see the full context in both directions, better suited for classification/understanding tasks." },
+    { q: "What is GPT's pretraining objective, at its core?",
+      options: ["Classifying images into 1000 categories", "Predicting the next token in a sequence, trained on massive amounts of text with no manual labeling required", "Clustering documents into topics", "Directly optimizing for factual accuracy"],
+      correct: 1,
+      explanation: "GPT is pretrained via self-supervised next-token prediction — no human labeling needed, since the 'label' for each position is simply the next word in the existing text. This simple objective, at massive scale, is what produces broad language understanding." },
+    { q: "Why do large language models sometimes 'hallucinate' confident but false information?",
+      options: ["They are deliberately programmed to lie sometimes", "Their training objective rewards fluent, plausible continuations, not verified factual accuracy — there's no built-in 'I don't know' mechanism", "It only happens with very small models", "Hallucination is caused exclusively by using too high a learning rate"],
+      correct: 1,
+      explanation: "The next-token prediction objective optimizes for statistically plausible, fluent text — not verified truth. This is precisely why grounding techniques like RAG (retrieval-augmented generation) exist as a production mitigation." },
+    { q: "In Project 3 (fine-tuning a Transformer for sentiment), what does 'transfer learning' mean in this context?",
+      options: ["Moving a trained model file from one computer to another", "Starting from a model already pretrained on massive general text, then briefly adapting it to a specific new task instead of training from scratch", "Converting a model from PyTorch to TensorFlow format", "Randomly reinitializing all the model's weights before training"],
+      correct: 1,
+      explanation: "Transfer learning reuses the general language understanding a model already gained during pretraining, requiring only a small amount of additional task-specific fine-tuning — far cheaper and faster than training a Transformer from scratch." },
+    { q: "Why is accuracy often a misleading metric on a severely imbalanced dataset (e.g. 0.5% fraud)?",
+      options: ["Accuracy cannot be computed on imbalanced data at all", "A model predicting the majority class for every input can score extremely high accuracy while being completely useless at catching the minority class", "Imbalanced datasets always have too few total rows to compute any metric", "Accuracy only works for regression, not classification"],
+      correct: 1,
+      explanation: "With 99.5% of data being non-fraud, a model that always predicts 'not fraud' achieves 99.5% accuracy while catching zero actual fraud cases — precision, recall, and F1 give a far more honest picture in imbalanced settings." }
+  ];
+
+  let quizIndex = 0;
+  let quizScore = 0;
+  let quizAnswered = false;
+
+  function renderQuiz(){
+    const card = document.getElementById('quizCard');
+    if (quizIndex >= quizData.length){
+      card.innerHTML = `
+        <div class="quiz-result">
+          <div style="font-size:13px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;">Quiz complete</div>
+          <div class="score">${quizScore} / ${quizData.length}</div>
+          <p>${quizScore === quizData.length ? "Full marks — you're ready to whiteboard how GPT works with confidence. 🧠" : quizScore >= quizData.length * 0.7 ? "Solid! Revisit the levels you missed before your interview." : "Good start — scroll back through the levels you missed and try again."}</p>
+          <button class="quiz-retake" onclick="restartQuiz()">Retake quiz</button>
+        </div>`;
+      return;
+    }
+    const item = quizData[quizIndex];
+    quizAnswered = false;
+    const pct = Math.round((quizIndex / quizData.length) * 100);
+    card.innerHTML = `
+      <div class="quiz-progress"><span>Question ${quizIndex + 1} of ${quizData.length}</span><span>Score: ${quizScore}</span></div>
+      <div class="quiz-bar"><div class="quiz-bar-fill" style="width:${pct}%;"></div></div>
+      <div class="quiz-q">${item.q}</div>
+      <div class="quiz-options" id="quizOptions"></div>
+      <div class="quiz-explain" id="quizExplain"></div>
+      <button class="quiz-next" id="quizNextBtn" onclick="nextQuiz()">Next question →</button>
+    `;
+    const optWrap = document.getElementById('quizOptions');
+    item.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'quiz-opt';
+      btn.textContent = opt;
+      btn.onclick = () => selectQuizOption(i);
+      optWrap.appendChild(btn);
+    });
+  }
+
+  function selectQuizOption(i){
+    if (quizAnswered) return;
+    quizAnswered = true;
+    const item = quizData[quizIndex];
+    const opts = document.querySelectorAll('#quizOptions .quiz-opt');
+    opts.forEach((btn, idx) => {
+      btn.disabled = true;
+      if (idx === item.correct) btn.classList.add('correct');
+      else if (idx === i) btn.classList.add('incorrect');
+    });
+    if (i === item.correct) quizScore++;
+    const explainBox = document.getElementById('quizExplain');
+    explainBox.textContent = (i === item.correct ? "✅ Correct — " : "❌ Not quite — ") + item.explanation;
+    explainBox.classList.add('show');
+    document.getElementById('quizNextBtn').classList.add('show');
+  }
+
+  function nextQuiz(){ quizIndex++; renderQuiz(); }
+  function restartQuiz(){ quizIndex = 0; quizScore = 0; renderQuiz(); }
+
+  renderQuiz();
+</script>
+</body>
+</html>
