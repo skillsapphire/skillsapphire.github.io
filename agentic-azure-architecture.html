@@ -1,0 +1,1895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic AI on Azure — Architecture Zero to Hero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F7FA;
+    --card:#FFFFFF;
+    --ink:#122844;
+    --ink-soft:#57657A;
+    --line:#DCE3EE;
+    --mint:#3FBFAE;   --mint-soft:#DDF5F1;
+    --green:#2FA76B;  --green-soft:#E1F5EB;
+    --purple:#8B5FBF; --purple-soft:#EEE6F8;
+    --lavender:#6C63C7; --lavender-soft:#E9E7FA;
+    --sky:#3E8EDE;    --sky-soft:#E1EDFB;
+    --blue:#1F5FC4;   --blue-soft:#DCE7FA;
+    --rose:#E0527A;   --rose-soft:#FBE1E9;
+    --slate:#5C6B85;  --slate-soft:#E7EAF0;
+    --gold:#E8A33D;   --gold-soft:#FCEED9;
+    --radius:18px;
+    --shadow: 0 6px 20px rgba(18,40,68,0.08);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{ margin:0; background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif; line-height:1.62; }
+  h1,h2,h3,.display{ font-family:'Outfit',sans-serif; color:var(--ink); line-height:1.18; }
+  code, pre, .mono{ font-family:'JetBrains Mono',monospace; }
+  a{ color:inherit; }
+  img,svg{ max-width:100%; }
+
+  .app{ display:flex; min-height:100vh; }
+
+  .sidebar{
+    width:288px; flex-shrink:0; background:var(--card); border-right:1px solid var(--line);
+    position:sticky; top:0; height:100vh; overflow-y:auto; padding:22px 16px 40px; z-index:40;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; padding:4px 8px 18px; border-bottom:1px dashed var(--line); margin-bottom:14px; }
+  .brand .mark{
+    width:38px;height:38px;border-radius:11px; flex-shrink:0;
+    background:linear-gradient(135deg,var(--blue),var(--mint));
+    display:flex; align-items:center; justify-content:center; font-size:18px; color:#fff;
+  }
+  .brand .name{ font-family:'Outfit'; font-weight:700; font-size:14.5px; }
+  .brand .sub{ font-size:11px; color:var(--ink-soft); font-weight:500; }
+
+  nav.levels{ display:flex; flex-direction:column; gap:2px; }
+  nav.levels a{
+    display:flex; align-items:center; gap:9px; text-decoration:none; padding:8px 9px;
+    border-radius:12px; font-size:12.2px; font-weight:600; color:var(--ink-soft);
+    transition:background .15s ease, color .15s ease;
+  }
+  nav.levels a:hover{ background:var(--bg); color:var(--ink); }
+  nav.levels a.active{ background:var(--blue-soft); color:var(--blue); }
+  nav.levels a .num{
+    width:20px;height:20px;border-radius:6px; background:var(--line); color:var(--ink);
+    font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  nav.levels a.active .num{ background:var(--blue); color:#fff; }
+  .sidebar-foot{ margin-top:18px; padding-top:14px; border-top:1px dashed var(--line); font-size:11px; color:var(--ink-soft); }
+
+  .topbar{
+    display:none; position:sticky; top:0; z-index:50; background:var(--card); border-bottom:1px solid var(--line);
+    padding:12px 16px; align-items:center; justify-content:space-between;
+  }
+  .topbar .brand{ border:none; padding:0; margin:0; }
+  .hamburger{
+    width:40px;height:40px;border-radius:10px; border:1px solid var(--line); background:var(--bg);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:18px;
+  }
+  main{ flex:1; min-width:0; }
+
+  .hero{ padding:52px 46px 20px; max-width:1040px; }
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px; background:var(--gold-soft); color:#8A5A00;
+    padding:6px 14px; border-radius:999px; font-size:12.5px; font-weight:700; margin-bottom:18px;
+  }
+  .hero h1{ font-size:clamp(28px,4.1vw,44px); margin:0 0 14px; }
+  .hero h1 .hi{ color:var(--blue); }
+  .hero p.lede{ font-size:16.3px; color:var(--ink-soft); max-width:680px; margin:0 0 26px; }
+
+  section.level{ padding:50px 46px; max-width:1040px; border-top:1px dashed var(--line); scroll-margin-top:20px; }
+  section.level:first-of-type{ border-top:none; }
+
+  .level-head{ display:flex; align-items:center; gap:14px; margin-bottom:6px; }
+  .level-badge{
+    width:46px;height:46px;border-radius:14px; display:flex;align-items:center;justify-content:center;
+    font-size:22px; flex-shrink:0; box-shadow:var(--shadow);
+  }
+  .level-eyebrow{ font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); }
+  .level-head h2{ font-size:24.5px; margin:2px 0 0; }
+  .level-tagline{ font-size:14.8px; color:var(--ink-soft); margin:10px 0 26px; max-width:700px; }
+
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:22px 24px; box-shadow:var(--shadow); margin-bottom:20px; }
+  .card h3{ font-size:14.5px; margin:0 0 10px; display:flex; align-items:center; gap:8px; }
+  .card p{ margin:0; font-size:13.9px; color:var(--ink-soft); }
+  .card p + p{ margin-top:8px; }
+
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:760px){ .grid2{ grid-template-columns:1fr; } }
+
+  .analogy{ border-left:4px solid var(--gold); }
+  .analogy h3{ color:#8A5A00; }
+  .usecase{ border-left:4px solid var(--sky); }
+  .usecase h3{ color:#1A5CA8; }
+
+  .diagram-wrap{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:24px; box-shadow:var(--shadow); margin:20px 0; }
+  .diagram-title{ font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); margin-bottom:14px; }
+  .diagram-caption{ font-size:12px; color:var(--ink-soft); text-align:center; margin-top:10px; }
+
+  pre.code{
+    background:#0E1B2E; color:#E4EAF2; border-radius:14px; padding:20px 22px; overflow-x:auto;
+    font-size:12.4px; line-height:1.7; margin:20px 0; box-shadow:var(--shadow);
+  }
+  pre.code .c1{ color:#7FE0C4; }
+  pre.code .c2{ color:#E8A33D; }
+  pre.code .c3{ color:#8FC7FF; }
+  pre.code .c4{ color:#93A2B8; font-style:italic; }
+  .code-label{ display:inline-block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); margin-bottom:8px; }
+
+  .challenge{ background:var(--lavender-soft); border:1px dashed var(--lavender); border-radius:var(--radius); padding:20px 24px; margin-top:24px; }
+  .challenge h3{ color:#4B3F9E; margin:0 0 8px; }
+  .challenge p{ margin:0; font-size:13.9px; color:#413588; }
+
+  button.interview-tag{
+    display:inline-flex; align-items:center; gap:8px; background:var(--blue-soft); color:var(--blue);
+    font-size:12px; font-weight:700; font-family:'Inter'; padding:9px 16px; border-radius:999px; border:none;
+    cursor:pointer; margin-top:22px; transition:background .15s ease;
+  }
+  button.interview-tag:hover{ background:#C7DBF8; }
+  button.interview-tag .chevron{ display:inline-block; font-size:11px; transition:transform .2s ease; }
+  button.interview-tag.open .chevron{ transform:rotate(180deg); }
+  .answer-box{ display:none; margin-top:12px; background:var(--card); border:1px solid var(--line); border-left:4px solid var(--blue); border-radius:14px; padding:18px 22px; box-shadow:var(--shadow); }
+  .answer-box.show{ display:block; }
+  .answer-label{ font-size:11.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--blue); margin-bottom:8px; }
+  .answer-box p{ margin:0; font-size:13.9px; color:var(--ink-soft); }
+  .answer-box p + p{ margin-top:8px; }
+
+  .qbank{ margin-top:10px; }
+  .qbank .qitem{ margin-bottom:14px; }
+
+  .project-card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:26px 28px; margin-bottom:24px; }
+  .project-tag{ display:inline-block; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; padding:5px 12px; border-radius:999px; margin-bottom:12px; }
+
+  .legend-strip{ display:flex; flex-wrap:wrap; gap:10px; margin:18px 0 6px; }
+  .legend-chip{ display:flex; align-items:center; gap:7px; font-size:11.5px; font-weight:600; color:var(--ink-soft); background:var(--card); border:1px solid var(--line); border-radius:999px; padding:6px 12px; }
+  .legend-chip .dot{ width:10px; height:10px; border-radius:3px; flex-shrink:0; }
+
+  .recap{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:8px; }
+  @media (max-width:760px){ .recap{ grid-template-columns:1fr 1fr; } }
+  @media (max-width:520px){ .recap{ grid-template-columns:1fr; } }
+  .recap .chip{ background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; font-size:12.5px; font-weight:600; }
+  .recap .chip .k{ display:block; font-size:11px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; margin-bottom:4px; }
+
+  .doclinks{ display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+  .doclinks a{ font-size:13.3px; font-weight:600; color:var(--purple); text-decoration:none; }
+  .doclinks a:hover{ text-decoration:underline; }
+  .doclinks .desc{ font-weight:400; color:var(--ink-soft); font-size:12.3px; }
+
+  footer{ padding:40px 46px 70px; max-width:1040px; color:var(--ink-soft); font-size:13px; }
+
+  .quiz-card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:26px 28px; box-shadow:var(--shadow); }
+  .quiz-progress{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; font-size:12.3px; color:var(--ink-soft); font-weight:600; }
+  .quiz-bar{ height:8px; border-radius:999px; background:var(--bg); overflow:hidden; margin-bottom:22px; }
+  .quiz-bar-fill{ height:100%; background:linear-gradient(90deg,var(--blue),var(--mint)); border-radius:999px; transition:width .25s ease; }
+  .quiz-q{ font-size:16px; font-weight:700; margin-bottom:16px; font-family:'Outfit'; }
+  .quiz-options{ display:flex; flex-direction:column; gap:10px; margin-bottom:6px; }
+  .quiz-opt{ text-align:left; padding:13px 16px; border-radius:12px; border:1.5px solid var(--line); background:var(--bg); font-size:13.4px; font-family:'Inter'; color:var(--ink); cursor:pointer; transition:border-color .15s ease, background .15s ease; }
+  .quiz-opt:hover:not(:disabled){ border-color:var(--blue); }
+  .quiz-opt:disabled{ cursor:default; }
+  .quiz-opt.correct{ background:var(--green-soft); border-color:var(--green); font-weight:700; }
+  .quiz-opt.incorrect{ background:var(--rose-soft); border-color:var(--rose); font-weight:700; }
+  .quiz-explain{ margin-top:16px; padding:16px 18px; border-radius:14px; background:var(--gold-soft); border:1px dashed var(--gold); font-size:13px; color:#7A5200; display:none; }
+  .quiz-explain.show{ display:block; }
+  .quiz-next{ margin-top:18px; background:var(--ink); color:#fff; border:none; padding:11px 22px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer; display:none; font-family:'Inter'; }
+  .quiz-next.show{ display:inline-block; }
+  .quiz-result{ text-align:center; padding:20px 0; }
+  .quiz-result .score{ font-family:'Outfit'; font-size:44px; color:var(--blue); margin:6px 0; }
+  .quiz-result p{ color:var(--ink-soft); font-size:14px; }
+  .quiz-retake{ margin-top:16px; background:var(--blue); color:#fff; border:none; padding:11px 24px; border-radius:999px; font-weight:700; font-size:13px; cursor:pointer; }
+
+  .glossary-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:760px){ .glossary-grid{ grid-template-columns:1fr; } }
+  .glossary-cat-title{ font-family:'Outfit'; font-size:15px; margin:0 0 14px; display:flex; align-items:center; gap:8px; }
+  .term{ padding:12px 0; border-top:1px dashed var(--line); }
+  .term:first-child{ border-top:none; padding-top:0; }
+  .term-name{ font-weight:700; font-size:13.3px; margin-bottom:5px; color:var(--ink); font-family:'JetBrains Mono'; }
+  .term-def{ font-size:12.1px; color:var(--ink-soft); margin:3px 0; line-height:1.55; }
+  .term-def .tag{ font-weight:700; margin-right:4px; }
+  .term-def.simple .tag{ color:#8A5A00; }
+  .term-def.tech .tag{ color:var(--purple); }
+
+  ::selection{ background:var(--blue); color:#fff; }
+
+  @media (max-width:900px){
+    .sidebar{ position:fixed; left:0; top:0; height:100%; transform:translateX(-100%); transition:transform .25s ease; width:80vw; max-width:300px; }
+    .sidebar.open{ transform:translateX(0); box-shadow:0 0 40px rgba(0,0,0,0.25); }
+    .topbar{ display:flex; }
+    .hero, section.level, footer{ padding-left:22px; padding-right:22px; }
+    .overlay{ display:none; position:fixed; inset:0; background:rgba(18,40,68,0.35); z-index:39; }
+    .overlay.show{ display:block; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="mark">🕸️</div>
+    <div><div class="name">Agentic Azure Academy</div><div class="sub">Zero → Hero</div></div>
+  </div>
+  <div class="hamburger" id="hamburgerBtn">☰</div>
+</div>
+<div class="overlay" id="overlay"></div>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="mark">🕸️</div>
+      <div><div class="name">Agentic Azure Academy</div><div class="sub">Zero → Hero</div></div>
+    </div>
+    <nav class="levels" id="levelNav">
+      <a href="#start"><span class="num">0</span> Start Here — The Whole Map</a>
+      <a href="#bigpicture"><span class="num">1</span> The Big Picture</a>
+      <a href="#users"><span class="num">2</span> Users, Apps &amp; the AI Gateway</a>
+      <a href="#security"><span class="num">3</span> Identity, Security &amp; Governance</a>
+      <a href="#orchestrator"><span class="num">4</span> Agent Orchestration — The Brain</a>
+      <a href="#agents"><span class="num">5</span> Meet the Agents</a>
+      <a href="#runtime"><span class="num">6</span> Agent Runtime — Memory &amp; State</a>
+      <a href="#tools"><span class="num">7</span> Tools &amp; Connectors</a>
+      <a href="#data"><span class="num">8</span> Enterprise Data &amp; Knowledge</a>
+      <a href="#llm"><span class="num">9</span> LLM &amp; AI Services</a>
+      <a href="#async"><span class="num">10</span> Event &amp; Async Processing</a>
+      <a href="#humanloop"><span class="num">11</span> Human in the Loop</a>
+      <a href="#observability"><span class="num">12</span> Observability &amp; Monitoring</a>
+      <a href="#network"><span class="num">13</span> Network, Infra &amp; On-Prem</a>
+      <a href="#trace"><span class="num">14</span> Trace a Request, Start to Finish</a>
+      <a href="#projects"><span class="num">15</span> Use-Case Projects</a>
+      <a href="#interviewbank"><span class="num">16</span> Senior Interview Bank</a>
+      <a href="#glossary"><span class="num">17</span> Glossary</a>
+      <a href="#quiz"><span class="num">🎯</span> Test Your Powers</a>
+      <a href="#recap"><span class="num">★</span> Recap &amp; Docs</a>
+    </nav>
+    <div class="sidebar-foot">Built directly from the "Agentic AI Architecture on Azure" reference diagram — every level maps to one real part of that picture.</div>
+  </aside>
+
+  <main>
+    <div class="hero" id="start">
+      <span class="eyebrow">🗺️ Zero to Hero, one layer of the map at a time</span>
+      <h1>The <span class="hi">Agentic AI on Azure</span> reference architecture, explained building by building</h1>
+      <p class="lede">That diagram looks like a busy city map the first time you see it. This guide walks through it exactly like a tour guide would — one neighborhood at a time — with a simple analogy first, then the real Azure services, real code, and the language a senior interviewer expects.</p>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">The whole map, simplified — this is what we're touring</div>
+        <svg viewBox="0 0 1000 620" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="hero1" markerWidth="8" markerHeight="8" refX="6" refY="2.5" orient="auto"><path d="M0,0 L6,2.5 L0,5 Z" fill="#57657A"/></marker></defs>
+
+          <rect x="20" y="10" width="960" height="60" rx="12" fill="#E1F5EB" stroke="#2FA76B" stroke-width="2"/>
+          <text x="500" y="35" text-anchor="middle" font-size="12" font-weight="700" fill="#122844">Identity, Security &amp; Governance</text>
+          <text x="500" y="53" text-anchor="middle" font-size="9.5" fill="#57657A">Entra ID · Key Vault · Managed Identity · Policy · Private Endpoints — wraps EVERYTHING below</text>
+
+          <rect x="20" y="90" width="150" height="130" rx="10" fill="#DDF5F1" stroke="#3FBFAE" stroke-width="2"/>
+          <text x="95" y="112" text-anchor="middle" font-size="10" font-weight="700" fill="#122844">Users &amp; Apps</text>
+          <text x="95" y="132" text-anchor="middle" font-size="8.5" fill="#57657A">End users</text>
+          <text x="95" y="148" text-anchor="middle" font-size="8.5" fill="#57657A">Web / Mobile</text>
+          <text x="95" y="164" text-anchor="middle" font-size="8.5" fill="#57657A">Teams / Copilot</text>
+          <text x="95" y="180" text-anchor="middle" font-size="8.5" fill="#57657A">External systems</text>
+
+          <rect x="190" y="90" width="150" height="130" rx="10" fill="#EEE6F8" stroke="#8B5FBF" stroke-width="2"/>
+          <text x="265" y="112" text-anchor="middle" font-size="10" font-weight="700" fill="#122844">AI Gateway</text>
+          <text x="265" y="132" text-anchor="middle" font-size="8.5" fill="#57657A">Auth &amp; rate limits</text>
+          <text x="265" y="148" text-anchor="middle" font-size="8.5" fill="#57657A">Model routing</text>
+          <text x="265" y="164" text-anchor="middle" font-size="8.5" fill="#57657A">Policies &amp; logging</text>
+
+          <rect x="360" y="90" width="290" height="230" rx="12" fill="#E9E7FA" stroke="#6C63C7" stroke-width="2"/>
+          <text x="505" y="112" text-anchor="middle" font-size="11" font-weight="700" fill="#122844">Agent Orchestration Layer</text>
+          <rect x="380" y="125" width="250" height="55" rx="8" fill="#fff" stroke="#6C63C7"/>
+          <text x="505" y="148" text-anchor="middle" font-size="9" font-weight="700" fill="#122844">Agent Orchestrator</text>
+          <text x="505" y="164" text-anchor="middle" font-size="8" fill="#57657A">plan · select tools · memory · guardrails</text>
+          <rect x="380" y="190" width="250" height="55" rx="8" fill="#fff" stroke="#6C63C7"/>
+          <text x="505" y="212" text-anchor="middle" font-size="9" font-weight="700" fill="#122844">Agents</text>
+          <text x="505" y="228" text-anchor="middle" font-size="8" fill="#57657A">Sales · HR · IT · Finance · Custom</text>
+          <rect x="380" y="255" width="250" height="55" rx="8" fill="#fff" stroke="#6C63C7"/>
+          <text x="505" y="277" text-anchor="middle" font-size="9" font-weight="700" fill="#122844">Agent Runtime</text>
+          <text x="505" y="293" text-anchor="middle" font-size="8" fill="#57657A">session · memory · audit</text>
+
+          <rect x="670" y="90" width="150" height="70" rx="10" fill="#E1EDFB" stroke="#3E8EDE" stroke-width="2"/>
+          <text x="745" y="112" text-anchor="middle" font-size="9.5" font-weight="700" fill="#122844">Tools &amp; Connectors</text>
+          <text x="745" y="130" text-anchor="middle" font-size="8" fill="#57657A">APIs · Functions</text>
+          <text x="745" y="144" text-anchor="middle" font-size="8" fill="#57657A">Logic Apps · MCP</text>
+
+          <rect x="670" y="170" width="150" height="70" rx="10" fill="#E1EDFB" stroke="#3E8EDE" stroke-width="2"/>
+          <text x="745" y="192" text-anchor="middle" font-size="9.5" font-weight="700" fill="#122844">Enterprise Data</text>
+          <text x="745" y="210" text-anchor="middle" font-size="8" fill="#57657A">AI Search · Cosmos</text>
+          <text x="745" y="224" text-anchor="middle" font-size="8" fill="#57657A">SQL · Data Lake</text>
+
+          <rect x="670" y="250" width="150" height="70" rx="10" fill="#DCE7FA" stroke="#1F5FC4" stroke-width="2"/>
+          <text x="745" y="272" text-anchor="middle" font-size="9.5" font-weight="700" fill="#122844">LLM &amp; AI Services</text>
+          <text x="745" y="290" text-anchor="middle" font-size="8" fill="#57657A">Azure OpenAI</text>
+          <text x="745" y="304" text-anchor="middle" font-size="8" fill="#57657A">Content Safety</text>
+
+          <rect x="840" y="90" width="140" height="230" rx="10" fill="#FBE1E9" stroke="#E0527A" stroke-width="2"/>
+          <text x="910" y="112" text-anchor="middle" font-size="9.5" font-weight="700" fill="#122844">Observability</text>
+          <text x="910" y="140" text-anchor="middle" font-size="8" fill="#57657A">Azure Monitor</text>
+          <text x="910" y="156" text-anchor="middle" font-size="8" fill="#57657A">App Insights</text>
+          <text x="910" y="172" text-anchor="middle" font-size="8" fill="#57657A">Log Analytics</text>
+          <text x="910" y="188" text-anchor="middle" font-size="8" fill="#57657A">Dashboards</text>
+          <text x="910" y="204" text-anchor="middle" font-size="8" fill="#57657A">Alerts</text>
+
+          <rect x="20" y="350" width="150" height="80" rx="10" fill="#FCEED9" stroke="#E8A33D" stroke-width="2"/>
+          <text x="95" y="375" text-anchor="middle" font-size="9.5" font-weight="700" fill="#122844">Human in the</text>
+          <text x="95" y="390" text-anchor="middle" font-size="9.5" font-weight="700" fill="#122844">Loop</text>
+          <text x="95" y="408" text-anchor="middle" font-size="8" fill="#57657A">Approvals &amp; escalations</text>
+
+          <rect x="360" y="350" width="290" height="80" rx="10" fill="#FCEED9" stroke="#E8A33D" stroke-width="2"/>
+          <text x="505" y="375" text-anchor="middle" font-size="9.5" font-weight="700" fill="#122844">Event &amp; Async Processing</text>
+          <text x="505" y="395" text-anchor="middle" font-size="8.5" fill="#57657A">Event Hub · Service Bus · Queues</text>
+
+          <rect x="20" y="470" width="960" height="90" rx="12" fill="#E7EAF0" stroke="#5C6B85" stroke-width="2"/>
+          <text x="500" y="495" text-anchor="middle" font-size="11" font-weight="700" fill="#122844">Network &amp; Infrastructure</text>
+          <text x="500" y="515" text-anchor="middle" font-size="9" fill="#57657A">VNet · Subnets · Private Link · Firewall · DDoS · Bastion · VPN/ExpressRoute</text>
+          <text x="500" y="535" text-anchor="middle" font-size="9" fill="#57657A">connecting out to On-Premises &amp; External Systems: SAP, Oracle, CRM, Mainframes</text>
+
+          <g stroke="#57657A" stroke-width="1.8" marker-end="url(#hero1)" fill="none">
+            <line x1="170" y1="155" x2="187" y2="155"/>
+            <line x1="340" y1="155" x2="357" y2="155"/>
+            <line x1="630" y1="150" x2="667" y2="130"/>
+            <line x1="630" y1="205" x2="667" y2="205"/>
+            <line x1="630" y1="260" x2="667" y2="285"/>
+            <line x1="820" y1="200" x2="837" y2="200"/>
+            <path d="M265 220 L 200 348"/>
+            <path d="M505 320 L 505 348"/>
+          </g>
+        </svg>
+        <div class="diagram-caption">Simplified from the full reference diagram — each box below becomes its own level, with the real Azure services inside it.</div>
+      </div>
+    </div>
+
+    <!-- LEVEL 1 -->
+    <section class="level" id="bigpicture">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--gold-soft);">🏙️</div>
+        <div><div class="level-eyebrow">Level 1</div><h2>The Big Picture — Reading This Like a City Map</h2></div>
+      </div>
+      <p class="level-tagline">Before zooming into any one building, understand why a real "agentic AI" system needs a whole city of pieces — not just one chatbot box.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>A single chatbot is like one person answering questions from behind a desk. A real company-wide AI agent system is like an entire office building: a front desk that checks your ID (the Gateway), security guards patrolling everywhere (Identity &amp; Security), specialist departments that actually do the work (the Agents), filing cabinets full of company knowledge (Enterprise Data), a manager's brain deciding who handles what (the Orchestrator), and cameras recording everything for later review (Observability). The diagram is the building's floor plan.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>A bank wants employees to ask an AI assistant questions like "what's this customer's loan status?" or "file an IT ticket for me." That single request has to pass through authentication, get routed to the right specialist agent, pull real company data, call the actual language model, maybe wait for a human's approval, and get logged for compliance — all before the employee sees an answer. That whole journey is exactly what this architecture diagram maps out.</p>
+        </div>
+      </div>
+
+      <div class="legend-strip">
+        <div class="legend-chip"><span class="dot" style="background:var(--mint);"></span>User Access</div>
+        <div class="legend-chip"><span class="dot" style="background:var(--green);"></span>Security</div>
+        <div class="legend-chip"><span class="dot" style="background:var(--purple);"></span>Gateway</div>
+        <div class="legend-chip"><span class="dot" style="background:var(--lavender);"></span>Orchestration</div>
+        <div class="legend-chip"><span class="dot" style="background:var(--sky);"></span>Tools &amp; Data</div>
+        <div class="legend-chip"><span class="dot" style="background:var(--blue);"></span>AI Services</div>
+        <div class="legend-chip"><span class="dot" style="background:var(--rose);"></span>Observability</div>
+        <div class="legend-chip"><span class="dot" style="background:var(--slate);"></span>Infrastructure</div>
+      </div>
+      <p style="font-size:12.5px; color:var(--ink-soft); margin-top:4px;">This guide reuses these exact colors from the original diagram's own legend for every level below — so the color always tells you which "neighborhood" you're in.</p>
+
+      <div class="card" style="border-left:4px solid var(--purple); margin-top:20px;">
+        <h3>🎓 Architect-level version</h3>
+        <p>This reference architecture separates concerns the same way any well-designed distributed system does: a <strong>gateway</strong> for cross-cutting API concerns, an <strong>orchestration layer</strong> for business/agent logic, <strong>stateless tool integrations</strong> for taking action, <strong>externalized data services</strong> for knowledge, a <strong>dedicated AI/LLM layer</strong> so model access is centralized and governed, <strong>async messaging</strong> for decoupling slow or human-dependent steps, and <strong>observability plus network security</strong> wrapping the whole thing. None of these ideas are new — this is standard enterprise architecture — the "agentic" part is specifically the Orchestration Layer and its agents, everything else is the same production-grade scaffolding any serious enterprise system needs.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Before reading further, guess: which single box in this diagram do you think is most likely to be the actual "AI" doing the thinking? (There's a very specific right answer, and it might surprise you how small a piece of the whole picture it is.)</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Why does a production agentic AI system need all this extra infrastructure — isn't it just calling an LLM?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Calling an LLM is genuinely a small part of the system — the hard, valuable engineering is everything around it. You need a gateway for authentication, rate limiting, and cost control since LLM calls are expensive and easy to abuse. You need governed access to real company data, or the model can only answer from its general training, not your actual business facts. You need guardrails and content safety, since an ungoverned model can leak sensitive data or produce unsafe output. You need human-in-the-loop for risky actions, audit logging for compliance, and observability because these systems fail in unusual, hard-to-predict ways. The LLM call is the engine; everything else is what makes the car safe, legal, and trustworthy to actually drive.</p>
+        <p><em>Why this answer works:</em> it doesn't dismiss the question — it validates that the LLM is indeed one box, then explains specifically why each surrounding piece earns its place, rather than treating the extra infrastructure as bureaucratic overhead.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 2 -->
+    <section class="level" id="users">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--purple-soft);">🚪</div>
+        <div><div class="level-eyebrow">Level 2</div><h2>Users, Apps &amp; the AI Gateway — The Front Door</h2></div>
+      </div>
+      <p class="level-tagline">Every request into this whole system starts in exactly one of two boxes on the diagram: someone typing a question, and the gateway that checks them before letting them any further in.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Imagine a big office building. People arrive from lots of different doors — the main entrance, a side door for delivery trucks, a phone line — that's <strong>Users &amp; Applications</strong> (end users, web/mobile apps, Microsoft Teams, other systems). But nobody just wanders into the building. Everyone passes through a front desk first: shows ID, gets a visitor badge, and has their visit logged. That front desk is the <strong>AI Gateway</strong> — in Azure, this is <strong>Azure API Management (APIM)</strong>.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>An employee asks a question inside Microsoft Teams. Before that question ever reaches an AI agent, Azure API Management checks: is this a real logged-in employee (authentication), have they already asked 500 questions in the last minute (rate limiting), which specific model deployment should handle this (model routing), and does the request violate any content policy — all before the request is even allowed to proceed.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Everything the AI Gateway checks before letting a request through</div>
+        <svg viewBox="0 0 900 200" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#57657A"/></marker></defs>
+          <rect x="10" y="70" width="160" height="60" rx="10" fill="#DDF5F1" stroke="#3FBFAE" stroke-width="2"/>
+          <text x="90" y="95" text-anchor="middle" font-size="10" font-weight="700" fill="#122844">User request</text>
+          <text x="90" y="113" text-anchor="middle" font-size="8.5" fill="#57657A">Teams, web app, API</text>
+
+          <rect x="220" y="10" width="460" height="180" rx="14" fill="#EEE6F8" stroke="#8B5FBF" stroke-width="2"/>
+          <text x="450" y="32" text-anchor="middle" font-size="11" font-weight="700" fill="#122844">AI Gateway — Azure API Management</text>
+          <g font-size="9" font-weight="600">
+            <rect x="240" y="45" width="130" height="42" rx="7" fill="#fff" stroke="#8B5FBF"/><text x="305" y="70" text-anchor="middle" fill="#122844">Auth &amp; Authz</text>
+            <rect x="385" y="45" width="130" height="42" rx="7" fill="#fff" stroke="#8B5FBF"/><text x="450" y="70" text-anchor="middle" fill="#122844">Rate Limits &amp; Quotas</text>
+            <rect x="530" y="45" width="130" height="42" rx="7" fill="#fff" stroke="#8B5FBF"/><text x="595" y="70" text-anchor="middle" fill="#122844">Model Routing</text>
+            <rect x="240" y="100" width="130" height="42" rx="7" fill="#fff" stroke="#8B5FBF"/><text x="305" y="125" text-anchor="middle" fill="#122844">Prompt Policies</text>
+            <rect x="385" y="100" width="130" height="42" rx="7" fill="#fff" stroke="#8B5FBF"/><text x="450" y="125" text-anchor="middle" fill="#122844">Logging &amp; Cost</text>
+            <rect x="530" y="100" width="130" height="42" rx="7" fill="#fff" stroke="#8B5FBF"/><text x="595" y="125" text-anchor="middle" fill="#122844">Versioning</text>
+          </g>
+          <rect x="730" y="70" width="160" height="60" rx="10" fill="#E9E7FA" stroke="#6C63C7" stroke-width="2"/>
+          <text x="810" y="95" text-anchor="middle" font-size="10" font-weight="700" fill="#122844">Orchestrator</text>
+          <text x="810" y="113" text-anchor="middle" font-size="8.5" fill="#57657A">(Level 4)</text>
+
+          <g stroke="#57657A" stroke-width="2" marker-end="url(#a2)">
+            <line x1="170" y1="100" x2="217" y2="100"/><line x1="680" y1="100" x2="727" y2="100"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">An API Management policy — checked before every request reaches an agent</div>
+      <pre class="code"><span class="c4">&lt;!-- Runs at the gateway, before the request ever reaches the orchestrator --&gt;</span>
+&lt;policies&gt;
+  &lt;inbound&gt;
+    &lt;validate-jwt header-name=<span class="c1">"Authorization"</span> failed-validation-httpcode=<span class="c1">"401"</span>&gt;
+      &lt;openid-config url=<span class="c1">"https://login.microsoftonline.com/{tenant}/.well-known/openid-configuration"</span> /&gt;
+    &lt;/validate-jwt&gt;
+
+    &lt;rate-limit-by-key calls=<span class="c1">"50"</span> renewal-period=<span class="c1">"60"</span>
+                       counter-key=<span class="c1">"@(context.Subscription.Id)"</span> /&gt;
+
+    &lt;choose&gt;
+      &lt;when condition=<span class="c1">"@(context.Request.Body.As&lt;string&gt;(true).Contains("legacy-model"))"</span>&gt;
+        &lt;set-backend-service backend-id=<span class="c1">"gpt-4o-mini-deployment"</span> /&gt;  <span class="c4">&lt;!-- cheaper, route simple requests here --&gt;</span>
+      &lt;/when&gt;
+      &lt;otherwise&gt;
+        &lt;set-backend-service backend-id=<span class="c1">"gpt-4o-deployment"</span> /&gt;
+      &lt;/otherwise&gt;
+    &lt;/choose&gt;
+  &lt;/inbound&gt;
+&lt;/policies&gt;</pre>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Putting Azure API Management in front of every model call gives you a single choke point for cross-cutting concerns that would otherwise need to be duplicated in every agent: authentication (validating Entra ID tokens), throttling (protecting against runaway cost from a buggy or malicious client), <strong>model routing and failover</strong> (sending traffic to a cheaper model for simple requests, or failing over to a backup region/deployment if the primary is down), and centralized logging for cost attribution per team or application. This is the same "API gateway" pattern used in any microservices architecture — applied specifically to LLM traffic, which has unusually variable cost and latency per request compared to typical REST APIs.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Why would putting rate limiting at the Gateway be much better than putting it inside each individual agent's code? What happens if you have 10 agents and each has to remember to implement its own rate limiting?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Why put an API gateway in front of your AI agents instead of calling Azure OpenAI directly from each agent?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>A gateway centralizes cross-cutting concerns that every agent would otherwise need to reimplement — authentication, rate limiting, cost tracking, and model routing. Without it, each of the 5+ agents in this architecture would need its own auth logic, its own throttling, and its own way of switching model deployments during an outage — duplicated code that's easy to get subtly wrong in one place and not another. With a gateway, you get one place to enforce policy, one place to see total cost across the whole platform, and the ability to swap or fail over a model deployment without touching a single agent's code, since agents call the gateway's stable endpoint, not the model directly.</p>
+        <p><em>Why this answer works:</em> it names the specific operational pain (duplicated, inconsistent logic across many agents) that a gateway eliminates, rather than a generic "it's a best practice."</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 3 -->
+    <section class="level" id="security">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--green-soft);">🛡️</div>
+        <div><div class="level-eyebrow">Level 3</div><h2>Identity, Security &amp; Governance — Wraps Everything</h2></div>
+      </div>
+      <p class="level-tagline">Notice this band sits at the very top of the diagram, stretching across the entire width — that's deliberate. It's not one more room in the building; it's the security system covering every room at once.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p><strong>Azure Entra ID</strong> is the badge system that proves who you are. <strong>Managed Identity</strong> is a badge specifically for the agents and services themselves — so a piece of software can securely prove "I'm the Finance Agent" without a human typing in a password. <strong>Azure Key Vault</strong> is the locked safe holding every password and API key. <strong>Policy &amp; Compliance</strong> is the rulebook every department must follow. <strong>Private Endpoints</strong> are private hallways connecting rooms directly, so nobody has to walk through the public street outside.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>The Finance Agent needs to read data from a SQL Database. Instead of storing a database password in the agent's code, the agent uses its Managed Identity to prove who it is, and Azure grants it access based on that identity alone — if that database password needs to be rotated, or the agent's access revoked, it happens centrally, with zero code changes to the agent itself.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">The five pieces of the security band, and what each one guards</div>
+        <svg viewBox="0 0 900 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <g font-size="9.5" font-weight="600">
+            <rect x="10" y="20" width="165" height="100" rx="10" fill="#E1F5EB" stroke="#2FA76B"/><text x="92" y="45" text-anchor="middle" fill="#122844">Entra ID</text><text x="92" y="65" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">who is this</text><text x="92" y="78" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">human/app?</text>
+
+            <rect x="185" y="20" width="165" height="100" rx="10" fill="#E1F5EB" stroke="#2FA76B"/><text x="267" y="45" text-anchor="middle" fill="#122844">Key Vault</text><text x="267" y="65" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">where secrets</text><text x="267" y="78" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">actually live</text>
+
+            <rect x="360" y="20" width="165" height="100" rx="10" fill="#E1F5EB" stroke="#2FA76B"/><text x="442" y="45" text-anchor="middle" fill="#122844">Managed Identity</text><text x="442" y="65" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">agents' own</text><text x="442" y="78" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">ID badge</text>
+
+            <rect x="535" y="20" width="165" height="100" rx="10" fill="#E1F5EB" stroke="#2FA76B"/><text x="617" y="45" text-anchor="middle" fill="#122844">Policy &amp; Compliance</text><text x="617" y="65" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">the rulebook,</text><text x="617" y="78" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">enforced automatically</text>
+
+            <rect x="710" y="20" width="180" height="100" rx="10" fill="#E1F5EB" stroke="#2FA76B"/><text x="800" y="45" text-anchor="middle" fill="#122844">Private Endpoints</text><text x="800" y="65" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">private hallways,</text><text x="800" y="78" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">never the public internet</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">Using Managed Identity — no password ever written in code</div>
+      <pre class="code"><span class="c4"># The Finance Agent authenticates as ITSELF — no username/password anywhere</span>
+<span class="c2">from</span> azure.identity <span class="c2">import</span> DefaultAzureCredential
+<span class="c2">from</span> azure.keyvault.secrets <span class="c2">import</span> SecretClient
+
+credential = DefaultAzureCredential()  <span class="c4"># resolves to the agent's Managed Identity automatically</span>
+
+<span class="c1"># Even the rare secret that IS needed comes from Key Vault, referenced by name</span>
+vault_client = SecretClient(vault_url=<span class="c1">"https://finance-secrets.vault.azure.net"</span>, credential=credential)
+api_key = vault_client.get_secret(<span class="c1">"legacy-erp-api-key"</span>).value</pre>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p>This band spans the whole diagram because these five services aren't consumed by one layer — every other layer depends on them. Azure Container Apps/AKS hosting the orchestrator uses Managed Identity to call Azure OpenAI and databases with zero embedded credentials. API Management validates Entra ID tokens on every inbound request. Azure Policy enforces guardrails at the infrastructure level (e.g. "no resource may be created outside approved regions") independent of what any individual agent's code does. Private Endpoints keep Azure OpenAI, Azure AI Search, and database traffic off the public internet entirely — critical for regulated industries where "our AI system's data never touches the public internet" is often a hard compliance requirement, not a nice-to-have.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>If the HR Agent's Managed Identity is accidentally granted access to the Finance database, what's the blast radius of that mistake — and how would Azure Policy or narrow RBAC roles have prevented it from happening in the first place?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Why does Managed Identity matter so much for a multi-agent system specifically?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>With multiple agents — Sales, HR, IT Support, Finance — each needing access to different data sources, hardcoded credentials would mean managing and rotating passwords across every agent's configuration, a real operational and security risk at scale. Managed Identity gives each agent its own Azure AD identity, with access to specific resources granted via RBAC role assignments rather than shared secrets. This means access can be scoped narrowly per agent (the HR Agent's identity simply isn't granted access to the Finance database at all, rather than relying on the agent's code to "behave"), revoked instantly if an agent is compromised, and audited centrally — every access shows up tied to a specific agent's identity in the logs, not a shared service account nobody can attribute cleanly.</p>
+        <p><em>Why this answer works:</em> it ties Managed Identity specifically to the multi-agent scenario (narrow, per-agent access boundaries) rather than giving a generic definition of what Managed Identity is.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 4 -->
+    <section class="level" id="orchestrator">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--lavender-soft);">🧠</div>
+        <div><div class="level-eyebrow">Level 4</div><h2>Agent Orchestration Layer — The Brain</h2></div>
+      </div>
+      <p class="level-tagline">This is the box you guessed in Level 1's challenge — and the actual "AI thinking" is a much smaller slice of it than most people expect.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Picture a construction site manager. They don't personally lay bricks or wire electricity — they read the blueprint (<strong>Planning &amp; Reasoning</strong>), decide which specialist crew to call for each job (<strong>Tool Selection</strong>), remember what's already been built so far (<strong>Memory &amp; Context</strong>), keep the overall project goal in mind (<strong>Goal Management</strong>), radio between different crews when they need to coordinate (<strong>Agent-to-Agent Communication</strong>), and stop anyone from doing something unsafe (<strong>Guardrails &amp; Safety</strong>). That manager is the Agent Orchestrator — hosted on Azure Container Apps, AKS, or Azure Functions.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>An employee asks "why was my expense report rejected, and can you resubmit it?" The Orchestrator plans this out: first call the Finance Agent to look up the rejection reason, then check company policy to see if resubmission is even allowed, then — since this touches money — flag it for human approval before actually resubmitting anything.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">The six jobs of the Agent Orchestrator</div>
+        <svg viewBox="0 0 900 180" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <g font-size="9.5" font-weight="600">
+            <rect x="10" y="10" width="280" height="70" rx="10" fill="#E9E7FA" stroke="#6C63C7"/><text x="150" y="35" text-anchor="middle" fill="#122844">Planning &amp; Reasoning</text><text x="150" y="55" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">break the request into steps</text>
+
+            <rect x="310" y="10" width="280" height="70" rx="10" fill="#E9E7FA" stroke="#6C63C7"/><text x="450" y="35" text-anchor="middle" fill="#122844">Tool Selection</text><text x="450" y="55" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">which connector/agent handles this?</text>
+
+            <rect x="610" y="10" width="280" height="70" rx="10" fill="#E9E7FA" stroke="#6C63C7"/><text x="750" y="35" text-anchor="middle" fill="#122844">Memory &amp; Context</text><text x="750" y="55" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">what's already happened this session?</text>
+
+            <rect x="10" y="100" width="280" height="70" rx="10" fill="#E9E7FA" stroke="#6C63C7"/><text x="150" y="125" text-anchor="middle" fill="#122844">Goal Management</text><text x="150" y="145" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">stay focused on the actual ask</text>
+
+            <rect x="310" y="100" width="280" height="70" rx="10" fill="#E9E7FA" stroke="#6C63C7"/><text x="450" y="125" text-anchor="middle" fill="#122844">Agent-to-Agent Comm</text><text x="450" y="145" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">coordinate between specialists</text>
+
+            <rect x="610" y="100" width="280" height="70" rx="10" fill="#FBE1E9" stroke="#E0527A" stroke-width="2"/><text x="750" y="125" text-anchor="middle" fill="#122844">Guardrails &amp; Safety</text><text x="750" y="145" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">stop unsafe or risky actions</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">A simplified orchestrator loop</div>
+      <pre class="code"><span class="c2">def</span> handle_request(user_message, session):
+    <span class="c1"># 1. Planning: what does this actually require?</span>
+    plan = planner.decompose(user_message, context=session.memory)
+
+    <span class="c2">for</span> step <span class="c2">in</span> plan.steps:
+        <span class="c1"># 2. Tool selection: route to the right agent or connector</span>
+        agent = select_agent(step)                        <span class="c4"># e.g. FinanceAgent</span>
+
+        <span class="c1"># 3. Guardrails: check BEFORE taking any risky action</span>
+        <span class="c2">if</span> step.is_high_risk <span class="c2">and not</span> session.has_human_approval(step):
+            request_human_approval(step)                   <span class="c4"># see Level 11</span>
+            <span class="c2">continue</span>
+
+        result = agent.execute(step, context=session.memory)
+        session.memory.append(result)                       <span class="c4"># 4. Memory: remember for the next step</span>
+
+    <span class="c2">return</span> synthesize_response(session.memory)</pre>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Hosting this on <strong>Azure Container Apps or AKS</strong> gives the orchestrator container-native scaling — spinning up more instances under load — while <strong>Azure Functions</strong> suits lighter-weight, event-triggered orchestration steps. The orchestrator itself typically implements a planning loop (often ReAct-style: reason, act, observe, repeat) and is the layer where <strong>multi-agent coordination patterns</strong> live — usually supervisor-worker, where this orchestrator is the supervisor delegating to specialist agents (Level 5) rather than one agent trying to do everything. Guardrails at this layer are the last line of defense before an action executes — separate from, and in addition to, Content Safety checks on the LLM's raw text output (Level 9).</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>A request needs both the Sales Agent (to look up a customer) and the Finance Agent (to check their payment history). Sketch how the Orchestrator would sequence those two calls, and what it would need to remember between them.</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "What's the difference between the Agent Orchestrator and an individual Agent in this architecture?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>The Orchestrator is the supervisor — it never does domain-specific work itself. Its job is understanding the overall request, breaking it into steps, deciding which specialist agent (or tool) should handle each step, maintaining context and memory across the whole interaction, coordinating communication if multiple agents need to work together, and enforcing safety guardrails before risky actions execute. An individual Agent — like the Finance Agent — is a domain specialist: it knows how to actually query financial systems, understands finance-specific terminology and policy, and executes its narrow slice of the work when the Orchestrator delegates a step to it. This separation lets you add a new specialist agent (say, a Legal Agent) without touching the Orchestrator's core logic at all.</p>
+        <p><em>Why this answer works:</em> it draws a clean supervisor-vs-specialist line and gives a concrete example of the architecture's extensibility payoff (adding a new agent without touching the orchestrator).</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 5 -->
+    <section class="level" id="agents">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--lavender-soft);">🤖</div>
+        <div><div class="level-eyebrow">Level 5</div><h2>Meet the Agents — Specialists, Not Generalists</h2></div>
+      </div>
+      <p class="level-tagline">The diagram shows Sales, HR, IT Support, Finance, and Custom Agents sitting side by side — this is deliberate specialization, the same reason a hospital has different doctors instead of one doctor who does everything.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Imagine a hospital with one single doctor trying to be a heart surgeon, a dentist, and an eye doctor all at once — they'd be mediocre at all three. Instead, hospitals have specialists, and a triage nurse (our Orchestrator) sends each patient to the right one. Each Agent here is a specialist: the Finance Agent deeply understands expense policy and accounting systems; the IT Support Agent knows password resets and ticketing systems; neither needs to know the other's job.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>"Can you reset my VPN access and also tell me my remaining vacation days?" splits cleanly into two specialist jobs — the IT Support Agent handles the VPN reset (with its own tools and knowledge of the IT ticketing system), while the HR Agent answers the vacation question (with its own connection to the HR system) — each agent only ever needs to be an expert in its own narrow domain.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Five specialists, one shared Orchestrator sending them work</div>
+        <svg viewBox="0 0 900 180" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#57657A"/></marker></defs>
+          <rect x="380" y="10" width="140" height="50" rx="10" fill="#E9E7FA" stroke="#6C63C7" stroke-width="2"/>
+          <text x="450" y="40" text-anchor="middle" font-size="10" font-weight="700" fill="#122844">Orchestrator</text>
+
+          <g font-size="9.5" font-weight="600">
+            <rect x="10" y="110" width="150" height="55" rx="10" fill="#fff" stroke="#6C63C7"/><text x="85" y="141" text-anchor="middle" fill="#122844">🛒 Sales Agent</text>
+            <rect x="190" y="110" width="150" height="55" rx="10" fill="#fff" stroke="#6C63C7"/><text x="265" y="141" text-anchor="middle" fill="#122844">🧑‍💼 HR Agent</text>
+            <rect x="370" y="110" width="150" height="55" rx="10" fill="#fff" stroke="#6C63C7"/><text x="445" y="141" text-anchor="middle" fill="#122844">🖥️ IT Support</text>
+            <rect x="550" y="110" width="150" height="55" rx="10" fill="#fff" stroke="#6C63C7"/><text x="625" y="141" text-anchor="middle" fill="#122844">💰 Finance Agent</text>
+            <rect x="730" y="110" width="160" height="55" rx="10" fill="#fff" stroke="#6C63C7" stroke-dasharray="4 4"/><text x="810" y="141" text-anchor="middle" fill="#122844">➕ Custom Agent</text>
+          </g>
+          <g stroke="#57657A" stroke-width="1.5" marker-end="url(#a3)">
+            <path d="M400 60 L 85 108"/><path d="M420 60 L 265 108"/><line x1="445" y1="60" x2="445" y2="108"/><path d="M480 60 L 625 108"/><path d="M500 60 L 810 108"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">Defining a specialist agent</div>
+      <pre class="code">finance_agent = Agent(
+    name=<span class="c1">"FinanceAgent"</span>,
+    system_prompt=<span class="c1">"""You are a finance specialist. You can look up expense reports,</span>
+<span class="c1">        explain rejection reasons, and check budget status. You cannot approve</span>
+<span class="c1">        payments over $500 without human sign-off."""</span>,
+    tools=[lookup_expense_report, check_budget, get_rejection_reason],  <span class="c4"># see Level 7</span>
+    knowledge_source=<span class="c1">"finance-policy-index"</span>,                       <span class="c4"># see Level 8</span>
+    model=<span class="c1">"gpt-4o"</span>                                                <span class="c4"># see Level 9</span>
+)</pre>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Each agent is really just a bundle of four things: a focused <strong>system prompt</strong> (its role and boundaries), a scoped set of <strong>tools</strong> it's allowed to call, its own <strong>knowledge source</strong> for grounding (a specific Azure AI Search index, not the whole company's data), and often its own model deployment choice (a simpler agent might use a smaller, cheaper model). Specialization isn't just about answer quality — it's a <strong>security boundary</strong>: the Finance Agent's Managed Identity and tool access should never overlap with the HR Agent's, so a prompt injection attack against one agent can't cascade into unrelated systems. The "Custom Agents" box on the diagram signals this is meant to be extensible — new specialists get added over time as the platform matures.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Design a sixth specialist agent for a company you know (school, a hobby club, a small business). What would its system prompt say, and which tools would it — and only it — need access to?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Why not build one single, powerful agent instead of five separate specialist agents?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>A single agent with access to every tool and data source across Sales, HR, IT, and Finance is both a quality problem and a security problem. On quality: cramming every domain's context, tools, and edge cases into one system prompt makes the model's job harder and its behavior less predictable — specialization lets each agent's prompt and tool set stay small and focused, which measurably improves reliability. On security: one mega-agent with access to everything means any successful prompt injection or jailbreak potentially exposes every domain at once. Separate agents with separate Managed Identities and narrowly scoped tool access mean a compromise of one agent's boundary doesn't cascade into unrelated systems — the same principle of least privilege you'd apply to human employee access, applied to AI agents.</p>
+        <p><em>Why this answer works:</em> it gives two independent, concrete reasons (quality and security) rather than one vague "it's better organized," and ties the security argument back to a real attack scenario (prompt injection blast radius).</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 6 -->
+    <section class="level" id="runtime">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--lavender-soft);">💾</div>
+        <div><div class="level-eyebrow">Level 6</div><h2>Agent Runtime Services — Memory &amp; State</h2></div>
+      </div>
+      <p class="level-tagline">Without this box, every single message would be a total stranger to the agent — no memory of what you just said, let alone what happened last week.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Imagine talking to someone with amnesia who forgets everything the moment you stop talking — you'd have to re-explain your whole situation every single sentence. <strong>Session Management</strong> and <strong>Short Term Memory</strong> are what let an agent remember what you said 30 seconds ago in the same conversation. <strong>Long Term Memory</strong> is remembering things across entirely different conversations, days apart — like a helpful coworker who remembers your preferences from last month. <strong>State Management</strong> tracks exactly where a multi-step task currently stands. <strong>Audit &amp; Logging</strong> writes down everything that happened, for later review.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>An employee starts a conversation asking about a specific expense report, gets interrupted, and comes back two hours later saying "did you find that report yet?" — Session Management and Short Term Memory let the agent pick up exactly where it left off, without the employee having to re-explain which report they meant.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Five runtime services keeping an agent from being forgetful</div>
+        <svg viewBox="0 0 900 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <g font-size="9.5" font-weight="600">
+            <rect x="10" y="20" width="165" height="90" rx="10" fill="#E9E7FA" stroke="#6C63C7"/><text x="92" y="50" text-anchor="middle" fill="#122844">Session</text><text x="92" y="65" text-anchor="middle" fill="#122844">Management</text><text x="92" y="90" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">this conversation</text>
+
+            <rect x="185" y="20" width="165" height="90" rx="10" fill="#E9E7FA" stroke="#6C63C7"/><text x="267" y="50" text-anchor="middle" fill="#122844">Short Term</text><text x="267" y="65" text-anchor="middle" fill="#122844">Memory</text><text x="267" y="90" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">last few messages</text>
+
+            <rect x="360" y="20" width="165" height="90" rx="10" fill="#E9E7FA" stroke="#6C63C7"/><text x="442" y="50" text-anchor="middle" fill="#122844">Long Term</text><text x="442" y="65" text-anchor="middle" fill="#122844">Memory</text><text x="442" y="90" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">across days/weeks</text>
+
+            <rect x="535" y="20" width="165" height="90" rx="10" fill="#E9E7FA" stroke="#6C63C7"/><text x="617" y="50" text-anchor="middle" fill="#122844">State</text><text x="617" y="65" text-anchor="middle" fill="#122844">Management</text><text x="617" y="90" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">where a task stands</text>
+
+            <rect x="710" y="20" width="180" height="90" rx="10" fill="#FBE1E9" stroke="#E0527A"/><text x="800" y="50" text-anchor="middle" fill="#122844">Audit &amp;</text><text x="800" y="65" text-anchor="middle" fill="#122844">Logging</text><text x="800" y="90" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">a permanent record</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">Session state backed by Cosmos DB</div>
+      <pre class="code"><span class="c1"># Short-term: recent turns, kept in the session document</span>
+session = cosmos_container.read_item(item=session_id, partition_key=user_id)
+recent_turns = session[<span class="c1">"messages"</span>][-<span class="c3">10</span>:]  <span class="c4"># last 10 messages for context</span>
+
+<span class="c1"># Long-term: durable facts about this user, retrieved across sessions</span>
+user_memory = memory_store.query(
+    <span class="c1">f"SELECT * FROM c WHERE c.user_id = '{user_id}' AND c.type = 'preference'"</span>
+)  <span class="c4"># e.g. "prefers email summaries over long paragraphs"</span>
+
+<span class="c1"># Audit: every step gets a permanent, timestamped record</span>
+audit_log.append({<span class="c1">"user"</span>: user_id, <span class="c1">"agent"</span>: <span class="c1">"FinanceAgent"</span>,
+                   <span class="c1">"action"</span>: <span class="c1">"lookup_expense_report"</span>, <span class="c1">"timestamp"</span>: now(), <span class="c1">"result_summary"</span>: <span class="c1">"..."</span>})</pre>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p><strong>Cosmos DB</strong> is a natural fit for session and memory storage here — schema-flexible, low-latency, globally distributable if the platform serves users across regions. Short-term memory typically lives entirely in-session (recent conversation turns passed directly in the model's context window), while long-term memory is retrieved via a lookup keyed on user or entity ID — often itself backed by a vector search over past interactions for semantic recall, not just exact keyword match. State Management matters most for long-running, multi-step agent tasks — tracking "step 3 of 5 completed, waiting on human approval for step 4" so the system can safely resume after an interruption instead of restarting or losing track. Audit &amp; Logging here should be treated as compliance-grade, not just debugging convenience — in regulated industries, "what did the AI do, when, and why" needs a durable, tamper-evident record.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>If Long Term Memory stored every single message a user ever sent, forever, with no limits — what problems could that cause, beyond just storage cost? (Hint: think about what happens if incorrect information gets "remembered.")</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "How do you decide what belongs in short-term vs. long-term memory for an agent?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Short-term memory is scoped to the current session — the immediate back-and-forth needed to hold a coherent conversation, and it's fine for this to be ephemeral, expiring when the session ends. Long-term memory is reserved for durable facts genuinely worth persisting across sessions — user preferences, recurring context ("this user always asks about the EMEA region"), or task state for long-running workflows. I'd be deliberate about what gets promoted to long-term storage rather than persisting everything by default — indiscriminately remembering every detail forever creates both a growing cost and privacy liability, and risks the agent confidently repeating outdated or incorrect "memories" long after they stopped being true. A practical pattern is explicit memory writes (the agent or a separate process decides something is worth remembering) rather than implicitly logging the entire raw conversation history as permanent memory.</p>
+        <p><em>Why this answer works:</em> it explains the selection criteria (durability and genuine reuse value) rather than a blanket rule, and flags the real risk of stale "memories" being confidently repeated — a subtle failure mode interviewers like to probe for.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 7 -->
+    <section class="level" id="tools">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--sky-soft);">🔧</div>
+        <div><div class="level-eyebrow">Level 7</div><h2>Tools &amp; Connectors — How Agents Actually DO Things</h2></div>
+      </div>
+      <p class="level-tagline">An LLM alone can only produce text. Everything an agent actually <em>does</em> in the real world — send an email, look something up, update a record — happens through this box.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>The LLM is like a very smart advisor who can only talk — it can tell you exactly what should happen, but it has no hands. Tools &amp; Connectors are the hands: <strong>Web APIs</strong> and <strong>Custom Connectors</strong> reach out to other systems, <strong>Azure Functions</strong> run small pieces of custom logic, <strong>Logic Apps</strong> and <strong>Power Automate</strong> trigger whole automated workflows, and <strong>MCP Servers</strong> are a standardized "universal plug" letting an agent connect to many different tools through one consistent interface (the same MCP concept from the earlier Agentic AI zero-to-hero guide).</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>When the IT Support Agent decides "this password reset request is legitimate, go ahead," it doesn't reset the password itself with its own hands — it calls an Azure Function that has the actual permission and code to talk to Active Directory and perform the reset, then reports back "done" so the agent can tell the user.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">The agent's "hands" — six ways to take action</div>
+        <svg viewBox="0 0 900 140" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <g font-size="9" font-weight="600">
+            <rect x="10" y="20" width="140" height="90" rx="10" fill="#E1EDFB" stroke="#3E8EDE"/><text x="80" y="55" text-anchor="middle" fill="#122844">Web APIs</text><text x="80" y="75" text-anchor="middle" font-size="7.5" font-weight="500" fill="#57657A">any external service</text>
+
+            <rect x="160" y="20" width="140" height="90" rx="10" fill="#E1EDFB" stroke="#3E8EDE"/><text x="230" y="55" text-anchor="middle" fill="#122844">Azure Functions</text><text x="230" y="75" text-anchor="middle" font-size="7.5" font-weight="500" fill="#57657A">custom logic</text>
+
+            <rect x="310" y="20" width="140" height="90" rx="10" fill="#E1EDFB" stroke="#3E8EDE"/><text x="380" y="55" text-anchor="middle" fill="#122844">Logic Apps</text><text x="380" y="75" text-anchor="middle" font-size="7.5" font-weight="500" fill="#57657A">automated workflows</text>
+
+            <rect x="460" y="20" width="140" height="90" rx="10" fill="#E1EDFB" stroke="#3E8EDE"/><text x="530" y="55" text-anchor="middle" fill="#122844">Power Automate</text><text x="530" y="75" text-anchor="middle" font-size="7.5" font-weight="500" fill="#57657A">business process automation</text>
+
+            <rect x="610" y="20" width="140" height="90" rx="10" fill="#E1EDFB" stroke="#3E8EDE" stroke-width="2"/><text x="680" y="55" text-anchor="middle" fill="#122844">MCP Servers</text><text x="680" y="75" text-anchor="middle" font-size="7.5" font-weight="500" fill="#57657A">one plug, many tools</text>
+
+            <rect x="760" y="20" width="130" height="90" rx="10" fill="#E1EDFB" stroke="#3E8EDE"/><text x="825" y="55" text-anchor="middle" fill="#122844">Custom</text><text x="825" y="70" text-anchor="middle" fill="#122844">Connectors</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">A tool the Finance Agent can call — defined once, safely scoped</div>
+      <pre class="code"><span class="c1">@tool</span>
+<span class="c2">def</span> check_budget(department: <span class="c3">str</span>, fiscal_quarter: <span class="c3">str</span>) -> <span class="c3">dict</span>:
+    <span class="c1">"""Look up remaining budget for a department. Read-only — never modifies data."""</span>
+    response = requests.get(
+        f<span class="c1">"https://finance-api.internal/budget/{department}/{fiscal_quarter}"</span>,
+        headers={<span class="c1">"Authorization"</span>: f<span class="c1">"Bearer {get_managed_identity_token()}"</span>}  <span class="c4"># Level 3</span>
+    )
+    <span class="c2">return</span> response.json()
+
+<span class="c1"># Registered with the agent, but ONLY this narrow set of tools</span>
+finance_agent.tools = [check_budget, lookup_expense_report, get_rejection_reason]
+<span class="c4"># notice: no "approve_payment" tool — that requires Level 11's human-in-the-loop</span></pre>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p>This layer is where <strong>tool-use/function-calling</strong> becomes concrete: the LLM decides <em>which</em> tool to call and with what arguments, but the actual execution — and crucially, the actual permission to execute — lives in this layer, running under the calling agent's Managed Identity. <strong>MCP (Model Context Protocol)</strong> matters architecturally because without it, every new tool needs custom integration code per agent framework; MCP standardizes that connection, so a new tool exposed as an MCP server becomes usable by any MCP-compatible agent without bespoke glue code. Read-only tools (like the budget lookup above) and write/action tools (like approving a payment) should be deliberately separated — write actions are exactly where Level 11's human-in-the-loop gate belongs.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>List three tools the Sales Agent might need, and three it definitely should NOT have access to. What's your rule for deciding which side of that line a given tool falls on?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "How do you decide which agent actions can run automatically versus which need a tool restricted or gated behind approval?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>I'd draw the line based on reversibility and blast radius, not just "does this feel risky." Read-only actions — looking something up, checking a status — can almost always run automatically, since there's nothing to undo if the agent's judgment is imperfect. Actions that write, spend money, delete data, or communicate externally (sending an email to a customer, approving a payment) should default to requiring human approval unless the specific action has a very low dollar/impact threshold and a proven track record of the agent handling it correctly. I'd also make sure genuinely risky tools simply aren't registered on lower-trust agents at all — the safest gate is the one where the capability doesn't exist for that agent in the first place, rather than relying purely on runtime guardrails to catch a mistake after the fact.</p>
+        <p><em>Why this answer works:</em> it gives a concrete decision criterion (reversibility/blast radius) and layers two independent defenses — narrow tool registration plus runtime approval gates — rather than relying on just one.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 8 -->
+    <section class="level" id="data">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--sky-soft);">🗄️</div>
+        <div><div class="level-eyebrow">Level 8</div><h2>Enterprise Data &amp; Knowledge — Where Agents Learn Real Facts</h2></div>
+      </div>
+      <p class="level-tagline">Without this box, every agent is limited to whatever the LLM happened to learn during its general training — which knows nothing about your company's actual customers, policies, or documents.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Picture five different filing cabinets in the company basement. <strong>Azure AI Search</strong> is a cabinet organized by <em>meaning</em>, not alphabet, so an agent can find "vacation policy" even if the document says "time-off guidelines." <strong>Cosmos DB</strong> holds fast-changing, flexible records. <strong>SQL Database</strong> holds the strict, structured stuff like transactions and account balances. <strong>Blob Storage</strong> is where raw documents (PDFs, Word files) actually sit. <strong>Data Lake</strong> is the giant warehouse holding everything else at scale.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>An employee asks the HR Agent "how many sick days do I have left?" — the agent doesn't guess from general training; it queries the actual SQL Database holding real HR records for that specific employee, and separately searches Azure AI Search over the company's actual leave policy documents to explain the rules correctly.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Five data services, five different jobs</div>
+        <svg viewBox="0 0 900 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <g font-size="9.5" font-weight="600">
+            <rect x="10" y="20" width="165" height="90" rx="10" fill="#E1EDFB" stroke="#3E8EDE" stroke-width="2"/><text x="92" y="50" text-anchor="middle" fill="#122844">Azure AI Search</text><text x="92" y="70" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">vector search —</text><text x="92" y="85" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">search by meaning</text>
+
+            <rect x="185" y="20" width="165" height="90" rx="10" fill="#E1EDFB" stroke="#3E8EDE"/><text x="267" y="50" text-anchor="middle" fill="#122844">Cosmos DB</text><text x="267" y="70" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">RAG context /</text><text x="267" y="85" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">flexible NoSQL</text>
+
+            <rect x="360" y="20" width="165" height="90" rx="10" fill="#E1EDFB" stroke="#3E8EDE"/><text x="442" y="50" text-anchor="middle" fill="#122844">SQL Database</text><text x="442" y="70" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">transactional,</text><text x="442" y="85" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">strict &amp; structured</text>
+
+            <rect x="535" y="20" width="165" height="90" rx="10" fill="#E1EDFB" stroke="#3E8EDE"/><text x="617" y="50" text-anchor="middle" fill="#122844">Blob Storage</text><text x="617" y="70" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">raw documents,</text><text x="617" y="85" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">PDFs, files</text>
+
+            <rect x="710" y="20" width="180" height="90" rx="10" fill="#E1EDFB" stroke="#3E8EDE"/><text x="800" y="50" text-anchor="middle" fill="#122844">Data Lake</text><text x="800" y="70" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">large-scale storage,</text><text x="800" y="85" text-anchor="middle" font-size="8" font-weight="500" fill="#57657A">everything else</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">RAG: grounding an answer in real company documents</div>
+      <pre class="code"><span class="c2">from</span> azure.search.documents <span class="c2">import</span> SearchClient
+
+search_client = SearchClient(endpoint=<span class="c1">"https://company-search.search.windows.net"</span>,
+                              index_name=<span class="c1">"hr-policy-index"</span>, credential=credential)
+
+<span class="c1"># Find the most relevant policy passages for this specific question</span>
+results = search_client.search(
+    search_text=<span class="c1">"how many sick days am I allowed"</span>,
+    query_type=<span class="c1">"semantic"</span>,   <span class="c4"># search by MEANING, not just keyword match</span>
+    top=<span class="c3">3</span>
+)
+context = <span class="c1">"\n"</span>.join([r[<span class="c1">"content"</span>] <span class="c2">for</span> r <span class="c2">in</span> results])
+
+<span class="c1"># Hand that real, retrieved context to the LLM — grounding its answer in facts</span>
+prompt = f<span class="c1">"Answer using only this policy text:\n{context}\n\nQuestion: {user_question}"</span></pre>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p>This layer implements <strong>Retrieval-Augmented Generation (RAG)</strong> — the same pattern from the earlier Agentic AI zero-to-hero guide's Level 1, applied concretely here with Azure-native services. Choosing the right store matters: Azure AI Search for semantic/vector retrieval over unstructured knowledge (policies, documents), SQL Database when data is genuinely relational and needs transactional guarantees (an account balance can't be "approximately correct"), Cosmos DB for flexible, low-latency operational data like session state, and Blob Storage/Data Lake as the raw landing zone before documents get indexed. Just as important as retrieval itself: <strong>access control on the data layer</strong> — each agent's search index and database access should be scoped to only what that specific agent's domain legitimately needs, mirroring the per-agent security boundaries from Level 5.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Why would asking the Finance Agent's question directly to a general LLM with no access to this data layer risk giving a wrong or outdated answer, even if the LLM is very capable?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Why does this architecture need five different data services instead of just one database for everything?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Each data service is optimized for a genuinely different access pattern. Azure AI Search is built for semantic/vector similarity search over unstructured text — something a relational database isn't designed to do efficiently. SQL Database gives ACID transactional guarantees essential for financial or other data where consistency really matters. Cosmos DB gives flexible schema and low, predictable latency for fast-changing operational data like session state. Blob Storage and Data Lake are cheap, scalable homes for raw files and large-scale data before or alongside processing. Forcing all of this into one database would mean compromising on the specific strength each workload actually needs — you'd get mediocre vector search, mediocre transactional guarantees, and mediocre flexibility, instead of each job being handled by a service actually built for it.</p>
+        <p><em>Why this answer works:</em> it justifies each service by its specific technical strength rather than treating "use the right tool" as a platitude, showing genuine understanding of why these services differ.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 9 -->
+    <section class="level" id="llm">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--blue-soft);">🧬</div>
+        <div><div class="level-eyebrow">Level 9</div><h2>LLM &amp; AI Services — The Actual Intelligence</h2></div>
+      </div>
+      <p class="level-tagline">Here it is — the box from Level 1's challenge. It's genuinely small on the diagram, and that's the whole point: intelligence is one governed, centralized service, not scattered API keys in every agent.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p><strong>Azure OpenAI Service</strong> is the actual "brain for hire" — GPT-4o for most tasks, o1 for the hardest reasoning problems, and embeddings models for turning text into the "meaning numbers" that power search in Level 8. <strong>Azure AI Studio</strong> is the workshop where models get evaluated and compared before anyone trusts them in production — like a chef tasting a dish before it goes out to customers. <strong>Azure Content Safety</strong> is a filter checking both what goes in and what comes out, catching harmful or inappropriate content before a user ever sees it.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>The Finance Agent sends the retrieved policy text plus the user's question to Azure OpenAI's GPT-4o. Before the response reaches the user, Azure Content Safety scans it for anything inappropriate. All of this — every single agent's model calls — goes through this one centralized service, not five separate, unmanaged API keys scattered across five agents.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Every agent's request passes through the same governed AI layer</div>
+        <svg viewBox="0 0 900 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a4" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#57657A"/></marker></defs>
+          <g font-size="9" font-weight="600">
+            <rect x="10" y="50" width="140" height="50" rx="10" fill="#E9E7FA" stroke="#6C63C7"/><text x="80" y="80" text-anchor="middle" fill="#122844">Any Agent</text>
+          </g>
+          <rect x="220" y="10" width="300" height="130" rx="14" fill="#DCE7FA" stroke="#1F5FC4" stroke-width="2"/>
+          <text x="370" y="32" text-anchor="middle" font-size="10" font-weight="700" fill="#122844">Azure OpenAI Service</text>
+          <text x="370" y="55" text-anchor="middle" font-size="8.5" fill="#57657A">GPT-4o · GPT-4 · o1</text>
+          <text x="370" y="72" text-anchor="middle" font-size="8.5" fill="#57657A">Embeddings models</text>
+          <rect x="240" y="90" width="260" height="35" rx="7" fill="#fff" stroke="#1F5FC4"/><text x="370" y="112" text-anchor="middle" font-size="8.5" fill="#122844">Azure AI Studio — eval &amp; comparison</text>
+
+          <rect x="560" y="50" width="150" height="50" rx="10" fill="#FBE1E9" stroke="#E0527A" stroke-width="2"/>
+          <text x="635" y="72" text-anchor="middle" font-size="9" font-weight="700" fill="#122844">Content Safety</text>
+          <text x="635" y="88" text-anchor="middle" font-size="7.5" fill="#57657A">checks in AND out</text>
+
+          <rect x="750" y="50" width="140" height="50" rx="10" fill="#DDF5F1" stroke="#3FBFAE"/>
+          <text x="820" y="80" text-anchor="middle" font-size="9" font-weight="700" fill="#122844">Safe response</text>
+
+          <g stroke="#57657A" stroke-width="2" marker-end="url(#a4)">
+            <line x1="150" y1="75" x2="217" y2="75"/><line x1="520" y1="75" x2="557" y2="75"/><line x1="710" y1="75" x2="747" y2="75"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">Calling the LLM, with a safety check</div>
+      <pre class="code"><span class="c2">from</span> openai <span class="c2">import</span> AzureOpenAI
+
+client = AzureOpenAI(azure_endpoint=<span class="c1">"https://company-openai.openai.azure.com"</span>,
+                      azure_ad_token_provider=get_managed_identity_token)  <span class="c4"># Level 3, no API key stored</span>
+
+response = client.chat.completions.create(
+    model=<span class="c1">"gpt-4o"</span>,
+    messages=[{<span class="c1">"role"</span>: <span class="c1">"system"</span>, <span class="c1">"content"</span>: finance_agent.system_prompt},
+              {<span class="c1">"role"</span>: <span class="c1">"user"</span>, <span class="c1">"content"</span>: prompt}]  <span class="c4"># the RAG-grounded prompt from Level 8</span>
+)
+
+<span class="c1"># Content Safety checks the output BEFORE it ever reaches the user</span>
+safety_result = content_safety_client.analyze_text(response.choices[<span class="c3">0</span>].message.content)
+<span class="c2">if</span> safety_result.is_flagged:
+    <span class="c2">return</span> <span class="c1">"I can't share that response — let me connect you with a human."</span></pre>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Centralizing all model access through Azure OpenAI Service — rather than each agent holding its own API key — is what makes Level 2's gateway-level model routing and failover actually possible, and gives one place to enforce content filtering, track token usage/cost per agent, and swap model versions without touching agent code. <strong>Azure AI Studio</strong> is where model evaluation (the RAG-and-evaluation pattern from the earlier Agentic AI and Databricks guides) happens before a new model version or prompt change ships to production — golden datasets, automated scoring, and side-by-side comparison. Content Safety operates on both input (blocking prompt injection or abuse attempts before they reach the model) and output (catching harmful, biased, or policy-violating generated text) — two separate checkpoints, not one.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Why would checking Content Safety on the model's <em>output</em> alone not be enough — what could still go wrong if you skip checking the user's <em>input</em> before it even reaches the model?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Why centralize all agents' LLM access through one Azure OpenAI Service instead of giving each agent its own API key?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Centralization gives a single point of control for everything that matters operationally at scale: cost tracking and attribution per agent or team, consistent content safety enforcement across every agent rather than hoping each one remembers to implement it, the ability to swap or upgrade a model deployment platform-wide without touching individual agents' code, and unified rate limiting and failover if a model deployment or region has an outage. With five separate API keys, you'd need to duplicate governance five times, with real risk that one agent's implementation drifts from the others — inconsistent safety checks, or one agent silently racking up disproportionate cost with no one noticing until the bill arrives.</p>
+        <p><em>Why this answer works:</em> it lists concrete operational failure modes of the decentralized alternative (duplicated governance, drift, invisible cost) rather than a generic "centralization is good practice."</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 10 -->
+    <section class="level" id="async">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--gold-soft);">📨</div>
+        <div><div class="level-eyebrow">Level 10</div><h2>Event &amp; Async Processing — When Things Can't Happen Instantly</h2></div>
+      </div>
+      <p class="level-tagline">Not every step in an agent's workflow can happen in the split-second while a user is staring at a loading spinner — this box is how the system handles the steps that genuinely take time.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Imagine ordering food at a restaurant. Some things happen instantly — the waiter takes your order right away (that's a <strong>sync/real-time flow</strong>, the solid arrows in the original diagram). But the kitchen actually cooking your food takes time, so the waiter doesn't just stand there frozen — they drop your order in the kitchen's queue and go serve other tables, coming back when it's ready (that's an <strong>async flow</strong>, the dashed arrows). <strong>Azure Event Hub</strong>, <strong>Service Bus</strong>, and <strong>Queues</strong> are exactly that kitchen order queue for the whole system.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>The Finance Agent needs a human manager's approval before resubmitting a large expense report — that approval might take hours, not milliseconds. Instead of the user's chat session freezing and waiting, the request goes onto a Service Bus queue, the user gets an immediate "I've submitted this for approval, I'll let you know" response, and the workflow resumes automatically once the manager approves it — possibly the next morning.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Sync (instant) vs. async (queued, resumes later)</div>
+        <svg viewBox="0 0 900 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs>
+            <marker id="a5s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#3E8EDE"/></marker>
+            <marker id="a5d" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#E8A33D"/></marker>
+          </defs>
+          <g font-size="9.5" font-weight="600">
+            <rect x="10" y="20" width="140" height="45" rx="8" fill="#DDF5F1" stroke="#3FBFAE"/><text x="80" y="47" text-anchor="middle" fill="#122844">User asks</text>
+            <rect x="230" y="20" width="140" height="45" rx="8" fill="#E9E7FA" stroke="#6C63C7"/><text x="300" y="47" text-anchor="middle" fill="#122844">Orchestrator</text>
+            <rect x="450" y="20" width="140" height="45" rx="8" fill="#E1EDFB" stroke="#3E8EDE"/><text x="520" y="47" text-anchor="middle" fill="#122844">Quick lookup</text>
+            <text x="520" y="80" text-anchor="middle" font-size="8.5" fill="#3E8EDE" font-weight="700">← real-time / sync →</text>
+          </g>
+          <line x1="150" y1="42" x2="227" y2="42" stroke="#3E8EDE" stroke-width="2.5" marker-end="url(#a5s)"/>
+          <line x1="370" y1="42" x2="447" y2="42" stroke="#3E8EDE" stroke-width="2.5" marker-end="url(#a5s)"/>
+
+          <g font-size="9.5" font-weight="600">
+            <rect x="230" y="110" width="140" height="45" rx="8" fill="#FCEED9" stroke="#E8A33D"/><text x="300" y="137" text-anchor="middle" fill="#122844">Service Bus queue</text>
+            <rect x="450" y="110" width="140" height="45" rx="8" fill="#FCEED9" stroke="#E8A33D"/><text x="520" y="137" text-anchor="middle" fill="#122844">Human approves</text>
+            <rect x="670" y="110" width="150" height="45" rx="8" fill="#DDF5F1" stroke="#3FBFAE"/><text x="745" y="137" text-anchor="middle" fill="#122844">Resumes, replies</text>
+            <text x="520" y="90" text-anchor="middle" font-size="8.5" fill="#E8A33D" font-weight="700">↖ async — could be hours later ↗</text>
+          </g>
+          <line x1="300" y1="65" x2="300" y2="108" stroke="#E8A33D" stroke-width="2.5" stroke-dasharray="5 5" marker-end="url(#a5d)"/>
+          <line x1="370" y1="132" x2="447" y2="132" stroke="#E8A33D" stroke-width="2.5" stroke-dasharray="5 5" marker-end="url(#a5d)"/>
+          <line x1="590" y1="132" x2="667" y2="132" stroke="#E8A33D" stroke-width="2.5" stroke-dasharray="5 5" marker-end="url(#a5d)"/>
+        </svg>
+      </div>
+
+      <div class="code-label">Publishing an approval request to a queue, then resuming later</div>
+      <pre class="code"><span class="c1"># The agent doesn't wait — it hands off and immediately responds to the user</span>
+<span class="c2">from</span> azure.servicebus <span class="c2">import</span> ServiceBusClient
+
+sb_client = ServiceBusClient(fully_qualified_namespace=<span class="c1">"company.servicebus.windows.net"</span>, credential=credential)
+<span class="c2">with</span> sb_client.get_queue_sender(<span class="c1">"approval-requests"</span>) <span class="c2">as</span> sender:
+    sender.send_messages(ServiceBusMessage(json.dumps({
+        <span class="c1">"session_id"</span>: session_id, <span class="c1">"agent"</span>: <span class="c1">"FinanceAgent"</span>,
+        <span class="c1">"action"</span>: <span class="c1">"resubmit_expense"</span>, <span class="c1">"amount"</span>: <span class="c3">1250.00</span>
+    })))
+
+<span class="c1"># --- hours later, a separate process handles the approval event ---</span>
+<span class="c2">def</span> on_approval_received(message):
+    session = load_session(message.session_id)
+    session.resume(approved=<span class="c2">True</span>)   <span class="c4"># Level 6's State Management picks up right where it left off</span>
+    notify_user(session.user_id, <span class="c1">"Your expense was approved and resubmitted!"</span>)</pre>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p><strong>Azure Event Hub</strong> suits high-throughput event streaming (many events per second, like telemetry or logging events feeding Observability), while <strong>Azure Service Bus</strong> suits reliable, ordered, transactional messaging — a better fit for the human-approval workflow above, where exactly-once delivery and message ordering genuinely matter. Plain <strong>Queues</strong> (Storage Queues) are the simplest option for basic decoupling where you don't need Service Bus's richer features (sessions, dead-lettering, duplicate detection). This whole layer is what makes <strong>Human in the Loop</strong> (Level 11) architecturally possible without blocking a synchronous request — the agent's conversation session state is checkpointed, released, and later resumed exactly where it paused, rather than holding a thread or connection open for however long a human takes to respond.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Why would it be a bad idea to make the user's chat session literally freeze and wait — keeping a connection open — for a human approval that might take until tomorrow morning?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Why does this architecture need async messaging at all — why not just make everything a direct, synchronous call?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>Some steps in an agentic workflow genuinely can't complete quickly — waiting for a human approval, a slow downstream system, or a batch process — and holding a synchronous connection open for minutes or hours is both a poor user experience and a real resource cost (an open connection/thread consuming capacity while doing nothing). Async messaging lets the system checkpoint exactly where a workflow paused, free up resources immediately, and resume precisely where it left off whenever the slow step actually completes — whether that's five seconds or five hours later. It also naturally decouples components: the agent that requested approval doesn't need to know or care which specific process eventually handles it, which makes the system more resilient to any single component being temporarily unavailable.</p>
+        <p><em>Why this answer works:</em> it names two independent benefits — user experience/resource efficiency, and architectural decoupling — rather than treating async messaging as one vague "good practice."</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 11 -->
+    <section class="level" id="humanloop">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--gold-soft);">🙋</div>
+        <div><div class="level-eyebrow">Level 11</div><h2>Human in the Loop — Keeping People in Control</h2></div>
+      </div>
+      <p class="level-tagline">This box sits connected to both the Orchestrator and the Async Processing layer — a deliberate placement showing exactly how humans stay in control of an autonomous system.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Think of a responsible teenager with a learner's driving permit — they can do almost everything themselves, but a licensed adult still has to be in the car and sign off before certain risky moves. Human in the Loop is that adult in the passenger seat: the agent can look things up and draft responses freely, but for genuinely risky or high-stakes actions — approving money, deleting records, sending something externally — a real person has to say "yes, go ahead" first.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>The Finance Agent drafts a $1,250 expense resubmission and is completely ready to execute it — but the action pauses, a manager gets a notification with the full context, and only after they click "Approve" does the resubmission actually happen. If they click "Reject," the agent explains that to the employee instead.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">Where the human sits in the loop</div>
+        <svg viewBox="0 0 900 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a6" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#57657A"/></marker></defs>
+          <g font-size="9.5" font-weight="600">
+            <rect x="10" y="60" width="160" height="55" rx="10" fill="#E9E7FA" stroke="#6C63C7"/><text x="90" y="92" text-anchor="middle" fill="#122844">Orchestrator</text>
+
+            <rect x="220" y="60" width="160" height="55" rx="10" fill="#FCEED9" stroke="#E8A33D" stroke-width="2"/><text x="300" y="85" text-anchor="middle" fill="#122844">Risky action</text><text x="300" y="100" text-anchor="middle" font-size="7.5" fill="#57657A">detected — pause</text>
+
+            <rect x="430" y="10" width="200" height="60" rx="10" fill="#FCEED9" stroke="#E8A33D" stroke-width="2"/><text x="530" y="35" text-anchor="middle" fill="#122844">Human in the Loop</text><text x="530" y="55" text-anchor="middle" font-size="8" fill="#57657A">Approve / Reject / Escalate</text>
+
+            <rect x="430" y="90" width="200" height="60" rx="10" fill="#FCEED9" stroke="#E8A33D"/><text x="530" y="115" text-anchor="middle" fill="#122844">Async queue</text><text x="530" y="132" text-anchor="middle" font-size="8" fill="#57657A">(Level 10)</text>
+
+            <rect x="670" y="60" width="200" height="55" rx="10" fill="#DDF5F1" stroke="#3FBFAE"/><text x="770" y="92" text-anchor="middle" fill="#122844">Action executes,</text><text x="770" y="105" text-anchor="middle" font-size="8" fill="#57657A">or is safely declined</text>
+          </g>
+          <g stroke="#57657A" stroke-width="2" marker-end="url(#a6)" fill="none">
+            <line x1="170" y1="87" x2="217" y2="87"/>
+            <path d="M380 78 L 427 40"/><path d="M380 100 L 427 118"/>
+            <path d="M630 40 L 667 78"/><path d="M630 118 L 667 90"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">Gating an action behind human approval</div>
+      <pre class="code"><span class="c2">def</span> execute_action(agent, action, session):
+    <span class="c2">if</span> action.risk_level <span class="c2">in</span> (<span class="c1">"high"</span>, <span class="c1">"financial"</span>, <span class="c1">"irreversible"</span>):
+        <span class="c1"># Don't execute — pause and hand off via the async queue from Level 10</span>
+        publish_approval_request(session, action, approver=get_manager(session.user_id))
+        <span class="c2">return</span> <span class="c1">f"I've drafted this and sent it to {get_manager(session.user_id)} for approval."</span>
+
+    <span class="c1"># Low-risk, reversible actions can proceed without a human</span>
+    <span class="c2">return</span> agent.execute(action)</pre>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p>This is a <strong>risk-based approval gate</strong>, not a blanket "always ask a human" rule — over-gating defeats the entire purpose of automation, while under-gating creates real business and compliance risk. The gate criteria should be explicit and auditable (dollar thresholds, action type, reversibility), not left to the LLM's own judgment about what "feels risky." Architecturally, this only works cleanly because of Level 10's async infrastructure — the approval genuinely pauses the workflow's state rather than blocking a live connection, and Level 6's State Management is what lets the workflow resume exactly where it left off once a decision comes back, potentially from a completely different session or device than where the request started.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Draft the specific risk-gating rules for the IT Support Agent — which actions (like unlocking an account, or deleting a user) should require human approval, and which are safe to run automatically?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "How do you decide the threshold for what needs human approval without making the system too slow to be useful?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>I'd define explicit, auditable rules upfront rather than trusting the agent's own judgment about riskiness — dollar thresholds for financial actions, an explicit list of irreversible action types (deletions, external communications), and a default of "gate it" for any brand-new action type that hasn't built up a track record yet. Over time, actions the agent has executed correctly at high volume with very low error/override rates become candidates for graduating to fully automatic, monitored execution — treating trust as something earned incrementally and measured, not assumed from day one. This keeps the system fast for the vast majority of low-risk requests while keeping a real human genuinely in control of the small slice of high-stakes decisions where a mistake actually matters.</p>
+        <p><em>Why this answer works:</em> it proposes a concrete, evolving policy (start conservative, graduate proven-safe actions over time based on measured data) rather than a static, one-size-fits-all threshold.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 12 -->
+    <section class="level" id="observability">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--rose-soft);">📡</div>
+        <div><div class="level-eyebrow">Level 12</div><h2>Observability &amp; Monitoring — The Control Room</h2></div>
+      </div>
+      <p class="level-tagline">If an autonomous agent takes an action at 2am, someone needs to be able to answer "what happened, and why?" the next morning — this box makes that possible.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>Think of an airport's control tower with screens showing every plane's exact position, speed, and status in real time. <strong>Azure Monitor</strong> and <strong>Application Insights</strong> are those screens for this AI system — tracking every request's speed, cost, and success or failure. <strong>Log Analytics Workspace</strong> is the archive of everything that's ever happened, searchable later. <strong>Workbooks &amp; Dashboards</strong> turn all that raw data into visual reports anyone can glance at. <strong>Alerts &amp; Notifications</strong> are the tower paging someone the instant something looks genuinely wrong.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>The Finance Agent's error rate suddenly spikes at 2am due to an upstream system outage. An alert automatically pages the on-call engineer before a single employee even notices anything's wrong the next morning — because Application Insights was tracking every call's success/failure in real time.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">From every request, to a page on someone's phone</div>
+        <svg viewBox="0 0 900 150" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a7" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#57657A"/></marker></defs>
+          <g font-size="9" font-weight="600">
+            <rect x="10" y="50" width="140" height="50" rx="10" fill="#E9E7FA" stroke="#6C63C7"/><text x="80" y="80" text-anchor="middle" fill="#122844">Every request</text>
+
+            <rect x="200" y="50" width="150" height="50" rx="10" fill="#FBE1E9" stroke="#E0527A"/><text x="275" y="72" text-anchor="middle" fill="#122844">App Insights</text><text x="275" y="87" text-anchor="middle" font-size="7.5" fill="#57657A">+ Azure Monitor</text>
+
+            <rect x="400" y="50" width="150" height="50" rx="10" fill="#FBE1E9" stroke="#E0527A"/><text x="475" y="80" text-anchor="middle" fill="#122844">Log Analytics</text>
+
+            <rect x="600" y="10" width="150" height="46" rx="8" fill="#FBE1E9" stroke="#E0527A"/><text x="675" y="38" text-anchor="middle" fill="#122844">Dashboards</text>
+            <rect x="600" y="94" width="150" height="46" rx="8" fill="#FBE1E9" stroke="#E0527A" stroke-width="2"/><text x="675" y="122" text-anchor="middle" fill="#122844">🚨 Alerts</text>
+
+            <rect x="800" y="94" width="90" height="46" rx="8" fill="#FCEED9" stroke="#E8A33D"/><text x="845" y="122" text-anchor="middle" font-size="8" fill="#122844">On-call</text>
+          </g>
+          <g stroke="#57657A" stroke-width="2" marker-end="url(#a7)">
+            <line x1="150" y1="75" x2="197" y2="75"/><line x1="350" y1="75" x2="397" y2="75"/>
+            <path d="M550 65 L 597 33"/><path d="M550 90 L 597 117"/>
+            <line x1="750" y1="117" x2="797" y2="117"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="code-label">Structured logging, queried later in Log Analytics (KQL)</div>
+      <pre class="code"><span class="c4"># Every agent call emits a structured trace — latency, cost, success/failure</span>
+telemetry.track_event(<span class="c1">"agent_call"</span>, properties={
+    <span class="c1">"agent"</span>: <span class="c1">"FinanceAgent"</span>, <span class="c1">"user_id"</span>: user_id, <span class="c1">"tokens_used"</span>: <span class="c3">842</span>,
+    <span class="c1">"latency_ms"</span>: <span class="c3">1240</span>, <span class="c1">"success"</span>: <span class="c2">True</span>, <span class="c1">"tool_calls"</span>: [<span class="c1">"check_budget"</span>]
+})</pre>
+      <pre class="code"><span class="c4">// Querying Log Analytics with KQL to find last night's error spike</span>
+AppEvents
+| where Name == <span class="c1">"agent_call"</span> <span class="c2">and</span> Properties.success == <span class="c2">false</span>
+| where TimeGenerated between (ago(<span class="c3">12</span>h) .. now())
+| summarize ErrorCount = count() <span class="c2">by</span> bin(TimeGenerated, <span class="c3">15</span>m), tostring(Properties.agent)
+| render timechart</pre>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p>This should capture the same three pillars as any production system: <strong>metrics</strong> (latency, cost per request, tokens used, success rate — feeding dashboards), <strong>traces</strong> (the full step-by-step path a single request took through the Orchestrator, Agents, and Tools — essential for debugging one specific bad response), and <strong>logs</strong> (the durable, queryable record in Log Analytics). For a multi-agent system specifically, distributed tracing across agent hops matters more than in a typical app — a single user request might touch the Gateway, Orchestrator, two Agents, three Tools, and the LLM, and you need to see that whole chain as one connected trace, not five disconnected log lines. Alerts should be tied to genuinely actionable thresholds (error rate, cost anomaly, latency SLA breach) — alert fatigue from noisy, low-value alerts is exactly what causes real incidents to get missed.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>A user complains the Finance Agent gave them a wrong answer yesterday. What specific pieces of logged information would you need to reconstruct exactly what happened and why?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "What would your observability strategy look like for this multi-agent Azure architecture?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>I'd instrument distributed tracing across every hop a request takes — Gateway, Orchestrator, individual Agents, Tools, and the LLM call itself — using Application Insights' correlation IDs so a single user request is reconstructable as one connected trace, not scattered disconnected log lines. Metrics would track latency, token cost, and success rate per agent, feeding dashboards for day-to-day health and cost attribution per team. Log Analytics holds the durable, queryable history for post-incident investigation via KQL. Alerts would be tied to specific, actionable thresholds — error rate spikes, unusual cost anomalies, SLA latency breaches — deliberately kept narrow enough to avoid alert fatigue, since a control room with too many false alarms stops being useful the moment people start ignoring it.</p>
+        <p><em>Why this answer works:</em> it explicitly separates metrics/traces/logs and explains why distributed tracing matters more here than in a typical single-service app, plus flags the alert-fatigue failure mode most junior answers miss.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 13 -->
+    <section class="level" id="network">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--slate-soft);">🏗️</div>
+        <div><div class="level-eyebrow">Level 13</div><h2>Network, Infrastructure &amp; On-Premises</h2></div>
+      </div>
+      <p class="level-tagline">This is the foundation slab the entire building sits on — and the bridge connecting it to systems that were never built to live in the cloud.</p>
+
+      <div class="grid2">
+        <div class="card analogy">
+          <h3>🧸 Explain it simply</h3>
+          <p>A <strong>Virtual Network (VNet)</strong> is the property line around the whole building. <strong>Subnets</strong> are separate fenced sections within that property — the parking lot isn't the same fenced area as the server room. <strong>Private Link</strong> is a private tunnel between two buildings so deliveries never touch the public street. <strong>Azure Firewall</strong> and <strong>DDoS Protection</strong> are the security checkpoint and the barrier stopping a mob from rushing the gates. <strong>Bastion Host</strong> is a single, guarded door administrators use to get in for maintenance. <strong>VPN/ExpressRoute</strong> is a dedicated, private road connecting this whole cloud campus back to the company's older, on-premises headquarters — where systems like SAP, Oracle, CRMs, and mainframes still live.</p>
+        </div>
+        <div class="card usecase">
+          <h3>🌍 Real world example</h3>
+          <p>The Finance Agent needs data that still lives in an on-premises SAP system, not in the cloud. ExpressRoute provides a private, dedicated connection from Azure directly into the company's own data center — so that SAP query never travels over the public internet at all, satisfying the bank's strict data residency and security requirements.</p>
+        </div>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">The foundation, and the bridge to older systems</div>
+        <svg viewBox="0 0 900 170" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs><marker id="a8" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#57657A"/></marker></defs>
+          <rect x="10" y="10" width="500" height="120" rx="14" fill="#E7EAF0" stroke="#5C6B85" stroke-width="2"/>
+          <text x="260" y="32" text-anchor="middle" font-size="10.5" font-weight="700" fill="#122844">Network &amp; Infrastructure</text>
+          <g font-size="8.5" font-weight="600">
+            <rect x="30" y="45" width="105" height="35" rx="6" fill="#fff" stroke="#5C6B85"/><text x="82" y="66" text-anchor="middle" fill="#122844">VNet / Subnets</text>
+            <rect x="145" y="45" width="105" height="35" rx="6" fill="#fff" stroke="#5C6B85"/><text x="197" y="66" text-anchor="middle" fill="#122844">Private Link</text>
+            <rect x="260" y="45" width="105" height="35" rx="6" fill="#fff" stroke="#5C6B85"/><text x="312" y="66" text-anchor="middle" fill="#122844">Firewall</text>
+            <rect x="375" y="45" width="115" height="35" rx="6" fill="#fff" stroke="#5C6B85"/><text x="432" y="66" text-anchor="middle" fill="#122844">DDoS Protection</text>
+            <rect x="30" y="90" width="105" height="35" rx="6" fill="#fff" stroke="#5C6B85"/><text x="82" y="111" text-anchor="middle" fill="#122844">Bastion Host</text>
+            <rect x="145" y="90" width="345" height="35" rx="6" fill="#fff" stroke="#5C6B85" stroke-width="2"/><text x="317" y="111" text-anchor="middle" fill="#122844">VPN / ExpressRoute — the bridge out</text>
+          </g>
+
+          <rect x="580" y="30" width="310" height="100" rx="14" fill="#E7EAF0" stroke="#5C6B85" stroke-width="2"/>
+          <text x="735" y="55" text-anchor="middle" font-size="10" font-weight="700" fill="#122844">On-Premises &amp; External Systems</text>
+          <text x="735" y="80" text-anchor="middle" font-size="9" fill="#57657A">SAP · Oracle · CRM</text>
+          <text x="735" y="98" text-anchor="middle" font-size="9" fill="#57657A">Databases · APIs · Mainframes</text>
+          <text x="735" y="116" text-anchor="middle" font-size="8" fill="#57657A">— never touches the public internet</text>
+
+          <line x1="490" y1="107" x2="577" y2="80" stroke="#57657A" stroke-width="2" marker-end="url(#a8)"/>
+        </svg>
+      </div>
+
+      <div class="code-label">Locking down Azure OpenAI behind a Private Endpoint</div>
+      <pre class="code"><span class="c4"># Azure CLI — Azure OpenAI is only reachable from inside the VNet, never publicly</span>
+az network private-endpoint create \
+  --name pe-openai-finance \
+  --resource-group rg-agentic-ai \
+  --vnet-name vnet-agentic-platform \
+  --subnet subnet-ai-services \
+  --private-connection-resource-id <span class="c3">$(az cognitiveservices account show --name company-openai --query id -o tsv)</span> \
+  --group-id account \
+  --connection-name openai-connection</pre>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p>This layer is where <strong>defense in depth</strong> actually happens at the network level: separate subnets isolate the Orchestration layer from data services, Private Endpoints keep Azure OpenAI/AI Search/databases off the public internet entirely, Azure Firewall inspects and controls outbound traffic (important since agents calling external Tools/APIs need governed egress, not unrestricted internet access), and DDoS Protection guards the whole platform's availability. <strong>ExpressRoute</strong> versus a plain VPN is a real architectural tradeoff — ExpressRoute gives a private, dedicated, more reliable and higher-bandwidth connection (at real cost), which matters when on-prem systems like SAP or a mainframe are latency-sensitive or carry data too sensitive to route over an internet-based VPN tunnel, even an encrypted one.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Why would putting the Orchestrator and the SQL Database in the exact same subnet, with no separation, be a weaker security design than putting them in two separate, firewalled subnets?</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "How would you network-isolate this architecture so agent traffic never touches the public internet?" <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>I'd deploy the whole platform inside a VNet with separate subnets per tier — Gateway, Orchestration, Data — each with Network Security Group rules restricting traffic to only what's genuinely needed between tiers. Azure OpenAI, Azure AI Search, Cosmos DB, and SQL Database would all sit behind Private Endpoints, so DNS resolves to private IPs inside the VNet rather than public endpoints. Azure Firewall would govern any outbound traffic agents need for external Tools/APIs, rather than granting unrestricted internet egress. For on-premises connectivity, I'd use ExpressRoute for latency-sensitive or highly sensitive on-prem systems, keeping that traffic off the public internet entirely rather than relying on an internet-routed VPN tunnel, even an encrypted one. Bastion Host would be the only path for any administrative access, removing the need for any public-facing management ports.</p>
+        <p><em>Why this answer works:</em> it walks tier by tier through a coherent isolation strategy rather than naming isolated features, and explicitly justifies ExpressRoute over VPN for the specific sensitivity/latency reasons that matter here.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 14: TRACE A REQUEST -->
+    <section class="level" id="trace">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--blue-soft);">🧭</div>
+        <div><div class="level-eyebrow">Level 14 — Capstone</div><h2>Trace a Request, Start to Finish</h2></div>
+      </div>
+      <p class="level-tagline">Every level so far was one building. Now we follow one real employee's request through the entire city, exactly the way the diagram's own arrows — solid for sync, dashed for async — describe it.</p>
+
+      <div class="card usecase">
+        <h3>🌍 The scenario</h3>
+        <p>An employee types into Microsoft Teams: <strong>"My VPN login isn't working — can you unlock my account?"</strong> Let's follow that single sentence through every box on the map.</p>
+      </div>
+
+      <div class="diagram-wrap">
+        <div class="diagram-title">The full journey — 10 steps, real-time and async</div>
+        <svg viewBox="0 0 1000 460" xmlns="http://www.w3.org/2000/svg" font-family="Inter">
+          <defs>
+            <marker id="ts" markerWidth="9" markerHeight="9" refX="7" refY="2.5" orient="auto"><path d="M0,0 L6,2.5 L0,5 Z" fill="#3E8EDE"/></marker>
+            <marker id="ta" markerWidth="9" markerHeight="9" refX="7" refY="2.5" orient="auto"><path d="M0,0 L6,2.5 L0,5 Z" fill="#E8A33D"/></marker>
+          </defs>
+          <g font-size="9" font-weight="700">
+            <rect x="10" y="10" width="150" height="50" rx="8" fill="#DDF5F1" stroke="#3FBFAE"/><text x="85" y="30" text-anchor="middle" fill="#122844">1. User in Teams</text><text x="85" y="45" text-anchor="middle" font-size="7.5" font-weight="500" fill="#57657A">"unlock my account"</text>
+
+            <rect x="200" y="10" width="150" height="50" rx="8" fill="#EEE6F8" stroke="#8B5FBF"/><text x="275" y="30" text-anchor="middle" fill="#122844">2. AI Gateway</text><text x="275" y="45" text-anchor="middle" font-size="7.5" font-weight="500" fill="#57657A">auth checked, routed</text>
+
+            <rect x="390" y="10" width="150" height="50" rx="8" fill="#E9E7FA" stroke="#6C63C7"/><text x="465" y="30" text-anchor="middle" fill="#122844">3. Orchestrator</text><text x="465" y="45" text-anchor="middle" font-size="7.5" font-weight="500" fill="#57657A">picks IT Support Agent</text>
+
+            <rect x="580" y="10" width="150" height="50" rx="8" fill="#E9E7FA" stroke="#6C63C7"/><text x="655" y="30" text-anchor="middle" fill="#122844">4. IT Support Agent</text><text x="655" y="45" text-anchor="middle" font-size="7.5" font-weight="500" fill="#57657A">plans the steps</text>
+
+            <rect x="770" y="10" width="150" height="50" rx="8" fill="#E1EDFB" stroke="#3E8EDE"/><text x="845" y="30" text-anchor="middle" fill="#122844">5. AI Search</text><text x="845" y="45" text-anchor="middle" font-size="7.5" font-weight="500" fill="#57657A">check IT policy (RAG)</text>
+
+            <rect x="770" y="90" width="150" height="50" rx="8" fill="#DCE7FA" stroke="#1F5FC4"/><text x="845" y="110" text-anchor="middle" fill="#122844">6. Azure OpenAI</text><text x="845" y="125" text-anchor="middle" font-size="7.5" font-weight="500" fill="#57657A">decide: unlock = risky</text>
+
+            <rect x="580" y="90" width="150" height="50" rx="8" fill="#FCEED9" stroke="#E8A33D" stroke-width="2"/><text x="655" y="110" text-anchor="middle" fill="#122844">7. Human in the Loop</text><text x="655" y="125" text-anchor="middle" font-size="7.5" font-weight="500" fill="#57657A">needs approval</text>
+
+            <rect x="390" y="90" width="150" height="50" rx="8" fill="#FCEED9" stroke="#E8A33D" stroke-width="2"/><text x="465" y="110" text-anchor="middle" fill="#122844">8. Service Bus</text><text x="465" y="125" text-anchor="middle" font-size="7.5" font-weight="500" fill="#57657A">queued — async pause</text>
+
+            <rect x="200" y="90" width="150" height="50" rx="8" fill="#DDF5F1" stroke="#3FBFAE"/><text x="275" y="110" text-anchor="middle" fill="#122844">9. User told:</text><text x="275" y="125" text-anchor="middle" font-size="7.5" font-weight="500" fill="#57657A">"sent for approval"</text>
+
+            <rect x="10" y="90" width="150" height="50" rx="8" fill="#FBE1E9" stroke="#E0527A"/><text x="85" y="110" text-anchor="middle" fill="#122844">Logged throughout</text><text x="85" y="125" text-anchor="middle" font-size="7.5" font-weight="500" fill="#57657A">App Insights (12)</text>
+          </g>
+
+          <g font-size="9" font-weight="700">
+            <rect x="580" y="200" width="150" height="50" rx="8" fill="#FCEED9" stroke="#E8A33D" stroke-width="2"/><text x="655" y="220" text-anchor="middle" fill="#122844">10. Manager approves</text><text x="655" y="235" text-anchor="middle" font-size="7.5" font-weight="500" fill="#57657A">(could be next morning)</text>
+
+            <rect x="390" y="200" width="150" height="50" rx="8" fill="#E1EDFB" stroke="#3E8EDE"/><text x="465" y="220" text-anchor="middle" fill="#122844">11. Azure Function</text><text x="465" y="235" text-anchor="middle" font-size="7.5" font-weight="500" fill="#57657A">actually unlocks account</text>
+
+            <rect x="200" y="200" width="150" height="50" rx="8" fill="#DDF5F1" stroke="#3FBFAE"/><text x="275" y="220" text-anchor="middle" fill="#122844">12. User notified</text><text x="275" y="235" text-anchor="middle" font-size="7.5" font-weight="500" fill="#57657A">"you're unlocked!"</text>
+          </g>
+
+          <g stroke="#3E8EDE" stroke-width="2" marker-end="url(#ts)" fill="none">
+            <line x1="160" y1="35" x2="197" y2="35"/><line x1="350" y1="35" x2="387" y2="35"/><line x1="540" y1="35" x2="577" y2="35"/><line x1="730" y1="35" x2="767" y2="35"/>
+            <path d="M845 60 L 845 88"/>
+          </g>
+          <g stroke="#E8A33D" stroke-width="2" stroke-dasharray="5 5" marker-end="url(#ta)" fill="none">
+            <path d="M770 115 L 732 115"/><path d="M580 115 L 542 115"/><path d="M390 115 L 352 115"/>
+            <path d="M655 142 L 655 198"/>
+            <line x1="577" y1="225" x2="542" y2="225"/><line x1="387" y1="225" x2="352" y2="225"/>
+          </g>
+          <text x="500" y="290" text-anchor="middle" font-size="10.5" fill="#3E8EDE" font-weight="700">— Solid blue = real-time/sync (happens in milliseconds)</text>
+          <text x="500" y="310" text-anchor="middle" font-size="10.5" fill="#E8A33D" font-weight="700">- - Dashed gold = async (could be seconds, hours, or longer) - -</text>
+        </svg>
+      </div>
+
+      <div class="code-label">The same trace, as the actual chain of code calls</div>
+      <pre class="code"><span class="c4"># Steps 1-6: synchronous, all within one HTTP request/response</span>
+request = gateway.authenticate(teams_message)                    <span class="c4"># Step 2 — Level 2</span>
+plan = orchestrator.plan(request, agent=<span class="c1">"ITSupportAgent"</span>)              <span class="c4"># Step 3-4 — Level 4</span>
+policy_context = ai_search.query(<span class="c1">"account unlock policy"</span>)                <span class="c4"># Step 5 — Level 8</span>
+decision = azure_openai.chat(plan, context=policy_context)         <span class="c4"># Step 6 — Level 9</span>
+
+<span class="c4"># Step 7-9: the risky action pauses, hands off asynchronously</span>
+<span class="c2">if</span> decision.action == <span class="c1">"unlock_account"</span>:                                <span class="c4"># Level 11</span>
+    service_bus.publish(<span class="c1">"approval-requests"</span>, decision, approver=manager)  <span class="c4"># Step 8 — Level 10</span>
+    <span class="c2">return</span> <span class="c1">"I've sent this for approval — I'll let you know!"</span>          <span class="c4"># Step 9</span>
+
+<span class="c4"># Step 10-12: a SEPARATE process, triggered whenever approval arrives</span>
+<span class="c2">def</span> on_approval(event):
+    <span class="c2">if</span> event.approved:
+        azure_function.call(<span class="c1">"unlock_account"</span>, user=event.user_id)          <span class="c4"># Step 11 — Level 7</span>
+        notify_teams(event.user_id, <span class="c1">"You're unlocked!"</span>)                     <span class="c4"># Step 12</span>
+    telemetry.track(event)                                          <span class="c4"># logged throughout — Level 12</span></pre>
+
+      <div class="card" style="border-left:4px solid var(--purple);">
+        <h3>🎓 Architect-level version</h3>
+        <p>Notice exactly which steps are solid-line synchronous (1-6: request, routing, planning, retrieval, and the LLM decision all happen inline, in one request/response cycle) versus dashed-line asynchronous (7-12: anything gated on human approval genuinely pauses and resumes later, potentially on a completely different server instance than the one that started it). This is precisely why <strong>State Management</strong> (Level 6) has to be externalized to Cosmos DB rather than kept in server memory — the process instance that handles step 10's approval callback is very likely not the same process instance that handled step 1's original request. Every single step, sync or async, writes to <strong>Application Insights</strong> (Level 12) with the same correlation ID, so the whole 12-step journey reconstructs as one connected trace during debugging, not twelve disconnected log lines.</p>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Trace a different request through this same map: "What's our Q3 revenue by region?" — which agent handles it, which data services get called, and does it need Human in the Loop at all? Sketch your own numbered steps.</p>
+      </div>
+
+      <button class="interview-tag" onclick="toggleAnswer(this)">💬 Common interview question: "Walk me through this architecture end-to-end for a request that needs human approval." <span class="chevron">▾</span></button>
+      <div class="answer-box">
+        <div class="answer-label">✅ Suggested answer</div>
+        <p>The request enters through the AI Gateway (API Management), which authenticates the user and routes it to the Orchestrator, hosted on Container Apps or AKS. The Orchestrator selects the relevant specialist agent and begins planning — this typically involves a synchronous round-trip to Azure AI Search for grounding context and to Azure OpenAI for the actual reasoning, all within the original request's response time. If the plan involves a high-risk action, the Orchestrator doesn't execute it directly — it publishes an approval request to Service Bus and immediately returns a "pending approval" response to the user, freeing up the request thread rather than blocking on a human who might take hours to respond. Separately, whenever the approval decision arrives — via its own event handler — the system resumes exactly where it paused, using externalized session state from Cosmos DB, executes the actual action via the appropriate tool or connector, and notifies the user. Every step along this entire path, sync and async, is logged to Application Insights under one correlation ID for full traceability.</p>
+        <p><em>Why this answer works:</em> it correctly distinguishes which parts of the flow are synchronous versus asynchronous, and explains <em>why</em> that split exists (not blocking on unpredictable human response time) rather than just narrating box names in order.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 15: USE-CASE PROJECTS -->
+    <section class="level" id="projects">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--lavender-soft);">🚀</div>
+        <div><div class="level-eyebrow">Level 15 — Hands-On</div><h2>Use-Case Projects: Build Three Agents on This Architecture</h2></div>
+      </div>
+      <p class="level-tagline">Three realistic projects, each using a different slice of the map — the exact shape of thing you'd actually build, or be asked to design on a whiteboard.</p>
+
+      <div class="project-card">
+        <span class="project-tag" style="background:var(--sky-soft); color:#1A5CA8;">PROJECT 1 · SYNC + RAG</span>
+        <h3 style="font-size:19px; margin-bottom:10px;">🖥️ IT Support Agent — Password Reset, Fully Automated</h3>
+        <p style="margin-bottom:16px;"><strong>The problem:</strong> IT fields hundreds of "I'm locked out" tickets a week — most are low-risk, repetitive, and don't need a human at all. Build an agent that resolves them end-to-end, safely.</p>
+
+        <div class="code-label">Grounded in real IT policy, executed through a governed tool</div>
+        <pre class="code">it_agent = Agent(
+    name=<span class="c1">"ITSupportAgent"</span>,
+    system_prompt=<span class="c1">"""You help with password resets and account lockouts. Follow</span>
+<span class="c1">        IT security policy exactly. Never bypass MFA requirements."""</span>,
+    tools=[check_account_status, reset_password, unlock_account],
+    knowledge_source=<span class="c1">"it-security-policy-index"</span>,   <span class="c4"># Level 8 — Azure AI Search</span>
+)
+
+<span class="c2">def</span> handle(request, session):
+    status = it_agent.call_tool(<span class="c1">"check_account_status"</span>, user=session.user_id)
+    policy = ai_search.query(<span class="c1">f"lockout policy for reason: {status.lockout_reason}"</span>)
+
+    <span class="c2">if</span> status.lockout_reason == <span class="c1">"failed_mfa_3x"</span>:            <span class="c4"># low-risk, policy allows auto-resolve</span>
+        it_agent.call_tool(<span class="c1">"unlock_account"</span>, user=session.user_id)
+        <span class="c2">return</span> <span class="c1">"You're unlocked! Please re-verify MFA on next login."</span>
+    <span class="c2">else</span>:                                                <span class="c4"># anything unusual → Level 11</span>
+        <span class="c2">return</span> escalate_to_human(session, reason=status.lockout_reason)</pre>
+
+        <div class="card" style="border-left:4px solid var(--purple); margin-top:14px; margin-bottom:0;">
+          <h3>🎯 What this project demonstrates</h3>
+          <p>A specialist agent (Level 5) with narrowly scoped tools (Level 7), grounded in real policy via RAG (Level 8), making its own risk-based decision about when to act automatically versus escalate (Level 11) — the exact pattern from the full trace in Level 14, minus the wait for approval on the easy cases.</p>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <span class="project-tag" style="background:var(--gold-soft); color:#8A6300;">PROJECT 2 · ASYNC + HUMAN APPROVAL</span>
+        <h3 style="font-size:19px; margin-bottom:10px;">💰 Finance Agent — Expense Approval Workflow</h3>
+        <p style="margin-bottom:16px;"><strong>The problem:</strong> Employees want a fast way to check and resubmit rejected expense reports, but anything touching money needs a real manager's sign-off — this is Level 14's full trace, built out completely.</p>
+
+        <div class="code-label">The async approval pattern, end to end</div>
+        <pre class="code"><span class="c2">def</span> resubmit_expense(report_id, session):
+    report = sql_db.query(<span class="c1">f"SELECT * FROM expenses WHERE id = {report_id}"</span>)  <span class="c4"># Level 8</span>
+
+    <span class="c2">if</span> report.amount > <span class="c3">500</span>:                                     <span class="c4"># Level 11's risk threshold</span>
+        service_bus.publish(<span class="c1">"approval-requests"</span>, {                <span class="c4"># Level 10</span>
+            <span class="c1">"session_id"</span>: session.id, <span class="c1">"report_id"</span>: report_id,
+            <span class="c1">"amount"</span>: report.amount, <span class="c1">"approver"</span>: get_manager(session.user_id)
+        })
+        session.state = <span class="c1">"awaiting_approval"</span>                       <span class="c4"># Level 6 — externalized state</span>
+        <span class="c2">return</span> <span class="c1">f"Submitted ${report.amount} for {get_manager(session.user_id)}'s approval."</span>
+
+    <span class="c2">return</span> execute_resubmission(report)                          <span class="c4"># under $500 — auto-approved</span>
+
+<span class="c4"># Separate handler, fires whenever the manager clicks Approve — maybe hours later</span>
+<span class="c2">def</span> on_approval_decision(event):
+    session = load_session(event.session_id)                       <span class="c4"># resume exactly where it paused</span>
+    <span class="c2">if</span> event.approved:
+        execute_resubmission(load_report(event.report_id))
+    notify_user(session.user_id, approved=event.approved)
+    audit_log.write(event)                                          <span class="c4"># Level 12</span></pre>
+
+        <div class="card" style="border-left:4px solid var(--purple); margin-top:14px; margin-bottom:0;">
+          <h3>🎯 What this project demonstrates</h3>
+          <p>The complete sync-to-async handoff from Level 14's trace, built as real code: a risk threshold gate (Level 11), a Service Bus queue holding the paused workflow (Level 10), and externalized session state (Level 6) letting a completely separate function resume the conversation whenever the human decision actually arrives.</p>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <span class="project-tag" style="background:var(--lavender-soft); color:var(--lavender);">PROJECT 3 · MULTI-SOURCE + ON-PREM</span>
+        <h3 style="font-size:19px; margin-bottom:10px;">🛒 Sales Agent — Customer 360 Lookup</h3>
+        <p style="margin-bottom:16px;"><strong>The problem:</strong> A sales rep asks "what's our history with Acme Corp?" — the answer requires combining cloud data (recent deals in SQL Database) with an on-premises CRM that's never moving to the cloud.</p>
+
+        <div class="code-label">Combining a cloud database with an on-prem system via a Custom Connector</div>
+        <pre class="code">sales_agent = Agent(
+    name=<span class="c1">"SalesAgent"</span>,
+    tools=[query_deal_history, query_onprem_crm, query_support_tickets],
+)
+
+<span class="c2">def</span> customer_360(company_name, session):
+    <span class="c1"># Fast, cloud-native lookup — Level 8</span>
+    recent_deals = sql_db.query(<span class="c1">f"SELECT * FROM deals WHERE company = '{company_name}'"</span>)
+
+    <span class="c1"># Reaches into the on-prem CRM over ExpressRoute — Level 13</span>
+    <span class="c1"># The Custom Connector is the ONLY thing that knows how to talk to the old CRM</span>
+    crm_history = custom_connector.call(<span class="c1">"onprem-crm"</span>, company=company_name)  <span class="c4"># Level 7</span>
+
+    support_context = ai_search.query(<span class="c1">f"support tickets for {company_name}"</span>)   <span class="c4"># Level 8</span>
+
+    <span class="c2">return</span> azure_openai.summarize(recent_deals, crm_history, support_context)     <span class="c4"># Level 9</span></pre>
+
+        <div class="card" style="border-left:4px solid var(--purple); margin-top:14px; margin-bottom:0;">
+          <h3>🎯 What this project demonstrates</h3>
+          <p>An agent combining multiple data sources in one answer — a cloud SQL Database, a vector search index, and a Custom Connector reaching all the way back to an on-premises system over ExpressRoute (Level 13) — showing this architecture isn't cloud-only, it's built to bridge into whatever systems a real enterprise actually has.</p>
+        </div>
+      </div>
+
+      <div class="challenge">
+        <h3>🧩 Try it yourself</h3>
+        <p>Pick one project and extend it: add a data-quality guardrail to Project 1 (what if the policy lookup returns nothing?), add a rejection-reason explanation to Project 2, or add a caching layer to Project 3 so repeated lookups for the same company don't re-query the slow on-prem CRM every time.</p>
+      </div>
+    </section>
+
+    <!-- LEVEL 16 -->
+    <section class="level" id="interviewbank">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--blue-soft);">🎯</div>
+        <div><div class="level-eyebrow">Level 16 — Senior Bank</div><h2>Interview Questions for 15+ Years of Experience</h2></div>
+      </div>
+      <p class="level-tagline">Every earlier level had one interview question woven in. These are the harder, whole-architecture questions a senior/architect-level panel actually asks.</p>
+
+      <div class="qbank">
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "Should the Agent Orchestrator run on Azure Container Apps, AKS, or Azure Functions — how do you decide?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>Azure Functions suits lightweight, short-lived, event-triggered orchestration steps but struggles with long-running, stateful conversations without extra scaffolding (like Durable Functions). Container Apps is a strong middle ground for the Orchestrator itself — container-native, scales on demand, integrates cleanly with Dapr for service-to-service communication and pub/sub, without the full operational overhead of managing Kubernetes directly. AKS makes sense when the team already runs significant Kubernetes infrastructure, needs very fine-grained control over networking/scaling policies, or the platform's scale genuinely justifies that operational investment. For most net-new agentic platforms, I'd start with Container Apps and only move to AKS if a specific, concrete requirement (not "AKS is more powerful") demands it.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How would you handle agent-to-agent communication when the Sales Agent needs information only the Finance Agent has?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>I'd route it through the Orchestrator rather than letting agents call each other directly — the Orchestrator recognizes the request needs both specialists, calls the Finance Agent for the needed data, and passes relevant results into the Sales Agent's context. This keeps the supervisor-worker pattern clean and auditable: every cross-agent data flow is visible in the Orchestrator's plan and gets logged centrally, rather than agents forming an ungoverned mesh of direct calls that's much harder to trace, secure, and reason about. Direct agent-to-agent calls might be justified for very high-frequency, tightly coupled interactions, but as a default, routing through the Orchestrator preserves the architecture's core security and observability guarantees.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How would you design cost governance across five-plus agents sharing one Azure OpenAI deployment?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>I'd tag every request at the Gateway with the calling agent's identity, and use that tag consistently through Application Insights for per-agent cost and token-usage attribution — visible on dashboards, not just discoverable after the fact in a monthly bill. API Management can enforce per-agent quotas so one misbehaving or unusually chatty agent can't silently consume the whole platform's budget. I'd also route simple, high-volume requests to a cheaper, smaller model deployment and reserve the most capable (and expensive) model for requests that genuinely need it — the same model-routing pattern from Level 2's gateway policies — and set up cost anomaly alerts so an unexpected spike pages someone rather than being discovered a month later.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How would you evaluate a new agent's behavior before it goes to production, given how unpredictable LLM outputs can be?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>I'd build a golden dataset of realistic requests for that agent's domain with expected outcomes, and run it through Azure AI Studio's evaluation tooling before any prompt or model change ships — scoring for correctness, groundedness (did it actually use the retrieved context, or hallucinate), and safety. I'd specifically include adversarial cases: attempts to get the agent to bypass its tool restrictions, leak another agent's data, or take an action that should have required human approval. Before full rollout, I'd run the new version as a shadow or canary against a small slice of real traffic, comparing its behavior against the current production agent, rather than trusting offline evaluation numbers alone to predict live behavior.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How would you design this architecture for multi-region disaster recovery?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>Azure OpenAI deployments would exist in at least two regions, with API Management's model-routing/failover policies (Level 2) able to redirect traffic if the primary region's deployment becomes unavailable. Cosmos DB supports multi-region replication natively, which matters since session state (Level 6) needs to survive a regional failover without losing an in-progress conversation. Azure AI Search indexes and SQL Database would need their own replication/backup strategy matched to their actual RPO/RTO requirements — not every data store needs the same DR posture, and treating them identically usually means over-paying for the low-value data and under-protecting the critical data. I'd also make sure the actual failover path is tested periodically, not just architected on paper — an untested DR plan is the most common real-world DR gap.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How would you prevent a prompt injection attack from one agent cascading into unauthorized access on another system?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>Defense in depth, not one single control. Each agent's Managed Identity and tool access is scoped narrowly to only what that domain needs (Level 5/7), so even a fully successful prompt injection against, say, the Sales Agent can't reach Finance's data or tools — there's no credential or permission path for it to cascade through. Content Safety (Level 9) screens both input and output. High-risk actions require human approval regardless of how confidently the agent argues for them (Level 11), which is specifically resilient to injection attacks that try to talk the agent into an unsafe action, since the gate isn't based on the agent's own self-reported confidence. Every action is logged (Level 12) so if an injection attempt does partially succeed, there's a full audit trail to assess actual impact quickly.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How would you handle PII flowing through this pipeline — from the user's question, through RAG, to the logs?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>I'd treat PII handling as a concern spanning multiple layers, not one filter. Content Safety and/or a dedicated PII-detection step can redact sensitive data from what gets sent to the LLM when the agent's task doesn't actually require it in cleartext. Data-layer access control (Level 8) ensures each agent's Azure AI Search index and database queries are scoped so PII exposure is limited to what that specific agent's role genuinely needs. For logging (Level 12), I'd avoid writing raw PII into Application Insights or Log Analytics at all — logging references/IDs and redacted summaries instead, with the ability to look up full detail only through a separate, tightly access-controlled path if a genuine investigation requires it. This keeps the debugging value of logging intact without turning the log store itself into a PII exposure risk.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "A company has an existing single-purpose chatbot and wants to migrate to this multi-agent architecture. How would you approach that migration?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>I wouldn't do a big-bang rewrite. I'd start by standing up the Gateway and Orchestration layers, and migrate the existing chatbot's logic in as the very first "agent" behind that new Orchestrator — getting the surrounding infrastructure (auth, logging, guardrails) in place with minimal behavior change first. From there, new capabilities get added as new specialist agents incrementally, each with their own scoped tools and data access, rather than continuing to grow one monolithic prompt. This lets the team validate the new infrastructure with a known, already-trusted workload before layering on genuinely new multi-agent complexity, and gives a natural rollback path at every stage if something regresses.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "How do you version and safely roll out a change to one agent's system prompt without breaking production?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>Agent definitions — system prompts, tool configurations, model choice — should be version-controlled artifacts, not values edited live in a running system, following the same CI/CD discipline covered in the earlier Databricks and ADF guides. Changes go through the evaluation process from the earlier interview answer (golden dataset scoring in Azure AI Studio) before deployment. I'd roll out via a canary pattern — routing a small percentage of real traffic to the new prompt version, comparing key metrics (success rate, escalation rate, user feedback) against the current version — before promoting it to 100% of traffic. API Management's versioning capabilities (Level 2) support exactly this kind of gradual, revertible rollout rather than an all-or-nothing prompt swap.</p>
+          </div>
+        </div>
+
+        <div class="qitem">
+          <button class="interview-tag" onclick="toggleAnswer(this)">💬 "What's the single biggest architectural risk in this diagram if it's implemented poorly, and how would you mitigate it?" <span class="chevron">▾</span></button>
+          <div class="answer-box">
+            <div class="answer-label">✅ Suggested answer</div>
+            <p>My honest answer: over-broad agent permissions — if every agent's Managed Identity ends up with access to every data source and tool "just in case, to save time," this entire well-designed architecture collapses into the same security posture as one giant, ungoverned mega-agent, just with extra diagram boxes. The mitigation isn't a single control, it's organizational discipline: access reviews at agent-creation time, least-privilege RBAC enforced by default rather than opt-in, and periodic audits (feeding off Level 12's logging) checking whether each agent's actual observed tool/data usage still matches its originally granted scope — catching permission creep before it becomes a real incident, not after.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LEVEL 17: GLOSSARY -->
+    <section class="level" id="glossary">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--gold-soft);">📖</div>
+        <div><div class="level-eyebrow">Level 17 — Reference</div><h2>Glossary — Speak Like a Pro</h2></div>
+      </div>
+      <p class="level-tagline">Every term gets two definitions: the simple one, and the one you'd use in front of a hiring panel — organized by the same four color-coded zones from the original diagram.</p>
+
+      <div class="glossary-grid">
+        <div class="card">
+          <h3 class="glossary-cat-title">🚪 Gateway &amp; Security</h3>
+          <div class="term"><div class="term-name">Azure API Management</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>the front desk checking everyone before they enter.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>an API gateway enforcing authentication, rate limiting, routing, and policy on every request before it reaches backend services.</div>
+          </div>
+          <div class="term"><div class="term-name">Entra ID</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>the badge system proving who you are.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>Azure's identity provider, issuing and validating tokens for users and applications via OAuth2/OpenID Connect.</div>
+          </div>
+          <div class="term"><div class="term-name">Managed Identity</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>an ID badge for software, not a person.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>an automatically managed Entra ID identity assigned to an Azure resource, used to authenticate to other services via RBAC instead of stored credentials.</div>
+          </div>
+          <div class="term"><div class="term-name">Key Vault</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>the locked safe holding every password.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a managed service for storing and controlling access to secrets, keys, and certificates.</div>
+          </div>
+          <div class="term"><div class="term-name">Private Endpoint</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a private hallway instead of walking through the public street.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a private IP connection into an Azure PaaS service within a VNet, keeping traffic off the public internet.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="glossary-cat-title">🧠 Orchestration &amp; Agents</h3>
+          <div class="term"><div class="term-name">Agent Orchestrator</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>the site manager who plans and delegates, never lays the bricks itself.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>the supervisor component planning, routing to specialist agents, maintaining context, and enforcing guardrails across a multi-agent workflow.</div>
+          </div>
+          <div class="term"><div class="term-name">Specialist Agent</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a doctor who's an expert in one thing, not everything.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a narrowly-scoped agent with its own system prompt, tools, knowledge source, and identity, focused on one business domain.</div>
+          </div>
+          <div class="term"><div class="term-name">MCP</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>one universal plug for many different tools.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>Model Context Protocol — a standardized interface letting agents connect to tools/data sources without custom integration code per pairing.</div>
+          </div>
+          <div class="term"><div class="term-name">Session / State Management</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>remembering exactly where a conversation or task currently stands.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>externalized, durable tracking of a workflow's progress, enabling pause/resume across sync and async steps, typically backed by Cosmos DB.</div>
+          </div>
+          <div class="term"><div class="term-name">Human in the Loop</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a real person has to say "go ahead" before something risky happens.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a risk-based approval gate pausing agent execution for explicit human sign-off on high-stakes or irreversible actions.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="glossary-cat-title">🗄️ Data, AI &amp; Tools</h3>
+          <div class="term"><div class="term-name">RAG</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>fetching the real facts before answering, instead of guessing.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>Retrieval-Augmented Generation — grounding an LLM's response in retrieved, relevant real documents rather than relying solely on its training data.</div>
+          </div>
+          <div class="term"><div class="term-name">Azure AI Search</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a filing cabinet organized by meaning, not alphabet.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a managed search service supporting vector/semantic search over embeddings, the standard retrieval layer for RAG on Azure.</div>
+          </div>
+          <div class="term"><div class="term-name">Azure OpenAI Service</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>the actual "brain for hire" behind every agent.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>Microsoft's managed, enterprise-governed access to OpenAI models (GPT-4o, o1, embeddings) with Azure-native security and compliance.</div>
+          </div>
+          <div class="term"><div class="term-name">Content Safety</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a filter checking both what goes in and what comes out.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a service screening prompts and model outputs for harmful, unsafe, or policy-violating content before/after LLM calls.</div>
+          </div>
+          <div class="term"><div class="term-name">Tool / Function Calling</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>giving the "advisor" LLM a pair of hands to actually do things.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a model outputting a structured request to invoke an external function, executed by the agent runtime with the agent's own scoped permissions.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="glossary-cat-title">📡 Operations &amp; Infra</h3>
+          <div class="term"><div class="term-name">Event Hub / Service Bus</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>the kitchen's order queue, for things that can't happen instantly.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>Event Hub handles high-throughput event streaming; Service Bus provides reliable, ordered, transactional messaging — both decouple slow/async steps from the main request flow.</div>
+          </div>
+          <div class="term"><div class="term-name">Application Insights</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>the airport control tower, watching every request live.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>an APM service tracking metrics, distributed traces, and correlated logs across every hop a request takes.</div>
+          </div>
+          <div class="term"><div class="term-name">Log Analytics / KQL</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>the permanent, searchable archive of everything that's happened.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a centralized log store queried via Kusto Query Language, used for investigation, alerting, and dashboards.</div>
+          </div>
+          <div class="term"><div class="term-name">VNet / Subnet</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>the property line, and the separately fenced sections within it.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>an isolated private network in Azure, divided into subnets to segment tiers (gateway, orchestration, data) with independent security rules.</div>
+          </div>
+          <div class="term"><div class="term-name">ExpressRoute</div>
+            <div class="term-def simple"><span class="tag">🧸 Simple:</span>a private, dedicated road back to company headquarters.</div>
+            <div class="term-def tech"><span class="tag">🎓 Technical:</span>a private, dedicated connection between on-premises infrastructure and Azure, bypassing the public internet entirely.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUIZ -->
+    <section class="level" id="quiz">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--blue-soft);">🎯</div>
+        <div><div class="level-eyebrow">Level 18</div><h2>Test Your Powers — Hero Quiz</h2></div>
+      </div>
+      <p class="level-tagline">18 questions spanning the whole architecture, including the full request trace and the three projects. Every answer — right or wrong — comes with an explanation.</p>
+      <div class="quiz-card" id="quizCard"></div>
+    </section>
+
+    <!-- RECAP -->
+    <section class="level" id="recap">
+      <div class="level-head">
+        <div class="level-badge" style="background:var(--gold-soft);">⭐</div>
+        <div><div class="level-eyebrow">Hero status</div><h2>One-Page Recap &amp; Official Docs</h2></div>
+      </div>
+      <p class="level-tagline">If you only remember one line per box on the diagram, remember these — then bookmark the real documentation below.</p>
+
+      <div class="recap">
+        <div class="chip"><span class="k">AI Gateway</span>The front desk — auth, rate limits, model routing, one choke point.</div>
+        <div class="chip"><span class="k">Security band</span>Entra ID, Key Vault, Managed Identity — wraps everything, top to bottom.</div>
+        <div class="chip"><span class="k">Orchestrator</span>The site manager — plans, delegates, never does the work itself.</div>
+        <div class="chip"><span class="k">Agents</span>Specialists with narrow tools and narrow data — least privilege by design.</div>
+        <div class="chip"><span class="k">Runtime services</span>Session, short/long memory, state — nothing is a stranger twice.</div>
+        <div class="chip"><span class="k">Tools &amp; connectors</span>The LLM's hands — MCP is the universal plug.</div>
+        <div class="chip"><span class="k">Enterprise data</span>Five stores, five different jobs — RAG grounds every answer in fact.</div>
+        <div class="chip"><span class="k">LLM &amp; AI services</span>One small, centralized, governed box — surprisingly small on purpose.</div>
+        <div class="chip"><span class="k">Async processing</span>The kitchen queue — for anything that can't happen instantly.</div>
+        <div class="chip"><span class="k">Human in the loop</span>A real person signs off on anything risky or irreversible.</div>
+        <div class="chip"><span class="k">Observability</span>The control tower — every hop, one connected trace.</div>
+        <div class="chip"><span class="k">Network &amp; infra</span>The foundation, and the private bridge to on-prem systems.</div>
+      </div>
+
+      <div class="card" style="margin-top:22px;">
+        <h3>📚 Official documentation &amp; further learning</h3>
+        <div class="doclinks">
+          <a href="https://learn.microsoft.com/en-us/azure/architecture/ai-ml/" target="_blank" rel="noopener">Azure AI Architecture Center <span class="desc">— reference architectures for agentic and generative AI on Azure</span></a>
+          <a href="https://learn.microsoft.com/en-us/azure/api-management/api-management-key-concepts" target="_blank" rel="noopener">Azure API Management Documentation <span class="desc">— the AI Gateway layer, policies, and model routing</span></a>
+          <a href="https://learn.microsoft.com/en-us/azure/ai-services/openai/" target="_blank" rel="noopener">Azure OpenAI Service Documentation <span class="desc">— models, deployments, and enterprise governance</span></a>
+          <a href="https://learn.microsoft.com/en-us/azure/search/search-what-is-azure-search" target="_blank" rel="noopener">Azure AI Search Documentation <span class="desc">— vector search and RAG grounding in depth</span></a>
+          <a href="https://learn.microsoft.com/en-us/entra/identity/managed-identities-azure-resources/overview" target="_blank" rel="noopener">Managed Identities Overview <span class="desc">— secretless authentication for agents and services</span></a>
+          <a href="https://learn.microsoft.com/en-us/azure/well-architected/ai/" target="_blank" rel="noopener">Well-Architected Framework — AI Workloads <span class="desc">— Microsoft's official design principles for production AI systems</span></a>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      Built directly from the "Agentic AI Architecture on Azure" reference diagram, box by box. Explain the simple version out loud first, then the architect-level version — that's the fastest way to sound like you've actually built this, not just read the picture. 🕸️
+    </footer>
+  </main>
+</div>
+
+<script>
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('overlay');
+  const hamburger = document.getElementById('hamburgerBtn');
+  function openSidebar(){ sidebar.classList.add('open'); overlay.classList.add('show'); }
+  function closeSidebar(){ sidebar.classList.remove('open'); overlay.classList.remove('show'); }
+  hamburger.addEventListener('click', () => { sidebar.classList.contains('open') ? closeSidebar() : openSidebar(); });
+  overlay.addEventListener('click', closeSidebar);
+  document.querySelectorAll('#levelNav a').forEach(a => a.addEventListener('click', closeSidebar));
+
+  const links = Array.from(document.querySelectorAll('#levelNav a'));
+  const sections = links.map(a => document.querySelector(a.getAttribute('href')));
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = '#' + entry.target.id;
+        links.forEach(l => l.classList.toggle('active', l.getAttribute('href') === id));
+      }
+    });
+  }, { rootMargin: '-40% 0px -50% 0px', threshold: 0 });
+  sections.forEach(s => { if (s) observer.observe(s); });
+
+  function toggleAnswer(btn){
+    const box = btn.nextElementSibling;
+    box.classList.toggle('show');
+    btn.classList.toggle('open');
+  }
+
+  const quizData = [
+    { q: "What's the primary job of the AI Gateway (Azure API Management) in this architecture?",
+      options: ["It stores all the company's documents", "It's the single choke point for authentication, rate limiting, model routing, and logging before requests reach the orchestrator", "It trains the LLM models", "It replaces the need for an Agent Orchestrator"],
+      correct: 1,
+      explanation: "The Gateway centralizes cross-cutting API concerns — auth, rate limits, routing, policies, logging — so every agent doesn't need to reimplement them separately." },
+    { q: "Why does the Identity, Security & Governance band span the entire width of the diagram at the top?",
+      options: ["It's purely decorative", "Because every other layer depends on it — Entra ID, Key Vault, and Managed Identity are used across the whole platform, not just one component", "Because it's the most expensive service", "Because it only applies to the Users & Applications layer"],
+      correct: 1,
+      explanation: "Security services here aren't consumed by one layer — the Gateway, Orchestrator, Agents, and Data layer all depend on Entra ID, Key Vault, and Managed Identity, which is why it's drawn wrapping everything." },
+    { q: "What's the key difference between the Agent Orchestrator and an individual specialist Agent?",
+      options: ["There is no meaningful difference", "The Orchestrator plans and delegates but never does domain-specific work itself; specialist Agents execute the actual narrow, domain-specific tasks", "Agents can only read data, never take actions", "The Orchestrator only exists for the Finance Agent"],
+      correct: 1,
+      explanation: "The Orchestrator is the supervisor — planning, routing, and coordinating. Specialist Agents (Sales, HR, IT, Finance) are the ones with actual domain tools and knowledge that execute delegated steps." },
+    { q: "Why does each Agent have its own narrowly scoped Managed Identity and tools instead of one shared identity for all agents?",
+      options: ["It's required by Azure billing", "It limits the blast radius — a compromise or mistake in one agent can't cascade into unrelated systems it was never granted access to", "Shared identities are technically impossible in Azure", "It makes the agents run faster"],
+      correct: 1,
+      explanation: "Per-agent identity and scoped access is a security boundary — the principle of least privilege applied to AI agents, so one agent's compromise doesn't expose every other domain." },
+    { q: "What's the difference between Short Term Memory and Long Term Memory in the Agent Runtime Services?",
+      options: ["They are the same thing with different names", "Short Term Memory holds recent conversation turns within a session; Long Term Memory persists durable facts across separate sessions", "Long Term Memory is only for images", "Short Term Memory is stored on the user's device"],
+      correct: 1,
+      explanation: "Short-term memory is session-scoped and often ephemeral; long-term memory deliberately persists specific, durable facts (like preferences) across entirely separate conversations." },
+    { q: "What is MCP, and why does it matter for the Tools & Connectors layer?",
+      options: ["A billing system for Azure resources", "A standardized protocol letting agents connect to many tools through one consistent interface, avoiding custom integration code per tool", "A type of database index", "A monitoring dashboard"],
+      correct: 1,
+      explanation: "MCP (Model Context Protocol) standardizes how agents access tools/data, so a new tool exposed via MCP becomes usable by any MCP-compatible agent without bespoke glue code per integration." },
+    { q: "Why does the Finance Agent's tool set deliberately NOT include an 'approve_payment' tool?",
+      options: ["Payments can't be automated at all in Azure", "High-risk, financial actions are meant to be gated through Human in the Loop rather than executed automatically by the agent alone", "The Finance Agent doesn't need to handle money", "It's a bug in the architecture"],
+      correct: 1,
+      explanation: "Risky/irreversible actions like payment approval are deliberately routed through the Human in the Loop gate (Level 11), not given directly to an agent as an automatic tool." },
+    { q: "Why does this architecture use five different data services (AI Search, Cosmos DB, SQL Database, Blob Storage, Data Lake) instead of one database for everything?",
+      options: ["To make the diagram look more complex", "Each service is optimized for a different access pattern — vector search, transactional consistency, flexible NoSQL, raw files, and large-scale storage", "Azure requires a minimum of five databases per project", "They are actually all the same underlying service"],
+      correct: 1,
+      explanation: "Each data store has a genuinely different strength: AI Search for semantic/vector retrieval, SQL for transactional consistency, Cosmos DB for flexible low-latency data, Blob/Data Lake for raw file storage at scale." },
+    { q: "What does RAG (Retrieval-Augmented Generation) accomplish in this architecture?",
+      options: ["It trains a brand new model from scratch for each request", "It grounds the LLM's answer in real, retrieved company documents instead of relying only on the model's general training", "It replaces the need for Azure OpenAI entirely", "It only works for image data"],
+      correct: 1,
+      explanation: "RAG retrieves relevant real documents (via Azure AI Search) and hands them to the LLM as context, so answers are grounded in actual company facts rather than the model's possibly outdated or generic training knowledge." },
+    { q: "Why is the LLM & AI Services box drawn relatively small on the diagram compared to Orchestration or Data?",
+      options: ["Because it's the least important part of the system", "Because the actual model call is one governed, centralized step — most of the engineering effort goes into everything around it: routing, data, security, and safety", "Because Azure OpenAI is being deprecated", "It's an error in the diagram"],
+      correct: 1,
+      explanation: "The LLM call itself is a small, centralized piece — the real engineering complexity lives in the surrounding gateway, orchestration, data, security, and observability layers that make that call trustworthy and production-ready." },
+    { q: "What's the difference between a real-time/sync flow and an async flow, as shown by solid vs. dashed arrows in the architecture?",
+      options: ["Solid arrows are always more secure than dashed ones", "Sync flows complete within one request/response cycle; async flows hand off to a queue and resume later, potentially much later", "Dashed arrows only apply to error conditions", "There is no functional difference, only visual style"],
+      correct: 1,
+      explanation: "Sync/real-time steps (like an initial lookup) complete inline within the same request. Async steps (like waiting for human approval) publish to a queue and resume independently whenever the slow step actually completes." },
+    { q: "Why does a human-approval workflow use Service Bus instead of just holding the user's connection open until a manager responds?",
+      options: ["Service Bus is required by law for financial systems", "Holding a connection open for a potentially long, unpredictable wait wastes resources and gives a poor user experience; async messaging frees resources and resumes precisely when ready", "Azure doesn't allow long-held HTTP connections at all", "It has nothing to do with resource efficiency"],
+      correct: 1,
+      explanation: "A human approval might take minutes or hours — holding a live connection open that whole time is wasteful and fragile. Publishing to a queue lets the system respond immediately and resume the workflow whenever the approval actually arrives." },
+    { q: "In the full request trace (Level 14), what allows the approval-handling process to resume a conversation that started on a completely different server instance?",
+      options: ["Nothing — it must be the exact same server instance", "Externalized session/state management (e.g. in Cosmos DB), so any process instance can pick up exactly where the workflow paused", "The user has to manually re-explain their whole request", "Azure automatically clones the original server"],
+      correct: 1,
+      explanation: "Because session state lives in Cosmos DB rather than in server memory, any process instance handling the approval callback can load that state and resume the workflow, regardless of which instance handled the original request." },
+    { q: "What does Application Insights' correlation ID enable across a multi-agent request?",
+      options: ["It encrypts the request payload", "It lets every step of a single request — Gateway, Orchestrator, Agents, Tools, LLM call — be reconstructed as one connected trace instead of scattered disconnected log lines", "It automatically fixes bugs in agent code", "It is only used for billing purposes"],
+      correct: 1,
+      explanation: "A shared correlation ID tags every hop a request takes, letting Application Insights reconstruct the full multi-agent journey as one traceable path — essential for debugging exactly what happened on a specific bad response." },
+    { q: "Why would ExpressRoute be chosen over a standard internet-based VPN for connecting to an on-premises SAP system?",
+      options: ["ExpressRoute is always free, VPN always costs money", "ExpressRoute provides a private, dedicated, more reliable and higher-bandwidth connection that avoids the public internet entirely, important for sensitive or latency-sensitive systems", "VPN connections are illegal for enterprise use", "There's no real difference between the two options"],
+      correct: 1,
+      explanation: "ExpressRoute gives a private, dedicated circuit — better reliability, bandwidth, and latency than an internet-routed VPN tunnel, and keeps traffic off the public internet, which matters for sensitive on-prem systems and strict compliance requirements." },
+    { q: "In Project 1 (IT Support Agent), what determines whether a password/account issue is resolved automatically versus escalated to a human?",
+      options: ["A random coin flip", "A risk-based policy check — e.g. whether the lockout reason matches a known low-risk pattern the agent is authorized to resolve alone", "The time of day the request was made", "Whether the user asked nicely"],
+      correct: 1,
+      explanation: "The agent checks the specific lockout reason against policy — known, low-risk cases (like repeated failed MFA) are auto-resolved, while anything unusual is escalated through Human in the Loop rather than guessed at." },
+    { q: "Why does Project 3 (Sales Agent) use a Custom Connector to reach the on-premises CRM instead of just querying it directly from the agent's code?",
+      options: ["Custom Connectors are always faster than direct queries", "The Custom Connector is the one component that knows how to safely and securely reach the legacy on-prem system, keeping that integration logic isolated and reusable rather than duplicated inside agent code", "On-prem systems cannot be accessed from Azure under any circumstances", "It's purely a stylistic preference with no functional benefit"],
+      correct: 1,
+      explanation: "Isolating the on-prem integration logic in a dedicated connector (Level 7) keeps that complexity out of the agent itself, makes it reusable by other agents, and centralizes exactly how and where that sensitive cross-boundary connection is made and secured." },
+    { q: "What is the biggest architectural risk if agent permissions aren't tightly scoped, according to the senior interview bank?",
+      options: ["Higher Azure hosting costs only", "Over-broad agent permissions can collapse the entire well-designed multi-agent security model into the same risk profile as one giant, ungoverned mega-agent", "Slower response times for users", "It has no real security implications"],
+      correct: 1,
+      explanation: "If every agent ends up with broad access 'just in case,' the careful least-privilege design of separate specialist agents provides no real security benefit anymore — permission discipline is what makes the architecture's security model actually work in practice." }
+  ];
+
+  let quizIndex = 0;
+  let quizScore = 0;
+  let quizAnswered = false;
+
+  function renderQuiz(){
+    const card = document.getElementById('quizCard');
+    if (quizIndex >= quizData.length){
+      card.innerHTML = `
+        <div class="quiz-result">
+          <div style="font-size:13px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;">Quiz complete</div>
+          <div class="score">${quizScore} / ${quizData.length}</div>
+          <p>${quizScore === quizData.length ? "Full marks — you're ready to whiteboard this whole architecture with confidence. 🕸️" : quizScore >= quizData.length * 0.7 ? "Solid! Revisit the levels you missed before your interview." : "Good start — scroll back through the levels you missed and try again."}</p>
+          <button class="quiz-retake" onclick="restartQuiz()">Retake quiz</button>
+        </div>`;
+      return;
+    }
+    const item = quizData[quizIndex];
+    quizAnswered = false;
+    const pct = Math.round((quizIndex / quizData.length) * 100);
+    card.innerHTML = `
+      <div class="quiz-progress"><span>Question ${quizIndex + 1} of ${quizData.length}</span><span>Score: ${quizScore}</span></div>
+      <div class="quiz-bar"><div class="quiz-bar-fill" style="width:${pct}%;"></div></div>
+      <div class="quiz-q">${item.q}</div>
+      <div class="quiz-options" id="quizOptions"></div>
+      <div class="quiz-explain" id="quizExplain"></div>
+      <button class="quiz-next" id="quizNextBtn" onclick="nextQuiz()">Next question →</button>
+    `;
+    const optWrap = document.getElementById('quizOptions');
+    item.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'quiz-opt';
+      btn.textContent = opt;
+      btn.onclick = () => selectQuizOption(i);
+      optWrap.appendChild(btn);
+    });
+  }
+
+  function selectQuizOption(i){
+    if (quizAnswered) return;
+    quizAnswered = true;
+    const item = quizData[quizIndex];
+    const opts = document.querySelectorAll('#quizOptions .quiz-opt');
+    opts.forEach((btn, idx) => {
+      btn.disabled = true;
+      if (idx === item.correct) btn.classList.add('correct');
+      else if (idx === i) btn.classList.add('incorrect');
+    });
+    if (i === item.correct) quizScore++;
+    const explainBox = document.getElementById('quizExplain');
+    explainBox.textContent = (i === item.correct ? "✅ Correct — " : "❌ Not quite — ") + item.explanation;
+    explainBox.classList.add('show');
+    document.getElementById('quizNextBtn').classList.add('show');
+  }
+
+  function nextQuiz(){ quizIndex++; renderQuiz(); }
+  function restartQuiz(){ quizIndex = 0; quizScore = 0; renderQuiz(); }
+
+  renderQuiz();
+</script>
+</body>
+</html>

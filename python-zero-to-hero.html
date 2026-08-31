@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python: Zero to Hero — The Data & AI Trail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f1419;
+    --bg-soft:#141b24;
+    --sidebar:#111720;
+    --card:#19212c;
+    --card-hi:#1e2733;
+    --line:#2a3444;
+    --text:#e9edf3;
+    --text-dim:#94a3b8;
+    --text-faint:#64748b;
+    --amber:#ffb84d;
+    --mint:#6ee7b7;
+    --mint-soft:#153228;
+    --coral:#ff8a80;
+    --coral-soft:#3a1f1e;
+    --sky:#7dd3fc;
+    --radius:14px;
+    --sidebar-w:296px;
+    --topbar-h:56px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4,.display{font-family:'Space Grotesk',sans-serif;}
+  code,pre,.mono{font-family:'JetBrains Mono',monospace;}
+  a{color:var(--sky);}
+  img,svg{max-width:100%;display:block;}
+  button{font-family:inherit;}
+
+  .topbar{
+    display:none;position:sticky;top:0;z-index:60;height:var(--topbar-h);
+    background:rgba(15,20,25,0.94);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);align-items:center;justify-content:space-between;padding:0 14px;
+  }
+  .topbar .brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:14.5px;}
+  .brand-dot{width:9px;height:9px;border-radius:50%;background:var(--amber);flex:none;}
+  .menu-btn{background:none;border:1px solid var(--line);border-radius:8px;width:36px;height:36px;color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .menu-btn svg{width:18px;height:18px;}
+
+  .app{display:flex;min-height:100vh;}
+
+  .sidebar{
+    width:var(--sidebar-w);flex:none;background:var(--sidebar);border-right:1px solid var(--line);
+    height:100vh;position:sticky;top:0;overflow-y:auto;padding:22px 16px 32px;
+  }
+  .sidebar-brand{display:flex;align-items:center;gap:10px;padding:4px 10px 20px;font-weight:700;font-size:15px;}
+  .sidebar-progress{margin:0 10px 20px;padding:12px 14px;background:var(--card);border:1px solid var(--line);border-radius:10px;}
+  .sidebar-progress .label{font-size:12px;color:var(--text-faint);margin-bottom:8px;display:flex;justify-content:space-between;}
+  .sidebar-progress .label b{color:var(--amber);font-weight:600;}
+  .bar-track{height:5px;border-radius:999px;background:var(--line);overflow:hidden;}
+  .bar-fill{height:100%;background:linear-gradient(90deg,var(--amber),var(--mint));width:0%;transition:width .3s ease;}
+
+  .nav-group-label{font-size:11px;letter-spacing:.02em;color:var(--text-faint);padding:14px 12px 6px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;color:var(--text-dim);text-decoration:none;font-size:13.5px;cursor:pointer;border:1px solid transparent;margin-bottom:2px;}
+  .nav-item:hover{background:var(--card);color:var(--text);}
+  .nav-item.active{background:var(--card-hi);color:var(--text);border-color:var(--line);}
+  .nav-icon{width:26px;height:26px;flex:none;border-radius:7px;background:var(--bg-soft);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;}
+  .nav-item.active .nav-icon{border-color:var(--amber);}
+  .nav-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .nav-check{width:14px;height:14px;flex:none;color:var(--mint);opacity:0;}
+  .nav-check.on{opacity:1;}
+
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:55;}
+
+  .main{flex:1;min-width:0;}
+  .content-wrap{max-width:800px;margin:0 auto;padding:56px 40px 100px;}
+  @media (max-width:900px){.content-wrap{padding:40px 24px 80px;}}
+
+  .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--mint);margin-bottom:18px;}
+  .hero h1{font-size:clamp(30px,5vw,46px);line-height:1.08;margin:0 0 20px;font-weight:700;letter-spacing:-0.01em;}
+  .hero h1 span{color:var(--amber);}
+  .hero p{font-size:clamp(15.5px,2vw,17.5px);color:var(--text-dim);max-width:64ch;margin:0 0 26px;}
+  .who-box{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;margin-top:8px;}
+  .who-box p{margin:0;color:var(--text-dim);font-size:14.5px;}
+  .who-box strong{color:var(--text);}
+  .hero-stats{display:flex;flex-wrap:wrap;gap:26px;margin-top:32px;padding-top:26px;border-top:1px solid var(--line);}
+  .hero-stat b{display:block;font-family:'Space Grotesk',sans-serif;font-size:24px;color:var(--text);}
+  .hero-stat span{font-size:12.5px;color:var(--text-faint);}
+  .hero-note{margin-top:30px;font-size:13.5px;color:var(--text-faint);}
+
+  .overview-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:24px;}
+  @media (max-width:560px){.overview-grid{grid-template-columns:1fr;}}
+  .overview-card{border:1px solid var(--line);border-radius:10px;padding:13px 15px;cursor:pointer;background:var(--card);display:flex;align-items:center;gap:10px;}
+  .overview-card:hover{border-color:var(--amber);}
+  .overview-card .n{font-family:'JetBrains Mono';font-size:11px;color:var(--text-faint);}
+  .overview-card .t{font-size:13.5px;color:var(--text);}
+
+  /* stage header */
+  .stage-kicker{font-size:12.5px;color:var(--text-faint);margin-bottom:8px;}
+  .stage-h{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px;}
+  .stage-h .icon{width:46px;height:46px;flex:none;border-radius:11px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:21px;}
+  .stage-h h2{font-size:clamp(22px,3.2vw,28px);margin:0 0 6px;}
+  .stage-h .sub{color:var(--text-dim);font-size:14.5px;margin:0;}
+
+  .section-label{
+    display:flex;align-items:center;gap:8px;margin:34px 0 12px;
+    font-size:12.5px;letter-spacing:.03em;color:var(--text-faint);text-transform:uppercase;
+  }
+  .section-label .num{
+    width:20px;height:20px;border-radius:5px;background:var(--card);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:10.5px;color:var(--amber);font-family:'JetBrains Mono';
+  }
+
+  .intro-block{font-size:16px;color:var(--text);margin:6px 0 0;}
+  .intro-block b{color:var(--amber);}
+
+  .concept-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  @media (max-width:600px){.concept-grid{grid-template-columns:1fr;}}
+  .concept-card{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--card);}
+  .concept-card h4{margin:0 0 6px;font-size:14px;color:var(--text);display:flex;align-items:center;gap:8px;}
+  .concept-card h4 .dot{width:7px;height:7px;border-radius:50%;background:var(--sky);flex:none;}
+  .concept-card p{margin:0;font-size:13.5px;color:var(--text-dim);}
+
+  .example-list{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card);}
+  .example-row{display:flex;gap:12px;padding:14px 16px;font-size:14px;color:var(--text-dim);}
+  .example-row:not(:last-child){border-bottom:1px solid var(--line);}
+  .example-row .em{flex:none;font-size:17px;}
+  .example-row b{color:var(--text);}
+
+  .pitfall-list{display:flex;flex-direction:column;gap:8px;}
+  .pitfall-item{
+    display:flex;gap:11px;padding:12px 15px;border-radius:9px;
+    background:var(--coral-soft);border:1px solid #4a2624;font-size:13.5px;color:#f4c9c5;
+  }
+  .pitfall-item .em{flex:none;}
+  .pitfall-item b{color:var(--coral);}
+
+  .project-box{background:var(--mint-soft);border:1px solid #23543f;border-radius:12px;padding:20px 22px;}
+  .project-box h4{margin:0 0 4px;font-size:15px;color:var(--mint);}
+  .project-box>p{margin:0 0 16px;font-size:14.5px;color:#c9ede0;}
+  .step-list{list-style:none;margin:0;padding:0;counter-reset:step;}
+  .step-list li{
+    counter-increment:step;position:relative;padding:0 0 14px 34px;font-size:14px;color:#d7f3e8;
+  }
+  .step-list li:last-child{padding-bottom:0;}
+  .step-list li::before{
+    content:counter(step);position:absolute;left:0;top:0;width:22px;height:22px;border-radius:50%;
+    background:#1c4d3a;border:1px solid #2f6e54;color:var(--mint);font-size:11.5px;font-weight:600;
+    display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono';
+  }
+  .stretch-goal{margin-top:16px;padding-top:14px;border-top:1px solid #23543f;font-size:13.5px;color:#a8d9c7;}
+  .stretch-goal b{color:var(--mint);}
+
+  .tools-row{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 0;}
+  .tool-tag{font-size:12px;font-family:'JetBrains Mono',monospace;background:var(--bg-soft);border:1px solid var(--line);color:var(--text-dim);padding:4px 10px;border-radius:6px;}
+
+  .code-tabs{display:flex;gap:6px;margin-bottom:0;}
+  .code-tab{
+    font-size:12.5px;padding:8px 14px;border-radius:8px 8px 0 0;cursor:pointer;
+    background:var(--bg-soft);border:1px solid var(--line);border-bottom:none;color:var(--text-faint);
+  }
+  .code-tab.active{background:#0c1117;color:var(--amber);}
+  .code-panel{display:none;}
+  .code-panel.active{display:block;}
+  pre{background:#0c1117;border:1px solid var(--line);border-radius:0 10px 10px 10px;padding:17px 18px;overflow-x:auto;font-size:13px;color:#d3dae3;margin:0;}
+  pre .c{color:var(--text-faint);}
+  pre .s{color:var(--mint);}
+  pre .k{color:var(--sky);}
+  pre .f{color:var(--amber);}
+
+  .nextup{
+    margin-top:36px;padding:16px 18px;border:1px dashed var(--line);border-radius:10px;
+    font-size:13.5px;color:var(--text-dim);display:flex;gap:10px;align-items:flex-start;
+  }
+  .nextup .em{flex:none;}
+  .nextup b{color:var(--text);}
+
+  .checkline{display:flex;align-items:center;gap:9px;margin:22px 0 8px;font-size:13.5px;color:var(--text-dim);}
+  .checkline input{accent-color:var(--mint);width:16px;height:16px;}
+  .checkline label{cursor:pointer;}
+
+  .stage-nav{display:flex;justify-content:space-between;gap:12px;margin-top:14px;padding-top:22px;border-top:1px solid var(--line);}
+  .stage-nav-btn{flex:1;border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--card);cursor:pointer;color:var(--text);text-align:left;}
+  .stage-nav-btn:hover{border-color:var(--amber);}
+  .stage-nav-btn.next{text-align:right;}
+  .stage-nav-btn .dir{font-size:11px;color:var(--text-faint);display:block;margin-bottom:3px;}
+  .stage-nav-btn .lbl{font-size:13.5px;}
+
+  .capstone-badge{display:inline-block;font-size:12px;color:var(--amber);background:var(--card);border:1px solid var(--line);padding:5px 12px;border-radius:999px;margin-bottom:16px;}
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:22px 0;}
+  .flow-step{background:var(--bg-soft);border:1px solid var(--line);padding:8px 13px;border-radius:8px;font-size:13px;color:var(--text);display:flex;align-items:center;gap:6px;}
+  .flow-arrow{color:var(--text-faint);font-size:14px;}
+  .capstone-detail{border:1px solid var(--line);border-radius:10px;padding:16px 18px;background:var(--card);margin-bottom:14px;}
+  .capstone-detail h4{margin:0 0 6px;font-size:14px;color:var(--sky);}
+  .capstone-detail p{margin:0;font-size:14px;color:var(--text-dim);}
+
+  ::selection{background:var(--amber);color:#1a1206;}
+
+  @media (max-width:900px){
+    .topbar{display:flex;}
+    .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:65;transform:translateX(-100%);transition:transform .25s ease;box-shadow:0 0 40px rgba(0,0,0,.5);}
+    .sidebar.open{transform:translateX(0);}
+    .overlay.open{display:block;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><span class="brand-dot"></span> Zero to Hero</div>
+  <button class="menu-btn" id="menuBtn" aria-label="Open menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+  </button>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand"><span class="brand-dot"></span> Zero to Hero</div>
+    <div class="sidebar-progress">
+      <div class="label"><span>Progress</span><span><b id="doneCount">0</b> / 12 built</span></div>
+      <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
+    </div>
+    <nav id="navList"></nav>
+  </aside>
+
+  <main class="main">
+    <div class="content-wrap" id="content"></div>
+  </main>
+</div>
+
+<script>
+/* ============================= DATA ============================= */
+const stages = [
+{
+  icon:"🔤", kicker:"Stage 1 · Foundations",
+  title:"Python basics", sub:"variables, loops, conditionals, and functions — the alphabet everything else is written in",
+  intro:`A computer does exactly what you tell it, one exact step at a time, in order. Nothing more, nothing clever, nothing assumed. Python is a language for writing those steps in something close to plain English, so a person can read a program and roughly understand what it does without running it. Before you can build a data pipeline or train a model, you need to be fluent in the small handful of building blocks every single one of those things is made from: storing a value, repeating an action, deciding between two paths, and packaging a set of steps so you can reuse it. This stage is slower than it looks, and it's worth it — almost every bug you'll hit for the next year traces back to a shaky grip on one of these four ideas.`,
+  concepts:[
+    {name:"Variables", explain:"A labeled box that holds a value — a number, a word, a list. <code>age = 12</code> creates a box named age holding 12. The box's contents can change; that's the whole point."},
+    {name:"Conditionals (if/elif/else)", explain:"How your program makes a decision. 'If it's raining, bring an umbrella, otherwise wear sunglasses.' Only one branch runs, based on whether a condition is True or False."},
+    {name:"Loops (for/while)", explain:"How you repeat an action without copy-pasting code 100 times. A <code>for</code> loop walks through a known list; a <code>while</code> loop keeps going until a condition becomes false."},
+    {name:"Functions", explain:"A named, reusable recipe. You write the steps once with a name like <code>calculate_total()</code>, then 'call' that name anywhere you need those steps again, with different ingredients (arguments) each time."}
+  ],
+  examples:[
+    {em:"🎮", text:"A video game's score counter is a variable that loops every frame, checking conditionals ('did the player hit a coin?') and calling functions ('play_sound()')."},
+    {em:"💳", text:"A payroll system loops through every employee, uses conditionals to check overtime rules, and calls a function to calculate each paycheck."},
+    {em:"📱", text:"A phone's 'low battery' warning is a loop checking battery percentage, with a conditional that fires a notification function once it drops below 20%."}
+  ],
+  pitfalls:[
+    {b:"Off-by-one errors", t:"Looping one time too many or too few — usually from confusing 'the 5th item' with 'index 5'. Python counts from 0, so the 5th item is index 4."},
+    {b:"Confusing = and ==", t:"A single <code>=</code> assigns a value; a double <code>==</code> compares two values. Using the wrong one in a conditional is one of the most common early mistakes."},
+    {b:"Indentation errors", t:"Python uses indentation (spaces) to know what's inside a loop, function, or if-block — not curly braces. Inconsistent spacing will crash your program."}
+  ],
+  project:{
+    title:"Grocery budget tracker",
+    desc:"A command-line tool that keeps a running total as you add items, and warns you the moment you'd go over budget.",
+    steps:[
+      "Ask the user to set a budget amount, and store it in a variable.",
+      "Loop: repeatedly ask for an item name and price until they type 'done'.",
+      "Store each item as a pair in a list, and keep a running total as you go.",
+      "Write a function <code>over_budget(total, budget)</code> that returns True or False.",
+      "After the loop ends, print the total and call your function to decide whether to print a warning."
+    ],
+    stretch:"Add a category to each item (produce, snacks, household) and print a per-category subtotal at the end — this is a preview of Stage 2."
+  },
+  tools:["python3","input()","print()","for / while","def","if / elif / else"],
+  code:[
+    {label:"basic.py", code:`<span class="k">budget</span> = <span class="f">50</span>
+<span class="k">items</span> = []
+
+<span class="k">while</span> <span class="k">True</span>:
+    <span class="k">name</span> = <span class="f">input</span>(<span class="s">"Item (or 'done'): "</span>)
+    <span class="k">if</span> <span class="k">name</span> == <span class="s">"done"</span>:
+        <span class="k">break</span>
+    <span class="k">price</span> = <span class="f">float</span>(<span class="f">input</span>(<span class="s">"Price: "</span>))
+    <span class="k">items</span>.append((<span class="k">name</span>, <span class="k">price</span>))
+
+<span class="k">total</span> = <span class="f">sum</span>(<span class="k">p</span> <span class="k">for</span> _, <span class="k">p</span> <span class="k">in</span> <span class="k">items</span>)
+<span class="f">print</span>(<span class="s">f"Total: \${total:.2f}"</span>)
+<span class="k">if</span> <span class="k">total</span> > <span class="k">budget</span>:
+    <span class="f">print</span>(<span class="s">"⚠️ Over budget!"</span>)`},
+    {label:"with a function", code:`<span class="k">def</span> <span class="f">over_budget</span>(total, budget):
+    <span class="s">"""Return True if total exceeds budget."""</span>
+    <span class="k">return</span> total > budget
+
+<span class="k">def</span> <span class="f">add_item</span>(items):
+    name = <span class="f">input</span>(<span class="s">"Item (or 'done'): "</span>)
+    <span class="k">if</span> name == <span class="s">"done"</span>:
+        <span class="k">return</span> <span class="k">None</span>
+    price = <span class="f">float</span>(<span class="f">input</span>(<span class="s">"Price: "</span>))
+    items.append((name, price))
+    <span class="k">return</span> name
+
+budget, items = <span class="f">50</span>, []
+<span class="k">while</span> add_item(items) <span class="k">is</span> <span class="k">not</span> <span class="k">None</span>:
+    <span class="k">pass</span>
+
+total = <span class="f">sum</span>(p <span class="k">for</span> _, p <span class="k">in</span> items)
+<span class="f">print</span>(<span class="s">f"Total: \${total:.2f}"</span>)
+<span class="k">if</span> over_budget(total, budget):
+    <span class="f">print</span>(<span class="s">"⚠️ Over budget!"</span>)`}
+  ],
+  nextUp:"Once your data has more than one thing to say about each item — a name AND a price AND a category — a loose list of pairs stops being enough. Stage 2 gives you proper containers for that."
+},
+{
+  icon:"🧺", kicker:"Stage 2 · Foundations",
+  title:"Data structures & files", sub:"lists, dictionaries, nested structures, and reading/writing CSV & JSON",
+  intro:`Once your program needs to remember more than a couple of values, you need a way to organize them that's more structured than separate variables. A <b>list</b> keeps things in order, like a row of labeled boxes on a shelf — you find something by its position. A <b>dictionary</b> keeps things labeled by name instead of position, like a phonebook — you look someone up by who they are, not where they happen to sit. Real data is almost always a mix of both: a list of dictionaries (a list of customers, each one a dictionary of their details) is probably the single most common shape of data you'll touch in your career. And none of this matters if it disappears the moment your program closes — so this stage also covers files, which are how a program remembers things between runs.`,
+  concepts:[
+    {name:"Lists", explain:"An ordered, changeable collection: <code>fruits = ['apple','pear']</code>. Access by position: <code>fruits[0]</code> is 'apple'. Great for sequences where order matters."},
+    {name:"Dictionaries", explain:"Key-value pairs: <code>person = {'name':'Ana','age':30}</code>. Access by key: <code>person['name']</code>. Great for describing 'one thing with many properties'."},
+    {name:"Nesting", explain:"Lists and dicts can contain each other — a list of dictionaries, a dictionary whose values are lists. This is exactly the shape of JSON, and of most real-world data."},
+    {name:"CSV & JSON", explain:"CSV is a plain-text spreadsheet, rows and commas. JSON is nested key-value data, the native shape of dictionaries. Almost every API and export uses one of these two formats."}
+  ],
+  examples:[
+    {em:"🏦", text:"Your bank statement is a list of dictionaries — each transaction has a date, amount, and merchant, and there's one entry per transaction."},
+    {em:"📇", text:"Your phone's contacts app is a list, and each contact is a dictionary of fields (name, number, email) — exactly the list-of-dicts pattern."},
+    {em:"🌐", text:"Almost every website you use fetches JSON from a server behind the scenes — weather apps, social feeds, price trackers — all nested dictionaries and lists."}
+  ],
+  pitfalls:[
+    {b:"KeyError surprises", t:"Accessing a dictionary key that doesn't exist crashes your program. Use <code>.get('key', default)</code> when a key might be missing."},
+    {b:"Mutating while looping", t:"Adding or removing items from a list while you're looping over it causes items to get skipped or duplicated. Loop over a copy, or build a new list instead."},
+    {b:"Assuming CSV columns are typed", t:"Every value read from a CSV file is text, even '42'. You must explicitly convert with <code>int()</code> or <code>float()</code> before doing math with it."}
+  ],
+  project:{
+    title:"Expense categorizer",
+    desc:"A script that reads a CSV of your monthly expenses, groups the total spent by category, and writes a clean summary back out as JSON.",
+    steps:[
+      "Create a sample expenses.csv with columns: date, merchant, category, amount.",
+      "Use <code>csv.DictReader</code> to read each row as a dictionary automatically.",
+      "Build a dictionary that maps each category to a running total, adding as you go.",
+      "Convert the amount from text to a float before adding it — this is the classic CSV gotcha.",
+      "Write the final category-totals dictionary out to summary.json with <code>json.dump</code>."
+    ],
+    stretch:"Add a second summary that groups by month instead of category, so you can see spending trends over time — you'll need to nest a dictionary inside a dictionary."
+  },
+  tools:["csv","json","dict","list","defaultdict","list comprehension"],
+  code:[
+    {label:"basic.py", code:`<span class="k">import</span> csv, json
+<span class="k">from</span> collections <span class="k">import</span> defaultdict
+
+<span class="k">totals</span> = defaultdict(<span class="f">float</span>)
+<span class="k">with</span> <span class="f">open</span>(<span class="s">"expenses.csv"</span>) <span class="k">as</span> f:
+    <span class="k">for</span> row <span class="k">in</span> csv.DictReader(f):
+        <span class="k">totals</span>[row[<span class="s">"category"</span>]] += <span class="f">float</span>(row[<span class="s">"amount"</span>])
+
+<span class="k">with</span> <span class="f">open</span>(<span class="s">"summary.json"</span>, <span class="s">"w"</span>) <span class="k">as</span> f:
+    json.dump(<span class="f">dict</span>(<span class="k">totals</span>), f, indent=<span class="f">2</span>)`},
+    {label:"nested by month", code:`<span class="k">import</span> csv, json
+<span class="k">from</span> collections <span class="k">import</span> defaultdict
+
+<span class="k">by_month_cat</span> = defaultdict(<span class="k">lambda</span>: defaultdict(<span class="f">float</span>))
+
+<span class="k">with</span> <span class="f">open</span>(<span class="s">"expenses.csv"</span>) <span class="k">as</span> f:
+    <span class="k">for</span> row <span class="k">in</span> csv.DictReader(f):
+        month = row[<span class="s">"date"</span>][:<span class="f">7</span>]           <span class="c"># "2026-03"</span>
+        by_month_cat[month][row[<span class="s">"category"</span>]] += <span class="f">float</span>(row[<span class="s">"amount"</span>])
+
+<span class="c"># convert nested defaultdicts to plain dicts for clean JSON</span>
+clean = {m: <span class="f">dict</span>(cats) <span class="k">for</span> m, cats <span class="k">in</span> by_month_cat.items()}
+<span class="k">with</span> <span class="f">open</span>(<span class="s">"by_month.json"</span>, <span class="s">"w"</span>) <span class="k">as</span> f:
+    json.dump(clean, f, indent=<span class="f">2</span>)`}
+  ],
+  nextUp:"A JSON file on your laptop is fine for hundreds of rows. Once you're dealing with tens of thousands of rows and need to ask complex questions fast, you need a real database — that's Stage 3."
+},
+{
+  icon:"🗄️", kicker:"Stage 3 · Storing data",
+  title:"SQL & databases", sub:"tables, queries, joins, and why almost every company runs on SQL",
+  intro:`A database is a set of labeled tables built to hold millions — or billions — of rows and still answer questions in milliseconds, something a CSV file simply cannot do. <b>SQL</b> (Structured Query Language) is how you talk to it: instead of writing a loop to search through data yourself, you describe the answer you want ('every order from March, sorted by amount') and the database figures out the fastest way to get it. It's one of the oldest technologies in software, and also one of the most durable — nearly every application with real, persistent data is backed by SQL somewhere, even if the app itself is written in Python, JavaScript, or something else entirely.`,
+  concepts:[
+    {name:"Tables & schemas", explain:"A table is a spreadsheet with strict rules: every row has the same columns, and each column has a declared type (text, number, date). The schema is that structure, defined up front."},
+    {name:"SELECT / WHERE / GROUP BY", explain:"SELECT picks which columns you want, WHERE filters which rows, and GROUP BY collapses rows into summarized buckets — like a category subtotal."},
+    {name:"JOIN", explain:"Real data lives in multiple related tables (customers, orders, products). A JOIN stitches rows together across tables based on a shared key, like a customer ID."},
+    {name:"Indexes", explain:"A shortcut the database keeps so it doesn't have to scan every row to answer a common question — the reason a well-indexed table stays fast even at billions of rows."}
+  ],
+  examples:[
+    {em:"📦", text:"When you check an Amazon order, a SQL query pulls your one order out of billions of rows in a fraction of a second, using an index on your account ID."},
+    {em:"🏥", text:"A hospital's patient records system is a set of related SQL tables — patients, visits, prescriptions — joined together every time a doctor pulls up a chart."},
+    {em:"📊", text:"A company's monthly revenue dashboard is almost always a GROUP BY query, summing an orders table by month, refreshed automatically."}
+  ],
+  pitfalls:[
+    {b:"Forgetting WHERE on UPDATE/DELETE", t:"An UPDATE or DELETE with no WHERE clause applies to every single row in the table — a classic, career-story-worthy mistake."},
+    {b:"JOIN explosions", t:"Joining tables on the wrong column, or a column with duplicate values, can silently multiply your row count instead of matching one-to-one."},
+    {b:"NULL isn't 0 or empty", t:"NULL means 'unknown/missing', and comparisons like <code>WHERE x = NULL</code> never match — you need <code>WHERE x IS NULL</code> instead."}
+  ],
+  project:{
+    title:"Personal reading tracker",
+    desc:"A SQLite database of every book you've read, queried to find your favorite authors and your reading pace over time.",
+    steps:[
+      "Design a books table: title, author, rating (1-5), finished date.",
+      "Write the CREATE TABLE statement and insert at least 10 books, real or made up.",
+      "Write a query that finds your average rating per author, sorted highest first.",
+      "Write a query that counts books finished per month using GROUP BY on the date.",
+      "Add a second table, genres, and JOIN it in to find your favorite genre by average rating."
+    ],
+    stretch:"Load the same data into pandas with <code>pd.read_sql</code> and recreate one of your queries using pandas syntax instead — a preview of Stage 5."
+  },
+  tools:["sqlite3","SELECT / WHERE / GROUP BY","JOIN","CREATE TABLE","pandas.read_sql"],
+  code:[
+    {label:"basic.py", code:`<span class="k">import</span> sqlite3
+
+conn = sqlite3.connect(<span class="s">"books.db"</span>)
+conn.execute(<span class="s">"""CREATE TABLE IF NOT EXISTS books(
+    title TEXT, author TEXT, rating INT, finished DATE)"""</span>)
+
+conn.execute(<span class="s">"INSERT INTO books VALUES (?,?,?,?)"</span>,
+             (<span class="s">"Dune"</span>, <span class="s">"Herbert"</span>, <span class="f">5</span>, <span class="s">"2026-02-01"</span>))
+conn.commit()
+
+<span class="k">for</span> row <span class="k">in</span> conn.execute(<span class="s">"""
+    SELECT author, AVG(rating) as avg_r
+    FROM books GROUP BY author ORDER BY avg_r DESC"""</span>):
+    <span class="f">print</span>(row)`},
+    {label:"with a JOIN", code:`conn.execute(<span class="s">"""CREATE TABLE IF NOT EXISTS genres(
+    book_title TEXT, genre TEXT)"""</span>)
+conn.execute(<span class="s">"INSERT INTO genres VALUES (?,?)"</span>, (<span class="s">"Dune"</span>, <span class="s">"Sci-Fi"</span>))
+conn.commit()
+
+<span class="k">for</span> row <span class="k">in</span> conn.execute(<span class="s">"""
+    SELECT g.genre, AVG(b.rating) as avg_r, COUNT(*) as n
+    FROM books b
+    JOIN genres g ON b.title = g.book_title
+    GROUP BY g.genre
+    ORDER BY avg_r DESC"""</span>):
+    <span class="f">print</span>(row)   <span class="c"># e.g. ('Sci-Fi', 5.0, 1)</span>`}
+  ],
+  nextUp:"Right now you're inserting data by hand. Stage 4 automates that: pulling data from somewhere else, cleaning it, and loading it into a database like this one — on a schedule, without you touching it."
+},
+{
+  icon:"🚰", kicker:"Stage 4 · Moving data",
+  title:"Data engineering", sub:"ETL pipelines that pull, clean, and load data automatically, on a schedule",
+  intro:`Every dashboard, model, and report you've ever seen was fed by data that had to get from somewhere messy to somewhere clean, automatically, without a human copy-pasting it every day. That movement is called a <b>pipeline</b>, and the three stages it almost always has a name for are <b>Extract</b> (pull raw data from a source — an API, a database, log files), <b>Transform</b> (clean it: fix types, drop duplicates, handle missing values) and <b>Load</b> (write the clean result somewhere useful, like the database you just learned in Stage 3). Data engineering is the plumbing behind every other stage in this whole roadmap — data scientists, ML engineers, and GenAI apps are all, ultimately, consuming data that a pipeline produced.`,
+  concepts:[
+    {name:"Extract", explain:"Pulling raw data from its source: calling an API, reading a log file, querying another database. This step should assume the source is messy and can fail."},
+    {name:"Transform", explain:"Cleaning: converting types, dropping duplicate rows, filling or removing missing values, renaming columns to a consistent standard."},
+    {name:"Load", explain:"Writing the cleaned result to its destination — usually a database or a data warehouse — so other tools and people can use it without redoing the cleaning."},
+    {name:"Idempotency & scheduling", explain:"A good pipeline can be safely run twice without creating duplicates (idempotent), and runs automatically on a schedule via a tool like cron or Airflow, not by a person clicking 'run'."}
+  ],
+  examples:[
+    {em:"🎵", text:"Spotify's 'Discover Weekly' is fed by an overnight pipeline: extract your listening history, transform it into features, load it into the recommendation system, every Sunday night."},
+    {em:"🛒", text:"A retailer's nightly inventory sync pulls sales data from every store's point-of-sale system, cleans and reconciles it, and loads a unified stock count by morning."},
+    {em:"📈", text:"A finance team's 'as of yesterday' dashboard is powered by a pipeline that runs at 3am, pulling the previous day's transactions before anyone's awake."}
+  ],
+  pitfalls:[
+    {b:"Not handling missing/malformed data", t:"Real sources send nulls, wrong types, and occasional garbage rows. A pipeline that assumes clean input will crash in production eventually — plan for it."},
+    {b:"Not being idempotent", t:"If your pipeline appends data every run without checking for duplicates, re-running it after a failure will double-count everything."},
+    {b:"Silent failures", t:"A pipeline that fails quietly (an API returns an error you don't check) can leave a dashboard showing stale or wrong data for days before anyone notices."}
+  ],
+  project:{
+    title:"Daily weather pipeline",
+    desc:"A script that pulls a public weather API every day, cleans the result, and stores it in the SQLite database from Stage 3 — skipping any day it's already saved.",
+    steps:[
+      "Write an extract() function that calls a public weather API and returns raw JSON.",
+      "Write a transform() function using pandas: fix types, convert units, drop incomplete rows.",
+      "Write a load() function that appends the cleaned data into a SQLite table.",
+      "Add a check that skips loading if today's date is already in the table (idempotency).",
+      "Wrap the whole thing in a try/except so a failed API call doesn't crash silently — log it instead."
+    ],
+    stretch:"Schedule it to actually run daily using cron (Mac/Linux) or Task Scheduler (Windows), so it runs without you starting it manually."
+  },
+  tools:["pandas","requests","Airflow / cron","ETL","try/except"],
+  code:[
+    {label:"basic.py", code:`<span class="k">import</span> requests, sqlite3, pandas <span class="k">as</span> pd
+
+<span class="k">def</span> <span class="f">extract</span>():
+    <span class="k">return</span> requests.get(<span class="s">"https://api.example.com/weather"</span>).json()
+
+<span class="k">def</span> <span class="f">transform</span>(raw):
+    df = pd.DataFrame(raw[<span class="s">"days"</span>])
+    df = df.dropna(subset=[<span class="s">"temp"</span>])
+    df[<span class="s">"temp_c"</span>] = (df[<span class="s">"temp_f"</span>] - <span class="f">32</span>) * <span class="f">5</span>/<span class="f">9</span>
+    <span class="k">return</span> df
+
+<span class="k">def</span> <span class="f">load</span>(df):
+    conn = sqlite3.connect(<span class="s">"weather.db"</span>)
+    df.to_sql(<span class="s">"weather"</span>, conn, if_exists=<span class="s">"append"</span>, index=<span class="k">False</span>)
+
+load(transform(extract()))  <span class="c"># run this daily via cron/Airflow</span>`},
+    {label:"idempotent + safe", code:`<span class="k">def</span> <span class="f">already_loaded</span>(conn, date):
+    row = conn.execute(<span class="s">"SELECT 1 FROM weather WHERE date=?"</span>, (date,)).fetchone()
+    <span class="k">return</span> row <span class="k">is</span> <span class="k">not</span> <span class="k">None</span>
+
+<span class="k">def</span> <span class="f">run_pipeline</span>():
+    conn = sqlite3.connect(<span class="s">"weather.db"</span>)
+    <span class="k">try</span>:
+        raw = extract()
+    <span class="k">except</span> requests.RequestException <span class="k">as</span> e:
+        <span class="f">print</span>(<span class="s">f"Extract failed: {e}"</span>)   <span class="c"># log, don't crash silently</span>
+        <span class="k">return</span>
+
+    df = transform(raw)
+    today = df[<span class="s">"date"</span>].iloc[<span class="f">0</span>]
+    <span class="k">if</span> already_loaded(conn, today):
+        <span class="f">print</span>(<span class="s">"Already have today's data, skipping."</span>)
+        <span class="k">return</span>
+    load(df)
+    <span class="f">print</span>(<span class="s">f"Loaded weather for {today}"</span>)
+
+run_pipeline()`}
+  ],
+  nextUp:"You now have clean, reliable data flowing into a database automatically. Stage 5 is where you actually dig into it — asking questions, finding patterns, and proving them with charts."
+},
+{
+  icon:"🔍", kicker:"Stage 5 · Finding patterns",
+  title:"Data science & visualization", sub:"turning raw numbers into an answer you can trust, and a chart that proves it",
+  intro:`Data science is being a detective with numbers instead of fingerprints. You start with a question ('do sales go up on weekends?'), pull the relevant data, and use statistics and visualization to check whether the pattern is actually real — not just something that looks true from a handful of examples. This is the stage where <b>pandas</b> (for wrangling tables of data in Python) and <b>matplotlib</b> (for charts) become your two closest tools. The skill that separates a real data scientist from someone who just makes pretty charts is knowing when a pattern is a coincidence versus something you can act on — which is why this stage leans on correlation and basic statistics, not just visuals.`,
+  concepts:[
+    {name:"DataFrames", explain:"pandas' core object — a table in memory, like a spreadsheet you can filter, group, and transform with code instead of clicking. Almost everything in this stage starts with loading data into one."},
+    {name:"Aggregation (groupby)", explain:"Collapsing many rows into a summary — total sales per region, average rating per author. It's the same idea as SQL's GROUP BY, done in Python."},
+    {name:"Correlation vs. causation", explain:"Two things moving together (ice cream sales and drowning rates both rise in summer) doesn't mean one causes the other. A good data scientist checks for a hidden shared cause before claiming a link."},
+    {name:"Visualization", explain:"A well-chosen chart (scatter plot, line chart, histogram) can reveal a pattern that's invisible in a table of raw numbers — and can also make a fake pattern look convincing, so choose carefully."}
+  ],
+  examples:[
+    {em:"🏥", text:"A hospital analyst noticing infection rates spike on one specific ward — visible only after plotting infections by ward over time — can catch a problem before it spreads further."},
+    {em:"🍦", text:"A retailer discovering that ice cream sales predict fan sales three days later isn't magic — it's a shared cause (heat) showing up as a correlation, worth checking before acting on it."},
+    {em:"🚲", text:"A city transportation department deciding where to add bike lanes by mapping ride density from a bike-share dataset — a chart directly informing a real infrastructure decision."}
+  ],
+  pitfalls:[
+    {b:"Mistaking correlation for causation", t:"Finding that two numbers move together is a starting point for investigation, not proof of a cause — always ask what else could explain the pattern."},
+    {b:"Cherry-picking the time window", t:"Zooming into a date range that happens to show the trend you expected, while ignoring the full picture, is one of the easiest ways to fool yourself."},
+    {b:"Misleading axes", t:"A y-axis that doesn't start at zero, or an inconsistent scale, can make a tiny difference look dramatic — always sanity-check the axis before trusting a chart."}
+  ],
+  project:{
+    title:"Does weather affect bike-share ridership?",
+    desc:"Use a public bike-share dataset to find out how much temperature and rain actually affect daily ridership, and prove it with a chart, not just a hunch.",
+    steps:[
+      "Load a bike-share CSV into a pandas DataFrame with <code>pd.read_csv</code>.",
+      "Group rides by date, computing total rides and average temperature per day.",
+      "Calculate the correlation between daily rides and daily temperature with <code>.corr()</code>.",
+      "Make a scatter plot of temperature vs. rides to visually confirm the relationship.",
+      "Repeat the analysis for rain (or another weather variable) and compare which factor matters more."
+    ],
+    stretch:"Split the data into weekdays vs. weekends and check whether weather affects each group differently — commuters vs. leisure riders often behave very differently."
+  },
+  tools:["pandas","matplotlib","numpy","groupby","corr()"],
+  code:[
+    {label:"basic.py", code:`<span class="k">import</span> pandas <span class="k">as</span> pd
+<span class="k">import</span> matplotlib.pyplot <span class="k">as</span> plt
+
+df = pd.read_csv(<span class="s">"bike_rides.csv"</span>)
+daily = df.groupby(<span class="s">"date"</span>).agg(
+    rides=(<span class="s">"ride_id"</span>, <span class="s">"count"</span>), temp=(<span class="s">"temp_c"</span>, <span class="s">"mean"</span>))
+
+<span class="f">print</span>(<span class="s">"correlation:"</span>, daily[<span class="s">"rides"</span>].corr(daily[<span class="s">"temp"</span>]))
+plt.scatter(daily[<span class="s">"temp"</span>], daily[<span class="s">"rides"</span>])
+plt.xlabel(<span class="s">"Temp (°C)"</span>); plt.ylabel(<span class="s">"Rides"</span>)
+plt.savefig(<span class="s">"temp_vs_rides.png"</span>)`},
+    {label:"weekday vs weekend split", code:`df[<span class="s">"date"</span>] = pd.to_datetime(df[<span class="s">"date"</span>])
+df[<span class="s">"is_weekend"</span>] = df[<span class="s">"date"</span>].dt.dayofweek >= <span class="f">5</span>
+
+daily = df.groupby([<span class="s">"date"</span>, <span class="s">"is_weekend"</span>]).agg(
+    rides=(<span class="s">"ride_id"</span>, <span class="s">"count"</span>), temp=(<span class="s">"temp_c"</span>, <span class="s">"mean"</span>)).reset_index()
+
+<span class="k">for</span> weekend, group <span class="k">in</span> daily.groupby(<span class="s">"is_weekend"</span>):
+    label = <span class="s">"Weekend"</span> <span class="k">if</span> weekend <span class="k">else</span> <span class="s">"Weekday"</span>
+    <span class="f">print</span>(label, <span class="s">"correlation:"</span>, group[<span class="s">"rides"</span>].corr(group[<span class="s">"temp"</span>]))
+    plt.scatter(group[<span class="s">"temp"</span>], group[<span class="s">"rides"</span>], label=label, alpha=<span class="f">0.6</span>)
+
+plt.legend(); plt.xlabel(<span class="s">"Temp (°C)"</span>); plt.ylabel(<span class="s">"Rides"</span>)
+plt.savefig(<span class="s">"weekday_vs_weekend.png"</span>)`}
+  ],
+  nextUp:"So far you've found patterns a human still has to interpret. Stage 6 is about handing that pattern-finding to the computer itself — training it to make predictions on data it's never seen."
+},
+{
+  icon:"🎯", kicker:"Stage 6 · Teaching a computer to guess",
+  title:"Machine learning", sub:"letting a computer find the rule from examples, instead of you coding the rule by hand",
+  intro:`For everything up to this point, you told the computer exactly what to do. Machine learning flips that: instead of writing the rule yourself, you show the computer hundreds or thousands of past examples where you already know the right answer, and it works out a rule on its own — then applies that rule to new cases it's never seen. A model that predicts house prices isn't following an if/else you wrote; it learned, from real sales, roughly how much each extra bedroom or square foot tends to be worth. The core workflow is always the same: split your data into a training set and a test set, fit a model on the training set, and honestly measure how wrong it is on the test set it never saw during training.`,
+  concepts:[
+    {name:"Features & labels", explain:"Features are the inputs you give the model (square footage, bedrooms, zip code). The label is the answer you're trying to predict (price). Training means finding the relationship between them."},
+    {name:"Train/test split", explain:"You never evaluate a model on the same data it learned from — that would be like grading a student on the exact questions you gave them to study. You hold out a test set it's never seen."},
+    {name:"Overfitting", explain:"A model that memorizes the training data instead of learning the general pattern — it looks great on training data and falls apart on anything new. The single most common ML failure mode."},
+    {name:"Evaluation metrics", explain:"A number that honestly says how wrong the model is — mean absolute error for predicting numbers, accuracy or precision/recall for predicting categories. Without a metric, you're just guessing whether it works."}
+  ],
+  examples:[
+    {em:"📧", text:"Your email spam filter is a model trained on millions of emails humans already labeled 'spam' or 'not spam' — it learned the pattern, not a hardcoded list of banned words."},
+    {em:"🎬", text:"Netflix's 'because you watched...' recommendations come from a model trained on what similar viewers watched next, predicting what you're likely to enjoy."},
+    {em:"🏦", text:"A bank's loan approval model is trained on the outcomes of past loans (repaid or defaulted) to predict the risk of a new applicant — with real regulatory scrutiny on how it's built."}
+  ],
+  pitfalls:[
+    {b:"Testing on training data", t:"If you evaluate on the same rows you trained on, your error looks artificially good — always hold out a genuine test set the model never saw."},
+    {b:"Ignoring class imbalance", t:"If 99% of past loans were repaid, a model that always predicts 'repaid' looks 99% accurate while being useless. Check the baseline before trusting an accuracy number."},
+    {b:"Leaking the label into the features", t:"Accidentally including a feature that's only known after the fact (like 'was this transaction flagged as fraud') makes the model look great in testing and fail completely in the real world."}
+  ],
+  project:{
+    title:"House price predictor",
+    desc:"Train a model that predicts house prices from size, bedrooms, and location using real or realistic housing data, and honestly report how wrong it typically is.",
+    steps:[
+      "Load a housing dataset with columns like square footage, bedrooms, location, and price.",
+      "Split the data into a training set (80%) and a test set (20%) using <code>train_test_split</code>.",
+      "Train a RandomForestRegressor on the training features and labels.",
+      "Predict on the test set and calculate the mean absolute error in dollars.",
+      "Try removing a feature (like location) and retrain — see how much the error gets worse, to understand what the model is actually relying on."
+    ],
+    stretch:"Compare the RandomForest against a much simpler linear regression model — often the simple model is surprisingly close, and it's important to know when complexity is actually earning its keep."
+  },
+  tools:["scikit-learn","train_test_split","RandomForest","mean_absolute_error"],
+  code:[
+    {label:"basic.py", code:`<span class="k">from</span> sklearn.model_selection <span class="k">import</span> train_test_split
+<span class="k">from</span> sklearn.ensemble <span class="k">import</span> RandomForestRegressor
+<span class="k">from</span> sklearn.metrics <span class="k">import</span> mean_absolute_error
+<span class="k">import</span> pandas <span class="k">as</span> pd
+
+df = pd.read_csv(<span class="s">"houses.csv"</span>)
+X = df[[<span class="s">"sqft"</span>, <span class="s">"bedrooms"</span>, <span class="s">"zip_score"</span>]]
+y = df[<span class="s">"price"</span>]
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=<span class="f">0.2</span>)
+model = RandomForestRegressor().fit(X_train, y_train)
+
+preds = model.predict(X_test)
+<span class="f">print</span>(<span class="s">"Average error: $"</span>, mean_absolute_error(y_test, preds))`},
+    {label:"comparing two models", code:`<span class="k">from</span> sklearn.linear_model <span class="k">import</span> LinearRegression
+
+models = {
+    <span class="s">"Linear Regression"</span>: LinearRegression(),
+    <span class="s">"Random Forest"</span>: RandomForestRegressor(),
+}
+
+<span class="k">for</span> name, model <span class="k">in</span> models.items():
+    model.fit(X_train, y_train)
+    preds = model.predict(X_test)
+    error = mean_absolute_error(y_test, preds)
+    <span class="f">print</span>(<span class="s">f"{name}: average error \${error:.0f}"</span>)
+
+<span class="c"># drop location and see how much worse the error gets</span>
+X_train_no_loc = X_train.drop(columns=[<span class="s">"zip_score"</span>])
+X_test_no_loc = X_test.drop(columns=[<span class="s">"zip_score"</span>])
+model2 = RandomForestRegressor().fit(X_train_no_loc, y_train)
+<span class="f">print</span>(<span class="s">"Without location: $"</span>, mean_absolute_error(y_test, model2.predict(X_test_no_loc)))`}
+  ],
+  nextUp:"RandomForest and linear regression work great on tidy, tabular data like this. Stage 7 covers what happens when your data is messy and unstructured instead — like images or raw audio — where these simpler models struggle."
+},
+{
+  icon:"🧠", kicker:"Stage 7 · Layers that learn",
+  title:"Deep learning", sub:"neural networks — machine learning built for messy, unstructured data like images and text",
+  intro:`Traditional machine learning models like RandomForest are excellent at tidy, tabular data — rows and columns with clear meaning. They struggle badly with raw, unstructured data like an image (a grid of millions of pixel values) or a sentence (a sequence of words with context that matters). A <b>neural network</b> is built from layers of tiny decision-makers stacked on top of each other, loosely inspired by neurons in a brain. Each layer learns to notice something a bit more abstract than the layer before it — the first layer might notice edges, a middle layer might notice shapes, and a deep layer might notice 'this is a cat.' Deep learning is the toolset you reach for the moment the pattern is too messy, too high-dimensional, or too context-dependent for simple rules or classic ML to capture.`,
+  concepts:[
+    {name:"Layers & weights", explain:"Each layer is a set of adjustable numbers (weights) that transform its input into an output. 'Training' means gradually adjusting millions of these weights so the network's guesses get closer to correct."},
+    {name:"Tensors", explain:"The basic data container in deep learning — a multi-dimensional array of numbers. An image is a 3D tensor (height, width, color channels); a batch of images is a 4D tensor."},
+    {name:"Backpropagation & gradient descent", explain:"After the network guesses wrong, backpropagation calculates exactly how much each weight contributed to the error, and gradient descent nudges every weight slightly to reduce that error — repeated millions of times."},
+    {name:"GPUs", explain:"Neural networks are made of huge numbers of simple, repeated matrix multiplications — exactly what a graphics card (GPU) was built to do fast. Training on a GPU can be 10-100x faster than a regular CPU."}
+  ],
+  examples:[
+    {em:"📱", text:"Face unlock on your phone runs a small neural network on-device, comparing the camera image against a stored representation of your face in a fraction of a second."},
+    {em:"🚗", text:"A self-driving car's camera system uses a deep convolutional network to identify a stop sign in real time, under different lighting, angles, and weather — far beyond what hand-written rules could handle."},
+    {em:"🗣️", text:"Google Translate's sentence-to-sentence translation is powered by a deep network trained on millions of paired sentences across languages, learning grammar and meaning implicitly."}
+  ],
+  pitfalls:[
+    {b:"Training on too little data", t:"Deep networks have millions of parameters and need substantial data to learn a real pattern instead of memorizing noise — with too little data, they overfit almost immediately."},
+    {b:"Forgetting to normalize inputs", t:"Feeding raw pixel values (0-255) instead of normalized ones (0-1) can make training slow or unstable — always scale your inputs to a consistent range."},
+    {b:"Not tracking validation loss", t:"Watching only the training loss go down hides overfitting. A rising validation loss while training loss keeps falling is the clearest sign your model has stopped generalizing."}
+  ],
+  project:{
+    title:"Handwritten digit classifier",
+    desc:"Build a small neural network that recognizes handwritten digits (0-9) from the classic MNIST dataset, and see it hit over 95% accuracy in roughly 20 lines of code.",
+    steps:[
+      "Load the MNIST dataset (built into most deep learning libraries) — 60,000 labeled images of handwritten digits.",
+      "Build a simple network: flatten each 28x28 image into a list of numbers, then two linear layers with a ReLU activation between them.",
+      "Set up an optimizer (Adam) and a loss function (CrossEntropyLoss) for a classification task.",
+      "Loop through the training data in batches, computing the loss, backpropagating, and updating weights each time.",
+      "Evaluate accuracy on a held-out test set the model never saw during training."
+    ],
+    stretch:"Deliberately shrink the training set to just a few hundred images and watch accuracy drop — a hands-on way to feel what 'not enough data' actually looks like."
+  },
+  tools:["PyTorch / TensorFlow","tensors","nn.Linear / nn.ReLU","Adam optimizer","GPU (optional)"],
+  code:[
+    {label:"basic.py", code:`<span class="k">import</span> torch, torch.nn <span class="k">as</span> nn
+
+model = nn.Sequential(
+    nn.Flatten(),
+    nn.Linear(<span class="f">28</span>*<span class="f">28</span>, <span class="f">128</span>), nn.ReLU(),
+    nn.Linear(<span class="f">128</span>, <span class="f">10</span>)
+)
+optimizer = torch.optim.Adam(model.parameters())
+loss_fn = nn.CrossEntropyLoss()
+
+<span class="k">for</span> images, labels <span class="k">in</span> train_loader:
+    optimizer.zero_grad()
+    loss = loss_fn(model(images), labels)
+    loss.backward()
+    optimizer.step()`},
+    {label:"with evaluation", code:`<span class="k">def</span> <span class="f">evaluate</span>(model, test_loader):
+    correct, total = <span class="f">0</span>, <span class="f">0</span>
+    model.eval()
+    <span class="k">with</span> torch.no_grad():
+        <span class="k">for</span> images, labels <span class="k">in</span> test_loader:
+            preds = model(images).argmax(dim=<span class="f">1</span>)
+            correct += (preds == labels).sum().item()
+            total += labels.size(<span class="f">0</span>)
+    <span class="k">return</span> correct / total
+
+<span class="k">for</span> epoch <span class="k">in</span> <span class="f">range</span>(<span class="f">5</span>):
+    model.train()
+    <span class="k">for</span> images, labels <span class="k">in</span> train_loader:
+        optimizer.zero_grad()
+        loss = loss_fn(model(images), labels)
+        loss.backward()
+        optimizer.step()
+    acc = evaluate(model, test_loader)
+    <span class="f">print</span>(<span class="s">f"Epoch {epoch}: test accuracy {acc:.2%}"</span>)`}
+  ],
+  nextUp:"Everything so far predicts a number or a category. Stage 8 covers a different kind of deep network entirely — one trained to generate new text, one word at a time."
+},
+{
+  icon:"✨", kicker:"Stage 8 · Models that create",
+  title:"Generative AI & LLMs", sub:"models that write, not just predict a number — and how to actually get good results from one",
+  intro:`A large language model (LLM) is a neural network, built on the deep learning ideas from Stage 7, trained on an enormous amount of text to get extremely good at one specific job: guessing what word (technically, 'token') is most likely to come next. Do that one guess a few thousand times in a row, each guess informed by everything written so far, and you get a coherent written answer, a poem, or working code. The skill that actually matters here isn't understanding the internals — it's <b>prompting</b>: giving the model clear instructions, relevant context, and a well-defined task, the same way you'd brief a smart new coworker who's read everything but knows nothing about your specific situation.`,
+  concepts:[
+    {name:"Tokens", explain:"The model doesn't see whole words — it sees tokens, roughly word-pieces. 'Unbelievable' might be split into 'un', 'believ', 'able'. Pricing and context limits are measured in tokens, not words."},
+    {name:"System vs. user prompts", explain:"The system prompt sets the model's role and rules for the whole conversation ('you are a concise technical writer'). The user prompt is the specific request. Separating them keeps behavior consistent across many requests."},
+    {name:"Temperature", explain:"A setting that controls how predictable vs. creative the output is. Low temperature gives focused, repeatable answers; high temperature gives more varied, surprising ones — useful for brainstorming, risky for facts."},
+    {name:"Context window", explain:"The maximum amount of text (in tokens) the model can 'see' at once — your prompt plus its answer. Anything outside that window simply isn't visible to the model when it responds."}
+  ],
+  examples:[
+    {em:"✉️", text:"An LLM drafting a first pass of a difficult email — it doesn't know your specific situation, but a good prompt with context turns a blank page into a solid starting draft in seconds."},
+    {em:"💻", text:"GitHub Copilot suggesting the rest of a function as you type is an LLM predicting the most likely next tokens given your code so far as context."},
+    {em:"📄", text:"A legal team using an LLM to summarize a 40-page contract into key risks in plain English — compressing something dense into something a non-lawyer can act on."}
+  ],
+  pitfalls:[
+    {b:"Vague prompts", t:"'Write about dogs' gets a generic, unfocused answer. 'Write a 100-word product description for a dog leash aimed at first-time owners' gets something actually usable."},
+    {b:"Trusting facts without verification", t:"LLMs can state incorrect information confidently (a 'hallucination'). For anything factual and important, verify against a real source — this is exactly the problem Stage 10 (RAG) solves."},
+    {b:"Not giving the model context it needs", t:"Asking a model to fix 'the bug in my code' without pasting the code, or the error message, forces it to guess — always include what it actually needs to see."}
+  ],
+  project:{
+    title:"Article summarizer",
+    desc:"A script that takes any long piece of text and returns a tight 3-bullet summary plus one thoughtful follow-up question, using a real LLM API call.",
+    steps:[
+      "Get access to an LLM API (Anthropic's Claude API or similar) and store your API key as an environment variable, never hardcoded.",
+      "Write a system prompt that strictly defines the output format: exactly 3 bullets, then 1 question.",
+      "Pass a long article's text as the user message, and call the API.",
+      "Print the response, and test it on a few different articles to see how consistently it follows your format.",
+      "Tighten the prompt based on what goes wrong — this iteration loop is most of what 'prompt engineering' actually is."
+    ],
+    stretch:"Add a second prompt variant with a much higher temperature, and compare the two summaries side-by-side — notice how creativity trades off against consistency."
+  },
+  tools:["Anthropic / OpenAI API","system prompts","temperature","tokens","context window"],
+  code:[
+    {label:"basic.py", code:`<span class="k">import</span> anthropic
+
+client = anthropic.Anthropic()
+response = client.messages.create(
+    model=<span class="s">"claude-sonnet-4-6"</span>,
+    max_tokens=<span class="f">300</span>,
+    system=<span class="s">"Summarize in exactly 3 bullets, then ask 1 question."</span>,
+    messages=[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: article_text}]
+)
+<span class="f">print</span>(response.content[<span class="f">0</span>].text)`},
+    {label:"comparing temperature", code:`<span class="k">def</span> <span class="f">summarize</span>(text, temperature):
+    response = client.messages.create(
+        model=<span class="s">"claude-sonnet-4-6"</span>,
+        max_tokens=<span class="f">300</span>,
+        temperature=temperature,
+        system=<span class="s">"Summarize in exactly 3 bullets, then ask 1 question."</span>,
+        messages=[{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: text}]
+    )
+    <span class="k">return</span> response.content[<span class="f">0</span>].text
+
+<span class="f">print</span>(<span class="s">"--- Focused (temp=0) ---"</span>)
+<span class="f">print</span>(summarize(article_text, <span class="f">0</span>))
+
+<span class="f">print</span>(<span class="s">"--- Creative (temp=1) ---"</span>)
+<span class="f">print</span>(summarize(article_text, <span class="f">1</span>))`}
+  ],
+  nextUp:"An LLM alone can only respond with words — it can't check your calendar or run a calculation for you. Stage 9 gives it the ability to actually do things by calling real tools."
+},
+{
+  icon:"🤖", kicker:"Stage 9 · Giving the model hands",
+  title:"AI agents", sub:"models that decide to take actions, look at the result, and try again — not just talk",
+  intro:`An LLM by itself can only produce text back to you — it can't look anything up, run a calculation, or check a live system. An <b>agent</b> gives it a defined set of tools (a weather lookup, a calculator, a database query) and lets the model itself decide, mid-conversation, 'to answer this properly, I should call this tool first.' The model calls the tool, sees the real result, and decides what to do next — sometimes calling another tool, sometimes answering directly. This loop of think → act → observe → repeat is what separates an agent from a simple chatbot, and it's the foundation almost every 'AI assistant' product actually runs on.`,
+  concepts:[
+    {name:"Tool definitions", explain:"A structured description of a function the model can call — its name, what it does, and what parameters it needs. The model doesn't run the code itself; it requests that you run it and give back the result."},
+    {name:"The agent loop", explain:"Send a message → model responds with either an answer or a tool request → if a tool request, run it and send the result back → repeat until the model gives a final answer."},
+    {name:"Reasoning about when to act", explain:"A well-designed agent doesn't call a tool for everything — it decides whether the question needs fresh, external information or can be answered directly from what it already knows."},
+    {name:"Guardrails", explain:"Because an agent can take real actions, you need limits: which tools it's allowed to use, confirmation steps for anything destructive (like sending an email), and a cap on how many loop iterations it can run."}
+  ],
+  examples:[
+    {em:"🎧", text:"A customer support bot that actually checks your specific order status in a live database before replying, instead of guessing from training data, is a working agent."},
+    {em:"📅", text:"A scheduling assistant that checks your calendar's real availability, proposes times, and only books the meeting after you confirm, is chaining multiple tool calls together."},
+    {em:"🔧", text:"A coding agent (like Claude Code) that reads your actual files, runs your tests, sees the real failure, and edits the code again is the agent loop applied to software engineering itself."}
+  ],
+  pitfalls:[
+    {b:"No limit on loop iterations", t:"If the model keeps deciding it needs 'just one more' tool call, without a hard cap, an agent can loop indefinitely — always set a maximum number of steps."},
+    {b:"Giving tools without enough description", t:"If a tool's description is vague, the model will misuse it or avoid it entirely — treat the description like documentation for a real teammate, not an afterthought."},
+    {b:"No confirmation on destructive actions", t:"An agent that can send emails or delete data should pause for human confirmation before doing anything irreversible — don't give it a fully open loop for high-stakes actions."}
+  ],
+  project:{
+    title:"Multi-city weather agent",
+    desc:"Build an agent that answers 'what's the weather in three cities, and which is warmest?' by actually calling a real weather tool itself, in a loop, until it has everything it needs.",
+    steps:[
+      "Write a real get_weather(city) function that calls a weather API and returns the temperature.",
+      "Define a tool schema describing get_weather — its name, purpose, and required 'city' parameter.",
+      "Send the user's question to the model along with the tool definition, and check the response.",
+      "If the model requests a tool call, run get_weather with its arguments and send the result back.",
+      "Loop this until the model responds with a final answer instead of another tool request, then print it."
+    ],
+    stretch:"Add a second tool (a simple calculator) and ask a question that requires both — like converting the warmest city's temperature from Celsius to Fahrenheit — to see the model chain two different tools."
+  },
+  tools:["tool calling","function schemas","agent loop","stop_reason handling"],
+  code:[
+    {label:"basic.py", code:`<span class="k">def</span> <span class="f">get_weather</span>(city): ...  <span class="c"># a real function calling a weather API</span>
+
+tools = [{<span class="s">"name"</span>: <span class="s">"get_weather"</span>, <span class="s">"description"</span>: <span class="s">"Get temp for a city"</span>, ...}]
+
+msg = client.messages.create(model=<span class="s">"claude-sonnet-4-6"</span>, tools=tools,
+    messages=[{<span class="s">"role"</span>:<span class="s">"user"</span>, <span class="s">"content"</span>:<span class="s">"Warmest of Paris, Cairo, Oslo?"</span>}])
+
+<span class="k">while</span> msg.stop_reason == <span class="s">"tool_use"</span>:
+    result = get_weather(msg.tool_input[<span class="s">"city"</span>])
+    msg = client.messages.create(..., tool_result=result)  <span class="c"># loop until done</span>`},
+    {label:"with a step limit", code:`<span class="k">def</span> <span class="f">run_agent</span>(question, max_steps=<span class="f">5</span>):
+    messages = [{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: question}]
+
+    <span class="k">for</span> step <span class="k">in</span> <span class="f">range</span>(max_steps):
+        msg = client.messages.create(
+            model=<span class="s">"claude-sonnet-4-6"</span>, tools=tools, messages=messages)
+
+        <span class="k">if</span> msg.stop_reason != <span class="s">"tool_use"</span>:
+            <span class="k">return</span> msg.content[<span class="f">0</span>].text   <span class="c"># model gave a final answer</span>
+
+        messages.append({<span class="s">"role"</span>: <span class="s">"assistant"</span>, <span class="s">"content"</span>: msg.content})
+        tool_result = get_weather(msg.tool_input[<span class="s">"city"</span>])
+        messages.append({<span class="s">"role"</span>: <span class="s">"user"</span>,
+            <span class="s">"content"</span>: [{<span class="s">"type"</span>: <span class="s">"tool_result"</span>, <span class="s">"content"</span>: tool_result}]})
+
+    <span class="k">return</span> <span class="s">"Gave up after max steps."</span>   <span class="c"># guardrail against infinite loops</span>`}
+  ],
+  nextUp:"So far, an agent's tools give it live actions, but not knowledge of your private documents. Stage 10 solves that — letting the model 'look things up' in your own content before answering."
+},
+{
+  icon:"📚", kicker:"Stage 10 · Grounding the model in facts",
+  title:"RAG (Retrieval-Augmented Generation)", sub:"letting the model search your own documents and answer from what it finds, not what it remembers",
+  intro:`An LLM's knowledge is frozen at training time, and it has never seen your private notes, your company's internal wiki, or documents created after its cutoff. <b>RAG</b> fixes this without retraining the model at all: you split your documents into small chunks, convert each chunk into a numeric representation called an <b>embedding</b> that captures its meaning, and store those in a searchable index. When a question comes in, you embed the question too, find the chunks whose meaning is closest to it, and hand just those chunks to the model as context before it answers — like giving it the exact right page of a textbook instead of asking it to recite the whole library from memory.`,
+  concepts:[
+    {name:"Chunking", explain:"Splitting a long document into smaller pieces (a paragraph or a few hundred words each) so you can retrieve just the relevant part instead of dumping the entire document into every prompt."},
+    {name:"Embeddings", explain:"A list of numbers representing a piece of text's meaning, generated by a specialized model. Texts with similar meaning end up with embeddings that are numerically close to each other."},
+    {name:"Vector search / similarity", explain:"Finding the chunks whose embeddings are closest to the question's embedding, usually measured by cosine similarity — this is how you find 'relevant' text without any exact keyword match required."},
+    {name:"Grounding the answer", explain:"Instructing the model to answer using only the retrieved chunks (and to say so if the answer isn't in them), which sharply reduces made-up answers compared to relying on the model's memory alone."}
+  ],
+  examples:[
+    {em:"🏢", text:"A company chatbot that correctly answers a specific internal HR policy question — something no public model was ever trained on — is almost always RAG retrieving from the actual policy document."},
+    {em:"⚖️", text:"A legal research tool that answers questions by citing the exact clause of the exact contract it retrieved, rather than a vague generic answer, is built on RAG for traceability."},
+    {em:"🩺", text:"A clinical assistant that pulls the relevant section of a specific drug's official documentation before answering a dosage question, instead of relying on general training knowledge, is using RAG for safety."}
+  ],
+  pitfalls:[
+    {b:"Chunks too big or too small", t:"Chunks that are too large dilute relevance (the right sentence is buried in irrelevant text); chunks too small lose context. Getting chunk size right takes real experimentation."},
+    {b:"Not telling the model to stick to the context", t:"Without an explicit instruction to answer only from retrieved chunks, the model may blend in outside knowledge, undermining the whole point of grounding it."},
+    {b:"Ignoring retrieval quality", t:"If your search isn't actually finding the most relevant chunks, no amount of prompt tuning downstream will fix a wrong or incomplete answer — always sanity-check what's being retrieved."}
+  ],
+  project:{
+    title:"Ask-your-notes RAG system",
+    desc:"Build a small RAG system over your own notes — split them into chunks, embed them, and answer questions by retrieving the closest chunks first.",
+    steps:[
+      "Take a folder of your own notes and split each file into chunks of a few hundred words.",
+      "Use an embedding model to convert every chunk into a vector, and store all of them together.",
+      "Write an answer(question) function that embeds the question and finds the most similar chunk(s).",
+      "Pass the retrieved chunk(s) plus the question to an LLM, with instructions to answer only from that context.",
+      "Test it with a question you know the answer to, and one that isn't covered in your notes at all — check that it correctly says it doesn't know."
+    ],
+    stretch:"Retrieve the top 3 chunks instead of just 1, and see whether combining several improves answer quality on questions that span more than one note."
+  },
+  tools:["embeddings","vector search","chunking","cosine similarity"],
+  code:[
+    {label:"basic.py", code:`<span class="k">from</span> sentence_transformers <span class="k">import</span> SentenceTransformer
+<span class="k">import</span> numpy <span class="k">as</span> np
+
+embedder = SentenceTransformer(<span class="s">"all-MiniLM-L6-v2"</span>)
+chunks = split_into_chunks(my_notes)          <span class="c"># e.g. 200-word pieces</span>
+chunk_vecs = embedder.encode(chunks)
+
+<span class="k">def</span> <span class="f">answer</span>(question):
+    q_vec = embedder.encode([question])
+    scores = chunk_vecs @ q_vec.T
+    best = chunks[np.argmax(scores)]
+    <span class="k">return</span> ask_llm(context=best, question=question)`},
+    {label:"top-3 chunks + grounded prompt", code:`<span class="k">def</span> <span class="f">answer</span>(question, k=<span class="f">3</span>):
+    q_vec = embedder.encode([question])
+    scores = (chunk_vecs @ q_vec.T).flatten()
+    top_idx = np.argsort(scores)[::-<span class="f">1</span>][:k]
+    context = <span class="s">"\\n\\n---\\n\\n"</span>.join(chunks[i] <span class="k">for</span> i <span class="k">in</span> top_idx)
+
+    response = client.messages.create(
+        model=<span class="s">"claude-sonnet-4-6"</span>, max_tokens=<span class="f">300</span>,
+        system=<span class="s">"Answer only using the provided context. "</span>
+               <span class="s">"If the answer isn't in the context, say you don't know."</span>,
+        messages=[{<span class="s">"role"</span>: <span class="s">"user"</span>,
+            <span class="s">"content"</span>: <span class="s">f"Context:\\n{context}\\n\\nQuestion: {question}"</span>}]
+    )
+    <span class="k">return</span> response.content[<span class="f">0</span>].text`}
+  ],
+  nextUp:"RAG connects a model to your documents. Stage 11 covers connecting it to any tool or data source at all, through a single shared standard, instead of custom wiring for every integration."
+},
+{
+  icon:"🔌", kicker:"Stage 11 · A shared plug for AI tools",
+  title:"MCP (Model Context Protocol)", sub:"a standard way for any AI app to plug into any tool, instead of custom wiring for each one",
+  intro:`Before MCP, every AI application that wanted to connect to Gmail, GitHub, or a database had to build its own custom connector — and if you switched AI apps, you had to rebuild all of that wiring from scratch. <b>MCP</b> (Model Context Protocol) is a shared standard for this connection, closer to what USB-C did for chargers: build one MCP server for your tool once, and any MCP-compatible AI application can plug into it without any custom integration work. A server exposes <b>tools</b> (actions the model can call, like Stage 9's tool calling, but standardized) and <b>resources</b> (data the model can read), and the client — the AI app — handles the conversation and decides when to use them.`,
+  concepts:[
+    {name:"Servers & clients", explain:"An MCP server exposes tools and resources for one specific system (like a calendar or a database). An MCP client (the AI application) connects to one or more servers and lets the model use what they expose."},
+    {name:"Tools & resources", explain:"Tools are actions the model can invoke, like Stage 9's function calling. Resources are readable data — like a file or a database record — that the model can pull in as context without necessarily 'calling' anything."},
+    {name:"Transports (stdio / SSE)", explain:"How the client and server actually communicate. stdio is used for local processes running on the same machine; SSE (or HTTP) is used for remote servers accessed over a network."},
+    {name:"Why standardization matters", explain:"Without MCP, connecting N AI apps to M tools requires building N×M custom integrations. With a shared standard, it only takes N+M — build each tool's server once, and each app's client once."}
+  ],
+  examples:[
+    {em:"🧑‍💻", text:"An AI coding assistant that can read your GitHub issues, check CI status, and query your project's database in one conversation is typically talking to three separate MCP servers behind the scenes."},
+    {em:"📁", text:"A desktop AI assistant that can search and summarize your local files without any custom file-access code being written by the assistant's developers — because a filesystem MCP server already exists."},
+    {em:"🗂️", text:"A company building one internal MCP server for their ticketing system once, then having it work automatically with every AI tool their employees choose to use, instead of maintaining N separate integrations."}
+  ],
+  pitfalls:[
+    {b:"Weak tool descriptions", t:"Just like Stage 9's function calling, an MCP tool with a vague description will be misused or ignored by the model — write descriptions as if for a new teammate."},
+    {b:"Overexposing capabilities", t:"A server that exposes far more than the model actually needs (delete permissions when only read access is needed) creates unnecessary risk — expose the minimum required."},
+    {b:"Assuming the client handles errors gracefully", t:"A server should return clear, structured error messages when a call fails — a raw stack trace or a silent failure leaves the model (and the person using it) confused about what went wrong."}
+  ],
+  project:{
+    title:"A tiny MCP dictionary server",
+    desc:"Build a minimal MCP server that exposes one tool — 'look up a word's definition' — and connect it to an MCP-compatible client to prove the plug-in actually works end-to-end.",
+    steps:[
+      "Install an MCP server framework (like Python's FastMCP) and set up a minimal server file.",
+      "Write a real define(word) function, even a simple one using a local dictionary or a public API.",
+      "Register it as an MCP tool with a clear name and description using the framework's decorator.",
+      "Run the server locally over stdio transport.",
+      "Connect it to an MCP-compatible client (like Claude Desktop's developer settings) and ask a question that requires the tool."
+    ],
+    stretch:"Add a second tool — a synonym lookup — and see the model choose correctly between 'define' and 'find synonyms' based purely on your tool descriptions and the user's question."
+  },
+  tools:["MCP server","FastMCP","tools/resources","JSON-RPC","stdio transport"],
+  code:[
+    {label:"basic server.py", code:`<span class="k">from</span> mcp.server.fastmcp <span class="k">import</span> FastMCP
+
+mcp = FastMCP(<span class="s">"dictionary"</span>)
+
+@mcp.tool()
+<span class="k">def</span> <span class="f">define</span>(word: <span class="f">str</span>) -> <span class="f">str</span>:
+    <span class="s">"""Look up a word's definition."""</span>
+    <span class="k">return</span> lookup_in_dictionary(word)
+
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    mcp.run(transport=<span class="s">"stdio"</span>)  <span class="c"># any MCP client can now use this</span>`},
+    {label:"two tools", code:`@mcp.tool()
+<span class="k">def</span> <span class="f">define</span>(word: <span class="f">str</span>) -> <span class="f">str</span>:
+    <span class="s">"""Look up the dictionary definition of a single English word."""</span>
+    <span class="k">return</span> lookup_definition(word)
+
+@mcp.tool()
+<span class="k">def</span> <span class="f">synonyms</span>(word: <span class="f">str</span>) -> <span class="k">list</span>[<span class="f">str</span>]:
+    <span class="s">"""Return a list of synonyms for a single English word."""</span>
+    <span class="k">return</span> lookup_synonyms(word)
+
+<span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    mcp.run(transport=<span class="s">"stdio"</span>)`}
+  ],
+  nextUp:"Everything you've built so far runs when you press play on your own machine. Stage 12 is about opening a door so other people and apps can use it too — without touching your Python code at all."
+},
+{
+  icon:"🚪", kicker:"Stage 12 · Opening a door to the outside",
+  title:"FastAPI", sub:"turning your Python code into a real web service other apps and people can call",
+  intro:`Everything you've built in this roadmap runs when you personally press 'run' on your own machine. An API is a door: other applications — a website, a phone app, another company's backend — can knock on it, ask for something specific, and get an answer back, all without needing to know a single line of your Python code. <b>FastAPI</b> is a modern, fast Python framework for building that door with very little boilerplate, and it automatically generates interactive documentation for whatever you build, which makes it a favorite for wrapping ML models, RAG systems, and agents into something a real product can actually call.`,
+  concepts:[
+    {name:"Endpoints", explain:"A specific URL path plus an HTTP method (GET to fetch, POST to submit data) that your app responds to — like /ask accepting a question and returning an answer."},
+    {name:"Request & response models (Pydantic)", explain:"A declared shape for the data coming in and going out, which FastAPI validates automatically — if a request is missing a required field or has the wrong type, it's rejected before your code even runs."},
+    {name:"Status codes", explain:"A standardized number telling the caller what happened — 200 for success, 404 for not found, 500 for a server error. Getting these right makes your API predictable for whoever calls it."},
+    {name:"Automatic docs", explain:"FastAPI generates an interactive, browsable page (usually at /docs) showing every endpoint, its inputs, and its outputs — letting anyone test your API directly in a browser with zero setup."}
+  ],
+  examples:[
+    {em:"🛒", text:"When you check a shipping cost at checkout, your browser is calling a company's API, probably built with something a lot like FastAPI, that returns a price without you ever seeing the backend code."},
+    {em:"🧠", text:"A company wrapping their internal ML model behind a FastAPI endpoint so their mobile app team can get predictions with a simple HTTP call, without needing to know any Python or machine learning."},
+    {em:"🤝", text:"Two different companies' systems talking to each other automatically — a payment processor calling a merchant's order API to confirm a purchase went through — is APIs at the center of the modern internet."}
+  ],
+  pitfalls:[
+    {b:"No input validation", t:"Trusting whatever comes in without validating types and required fields opens the door to crashes and security issues — Pydantic models handle most of this for you automatically, use them."},
+    {b:"Leaking internal errors", t:"Returning a raw Python stack trace to the caller exposes internal details and looks unprofessional — catch exceptions and return a clean, appropriate error message and status code instead."},
+    {b:"No rate limiting or auth on real deployments", t:"An API left completely open with no authentication or rate limits, once deployed publicly, can be abused or overwhelmed — this matters the moment your API leaves your laptop."}
+  ],
+  project:{
+    title:"Serve your RAG assistant as an API",
+    desc:"Wrap the RAG-notes answerer from Stage 10 in a FastAPI endpoint, so you can ask it questions from your phone's browser, not just a Python script.",
+    steps:[
+      "Install FastAPI and uvicorn, and create a main.py with a basic FastAPI app instance.",
+      "Define a Pydantic model, Question, with a single text: str field for the incoming request.",
+      "Create a POST /ask endpoint that takes a Question and calls your Stage 10 answer() function.",
+      "Return the result as a JSON response, and run the server locally with uvicorn.",
+      "Open the automatic docs page in your browser and test the endpoint directly, then try it from your phone on the same network."
+    ],
+    stretch:"Add a GET /health endpoint that returns a simple status, and a try/except around your /ask logic that returns a clean error message instead of crashing if something goes wrong — this is the beginning of making an API production-ready."
+  },
+  tools:["FastAPI","uvicorn","Pydantic","REST endpoints","status codes"],
+  code:[
+    {label:"main.py", code:`<span class="k">from</span> fastapi <span class="k">import</span> FastAPI
+<span class="k">from</span> pydantic <span class="k">import</span> BaseModel
+
+app = FastAPI()
+
+<span class="k">class</span> Question(BaseModel):
+    text: <span class="f">str</span>
+
+@app.post(<span class="s">"/ask"</span>)
+<span class="k">def</span> <span class="f">ask</span>(q: Question):
+    <span class="k">return</span> {<span class="s">"answer"</span>: answer(q.text)}   <span class="c"># reuses Stage 10's function</span>
+
+<span class="c"># run with: uvicorn main:app --reload</span>`},
+    {label:"with health check + error handling", code:`<span class="k">from</span> fastapi <span class="k">import</span> FastAPI, HTTPException
+<span class="k">from</span> pydantic <span class="k">import</span> BaseModel
+
+app = FastAPI()
+
+<span class="k">class</span> Question(BaseModel):
+    text: <span class="f">str</span>
+
+@app.get(<span class="s">"/health"</span>)
+<span class="k">def</span> <span class="f">health</span>():
+    <span class="k">return</span> {<span class="s">"status"</span>: <span class="s">"ok"</span>}
+
+@app.post(<span class="s">"/ask"</span>)
+<span class="k">def</span> <span class="f">ask</span>(q: Question):
+    <span class="k">try</span>:
+        <span class="k">return</span> {<span class="s">"answer"</span>: answer(q.text)}
+    <span class="k">except</span> <span class="f">Exception</span> <span class="k">as</span> e:
+        <span class="k">raise</span> HTTPException(status_code=<span class="f">500</span>, detail=<span class="s">"Something went wrong answering that."</span>)
+
+<span class="c"># run with: uvicorn main:app --reload</span>
+<span class="c"># then visit http://localhost:8000/docs for interactive testing</span>`}
+  ],
+  nextUp:"You've now touched every stage from a raw variable to a served API. The capstone project is where you stop treating these as separate exercises and combine them into one real system."
+}
+];
+
+/* ============================= RENDER ============================= */
+let currentView = "overview";
+let activeCodeTab = 0;
+const doneSet = new Set();
+
+function renderOverview(){
+  return `
+    <div class="hero-eyebrow">🐍 A hands-on trail, not a textbook</div>
+    <h1>Learn Python by <span>building</span>, from your first line of code to a working AI agent.</h1>
+    <p>Twelve stages, each one gone into properly: a real explanation of the idea, the specific concepts inside it, several real-world examples, the mistakes people actually make, a project with concrete steps, and two levels of working code. Data engineering, data science, machine learning, deep learning, generative AI, agents, RAG, MCP, and FastAPI — in the order that actually makes sense to learn them.</p>
+    <div class="who-box">
+      <p><strong>Who this is for:</strong> anyone starting from nothing who wants more than a surface-level tour. Every stage explains the idea properly before showing code, and every project is something you actually build, not just read about. Use the menu to jump to any stage.</p>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><b>12</b><span>in-depth stages</span></div>
+      <div class="hero-stat"><b>4</b><span>concepts explained per stage</span></div>
+      <div class="hero-stat"><b>1</b><span>capstone that ties it all together</span></div>
+    </div>
+    <div class="overview-grid">
+      ${stages.map((s,i)=>`<div class="overview-card" data-goto="${i}"><span class="n">0${i+1}</span><span class="t">${s.title}</span></div>`).join("")}
+      <div class="overview-card" data-goto="capstone"><span class="n">🏁</span><span class="t">Capstone project</span></div>
+    </div>
+    <p class="hero-note">Tip: each stage ends with a "what's next" note explaining exactly why the next stage exists — the roadmap is designed to be read in order the first time through.</p>
+  `;
+}
+
+function renderStage(i){
+  const s = stages[i];
+  const prev = i>0 ? i-1 : null;
+  const next = i<stages.length-1 ? i+1 : "capstone";
+  activeCodeTab = 0;
+  return `
+    <div class="stage-kicker">${s.kicker}</div>
+    <div class="stage-h">
+      <div class="icon">${s.icon}</div>
+      <div>
+        <h2>${s.title}</h2>
+        <p class="sub">${s.sub}</p>
+      </div>
+    </div>
+
+    <p class="intro-block">${s.intro}</p>
+
+    <div class="section-label"><span class="num">1</span> Key concepts</div>
+    <div class="concept-grid">
+      ${s.concepts.map(c=>`<div class="concept-card"><h4><span class="dot"></span>${c.name}</h4><p>${c.explain}</p></div>`).join("")}
+    </div>
+
+    <div class="section-label"><span class="num">2</span> Where you'd actually see this</div>
+    <div class="example-list">
+      ${s.examples.map(e=>`<div class="example-row"><span class="em">${e.em}</span><span>${e.text}</span></div>`).join("")}
+    </div>
+
+    <div class="section-label"><span class="num">3</span> Common mistakes</div>
+    <div class="pitfall-list">
+      ${s.pitfalls.map(p=>`<div class="pitfall-item"><span class="em">⚠️</span><span><b>${p.b}:</b> ${p.t}</span></div>`).join("")}
+    </div>
+
+    <div class="section-label"><span class="num">4</span> Build this</div>
+    <div class="project-box">
+      <h4>${s.project.title}</h4>
+      <p>${s.project.desc}</p>
+      <ol class="step-list">${s.project.steps.map(st=>`<li>${st}</li>`).join("")}</ol>
+      <div class="stretch-goal"><b>Stretch goal:</b> ${s.project.stretch}</div>
+    </div>
+    <div class="tools-row">${s.tools.map(t=>`<span class="tool-tag">${t}</span>`).join("")}</div>
+
+    <div class="section-label"><span class="num">5</span> Starter code</div>
+    <div class="code-tabs">
+      ${s.code.map((c,ci)=>`<div class="code-tab ${ci===0?'active':''}" data-tab="${ci}">${c.label}</div>`).join("")}
+    </div>
+    ${s.code.map((c,ci)=>`<div class="code-panel ${ci===0?'active':''}" data-panel="${ci}"><pre>${c.code}</pre></div>`).join("")}
+
+    <div class="nextup"><span class="em">➡️</span><span><b>What's next:</b> ${s.nextUp}</span></div>
+
+    <div class="checkline">
+      <input type="checkbox" id="chkStage" ${doneSet.has(i)?"checked":""}>
+      <label for="chkStage">I built this one</label>
+    </div>
+    <div class="stage-nav">
+      <button class="stage-nav-btn" data-goto="${prev===null?'overview':prev}">
+        <span class="dir">${prev===null?'← Back to':'← Previous'}</span>
+        <span class="lbl">${prev===null?'Overview':stages[prev].title}</span>
+      </button>
+      <button class="stage-nav-btn next" data-goto="${next}">
+        <span class="dir">${next==='capstone'?'Finish with →':'Next →'}</span>
+        <span class="lbl">${next==='capstone'?'Capstone project':stages[next].title}</span>
+      </button>
+    </div>
+  `;
+}
+
+function renderCapstone(){
+  return `
+    <span class="capstone-badge">🏁 Capstone</span>
+    <div class="stage-h">
+      <div class="icon">🏁</div>
+      <div>
+        <h2>Build one thing that uses everything</h2>
+        <p class="sub">The project that proves you're not just following tutorials anymore</p>
+      </div>
+    </div>
+    <p class="intro-block">Once you've been through the stages, the real test isn't repeating each project in isolation — it's combining them into one working system. Pick a dataset you actually care about: your own workouts, your expenses, your reading list, your favorite movies. Take it all the way from a raw file to a working assistant someone else could actually use.</p>
+
+    <div class="section-label"><span class="num">1</span> The pipeline</div>
+    <div class="flow">
+      <div class="flow-step">📄 CSV of real data</div><div class="flow-arrow">→</div>
+      <div class="flow-step">🗄️ Load into SQL</div><div class="flow-arrow">→</div>
+      <div class="flow-step">🧹 Clean with pandas</div><div class="flow-arrow">→</div>
+      <div class="flow-step">🔎 Embed for search</div><div class="flow-arrow">→</div>
+      <div class="flow-step">🧠 RAG answers questions</div><div class="flow-arrow">→</div>
+      <div class="flow-step">🤖 Agent decides when to query</div><div class="flow-arrow">→</div>
+      <div class="flow-step">🔌 FastAPI serves it</div>
+    </div>
+
+    <div class="section-label"><span class="num">2</span> What each stage contributes</div>
+    <div class="capstone-detail"><h4>Data engineering + SQL (Stages 3–4)</h4><p>Your pipeline pulls the raw data, cleans it, and loads it into a real database — the foundation everything else queries against.</p></div>
+    <div class="capstone-detail"><h4>Data science (Stage 5)</h4><p>Before building the assistant, actually explore the data yourself — you'll write better prompts and catch bad data once you understand what's really in there.</p></div>
+    <div class="capstone-detail"><h4>RAG (Stage 10)</h4><p>Embed your cleaned records so the assistant can find the specific rows relevant to a question, instead of guessing from general knowledge.</p></div>
+    <div class="capstone-detail"><h4>Agents (Stage 9)</h4><p>Let the model decide when it actually needs to query your data versus answering directly — not every question needs a database hit.</p></div>
+    <div class="capstone-detail"><h4>FastAPI (Stage 12)</h4><p>Wrap the whole thing behind a real endpoint so you (or a friend) can actually use it from a browser or phone, not just your terminal.</p></div>
+
+    <div class="section-label"><span class="num">3</span> A realistic first version</div>
+    <div class="project-box">
+      <h4>Personal-data Q&A assistant</h4>
+      <p>Something you could genuinely use day to day, built from data you already have.</p>
+      <ol class="step-list">
+        <li>Export or collect a real dataset about yourself — expenses, workouts, reading, or similar — as a CSV.</li>
+        <li>Build a small pipeline (Stage 4) that cleans it and loads it into SQLite (Stage 3).</li>
+        <li>Chunk and embed the records (Stage 10) so they're searchable by meaning, not just exact match.</li>
+        <li>Give an agent (Stage 9) a tool to query the database directly, and a tool to search the embeddings, letting it choose which one fits a given question.</li>
+        <li>Wrap it behind a FastAPI /ask endpoint (Stage 12) and test it with questions you don't already know the answer to.</li>
+      </ol>
+      <div class="stretch-goal"><b>Stretch goal:</b> package your assistant's data-access tool as an MCP server (Stage 11) so it could be reused by any other MCP-compatible AI app, not just your own code.</div>
+    </div>
+
+    <div class="stage-nav">
+      <button class="stage-nav-btn" data-goto="${stages.length-1}">
+        <span class="dir">← Previous</span>
+        <span class="lbl">${stages[stages.length-1].title}</span>
+      </button>
+      <button class="stage-nav-btn next" data-goto="overview">
+        <span class="dir">Start over →</span>
+        <span class="lbl">Overview</span>
+      </button>
+    </div>
+  `;
+}
+
+function renderNav(){
+  const navList = document.getElementById("navList");
+  let html = `<div class="nav-item ${currentView==='overview'?'active':''}" data-goto="overview">
+      <span class="nav-icon">🏠</span><span class="nav-text">Overview</span>
+    </div>
+    <div class="nav-group-label">The 12 stages</div>`;
+  stages.forEach((s,i)=>{
+    const active = currentView === String(i);
+    const done = doneSet.has(i);
+    html += `<div class="nav-item ${active?'active':''}" data-goto="${i}">
+      <span class="nav-icon">${s.icon}</span>
+      <span class="nav-text">${s.title}</span>
+      <svg class="nav-check ${done?'on':''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>`;
+  });
+  html += `<div class="nav-group-label">Finish</div>
+    <div class="nav-item ${currentView==='capstone'?'active':''}" data-goto="capstone">
+      <span class="nav-icon">🏁</span><span class="nav-text">Capstone project</span>
+    </div>`;
+  navList.innerHTML = html;
+}
+
+function renderProgress(){
+  document.getElementById("doneCount").textContent = doneSet.size;
+  document.getElementById("barFill").style.width = (doneSet.size/stages.length*100)+"%";
+}
+
+function goto(view){
+  currentView = view;
+  const content = document.getElementById("content");
+  if(view === "overview") content.innerHTML = renderOverview();
+  else if(view === "capstone") content.innerHTML = renderCapstone();
+  else content.innerHTML = renderStage(parseInt(view,10));
+  renderNav();
+  attachContentHandlers();
+  window.scrollTo({top:0, behavior:"instant"});
+  closeSidebar();
+}
+
+function attachContentHandlers(){
+  document.querySelectorAll("[data-goto]").forEach(el=>{
+    el.addEventListener("click",()=>goto(el.dataset.goto));
+  });
+  document.querySelectorAll("[data-tab]").forEach(el=>{
+    el.addEventListener("click",()=>{
+      const tabIdx = el.dataset.tab;
+      document.querySelectorAll("[data-tab]").forEach(t=>t.classList.toggle("active", t.dataset.tab===tabIdx));
+      document.querySelectorAll("[data-panel]").forEach(p=>p.classList.toggle("active", p.dataset.panel===tabIdx));
+    });
+  });
+  const chk = document.getElementById("chkStage");
+  if(chk){
+    chk.addEventListener("change", ()=>{
+      const idx = parseInt(currentView,10);
+      if(chk.checked) doneSet.add(idx); else doneSet.delete(idx);
+      renderProgress();
+      renderNav();
+      attachContentHandlers();
+    });
+  }
+}
+
+const sidebar = document.getElementById("sidebar");
+const overlay = document.getElementById("overlay");
+function openSidebar(){ sidebar.classList.add("open"); overlay.classList.add("open"); }
+function closeSidebar(){ sidebar.classList.remove("open"); overlay.classList.remove("open"); }
+document.getElementById("menuBtn").addEventListener("click", openSidebar);
+overlay.addEventListener("click", closeSidebar);
+
+renderProgress();
+goto("overview");
+</script>
+</body>
+</html>
