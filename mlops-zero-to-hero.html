@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MLOps Zero to Hero — Azure &amp; AWS Field Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0E16;
+  --surface:#111623;
+  --surface-2:#161C2C;
+  --surface-3:#1C2338;
+  --border:#242C42;
+  --border-soft:#1A2032;
+  --text:#E7EBF5;
+  --text-dim:#97A2BC;
+  --text-faint:#5D6784;
+  --azure:#3FA0F2;
+  --azure-deep:#1E5FA8;
+  --azure-soft:rgba(63,160,242,0.12);
+  --aws:#FF9E2C;
+  --aws-deep:#B96A00;
+  --aws-soft:rgba(255,158,44,0.12);
+  --good:#3FD98B;
+  --warn:#F2C94C;
+  --bad:#F2685C;
+  --purple:#B08CF2;
+  --radius:10px;
+  --font-head:'Space Grotesk',sans-serif;
+  --font-body:'Inter',sans-serif;
+  --font-code:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-body);
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--azure-soft);color:var(--text);}
+
+/* ---------- Top progress bar ---------- */
+#progress{position:fixed;top:0;left:0;height:3px;width:0%;background:linear-gradient(90deg,var(--azure),var(--aws));z-index:200;transition:width .1s linear;}
+
+/* ---------- Layout ---------- */
+.shell{display:flex;min-height:100vh;}
+
+/* Sidebar */
+.sidebar{
+  width:300px;flex:0 0 300px;
+  background:var(--surface);
+  border-right:1px solid var(--border-soft);
+  position:sticky;top:0;height:100vh;overflow-y:auto;
+  padding:22px 16px 40px;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+}
+.sidebar::-webkit-scrollbar{width:6px;}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px 18px;border-bottom:1px solid var(--border-soft);margin-bottom:14px;}
+.brand-mark{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--azure),var(--aws));display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:700;font-size:15px;color:#08090D;flex:none;}
+.brand-text{font-family:var(--font-head);font-weight:600;font-size:15px;letter-spacing:-.01em;}
+.brand-sub{font-size:11px;color:var(--text-faint);margin-top:1px;}
+
+.nav-search{position:relative;margin-bottom:16px;}
+.nav-search input{
+  width:100%;background:var(--surface-2);border:1px solid var(--border);color:var(--text);
+  padding:9px 12px 9px 32px;border-radius:8px;font-size:13px;font-family:var(--font-body);
+}
+.nav-search input::placeholder{color:var(--text-faint);}
+.nav-search input:focus{outline:none;border-color:var(--azure);}
+.nav-search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;stroke:var(--text-faint);}
+
+.nav-group{margin-bottom:4px;}
+.nav-group-btn{
+  width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  background:none;border:none;color:var(--text-dim);font-family:var(--font-body);font-weight:600;
+  font-size:11px;text-transform:uppercase;letter-spacing:.06em;padding:12px 8px 6px;cursor:pointer;
+}
+.nav-group-btn .chev{width:10px;height:10px;transition:transform .15s ease;stroke:var(--text-faint);flex:none;}
+.nav-group.collapsed .chev{transform:rotate(-90deg);}
+.nav-group.collapsed .nav-list{display:none;}
+.nav-list{list-style:none;margin:0;padding:0;}
+.nav-list li a{
+  display:flex;align-items:center;gap:9px;
+  padding:7px 10px 7px 12px;margin:1px 0;border-radius:7px;
+  color:var(--text-dim);text-decoration:none;font-size:13.5px;font-weight:500;
+  border-left:2px solid transparent;
+}
+.nav-list li a:hover{background:var(--surface-2);color:var(--text);}
+.nav-list li a.active{background:var(--surface-3);color:var(--text);border-left-color:var(--azure);}
+.nav-tag{width:6px;height:6px;border-radius:50%;flex:none;}
+.tag-az{background:var(--azure);}
+.tag-aws{background:var(--aws);}
+.tag-core{background:var(--purple);}
+.tag-neutral{background:var(--text-faint);}
+
+.sidebar-foot{margin-top:20px;padding:12px;border-radius:8px;background:var(--surface-2);border:1px solid var(--border-soft);font-size:11.5px;color:var(--text-faint);line-height:1.5;}
+
+/* Mobile toggle */
+.mobile-bar{display:none;}
+
+/* Main */
+main{flex:1;min-width:0;}
+.section{padding:64px 56px;border-bottom:1px solid var(--border-soft);max-width:1120px;}
+.section:last-of-type{border-bottom:none;}
+.section-inner-wide{max-width:1120px;}
+.eyebrow-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:4px 9px;border-radius:20px;letter-spacing:.02em;}
+.badge-beg{background:rgba(63,217,139,.12);color:var(--good);}
+.badge-int{background:rgba(242,201,76,.12);color:var(--warn);}
+.badge-exp{background:rgba(242,104,92,.12);color:var(--bad);}
+.badge-az{background:var(--azure-soft);color:var(--azure);}
+.badge-aws{background:var(--aws-soft);color:var(--aws);}
+.badge-core{background:rgba(176,140,242,.12);color:var(--purple);}
+
+h1,h2,h3,h4{font-family:var(--font-head);font-weight:600;letter-spacing:-.015em;color:var(--text);margin:0 0 14px;}
+.section h2{font-size:30px;margin-bottom:10px;}
+.section h3{font-size:19px;margin:32px 0 12px;}
+.section h4{font-size:15px;margin:22px 0 8px;color:var(--text);}
+.section p{color:var(--text-dim);font-size:15px;max-width:74ch;margin:0 0 14px;}
+.section p.lead{font-size:16.5px;color:var(--text);max-width:70ch;}
+.section ul,.section ol{color:var(--text-dim);font-size:14.5px;max-width:72ch;padding-left:20px;}
+.section li{margin-bottom:7px;}
+.section li strong{color:var(--text);}
+a{color:var(--azure);}
+
+/* Hero */
+.hero{padding:88px 56px 60px;border-bottom:1px solid var(--border-soft);}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--text-dim);background:var(--surface-2);border:1px solid var(--border);padding:6px 12px;border-radius:20px;margin-bottom:22px;}
+.hero-eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--good);box-shadow:0 0 0 3px rgba(63,217,139,.15);}
+.hero h1{font-size:52px;line-height:1.05;max-width:16ch;margin-bottom:20px;}
+.hero h1 .grad{background:linear-gradient(90deg,var(--azure),var(--aws));-webkit-background-clip:text;background-clip:text;color:transparent;}
+.hero p.lede{font-size:18px;color:var(--text-dim);max-width:62ch;margin-bottom:34px;}
+.stat-row{display:flex;gap:36px;flex-wrap:wrap;margin-bottom:40px;}
+.stat b{display:block;font-family:var(--font-head);font-size:28px;color:var(--text);}
+.stat span{font-size:12.5px;color:var(--text-faint);}
+.hero-ctas{display:flex;gap:12px;flex-wrap:wrap;}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;text-decoration:none;border:1px solid transparent;cursor:pointer;font-family:var(--font-body);}
+.btn-primary{background:var(--text);color:#0A0E16;}
+.btn-ghost{background:var(--surface-2);color:var(--text);border-color:var(--border);}
+
+/* Path cards on hero */
+.path-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:44px;}
+.path-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);padding:18px;}
+.path-card .pc-num{font-family:var(--font-code);font-size:12px;color:var(--text-faint);margin-bottom:8px;}
+.path-card h4{margin:0 0 6px;font-size:14.5px;}
+.path-card p{font-size:13px;margin:0;color:var(--text-faint);}
+
+/* Cards / grids */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:20px 0;}
+.card{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);padding:20px;}
+.card h4{margin-top:0;}
+.card p{font-size:13.5px;}
+
+/* Code blocks */
+.code-wrap{position:relative;margin:16px 0 22px;border-radius:9px;overflow:hidden;border:1px solid var(--border);background:#0D111C;}
+.code-head{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--surface-2);border-bottom:1px solid var(--border);}
+.code-lang{font-family:var(--font-code);font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em;}
+.copy-btn{background:none;border:1px solid var(--border);color:var(--text-faint);font-size:11px;padding:4px 9px;border-radius:6px;cursor:pointer;font-family:var(--font-body);}
+.copy-btn:hover{color:var(--text);border-color:var(--text-faint);}
+pre{margin:0;padding:16px;overflow-x:auto;font-family:var(--font-code);font-size:12.6px;line-height:1.6;color:#CBD5EA;}
+pre .c1{color:#6B7690;} /* comment */
+pre .kw{color:#3FA0F2;} /* keyword */
+pre .st{color:#3FD98B;} /* string */
+pre .fn{color:#F2C94C;} /* function/key */
+pre .aw{color:#FF9E2C;}
+
+/* Callouts */
+.callout{border-radius:var(--radius);padding:16px 18px;margin:18px 0;border:1px solid var(--border-soft);border-left:3px solid var(--text-faint);background:var(--surface);}
+.callout p{margin:0;font-size:13.8px;}
+.callout .co-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:block;}
+.callout.war{border-left-color:var(--purple);}
+.callout.war .co-label{color:var(--purple);}
+.callout.pit{border-left-color:var(--bad);}
+.callout.pit .co-label{color:var(--bad);}
+.callout.tip{border-left-color:var(--good);}
+.callout.tip .co-label{color:var(--good);}
+.callout.az{border-left-color:var(--azure);}
+.callout.az .co-label{color:var(--azure);}
+.callout.aws{border-left-color:var(--aws);}
+.callout.aws .co-label{color:var(--aws);}
+
+/* Tables */
+.tbl-wrap{overflow-x:auto;margin:18px 0;border:1px solid var(--border-soft);border-radius:var(--radius);}
+table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:640px;}
+th{background:var(--surface-2);text-align:left;padding:11px 14px;font-family:var(--font-head);font-weight:600;font-size:12.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);}
+td{padding:11px 14px;border-bottom:1px solid var(--border-soft);color:var(--text-dim);vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+td strong,td b{color:var(--text);}
+.tbl-wrap tr:hover td{background:var(--surface-2);}
+
+/* Details / QA */
+details.qa{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);margin-bottom:10px;padding:0;}
+details.qa summary{cursor:pointer;padding:15px 18px;font-weight:600;font-size:14.5px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+details.qa summary::-webkit-details-marker{display:none;}
+details.qa summary::after{content:'+';color:var(--text-faint);font-size:18px;flex:none;}
+details.qa[open] summary::after{content:'–';}
+details.qa .qa-body{padding:0 18px 18px;color:var(--text-dim);font-size:13.8px;}
+details.qa .qa-body p{margin:0 0 10px;font-size:13.8px;}
+
+/* Timeline (maturity model) */
+.mat-row{display:flex;border:1px solid var(--border-soft);border-radius:var(--radius);overflow:hidden;margin:20px 0;}
+.mat-col{flex:1;padding:18px;border-right:1px solid var(--border-soft);}
+.mat-col:last-child{border-right:none;}
+.mat-col .lvl{font-family:var(--font-code);font-size:11px;color:var(--text-faint);margin-bottom:6px;}
+.mat-col h4{margin:0 0 8px;font-size:14px;}
+.mat-col p{font-size:12.5px;color:var(--text-faint);margin:0;}
+.mat-col.lvl0{background:rgba(242,104,92,.05);}
+.mat-col.lvl1{background:rgba(242,201,76,.05);}
+.mat-col.lvl2{background:rgba(63,160,242,.05);}
+.mat-col.lvl3{background:rgba(63,217,139,.05);}
+
+/* Tabs (cloud toggle) */
+.tab-group{margin:18px 0;}
+.tab-btns{display:flex;gap:6px;margin-bottom:0;}
+.tab-btn{background:var(--surface);border:1px solid var(--border-soft);border-bottom:none;color:var(--text-faint);padding:9px 16px;border-radius:8px 8px 0 0;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-body);}
+.tab-btn.active{color:var(--text);background:var(--surface-2);}
+.tab-panels{border:1px solid var(--border-soft);border-radius:0 8px 8px 8px;background:var(--surface-2);padding:20px;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* Architecture diagram (SVG) */
+.diagram-box{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);padding:24px;margin:20px 0;overflow-x:auto;}
+.diagram-box svg{display:block;margin:0 auto;}
+
+/* Case study cards */
+.case-card{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--radius);padding:24px;margin-bottom:18px;}
+.case-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:10px;}
+.case-head h3{margin:0;font-size:18px;}
+.case-meta{display:flex;gap:8px;flex-wrap:wrap;}
+.case-stack{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0;}
+.chip{font-size:11.5px;background:var(--surface-3);border:1px solid var(--border);color:var(--text-dim);padding:4px 10px;border-radius:20px;font-family:var(--font-code);}
+.case-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:14px;}
+.case-grid h5{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-faint);}
+.case-grid p{font-size:13.5px;margin:0;}
+
+/* Footer */
+footer{padding:40px 56px 70px;color:var(--text-faint);font-size:12.5px;}
+
+/* Back to top */
+#toTop{position:fixed;bottom:24px;right:24px;width:42px;height:42px;border-radius:50%;background:var(--surface-3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:150;}
+#toTop.show{opacity:1;pointer-events:auto;}
+#toTop svg{width:16px;height:16px;stroke:var(--text-dim);}
+
+@media (max-width:980px){
+  .sidebar{position:fixed;left:-320px;top:0;z-index:220;transition:left .2s ease;box-shadow:0 0 40px rgba(0,0,0,.5);}
+  .sidebar.open{left:0;}
+  .mobile-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;position:sticky;top:0;background:var(--surface);border-bottom:1px solid var(--border-soft);z-index:150;}
+  .mobile-bar .brand{border:none;padding:0;margin:0;}
+  .mb-toggle{background:var(--surface-2);border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .section{padding:44px 20px;}
+  .hero{padding:40px 20px 40px;}
+  .hero h1{font-size:34px;}
+  .grid-2,.grid-3,.path-grid,.case-grid{grid-template-columns:1fr;}
+  .stat-row{gap:24px;}
+  #overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:210;}
+  #overlay.show{display:block;}
+}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+<div id="overlay" onclick="toggleSidebar(false)"></div>
+
+<div class="mobile-bar">
+  <div class="brand"><div class="brand-mark">ML</div><div><div class="brand-text">MLOps Field Guide</div></div></div>
+  <button class="mb-toggle" onclick="toggleSidebar()" aria-label="Toggle menu">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+</div>
+
+<div class="shell">
+  <!-- SIDEBAR -->
+  <nav class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark">ML</div>
+      <div>
+        <div class="brand-text">MLOps Field Guide</div>
+        <div class="brand-sub">Zero → Hero · Azure &amp; AWS</div>
+      </div>
+    </div>
+
+    <div class="nav-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="navFilter" type="text" placeholder="Filter topics…" oninput="filterNav(this.value)">
+    </div>
+
+    <div class="nav-group">
+      <button class="nav-group-btn" onclick="toggleGroup(this)">Foundations <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>
+      <ul class="nav-list">
+        <li><a href="#what-is-mlops"><span class="nav-tag tag-core"></span>What is MLOps</a></li>
+        <li><a href="#lifecycle"><span class="nav-tag tag-core"></span>ML lifecycle map</a></li>
+        <li><a href="#maturity-model"><span class="nav-tag tag-core"></span>Maturity model (L0–L3)</a></li>
+        <li><a href="#roles"><span class="nav-tag tag-core"></span>Roles &amp; team topology</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-group">
+      <button class="nav-group-btn" onclick="toggleGroup(this)">Core Pillars <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>
+      <ul class="nav-list">
+        <li><a href="#pillar-data"><span class="nav-tag tag-core"></span>Data &amp; feature versioning</a></li>
+        <li><a href="#pillar-feature-store"><span class="nav-tag tag-core"></span>Feature stores</a></li>
+        <li><a href="#pillar-experiment"><span class="nav-tag tag-core"></span>Experiment tracking</a></li>
+        <li><a href="#pillar-registry"><span class="nav-tag tag-core"></span>Model registry &amp; lineage</a></li>
+        <li><a href="#pillar-cicd"><span class="nav-tag tag-core"></span>CI/CD/CT pipelines</a></li>
+        <li><a href="#pillar-deploy"><span class="nav-tag tag-core"></span>Deployment patterns</a></li>
+        <li><a href="#pillar-monitor"><span class="nav-tag tag-core"></span>Monitoring &amp; drift</a></li>
+        <li><a href="#pillar-governance"><span class="nav-tag tag-core"></span>Governance &amp; cost</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-group">
+      <button class="nav-group-btn" onclick="toggleGroup(this)">Azure ML Track <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>
+      <ul class="nav-list">
+        <li><a href="#azure-overview"><span class="nav-tag tag-az"></span>Platform overview</a></li>
+        <li><a href="#azure-workspace"><span class="nav-tag tag-az"></span>Workspace &amp; compute</a></li>
+        <li><a href="#azure-pipelines"><span class="nav-tag tag-az"></span>Pipelines (SDK v2 + YAML)</a></li>
+        <li><a href="#azure-devops"><span class="nav-tag tag-az"></span>Azure DevOps CI/CD</a></li>
+        <li><a href="#azure-deploy"><span class="nav-tag tag-az"></span>Endpoints, AKS &amp; batch</a></li>
+        <li><a href="#azure-monitor"><span class="nav-tag tag-az"></span>Monitor, drift &amp; Responsible AI</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-group">
+      <button class="nav-group-btn" onclick="toggleGroup(this)">AWS SageMaker Track <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>
+      <ul class="nav-list">
+        <li><a href="#aws-overview"><span class="nav-tag tag-aws"></span>Platform overview</a></li>
+        <li><a href="#aws-studio"><span class="nav-tag tag-aws"></span>Studio, domains &amp; roles</a></li>
+        <li><a href="#aws-pipelines"><span class="nav-tag tag-aws"></span>SageMaker Pipelines SDK</a></li>
+        <li><a href="#aws-codepipeline"><span class="nav-tag tag-aws"></span>CodePipeline / CI-CD-CT</a></li>
+        <li><a href="#aws-deploy"><span class="nav-tag tag-aws"></span>Endpoints, serverless &amp; batch</a></li>
+        <li><a href="#aws-monitor"><span class="nav-tag tag-aws"></span>Model Monitor &amp; Clarify</a></li>
+      </ul>
+    </div>
+
+    <div class="nav-group">
+      <button class="nav-group-btn" onclick="toggleGroup(this)">Compare &amp; Apply <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></button>
+      <ul class="nav-list">
+        <li><a href="#comparison"><span class="nav-tag tag-neutral"></span>Azure vs AWS service map</a></li>
+        <li><a href="#architecture"><span class="nav-tag tag-neutral"></span>Reference architectures</a></li>
+        <li><a href="#case-studies"><span class="nav-tag tag-neutral"></span>Real-world case studies</a></li>
+        <li><a href="#llmops"><span class="nav-tag tag-neutral"></span>LLMOps addendum</a></li>
+        <li><a href="#interview-qa"><span class="nav-tag tag-neutral"></span>Senior interview Q&amp;A</a></li>
+        <li><a href="#glossary"><span class="nav-tag tag-neutral"></span>Glossary</a></li>
+      </ul>
+    </div>
+
+    <div class="sidebar-foot">Built as a single-file reference. Difficulty badges mark each section — <span style="color:var(--good)">Beginner</span>, <span style="color:var(--warn)">Intermediate</span>, <span style="color:var(--bad)">Expert</span> — so newcomers and 8+ year veterans can both jump straight to what they need.</div>
+  </nav>
+
+  <!-- MAIN -->
+  <main>
+
+    <section class="hero" id="top">
+      <span class="hero-eyebrow"><span class="dot"></span>Updated field guide · Azure ML + AWS SageMaker</span>
+      <h1>MLOps, <span class="grad">Zero to Hero.</span><br>Built for both clouds.</h1>
+      <p class="lede">A single, deep, practical reference for taking machine learning from a notebook to a governed, monitored, continuously-retrained production system — with parallel, runnable examples on <strong style="color:var(--azure)">Azure Machine Learning</strong> and <strong style="color:var(--aws)">AWS SageMaker</strong>. Written so a first-week engineer can follow the path, and an 8+ year MLOps lead can jump straight to architecture trade-offs.</p>
+      <div class="stat-row">
+        <div class="stat"><b>26</b><span>topics covered</span></div>
+        <div class="stat"><b>2</b><span>clouds, side by side</span></div>
+        <div class="stat"><b>40+</b><span>code &amp; config examples</span></div>
+        <div class="stat"><b>6</b><span>real production case studies</span></div>
+      </div>
+      <div class="hero-ctas">
+        <a href="#what-is-mlops" class="btn btn-primary">Start at the foundations →</a>
+        <a href="#comparison" class="btn btn-ghost">Jump to Azure vs AWS</a>
+        <a href="#interview-qa" class="btn btn-ghost">Skip to senior Q&amp;A</a>
+      </div>
+
+      <div class="path-grid">
+        <div class="path-card"><div class="pc-num">PATH 01</div><h4>New to MLOps</h4><p>Foundations → Core Pillars → pick one cloud track → Case Studies.</p></div>
+        <div class="path-card"><div class="pc-num">PATH 02</div><h4>Cloud migrator</h4><p>Comparison table → the track you're moving to → Reference architectures.</p></div>
+        <div class="path-card"><div class="pc-num">PATH 03</div><h4>Senior / interview prep</h4><p>Core Pillars (deep) → Interview Q&amp;A → Reference architectures.</p></div>
+      </div>
+    </section>
+
+    <!-- ================= FOUNDATIONS ================= -->
+    <section class="section" id="what-is-mlops">
+      <div class="eyebrow-row"><span class="badge badge-beg">Beginner</span><span class="badge badge-core">Foundations</span></div>
+      <h2>What MLOps actually is</h2>
+      <p class="lead">MLOps is DevOps plus two things DevOps never had to deal with: <strong>data</strong> that changes shape and distribution over time, and <strong>models</strong> whose "correctness" degrades silently even when the code hasn't changed. A model that scored 94% accuracy on Tuesday can be quietly wrong by Friday because user behavior shifted — no exception is thrown, no build breaks. MLOps is the discipline (and tooling) that makes that visible and reversible.</p>
+
+      <div class="grid-3">
+        <div class="card">
+          <h4>Reproducibility</h4>
+          <p>Given a model version, you can rebuild the exact data, code, and environment that produced it — six months later, on a different cluster.</p>
+        </div>
+        <div class="card">
+          <h4>Automation (CI/CD/CT)</h4>
+          <p>Continuous Integration and Delivery, plus <strong>Continuous Training</strong>: pipelines that retrain and redeploy automatically when data drifts or a schedule fires.</p>
+        </div>
+        <div class="card">
+          <h4>Observability</h4>
+          <p>Not just uptime — prediction quality, input drift, feature skew, and business KPIs tied back to a specific model version.</p>
+        </div>
+      </div>
+
+      <div class="callout tip">
+        <span class="co-label">Mental model</span>
+        <p>Traditional software has one artifact that changes: code. ML systems have three that change independently and interact: <strong>code</strong>, <strong>data</strong>, and <strong>the model/config</strong>. Every MLOps pattern in this guide exists to version, test, and roll back some combination of those three.</p>
+      </div>
+
+      <h3>Why 8-year engineers still get burned by this</h3>
+      <p>Experienced backend and data engineers often under-invest in MLOps because their instinct — "version the code, ship the container" — is necessary but not sufficient. Three failure modes repeat across almost every org:</p>
+      <ul>
+        <li><strong>Training/serving skew.</strong> Feature computed one way in a notebook, a slightly different way in the serving pipeline (e.g. a `fillna(0)` vs `fillna(mean)` mismatch). Model looks fine offline, degrades in production.</li>
+        <li><strong>Silent drift.</strong> No error, no alert — the input distribution moved, and nobody is watching the right metric (they're watching latency/uptime, not prediction distribution).</li>
+        <li><strong>Untraceable models.</strong> "Which data, code commit, and hyperparameters produced the model currently serving traffic?" is unanswerable six months in without a registry and lineage.</li>
+      </ul>
+    </section>
+
+    <section class="section" id="lifecycle">
+      <div class="eyebrow-row"><span class="badge badge-beg">Beginner</span><span class="badge badge-core">Foundations</span></div>
+      <h2>The end-to-end ML lifecycle</h2>
+      <p class="lead">Every cloud platform in this guide is really just tooling wrapped around the same eight stages. Learn this loop first — everything else is "how does Azure/AWS implement stage N."</p>
+
+      <div class="diagram-box">
+        <svg viewBox="0 0 980 260" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" font-family="Inter, sans-serif">
+          <defs>
+            <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5D6784"/></marker>
+          </defs>
+          <!-- boxes -->
+          <g font-size="12" fill="#E7EBF5">
+            <g>
+              <rect x="10" y="90" width="110" height="60" rx="8" fill="#161C2C" stroke="#242C42"/>
+              <text x="65" y="115" text-anchor="middle" font-weight="600">Data</text>
+              <text x="65" y="132" text-anchor="middle" fill="#97A2BC" font-size="10.5">ingest / label</text>
+            </g>
+            <g>
+              <rect x="150" y="90" width="110" height="60" rx="8" fill="#161C2C" stroke="#242C42"/>
+              <text x="205" y="115" text-anchor="middle" font-weight="600">Features</text>
+              <text x="205" y="132" text-anchor="middle" fill="#97A2BC" font-size="10.5">transform / store</text>
+            </g>
+            <g>
+              <rect x="290" y="90" width="110" height="60" rx="8" fill="#161C2C" stroke="#242C42"/>
+              <text x="345" y="115" text-anchor="middle" font-weight="600">Train</text>
+              <text x="345" y="132" text-anchor="middle" fill="#97A2BC" font-size="10.5">experiment track</text>
+            </g>
+            <g>
+              <rect x="430" y="90" width="110" height="60" rx="8" fill="#161C2C" stroke="#242C42"/>
+              <text x="485" y="115" text-anchor="middle" font-weight="600">Evaluate</text>
+              <text x="485" y="132" text-anchor="middle" fill="#97A2BC" font-size="10.5">gate on metrics</text>
+            </g>
+            <g>
+              <rect x="570" y="90" width="110" height="60" rx="8" fill="#161C2C" stroke="#242C42"/>
+              <text x="625" y="115" text-anchor="middle" font-weight="600">Register</text>
+              <text x="625" y="132" text-anchor="middle" fill="#97A2BC" font-size="10.5">version + lineage</text>
+            </g>
+            <g>
+              <rect x="710" y="90" width="110" height="60" rx="8" fill="#161C2C" stroke="#242C42"/>
+              <text x="765" y="115" text-anchor="middle" font-weight="600">Deploy</text>
+              <text x="765" y="132" text-anchor="middle" fill="#97A2BC" font-size="10.5">canary / shadow</text>
+            </g>
+            <g>
+              <rect x="850" y="90" width="120" height="60" rx="8" fill="#161C2C" stroke="#242C42"/>
+              <text x="910" y="115" text-anchor="middle" font-weight="600">Monitor</text>
+              <text x="910" y="132" text-anchor="middle" fill="#97A2BC" font-size="10.5">drift / quality</text>
+            </g>
+          </g>
+          <!-- arrows forward -->
+          <line x1="120" y1="120" x2="148" y2="120" stroke="#5D6784" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <line x1="260" y1="120" x2="288" y2="120" stroke="#5D6784" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <line x1="400" y1="120" x2="428" y2="120" stroke="#5D6784" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <line x1="540" y1="120" x2="568" y2="120" stroke="#5D6784" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <line x1="680" y1="120" x2="708" y2="120" stroke="#5D6784" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <line x1="820" y1="120" x2="848" y2="120" stroke="#5D6784" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <!-- feedback loop -->
+          <path d="M910,150 C 910,210 65,210 65,150" fill="none" stroke="#3FA0F2" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
+          <text x="487" y="225" text-anchor="middle" fill="#3FA0F2" font-size="11.5">Continuous Training loop — retrigger on drift, schedule, or new labels</text>
+        </svg>
+      </div>
+
+      <p>The loop closes at <strong>Monitor</strong>, which is the stage most teams under-build. Data and Features are usually owned by data engineering; Train/Evaluate/Register by ML engineers; Deploy/Monitor by platform or MLOps engineers — which is exactly why hand-offs between these stages are where most production incidents originate.</p>
+    </section>
+
+    <section class="section" id="maturity-model">
+      <div class="eyebrow-row"><span class="badge badge-int">Intermediate</span><span class="badge badge-core">Foundations</span></div>
+      <h2>MLOps maturity model (L0 → L3)</h2>
+      <p class="lead">Use this to honestly place your org — and to justify investment. Almost every team overestimates its own level.</p>
+
+      <div class="mat-row">
+        <div class="mat-col lvl0">
+          <div class="lvl">LEVEL 0</div>
+          <h4>Manual, notebook-driven</h4>
+          <p>Data scientist trains locally, hands a pickle/serialized model to an engineer over Slack. No pipeline, no registry. Deployment is a manual, infrequent event.</p>
+        </div>
+        <div class="mat-col lvl1">
+          <div class="lvl">LEVEL 1</div>
+          <h4>ML pipeline automation</h4>
+          <p>Training is a reproducible pipeline (steps, parameters, data versioned). Still manually triggered. Deployment still separate/manual, but the model artifact itself is trustworthy.</p>
+        </div>
+        <div class="mat-col lvl2">
+          <div class="lvl">LEVEL 2</div>
+          <h4>CI/CD for the pipeline</h4>
+          <p>Source-controlled pipeline code goes through automated build, test, and deploy. New pipeline versions promote automatically through dev → staging → prod. Training still needs a human trigger.</p>
+        </div>
+        <div class="mat-col lvl3">
+          <div class="lvl">LEVEL 3</div>
+          <h4>Full CI/CD/CT</h4>
+          <p>A live trigger service (drift detector, schedule, new label volume) automatically retrains, evaluates against gates, and — if it passes — promotes the model with no human in the loop, under monitoring and automatic rollback.</p>
+        </div>
+      </div>
+
+      <div class="callout war">
+        <span class="co-label">War story</span>
+        <p>A mid-size fintech believed it was "Level 3" because retraining ran on a weekly cron. It wasn't — the cron retrained but a human still manually eyeballed a dashboard and clicked "promote" in the registry UI. That's Level 2 with a scheduling trigger, not Level 3. The distinction mattered: when the on-call engineer was out for a week, four stale model versions queued up unreviewed, and the production model silently drifted for 9 days before anyone promoted the fix.</p>
+      </div>
+    </section>
+
+    <section class="section" id="roles">
+      <div class="eyebrow-row"><span class="badge badge-beg">Beginner</span><span class="badge badge-core">Foundations</span></div>
+      <h2>Roles &amp; team topology</h2>
+      <p class="lead">MLOps fails more often from unclear ownership than from missing tooling. A workable split for a mid-size org:</p>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th>Role</th><th>Owns</th><th>Typically does NOT own</th></tr>
+          <tr><td><strong>Data engineer</strong></td><td>Ingestion, ETL/ELT, feature pipelines, data quality SLAs</td><td>Model architecture, training code</td></tr>
+          <tr><td><strong>ML / Applied scientist</strong></td><td>Model design, offline evaluation, feature selection</td><td>Infra provisioning, serving SLAs</td></tr>
+          <tr><td><strong>MLOps / Platform engineer</strong></td><td>Pipelines, CI/CD, registry, serving infra, monitoring, cost</td><td>Model architecture decisions</td></tr>
+          <tr><td><strong>SRE / Platform ops</strong></td><td>Cluster health, networking, IAM, incident response</td><td>Feature engineering, model logic</td></tr>
+        </table>
+      </div>
+      <p>In small teams one or two people wear all four hats — that's fine, but explicitly naming the four responsibilities avoids the classic gap: "I thought monitoring was your job."</p>
+    </section>
+
+    <!-- ================= CORE PILLARS ================= -->
+    <section class="section" id="pillar-data">
+      <div class="eyebrow-row"><span class="badge badge-int">Intermediate</span><span class="badge badge-core">Core Pillar</span></div>
+      <h2>Data &amp; feature versioning</h2>
+      <p class="lead">You cannot reproduce a model without reproducing the exact data it saw. "Data versioning" means being able to answer: <em>what rows, with what feature values, trained model v42?</em></p>
+      <h3>Patterns</h3>
+      <ul>
+        <li><strong>Immutable snapshots.</strong> Never overwrite a training dataset in place; write `s3://bucket/dataset/2026-09-02T04-00Z/` or an Azure ML data asset version, and reference the exact version in the training job.</li>
+        <li><strong>Delta/time-travel tables.</strong> Delta Lake, Apache Iceberg, or Databricks give you `AS OF VERSION` queries — train against a historical state of a table that keeps getting new rows appended.</li>
+        <li><strong>Hash-based lineage.</strong> Store a content hash of the training set alongside the model artifact so two "v1.3" models trained on different data are provably different, even if someone forgot to bump a version tag.</li>
+      </ul>
+      <div class="code-wrap">
+        <div class="code-head"><span class="code-lang">python — dataset versioning pattern</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="c1"># Works the same conceptually on Azure ML data assets or SageMaker FeatureStore/S3 prefixes</span>
+dataset_version = f<span class="st">"customer_churn/{run_date}_{git_sha[:8]}"</span>
+snapshot_path = f<span class="st">"s3://ml-data/{dataset_version}/"</span>
+
+<span class="c1"># Write once, never mutate</span>
+df.write.mode(<span class="st">"error"</span>).parquet(snapshot_path)
+
+<span class="c1"># Record the hash so the registry can prove data identity later</span>
+data_hash = hash_dataframe_content(df)
+log_metadata(dataset_version=dataset_version, data_hash=data_hash)</pre>
+      </div>
+      <div class="callout pit">
+        <span class="co-label">Pitfall</span>
+        <p>Point-in-time correctness bugs are the single most common source of training/serving skew: a feature like "customer's total orders" computed with data <em>up to today</em> during training, but the label was generated 30 days ago — leaking future information into the model. Always join features "as of" the label timestamp, not "as of now."</p>
+      </div>
+    </section>
+
+    <section class="section" id="pillar-feature-store">
+      <div class="eyebrow-row"><span class="badge badge-exp">Expert</span><span class="badge badge-core">Core Pillar</span></div>
+      <h2>Feature stores</h2>
+      <p class="lead">A feature store solves exactly one problem at scale: guaranteeing that the feature value your model saw offline during training is bit-for-bit the same computation used online at serving time — while serving the online path in single-digit milliseconds.</p>
+      <div class="grid-2">
+        <div class="card">
+          <h4>Offline store</h4>
+          <p>Large, cheap, batch-queryable (Parquet/Delta on blob storage, or a warehouse table). Used for training-set generation with point-in-time joins.</p>
+        </div>
+        <div class="card">
+          <h4>Online store</h4>
+          <p>Low-latency key-value store (Redis-compatible) holding only the <em>latest</em> value per entity, for real-time inference lookups.</p>
+        </div>
+      </div>
+      <h3>Cloud-native options</h3>
+      <ul>
+        <li><strong>Azure:</strong> Azure ML managed Feature Store (preview → GA), backed by an offline materialization store (ADLS Gen2) and an online store (Redis via Azure Cache for Redis).</li>
+        <li><strong>AWS:</strong> SageMaker Feature Store — a single API with an offline store (S3 + Glue/Athena catalog) and an online store (backed internally by a low-latency store), plus <code>get_record</code> for real-time reads.</li>
+        <li><strong>Cloud-agnostic:</strong> Feast (open source) — deployable on either cloud when you want to avoid platform lock-in for feature definitions.</li>
+      </ul>
+      <div class="code-wrap">
+        <div class="code-head"><span class="code-lang">python — SageMaker Feature Store: define + ingest</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">from</span> sagemaker.feature_store.feature_group <span class="kw">import</span> FeatureGroup
+
+fg = FeatureGroup(name=<span class="st">"customer-churn-features"</span>, sagemaker_session=session)
+fg.load_feature_definitions(data_frame=features_df)
+
+fg.create(
+    s3_uri=<span class="st">"s3://ml-data/feature-store/offline/"</span>,
+    record_identifier_name=<span class="st">"customer_id"</span>,
+    event_time_feature_name=<span class="st">"event_time"</span>,
+    role_arn=role,
+    enable_online_store=<span class="kw">True</span>,   <span class="c1"># turns on the low-latency serving path</span>
+)
+fg.ingest(data_frame=features_df, max_workers=<span class="fn">4</span>)</pre>
+      </div>
+      <div class="code-wrap">
+        <div class="code-head"><span class="code-lang">python — Azure ML managed Feature Store: define + register</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">from</span> azureml.featurestore <span class="kw">import</span> FeatureStoreClient
+<span class="kw">from</span> azureml.featurestore.contracts <span class="kw">import</span> FeatureSetSpec, TransformationCode
+
+fs_client = FeatureStoreClient(credential=credential, subscription_id=sub_id,
+                                 resource_group=rg, name=<span class="st">"churn-fstore"</span>)
+
+spec = FeatureSetSpec(
+    source=parquet_source,
+    transformation_code=TransformationCode(path=<span class="st">"./transform.py"</span>, transformer_class=<span class="st">"ChurnTransformer"</span>),
+    index_columns=[<span class="st">"customer_id"</span>],
+    source_lookback=<span class="st">"P90D"</span>,   <span class="c1"># point-in-time correctness window</span>
+)
+fs_client.feature_sets.create_or_update(name=<span class="st">"churn_features"</span>, version=<span class="st">"3"</span>, spec=spec)</pre>
+      </div>
+      <div class="callout war">
+        <span class="co-label">War story</span>
+        <p>A ride-sharing company's fraud model used a feature "driver's average trips/day over 7 days," computed in Spark for training and re-implemented in a Java microservice for serving. The two implementations rounded timestamps to different timezones. The model's offline AUC was 0.91; production precision was effectively random for one specific region for four months before anyone diffed the two feature computations. A feature store with a single transformation definition shared by both paths eliminates this class of bug entirely.</p>
+      </div>
+    </section>
+
+    <section class="section" id="pillar-experiment">
+      <div class="eyebrow-row"><span class="badge badge-beg">Beginner</span><span class="badge badge-core">Core Pillar</span></div>
+      <h2>Experiment tracking</h2>
+      <p class="lead">Every training run should log: code version, data version, hyperparameters, metrics, and artifacts — automatically, not by hand in a spreadsheet.</p>
+      <div class="tab-group">
+        <div class="tab-btns">
+          <button class="tab-btn active" onclick="switchTab(event,'exp','mlflow')">MLflow (both clouds)</button>
+          <button class="tab-btn" onclick="switchTab(event,'exp','az')">Azure ML native</button>
+          <button class="tab-btn" onclick="switchTab(event,'exp','aws')">SageMaker Experiments</button>
+        </div>
+        <div class="tab-panels">
+          <div class="tab-panel active" id="exp-mlflow">
+            <p>Both Azure ML and SageMaker speak MLflow natively — this is the closest thing to a portable standard for tracking.</p>
+            <div class="code-wrap"><div class="code-head"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">import</span> mlflow
+mlflow.set_experiment(<span class="st">"churn-model"</span>)
+<span class="kw">with</span> mlflow.start_run(run_name=<span class="st">"xgb-depth6-lr01"</span>):
+    mlflow.log_param(<span class="st">"max_depth"</span>, <span class="fn">6</span>)
+    mlflow.log_param(<span class="st">"learning_rate"</span>, <span class="fn">0.1</span>)
+    model = train(X_train, y_train, max_depth=<span class="fn">6</span>, lr=<span class="fn">0.1</span>)
+    mlflow.log_metric(<span class="st">"val_auc"</span>, evaluate(model, X_val, y_val))
+    mlflow.xgboost.log_model(model, artifact_path=<span class="st">"model"</span>)
+    mlflow.set_tag(<span class="st">"git_sha"</span>, git_sha)
+    mlflow.log_input(mlflow.data.from_pandas(X_train), context=<span class="st">"training"</span>)</pre></div>
+          </div>
+          <div class="tab-panel" id="exp-az">
+            <p>Azure ML's job/run tracking is MLflow-compatible under the hood — <code>mlflow.log_metric</code> calls inside an Azure ML job land in the Studio UI automatically, no extra wiring.</p>
+            <div class="code-wrap"><div class="code-head"><span class="code-lang">yaml — job.yml</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="fn">$schema:</span> https://azuremlschemas.azureedge.net/latest/commandJob.schema.json
+<span class="fn">code:</span> ./src
+<span class="fn">command:</span> python train.py --max_depth <span class="fn">${{inputs.max_depth}}</span>
+<span class="fn">inputs:</span>
+  <span class="fn">max_depth:</span> <span class="fn">6</span>
+<span class="fn">environment:</span> azureml:sklearn-env@latest
+<span class="fn">compute:</span> azureml:cpu-cluster
+<span class="fn">experiment_name:</span> churn-model</pre></div>
+          </div>
+          <div class="tab-panel" id="exp-aws">
+            <div class="code-wrap"><div class="code-head"><span class="code-lang">python</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+<pre><span class="kw">from</span> sagemaker.experiments.run <span class="kw">import</span> Run
+
+<span class="kw">with</span> Run(experiment_name=<span class="st">"churn-model"</span>, run_name=<span class="st">"xgb-depth6"</span>,
+         sagemaker_session=session) <span class="kw">as</span> run:
+    run.log_parameter(<span class="st">"max_depth"</span>, <span class="fn">6</span>)
+    run.log_metric(name=<span class="st">"val_auc"</span>, value=<span class="fn">0.912</span>)
+    run.log_file(<span class="st">"model.tar.gz"</span>, is_output=<span class="kw">True</span>)</pre></div>
+          </div>
+        </div>
+      </div>
+      <div class="callout tip">
+        <span class="co-label">Tip</span>
+        <p>Log the <em>data version</em>, not just hyperparameters. Six months from now, "which dataset produced this AUC" is the question you'll actually be asked, and hyperparameters alone won't answer it.</p>
+      </div>
+    </section>
+
+    <section class="section" id="pillar-registry">
+      <div class="eyebrow-row"><span class="badge badge-int">Intermediate</span><span class="badge badge-core">Core Pillar</span></div>
+      <h2>Model registry &amp; lineage</h2>
+      <p class="lead">The registry is the contract between "training produced something" and "serving is allowed to use it." A good registry entry captures a model version's stage (<code>None → Staging → Production → Archived</code>), its lineage (data + code + run), and its evaluation results — and is the single source of truth both clouds and any downstream deployment system query.</p>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th>Capability</th><th>Azure ML Model Registry</th><th>SageMaker Model Registry</th></tr>
+          <tr><td>Versioning</td><td>Auto-incrementing versions per model name</td><td>Model package groups with versions</td></tr>
+          <tr><td>Approval workflow</td><td>Stage tags + Azure DevOps/GitHub gates</td><td>Native approval status: <code>PendingManualApproval</code> → <code>Approved</code>/<code>Rejected</code></td></tr>
+          <tr><td>Lineage</td><td>Linked job → data asset → environment</td><td>Linked training job, lineage via SageMaker ML Lineage Tracking</td></tr>
+          <tr><td>Cross-account/workspace sharing</td><td>Registries (separate from workspaces) for org-wide sharing</td><td>Cross-account model package groups via resource policies</td></tr>
+        </table>
+      </div>
+      <div class="callout pit">
+        <span class="co-label">Pitfall</span>
+        <p>Teams often register the model artifact but not the <em>evaluation report</em> that justified promotion. When a model is rolled back six weeks later, "why did we ever ship this" becomes archaeology. Attach the evaluation metrics, the approval actor, and the approval reason to the registry entry itself, not a separate doc that will rot.</p>
+      </div>
+    </section>
+
+    <section class="section" id="pillar-cicd">
+      <div class="eyebrow-row"><span class="badge badge-exp">Expert</span><span class="badge badge-core">Core Pillar</span></div>
+      <h2>CI / CD / CT pipelines</h2>
+      <p class="lead">Three distinct automations, often confused as one:</p>
+      <ul>
+        <li><strong>CI (Continuous Integration):</strong> on every commit — lint, unit test the pipeline code, validate data schemas, build the training container.</li>
+        <li><strong>CD (Continuous Delivery):</strong> promote a <em>trained, evaluated, approved</em> model artifact through environments (dev → staging → prod) with progressively stricter gates.</li>
+        <li><strong>CT (Continuous Training):</strong> automatically re-trigger the training pipeline itself — on a schedule, on drift detection, or on new label volume crossing a threshold.</li>
+      </ul>
+      <div class="diagram-box">
+        <svg viewBox="0 0 940 220" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg">
+          <defs><marker id="arr2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5D6784"/></marker></defs>
+          <rect x="10" y="20" width="200" height="60" rx="8" fill="#161C2C" stroke="#3FA0F2"/>
+          <text x="110" y="45" text-anchor="middle" font-family="Inter" font-size="12" fill="#E7EBF5" font-weight="600">Trigger</text>
+          <text x="110" y="63" text-anchor="middle" font-family="Inter" font-size="10.5" fill="#97A2BC">schedule / drift / commit</text>
+          <rect x="250" y="20" width="200" height="60" rx="8" fill="#161C2C" stroke="#242C42"/>
+          <text x="350" y="45" text-anchor="middle" font-family="Inter" font-size="12" fill="#E7EBF5" font-weight="600">CI: build + test</text>
+          <text x="350" y="63" text-anchor="middle" font-family="Inter" font-size="10.5" fill="#97A2BC">lint · unit tests · container</text>
+          <rect x="490" y="20" width="200" height="60" rx="8" fill="#161C2C" stroke="#242C42"/>
+          <text x="590" y="45" text-anchor="middle" font-family="Inter" font-size="12" fill="#E7EBF5" font-weight="600">CT: train + evaluate</text>
+          <text x="590" y="63" text-anchor="middle" font-family="Inter" font-size="10.5" fill="#97A2BC">pipeline run · metric gate</text>
+          <rect x="730" y="20" width="200" height="60" rx="8" fill="#161C2C" stroke="#FF9E2C"/>
+          <text x="830" y="45" text-anchor="middle" font-family="Inter" font-size="12" fill="#E7EBF5" font-weight="600">CD: promote + deploy</text>
+          <text x="830" y="63" text-anchor="middle" font-family="Inter" font-size="10.5" fill="#97A2BC">registry → canary → prod</text>
+          <line x1="210" y1="50" x2="248" y2="50" stroke="#5D6784" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <line x1="450" y1="50" x2="488" y2="50" stroke="#5D6784" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <line x1="690" y1="50" x2="728" y2="50" stroke="#5D6784" stroke-width="1.5" marker-end="url(#arr2)"/>
+          <rect x="10" y="120" width="920" height="60" rx="8" fill="none" stroke="#242C42" stroke-dasharray="4 3"/>
+          <text x="470" y="155" text-anchor="middle" font-family="Inter" font-size="11.5" fill="#97A2BC">Gate at every arrow: fails stop propagation — bad code never reaches training, a model that fails eval never reaches the registry, a regressed model never reaches prod.</text>
+        </svg>
+      </div>
+      <h3>Example: gated promotion pipeline</h3>
+      <div class="code-wrap">
+        <div class="code-head"><span class="code-lang">python — evaluation gate used identically on either cloud</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre>current_prod_auc = get_metric(model_stage=<span class="st">"Production"</span>, metric=<span class="st">"auc"</span>)
+candidate_auc   = get_metric(run_id=new_run.id, metric=<span class="st">"auc"</span>)
+
+<span class="kw">if</span> candidate_auc &lt; current_prod_auc - <span class="fn">0.01</span>:
+    <span class="kw">raise</span> PromotionBlocked(f<span class="st">"Candidate AUC {candidate_auc} regresses vs prod {current_prod_auc}"</span>)
+
+<span class="kw">if</span> fairness_gap(new_run) &gt; MAX_FAIRNESS_GAP:
+    <span class="kw">raise</span> PromotionBlocked(<span class="st">"Fairness gate failed — see Responsible AI dashboard"</span>)
+
+promote_to_registry(new_run, stage=<span class="st">"Staging"</span>)  <span class="c1"># never straight to Production</span></pre>
+      </div>
+      <div class="callout tip">
+        <span class="co-label">Tip</span>
+        <p>Never let a pipeline promote directly to <code>Production</code>. Force every promotion through <code>Staging</code> with a shadow-traffic or canary period, even if the "human approval" step is a Slack bot auto-approving after 30 minutes of clean canary metrics.</p>
+      </div>
+    </section>
+
+    <section class="section" id="pillar-deploy">
+      <div class="eyebrow-row"><span class="badge badge-int">Intermediate</span><span class="badge badge-core">Core Pillar</span></div>
+      <h2>Deployment patterns</h2>
+      <div class="grid-2">
+        <div class="card"><h4>Blue/Green</h4><p>Two full environments; switch traffic atomically. Instant rollback, but 2x infra cost during the switch window.</p></div>
+        <div class="card"><h4>Canary</h4><p>Route a small % of traffic (1–10%) to the new model; watch metrics; ramp up gradually. Both Azure ML managed online endpoints and SageMaker endpoints support native traffic-split configs.</p></div>
+        <div class="card"><h4>Shadow / dark launch</h4><p>New model receives a copy of production traffic but its predictions are logged, not served. Zero user risk; validates real-world performance before canary.</p></div>
+        <div class="card"><h4>Multi-armed bandit</h4><p>Traffic allocation adapts based on observed reward in near-real time — used when you're optimizing a business metric (CTR, conversion) rather than just checking for regressions.</p></div>
+      </div>
+      <h3>Serving topology choices</h3>
+      <ul>
+        <li><strong>Real-time synchronous endpoint</strong> — low-latency, always-on. Highest cost, needed for user-facing inference (fraud check at checkout).</li>
+        <li><strong>Serverless / on-demand inference</strong> — scales to zero, pay-per-invocation, tolerates cold-start latency. Good for spiky, low-volume workloads.</li>
+        <li><strong>Batch inference</strong> — score millions of rows on a schedule, no latency constraint. Cheapest per-prediction.</li>
+        <li><strong>Async inference</strong> — queue-based, for large payloads (video, long documents) where sync response isn't feasible.</li>
+      </ul>
+      <div class="callout az">
+        <span class="co-label">Azure</span>
+        <p>Managed online endpoints support native blue/green via deployment traffic percentages (<code>az ml online-endpoint update --traffic "blue=90 green=10"</code>), and Kubernetes-based (AKS/Arc) endpoints for teams needing full cluster control.</p>
+      </div>
+      <div class="callout aws">
+        <span class="co-label">AWS</span>
+        <p>SageMaker real-time endpoints support production variants with weighted traffic splitting natively; SageMaker Serverless Inference and Asynchronous Inference are distinct endpoint <em>types</em> you choose at creation, not settings you toggle later.</p>
+      </div>
+    </section>
+
+    <section class="section" id="pillar-monitor">
+      <div class="eyebrow-row"><span class="badge badge-exp">Expert</span><span class="badge badge-core">Core Pillar</span></div>
+      <h2>Monitoring &amp; drift detection</h2>
+      <p class="lead">Four distinct things people lump together as "monitoring" — track them separately, because they have different owners, different alert channels, and different remediation:</p>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th>Type</th><th>Question it answers</th><th>Typical signal</th></tr>
+          <tr><td><strong>Operational</strong></td><td>Is the service up and fast?</td><td>Latency p99, error rate, throughput</td></tr>
+          <tr><td><strong>Data drift</strong></td><td>Are inputs changing shape?</td><td>PSI / KL-divergence between training and live feature distributions</td></tr>
+          <tr><td><strong>Concept drift</strong></td><td>Is the input→output relationship changing?</td><td>Rolling accuracy/AUC once ground truth labels arrive</td></tr>
+          <tr><td><strong>Prediction/output drift</strong></td><td>Are predictions shifting even without confirmed labels?</td><td>Distribution of predicted class/score over time</td></tr>
+        </table>
+      </div>
+      <div class="code-wrap">
+        <div class="code-head"><span class="code-lang">python — population stability index (works identically on any cloud's captured logs)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">def</span> <span class="fn">psi</span>(expected, actual, buckets=<span class="fn">10</span>):
+    breakpoints = np.percentile(expected, np.linspace(<span class="fn">0</span>, <span class="fn">100</span>, buckets + <span class="fn">1</span>))
+    e_pct = np.histogram(expected, breakpoints)[<span class="fn">0</span>] / <span class="fn">len</span>(expected)
+    a_pct = np.histogram(actual, breakpoints)[<span class="fn">0</span>] / <span class="fn">len</span>(actual)
+    e_pct, a_pct = np.clip(e_pct, <span class="fn">1e-4</span>, <span class="kw">None</span>), np.clip(a_pct, <span class="fn">1e-4</span>, <span class="kw">None</span>)
+    <span class="kw">return</span> np.sum((a_pct - e_pct) * np.log(a_pct / e_pct))
+
+<span class="c1"># Rule of thumb: PSI < 0.1 stable, 0.1-0.25 moderate shift (investigate), > 0.25 significant drift (retrain)</span></pre>
+      </div>
+      <div class="callout az">
+        <span class="co-label">Azure</span>
+        <p>Azure ML Data Collector + Model Monitoring jobs compute drift on scheduled cadence against a registered training-data baseline, surfacing alerts through Azure Monitor and Application Insights.</p>
+      </div>
+      <div class="callout aws">
+        <span class="co-label">AWS</span>
+        <p>SageMaker Model Monitor runs scheduled monitoring jobs comparing captured inference data (via Data Capture) against a baseline computed from the training set, with violations surfaced to CloudWatch and optionally EventBridge for automated retraining triggers.</p>
+      </div>
+      <div class="callout war">
+        <span class="co-label">War story</span>
+        <p>A telco's churn model had rock-solid operational monitoring — five nines uptime, sub-50ms latency, zero PagerDuty alerts for eight months. Retention spend based on its predictions crept up 40% with no matching improvement in retention. Root cause: a schema change upstream silently zero-filled a key tenure feature for three million records. Nothing broke; the model just got confidently wrong. Only a business-metric review caught it, not the monitoring stack — the org added data drift and prediction-distribution monitors the next quarter.</p>
+      </div>
+    </section>
+
+    <section class="section" id="pillar-governance">
+      <div class="eyebrow-row"><span class="badge badge-int">Intermediate</span><span class="badge badge-core">Core Pillar</span></div>
+      <h2>Governance, cost &amp; responsible AI</h2>
+      <ul>
+        <li><strong>Access control:</strong> workspace/domain-level RBAC, secrets never in code (Azure Key Vault / AWS Secrets Manager), least-privilege service principals/IAM roles per pipeline stage.</li>
+        <li><strong>Audit trail:</strong> every promotion, every deployment, every rollback logged with actor, timestamp, and reason — required for regulated industries (finance, healthcare, insurance).</li>
+        <li><strong>Fairness &amp; explainability:</strong> bias metrics across protected groups computed as a gate, not an afterthought (Azure Responsible AI dashboard, AWS SageMaker Clarify).</li>
+        <li><strong>Cost control:</strong> spot/low-priority compute for training, autoscaling to zero for low-traffic endpoints, scheduled shutdown of idle notebook instances — GPU idle time is the single biggest unforced MLOps cost leak.</li>
+      </ul>
+      <div class="callout pit">
+        <span class="co-label">Pitfall</span>
+        <p>The most expensive line item in most mid-size MLOps budgets isn't training compute — it's forgotten always-on notebook/Studio compute instances and over-provisioned real-time endpoints sized for peak traffic that never arrives. Enforce auto-shutdown policies and right-size instance types against actual p95 load, not intuition.</p>
+      </div>
+    </section>
+
+    <!-- ================= AZURE TRACK ================= -->
+    <section class="section" id="azure-overview">
+      <div class="eyebrow-row"><span class="badge badge-beg">Beginner</span><span class="badge badge-az">Azure ML</span></div>
+      <h2>Azure ML platform overview</h2>
+      <p class="lead">Azure Machine Learning is organized around a <strong>workspace</strong> — the top-level container for compute, data assets, environments, jobs, endpoints, and the model registry. If you know one Azure ML concept, know this one.</p>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th>Component</th><th>What it does</th></tr>
+          <tr><td>Workspace</td><td>Top-level container; ties together everything below</td></tr>
+          <tr><td>Compute cluster / instance</td><td>Managed VM clusters (training) or single dev VMs (Studio notebooks)</td></tr>
+          <tr><td>Data assets</td><td>Versioned references to data in ADLS/Blob, with lineage</td></tr>
+          <tr><td>Environments</td><td>Versioned Docker/conda specs — the "what container does this job run in"</td></tr>
+          <tr><td>Jobs / pipelines</td><td>Command, sweep (HPO), and pipeline jobs — DAGs of steps</td></tr>
+          <tr><td>Model registry</td><td>Versioned model artifacts + metadata, promotable across workspaces via a Registry</td></tr>
+          <tr><td>Endpoints</td><td>Managed online (real-time) and batch endpoints, with deployments and traffic splits underneath</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" id="azure-workspace">
+      <div class="eyebrow-row"><span class="badge badge-beg">Beginner</span><span class="badge badge-az">Azure ML</span></div>
+      <h2>Workspace &amp; compute setup</h2>
+      <div class="code-wrap">
+        <div class="code-head"><span class="code-lang">bash — az CLI: create workspace + compute cluster</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre>az ml workspace create -n mlops-ws -g mlops-rg -l eastus
+
+az ml compute create --name cpu-cluster --type AmlCompute \
+  --min-instances <span class="fn">0</span> --max-instances <span class="fn">8</span> \
+  --size Standard_DS3_v2 --workspace-name mlops-ws -g mlops-rg
+
+<span class="c1"># GPU cluster for training, scales to zero when idle</span>
+az ml compute create --name gpu-cluster --type AmlCompute \
+  --min-instances <span class="fn">0</span> --max-instances <span class="fn">4</span> \
+  --size Standard_NC6s_v3 --workspace-name mlops-ws -g mlops-rg</pre>
+      </div>
+      <p>Setting <code>min-instances 0</code> is the single most important cost lever in Azure ML — clusters scale down to zero nodes (zero cost) when there's no queued job.</p>
+    </section>
+
+    <section class="section" id="azure-pipelines">
+      <div class="eyebrow-row"><span class="badge badge-int">Intermediate</span><span class="badge badge-az">Azure ML</span></div>
+      <h2>Pipelines — SDK v2 and YAML</h2>
+      <p class="lead">Azure ML pipelines are DAGs of reusable, versioned <strong>components</strong>. Two authoring styles, same underlying engine:</p>
+      <div class="code-wrap">
+        <div class="code-head"><span class="code-lang">python — SDK v2 pipeline definition</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">from</span> azure.ai.ml <span class="kw">import</span> MLClient, dsl, Input, Output
+<span class="kw">from</span> azure.ai.ml.entities <span class="kw">import</span> Environment
+
+train_env = Environment(image=<span class="st">"mcr.microsoft.com/azureml/curated/sklearn-1.5:latest"</span>)
+
+<span class="kw">@dsl.pipeline</span>(compute=<span class="st">"cpu-cluster"</span>, description=<span class="st">"churn training pipeline"</span>)
+<span class="kw">def</span> <span class="fn">churn_pipeline</span>(raw_data: Input, min_auc: <span class="fn">float</span> = <span class="fn">0.85</span>):
+    prep = prep_component(input_data=raw_data)
+    train = train_component(training_data=prep.outputs.processed, max_depth=<span class="fn">6</span>)
+    eval_step = eval_component(model=train.outputs.model, test_data=prep.outputs.test, min_auc=min_auc)
+    register_step = register_component(model=train.outputs.model, eval_report=eval_step.outputs.report)
+    <span class="kw">return</span> {<span class="st">"registered_model"</span>: register_step.outputs.model_uri}
+
+ml_client = MLClient.from_config(credential=DefaultAzureCredential())
+pipeline_job = churn_pipeline(raw_data=Input(path=<span class="st">"azureml:churn-raw:5"</span>))
+ml_client.jobs.create_or_update(pipeline_job, experiment_name=<span class="st">"churn-training"</span>)</pre>
+      </div>
+      <div class="code-wrap">
+        <div class="code-head"><span class="code-lang">yaml — equivalent declarative pipeline.yml</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="fn">$schema:</span> https://azuremlschemas.azureedge.net/latest/pipelineJob.schema.json
+<span class="fn">display_name:</span> churn_pipeline
+<span class="fn">compute:</span> azureml:cpu-cluster
+<span class="fn">inputs:</span>
+  <span class="fn">raw_data:</span>
+    <span class="fn">type:</span> uri_folder
+    <span class="fn">path:</span> azureml:churn-raw@5
+<span class="fn">jobs:</span>
+  <span class="fn">prep:</span>
+    <span class="fn">component:</span> azureml:prep_component@latest
+    <span class="fn">inputs:</span> { <span class="fn">input_data:</span> <span class="fn">${{parent.inputs.raw_data}}</span> }
+  <span class="fn">train:</span>
+    <span class="fn">component:</span> azureml:train_component@latest
+    <span class="fn">inputs:</span> { <span class="fn">training_data:</span> <span class="fn">${{parent.jobs.prep.outputs.processed}}</span> }
+  <span class="fn">evaluate:</span>
+    <span class="fn">component:</span> azureml:eval_component@latest
+    <span class="fn">inputs:</span> { <span class="fn">model:</span> <span class="fn">${{parent.jobs.train.outputs.model}}</span> }</pre>
+      </div>
+    </section>
+
+    <section class="section" id="azure-devops">
+      <div class="eyebrow-row"><span class="badge badge-exp">Expert</span><span class="badge badge-az">Azure ML</span></div>
+      <h2>Azure DevOps CI/CD for ML</h2>
+      <div class="code-wrap">
+        <div class="code-head"><span class="code-lang">yaml — azure-pipelines.yml</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="fn">trigger:</span>
+  <span class="fn">branches:</span> { <span class="fn">include:</span> [main] }
+  <span class="fn">paths:</span> { <span class="fn">include:</span> [src/*, pipelines/*] }
+
+<span class="fn">stages:</span>
+  <span class="fn">- stage:</span> CI
+    <span class="fn">jobs:</span>
+      <span class="fn">- job:</span> LintAndTest
+        <span class="fn">steps:</span>
+          <span class="fn">- script:</span> pip install -r requirements-dev.txt && pytest tests/ -v
+          <span class="fn">- script:</span> flake8 src/
+
+  <span class="fn">- stage:</span> Train
+    <span class="fn">dependsOn:</span> CI
+    <span class="fn">jobs:</span>
+      <span class="fn">- job:</span> RunTrainingPipeline
+        <span class="fn">steps:</span>
+          <span class="fn">- script:</span> az ml job create -f pipelines/pipeline.yml --stream
+          <span class="fn">- script:</span> python scripts/check_eval_gate.py --min-auc <span class="fn">0.85</span>
+
+  <span class="fn">- stage:</span> DeployStaging
+    <span class="fn">dependsOn:</span> Train
+    <span class="fn">jobs:</span>
+      <span class="fn">- deployment:</span> ToStaging
+        <span class="fn">environment:</span> staging
+        <span class="fn">strategy:</span>
+          <span class="fn">runOnce:</span>
+            <span class="fn">deploy:</span>
+              <span class="fn">steps:</span>
+                <span class="fn">- script:</span> az ml online-deployment create -f deploy/staging.yml --all-traffic
+
+  <span class="fn">- stage:</span> DeployProduction
+    <span class="fn">dependsOn:</span> DeployStaging
+    <span class="fn">condition:</span> succeeded()
+    <span class="fn">jobs:</span>
+      <span class="fn">- deployment:</span> ToProd
+        <span class="fn">environment:</span> production   <span class="c1"># manual approval gate configured on this environment</span>
+        <span class="fn">strategy:</span>
+          <span class="fn">runOnce:</span>
+            <span class="fn">deploy:</span>
+              <span class="fn">steps:</span>
+                <span class="fn">- script:</span> az ml online-deployment update -f deploy/prod.yml --traffic <span class="st">"blue=90 green=10"</span></pre>
+      </div>
+      <p>The <code>environment: production</code> reference lets you attach a manual-approval check in Azure DevOps' Environments settings — the pipeline pauses and waits for a named approver before the deployment step runs.</p>
+    </section>
+
+    <section class="section" id="azure-deploy">
+      <div class="eyebrow-row"><span class="badge badge-int">Intermediate</span><span class="badge badge-az">Azure ML</span></div>
+      <h2>Endpoints, AKS &amp; batch inference</h2>
+      <div class="code-wrap">
+        <div class="code-head"><span class="code-lang">yaml — managed online endpoint + canary deployment</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="fn">$schema:</span> https://azuremlschemas.azureedge.net/latest/managedOnlineDeployment.schema.json
+<span class="fn">name:</span> churn-green
+<span class="fn">endpoint_name:</span> churn-endpoint
+<span class="fn">model:</span> azureml:churn-model@12
+<span class="fn">instance_type:</span> Standard_DS3_v2
+<span class="fn">instance_count:</span> <span class="fn">2</span>
+<span class="fn">liveness_probe:</span> { <span class="fn">initial_delay:</span> <span class="fn">30</span>, <span class="fn">period:</span> <span class="fn">10</span> }</pre>
+      </div>
+      <div class="code-wrap">
+        <div class="code-head"><span class="code-lang">bash — split traffic 90/10 for a canary</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre>az ml online-endpoint update --name churn-endpoint --traffic <span class="st">"blue=90 green=10"</span>
+<span class="c1"># watch metrics for N hours, then either:</span>
+az ml online-endpoint update --name churn-endpoint --traffic <span class="st">"blue=0 green=100"</span>   <span class="c1"># promote</span>
+<span class="c1"># or:</span>
+az ml online-endpoint update --name churn-endpoint --traffic <span class="st">"blue=100 green=0"</span>  <span class="c1"># rollback</span></pre>
+      </div>
+      <p>For workloads that need custom autoscaling, service mesh, or an existing Kubernetes footprint, Azure ML also supports Kubernetes-based online endpoints on AKS/Arc-enabled clusters — same YAML shape, different <code>compute</code> target. For non-latency-sensitive scoring of large datasets, batch endpoints run on-demand or scheduled, parallelizing across a compute cluster.</p>
+    </section>
+
+    <section class="section" id="azure-monitor">
+      <div class="eyebrow-row"><span class="badge badge-exp">Expert</span><span class="badge badge-az">Azure ML</span></div>
+      <h2>Monitoring, drift &amp; Responsible AI</h2>
+      <ul>
+        <li><strong>Data collection:</strong> enable model data collection on the endpoint to log every request/response pair to Blob storage automatically.</li>
+        <li><strong>Model monitoring jobs:</strong> scheduled Azure ML jobs compute drift metrics (Jensen-Shannon distance, PSI) against a baseline dataset and post signals to Azure Monitor.</li>
+        <li><strong>Application Insights:</strong> operational metrics (latency, request volume, exceptions) flow here automatically for managed endpoints.</li>
+        <li><strong>Responsible AI dashboard:</strong> fairness, explainability (SHAP), error analysis, and causal analysis in one integrated view attached to a registered model.</li>
+      </ul>
+      <div class="code-wrap">
+        <div class="code-head"><span class="code-lang">yaml — scheduled monitor definition</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="fn">$schema:</span> https://azuremlschemas.azureedge.net/latest/monitorSchedule.schema.json
+<span class="fn">name:</span> churn-drift-monitor
+<span class="fn">trigger:</span> { <span class="fn">type:</span> recurrence, <span class="fn">frequency:</span> day, <span class="fn">interval:</span> <span class="fn">1</span> }
+<span class="fn">create_monitor:</span>
+  <span class="fn">compute:</span> { <span class="fn">instance_type:</span> standard_e4s_v3, <span class="fn">runtime_version:</span> <span class="fn">"3.3"</span> }
+  <span class="fn">monitoring_target:</span> { <span class="fn">endpoint_deployment_id:</span> azureml:churn-endpoint:green }
+  <span class="fn">monitoring_signals:</span>
+    <span class="fn">data_drift:</span>
+      <span class="fn">type:</span> data_drift
+      <span class="fn">production_data:</span> { <span class="fn">input_data:</span> azureml:churn-endpoint-logs@latest }
+      <span class="fn">reference_data:</span> { <span class="fn">input_data:</span> azureml:churn-training-baseline@5 }
+      <span class="fn">alert_enabled:</span> <span class="kw">true</span></pre>
+      </div>
+    </section>
+
+    <!-- ================= AWS TRACK ================= -->
+    <section class="section" id="aws-overview">
+      <div class="eyebrow-row"><span class="badge badge-beg">Beginner</span><span class="badge badge-aws">AWS SageMaker</span></div>
+      <h2>AWS SageMaker platform overview</h2>
+      <p class="lead">SageMaker's unit of organization is the <strong>domain</strong> (SageMaker Studio) housing per-user profiles, but the actual MLOps building blocks are a set of loosely-coupled managed services you compose, rather than one monolithic workspace object like Azure ML's.</p>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th>Service</th><th>What it does</th></tr>
+          <tr><td>SageMaker Studio</td><td>IDE — notebooks, pipeline DAG viewer, experiment browser</td></tr>
+          <tr><td>Training jobs</td><td>Managed, ephemeral training compute — spin up, run, tear down</td></tr>
+          <tr><td>SageMaker Pipelines</td><td>DAG orchestration of processing/training/eval/register steps</td></tr>
+          <tr><td>Feature Store</td><td>Offline (S3+Glue) + online low-latency feature serving</td></tr>
+          <tr><td>Model Registry</td><td>Model package groups, versions, approval status</td></tr>
+          <tr><td>Endpoints</td><td>Real-time, serverless, async, and batch transform inference</td></tr>
+          <tr><td>Model Monitor / Clarify</td><td>Drift detection and bias/explainability analysis</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <section class="section" id="aws-studio">
+      <div class="eyebrow-row"><span class="badge badge-beg">Beginner</span><span class="badge badge-aws">AWS SageMaker</span></div>
+      <h2>Studio, domains &amp; IAM roles</h2>
+      <div class="code-wrap">
+        <div class="code-head"><span class="code-lang">bash — create a SageMaker domain (via CLI)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre>aws sagemaker create-domain \
+  --domain-name mlops-domain \
+  --auth-mode IAM \
+  --default-user-settings ExecutionRole=arn:aws:iam::<span class="fn">123456789012</span>:role/SageMakerExecutionRole \
+  --subnet-ids subnet-abc123 --vpc-id vpc-abc123</pre>
+      </div>
+      <div class="callout tip">
+        <span class="co-label">Tip</span>
+        <p>Scope the execution role tightly per pipeline stage rather than one broad <code>AmazonSageMakerFullAccess</code> role for everything — training jobs need S3 read/write and ECR pull; the deployment role additionally needs endpoint create/update; neither needs IAM write permissions.</p>
+      </div>
+    </section>
+
+    <section class="section" id="aws-pipelines">
+      <div class="eyebrow-row"><span class="badge badge-int">Intermediate</span><span class="badge badge-aws">AWS SageMaker</span></div>
+      <h2>SageMaker Pipelines SDK</h2>
+      <div class="code-wrap">
+        <div class="code-head"><span class="code-lang">python — pipeline definition</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">from</span> sagemaker.workflow.pipeline <span class="kw">import</span> Pipeline
+<span class="kw">from</span> sagemaker.workflow.steps <span class="kw">import</span> ProcessingStep, TrainingStep
+<span class="kw">from</span> sagemaker.workflow.condition_step <span class="kw">import</span> ConditionStep
+<span class="kw">from</span> sagemaker.workflow.conditions <span class="kw">import</span> ConditionGreaterThanOrEqualTo
+<span class="kw">from</span> sagemaker.workflow.model_step <span class="kw">import</span> ModelStep
+
+prep_step = ProcessingStep(name=<span class="st">"PrepChurnData"</span>, processor=sk_processor,
+                            inputs=[...], outputs=[...], code=<span class="st">"prep.py"</span>)
+
+train_step = TrainingStep(name=<span class="st">"TrainChurnModel"</span>, estimator=xgb_estimator,
+    inputs={<span class="st">"train"</span>: TrainingInput(s3_data=prep_step.properties.ProcessingOutputConfig.Outputs[<span class="st">"train"</span>].S3Output.S3Uri)})
+
+eval_step = ProcessingStep(name=<span class="st">"EvaluateModel"</span>, processor=eval_processor,
+    inputs=[...], outputs=[PropertyFile(name=<span class="st">"EvalReport"</span>, output_name=<span class="st">"evaluation"</span>, path=<span class="st">"evaluation.json"</span>)])
+
+register_step = ModelStep(name=<span class="st">"RegisterModel"</span>, step_args=model.register(
+    model_package_group_name=<span class="st">"churn-models"</span>,
+    approval_status=<span class="st">"PendingManualApproval"</span>,
+    content_types=[<span class="st">"text/csv"</span>], response_types=[<span class="st">"text/csv"</span>]))
+
+condition_step = ConditionStep(
+    name=<span class="st">"CheckAUCGate"</span>,
+    conditions=[ConditionGreaterThanOrEqualTo(
+        left=JsonGet(step_name=eval_step.name, property_file=<span class="st">"EvalReport"</span>, json_path=<span class="st">"metrics.auc"</span>),
+        right=<span class="fn">0.85</span>)],
+    if_steps=[register_step], else_steps=[])
+
+pipeline = Pipeline(name=<span class="st">"churn-training-pipeline"</span>,
+    steps=[prep_step, train_step, eval_step, condition_step])
+pipeline.upsert(role_arn=role)
+pipeline.start()</pre>
+      </div>
+      <p>The <code>ConditionStep</code> is SageMaker's native evaluation gate — the model only reaches the registry if the AUC condition passes, expressed declaratively in the DAG rather than as an imperative script.</p>
+    </section>
+
+    <section class="section" id="aws-codepipeline">
+      <div class="eyebrow-row"><span class="badge badge-exp">Expert</span><span class="badge badge-aws">AWS SageMaker</span></div>
+      <h2>CodePipeline: CI/CD/CT orchestration</h2>
+      <p class="lead">AWS's native pattern (also shipped as the "MLOps project templates" in SageMaker Studio) wires CodeCommit/CodeStar → CodeBuild → CodePipeline → SageMaker Pipelines → EventBridge, with the model registry's approval status as the promotion trigger.</p>
+      <div class="code-wrap">
+        <div class="code-head"><span class="code-lang">yaml — buildspec.yml (CodeBuild stage)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="fn">version:</span> <span class="fn">0.2</span>
+<span class="fn">phases:</span>
+  <span class="fn">install:</span>
+    <span class="fn">commands:</span>
+      <span class="fn">- pip</span> install -r requirements.txt
+  <span class="fn">build:</span>
+    <span class="fn">commands:</span>
+      <span class="fn">- pytest</span> tests/ -v
+      <span class="fn">- python</span> pipelines/build_pipeline.py --model-package-group churn-models
+      <span class="fn">- python</span> -c <span class="st">"from pipelines.churn import pipeline; pipeline.upsert(role_arn='${SAGEMAKER_ROLE}'); pipeline.start()"</span></pre>
+      </div>
+      <div class="code-wrap">
+        <div class="code-head"><span class="code-lang">python — EventBridge rule: auto-deploy on registry approval</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="c1"># EventBridge rule pattern — triggers a Lambda that kicks off the deploy CodePipeline
+# the instant a model package transitions to "Approved"</span>
+event_pattern = {
+    <span class="st">"source"</span>: [<span class="st">"aws.sagemaker"</span>],
+    <span class="st">"detail-type"</span>: [<span class="st">"SageMaker Model Package State Change"</span>],
+    <span class="st">"detail"</span>: {<span class="st">"ModelApprovalStatus"</span>: [<span class="st">"Approved"</span>]}
+}</pre>
+      </div>
+      <div class="callout tip">
+        <span class="co-label">Tip</span>
+        <p>This event-driven pattern is how you get true Continuous Deployment on AWS without polling: the registry's state change <em>is</em> the trigger, so there's no cron job checking "did anything get approved yet."</p>
+      </div>
+    </section>
+
+    <section class="section" id="aws-deploy">
+      <div class="eyebrow-row"><span class="badge badge-int">Intermediate</span><span class="badge badge-aws">AWS SageMaker</span></div>
+      <h2>Endpoints, serverless &amp; batch inference</h2>
+      <div class="code-wrap">
+        <div class="code-head"><span class="code-lang">python — real-time endpoint with weighted canary variants</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">from</span> sagemaker.session <span class="kw">import</span> production_variant
+
+blue = production_variant(model_name=<span class="st">"churn-model-v11"</span>, instance_type=<span class="st">"ml.m5.large"</span>,
+                           initial_instance_count=<span class="fn">2</span>, variant_name=<span class="st">"Blue"</span>, initial_weight=<span class="fn">90</span>)
+green = production_variant(model_name=<span class="st">"churn-model-v12"</span>, instance_type=<span class="st">"ml.m5.large"</span>,
+                            initial_instance_count=<span class="fn">1</span>, variant_name=<span class="st">"Green"</span>, initial_weight=<span class="fn">10</span>)
+
+session.endpoint_from_production_variants(
+    name=<span class="st">"churn-endpoint"</span>, production_variants=[blue, green])
+
+<span class="c1"># after canary window looks clean, shift weights — no redeploy needed
+session.sagemaker_client.update_endpoint_weights_and_capacities(
+    EndpointName="churn-endpoint",
+    DesiredWeightsAndCapacities=[{"VariantName": "Green", "DesiredWeight": 100},
+                                  {"VariantName": "Blue", "DesiredWeight": 0}])</span></pre>
+      </div>
+      <div class="grid-2">
+        <div class="card"><h4>Serverless Inference</h4><p>Scales to zero, cold start 5–30s depending on model size. Choose when traffic is spiky/unpredictable and cost efficiency beats latency consistency.</p></div>
+        <div class="card"><h4>Async Inference</h4><p>Queue-backed, for large payloads (up to 1GB) and processing times up to an hour. Notifies via SNS on completion.</p></div>
+      </div>
+      <div class="code-wrap">
+        <div class="code-head"><span class="code-lang">python — batch transform for millions of offline rows</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre>transformer = model.transformer(instance_count=<span class="fn">10</span>, instance_type=<span class="st">"ml.m5.xlarge"</span>,
+                                 strategy=<span class="st">"MultiRecord"</span>, max_payload=<span class="fn">6</span>)
+transformer.transform(data=<span class="st">"s3://ml-data/scoring-batch/2026-09-02/"</span>,
+                       content_type=<span class="st">"text/csv"</span>, split_type=<span class="st">"Line"</span>)</pre>
+      </div>
+    </section>
+
+    <section class="section" id="aws-monitor">
+      <div class="eyebrow-row"><span class="badge badge-exp">Expert</span><span class="badge badge-aws">AWS SageMaker</span></div>
+      <h2>Model Monitor &amp; Clarify</h2>
+      <div class="code-wrap">
+        <div class="code-head"><span class="code-lang">python — enable data capture + scheduled drift monitor</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+        <pre><span class="kw">from</span> sagemaker.model_monitor <span class="kw">import</span> DefaultModelMonitor, DataCaptureConfig
+
+data_capture_config = DataCaptureConfig(enable_capture=<span class="kw">True</span>, sampling_percentage=<span class="fn">100</span>,
+                                         destination_s3_uri=<span class="st">"s3://ml-data/capture/"</span>)
+predictor = model.deploy(instance_type=<span class="st">"ml.m5.large"</span>, initial_instance_count=<span class="fn">2</span>,
+                          data_capture_config=data_capture_config)
+
+monitor = DefaultModelMonitor(role=role, instance_count=<span class="fn">1</span>, instance_type=<span class="st">"ml.m5.xlarge"</span>)
+monitor.suggest_baseline(baseline_dataset=<span class="st">"s3://ml-data/training-baseline.csv"</span>,
+                          dataset_format=DatasetFormat.csv(header=<span class="kw">True</span>),
+                          output_s3_uri=<span class="st">"s3://ml-data/baseline-results/"</span>)
+
+monitor.create_monitoring_schedule(
+    monitor_schedule_name=<span class="st">"churn-drift-schedule"</span>,
+    endpoint_input=predictor.endpoint_name,
+    output_s3_uri=<span class="st">"s3://ml-data/monitor-reports/"</span>,
+    statistics=monitor.baseline_statistics(),
+    constraints=monitor.suggested_constraints(),
+    schedule_cron_expression=<span class="st">"cron(0 * ? * * *)"</span>)  <span class="c1"># hourly</span></pre>
+      </div>
+      <p>SageMaker Clarify runs alongside Model Monitor for <strong>bias drift</strong> and <strong>feature attribution drift</strong> (SHAP-value shifts over time) — critical for regulated use cases where you must prove the model isn't just accurate, but fair and stable in *why* it's making decisions, not just *what* it predicts.</p>
+    </section>
+
+    <!-- ================= COMPARE & APPLY ================= -->
+    <section class="section" id="comparison">
+      <div class="eyebrow-row"><span class="badge badge-int">Intermediate</span></div>
+      <h2>Azure vs AWS: MLOps service map</h2>
+      <p class="lead">Same capability, different name — the fastest way to translate between the two stacks or scope a migration.</p>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th>Capability</th><th style="color:var(--azure)">Azure</th><th style="color:var(--aws)">AWS</th></tr>
+          <tr><td>Top-level container</td><td>Workspace</td><td>Domain (Studio) + loosely coupled services</td></tr>
+          <tr><td>Notebook IDE</td><td>Azure ML Studio Notebooks</td><td>SageMaker Studio</td></tr>
+          <tr><td>Managed training compute</td><td>AmlCompute clusters</td><td>Training jobs (ephemeral instances)</td></tr>
+          <tr><td>Pipeline orchestration</td><td>Azure ML Pipelines (components/DSL)</td><td>SageMaker Pipelines</td></tr>
+          <tr><td>Feature store</td><td>Azure ML managed Feature Store</td><td>SageMaker Feature Store</td></tr>
+          <tr><td>Experiment tracking</td><td>Native (MLflow-compatible)</td><td>SageMaker Experiments (MLflow-compatible)</td></tr>
+          <tr><td>Model registry</td><td>Azure ML Model Registry / Registries</td><td>SageMaker Model Registry</td></tr>
+          <tr><td>Real-time endpoint</td><td>Managed online endpoint</td><td>Real-time endpoint (production variants)</td></tr>
+          <tr><td>Scale-to-zero inference</td><td>Kubernetes-based endpoint w/ KEDA, or serverless via Azure Functions wrapping</td><td>Serverless Inference (native)</td></tr>
+          <tr><td>Batch scoring</td><td>Batch endpoints</td><td>Batch Transform</td></tr>
+          <tr><td>Drift monitoring</td><td>Azure ML Model Monitoring</td><td>SageMaker Model Monitor</td></tr>
+          <tr><td>Bias / explainability</td><td>Responsible AI dashboard</td><td>SageMaker Clarify</td></tr>
+          <tr><td>CI/CD engine</td><td>Azure DevOps / GitHub Actions</td><td>CodePipeline / CodeBuild (or GitHub Actions)</td></tr>
+          <tr><td>Secrets</td><td>Azure Key Vault</td><td>AWS Secrets Manager / Parameter Store</td></tr>
+          <tr><td>Kubernetes option</td><td>AKS + Arc-enabled ML endpoints</td><td>EKS + Kubeflow, or self-managed on SageMaker HyperPod</td></tr>
+          <tr><td>Cross-account/workspace sharing</td><td>ML Registries</td><td>Cross-account model package group resource policies</td></tr>
+        </table>
+      </div>
+      <div class="callout tip">
+        <span class="co-label">How to choose</span>
+        <p>In practice the decision is rarely "which is better" in the abstract — it's driven by where your data already lives (egress cost dwarfs any tooling preference), existing enterprise contracts/credits, and whether your org is already deep in the Microsoft or AWS ecosystem for identity, networking, and data warehousing. Azure ML tends to feel more integrated for orgs already on Azure Synapse/Fabric and Entra ID; SageMaker tends to feel more integrated for orgs on Redshift/Glue and heavy existing AWS IAM/VPC investment.</p>
+      </div>
+    </section>
+
+    <section class="section" id="architecture">
+      <div class="eyebrow-row"><span class="badge badge-exp">Expert</span></div>
+      <h2>Reference architecture: real-time fraud scoring</h2>
+      <p class="lead">A single reference architecture, shown once conceptually — the boxes map almost 1:1 onto either cloud's named services from the comparison table above.</p>
+      <div class="diagram-box">
+        <svg viewBox="0 0 1000 420" width="100%" height="auto" xmlns="http://www.w3.org/2000/svg" font-family="Inter, sans-serif">
+          <defs><marker id="arr3" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5D6784"/></marker></defs>
+          <!-- Data layer -->
+          <rect x="10" y="10" width="980" height="90" rx="10" fill="none" stroke="#242C42" stroke-dasharray="3 3"/>
+          <text x="26" y="30" fill="#5D6784" font-size="10.5">DATA LAYER</text>
+          <rect x="30" y="40" width="160" height="48" rx="7" fill="#161C2C" stroke="#242C42"/><text x="110" y="68" text-anchor="middle" fill="#E7EBF5" font-size="12">Event stream</text>
+          <rect x="220" y="40" width="160" height="48" rx="7" fill="#161C2C" stroke="#242C42"/><text x="300" y="68" text-anchor="middle" fill="#E7EBF5" font-size="12">Lake / warehouse</text>
+          <rect x="410" y="40" width="160" height="48" rx="7" fill="#161C2C" stroke="#3FA0F2"/><text x="490" y="68" text-anchor="middle" fill="#E7EBF5" font-size="12">Feature store</text>
+          <line x1="190" y1="64" x2="218" y2="64" stroke="#5D6784" marker-end="url(#arr3)"/>
+          <line x1="380" y1="64" x2="408" y2="64" stroke="#5D6784" marker-end="url(#arr3)"/>
+
+          <!-- Training layer -->
+          <rect x="10" y="120" width="980" height="90" rx="10" fill="none" stroke="#242C42" stroke-dasharray="3 3"/>
+          <text x="26" y="140" fill="#5D6784" font-size="10.5">TRAINING &amp; CI/CD/CT</text>
+          <rect x="30" y="150" width="150" height="48" rx="7" fill="#161C2C" stroke="#242C42"/><text x="105" y="178" text-anchor="middle" fill="#E7EBF5" font-size="12">Pipeline trigger</text>
+          <rect x="205" y="150" width="150" height="48" rx="7" fill="#161C2C" stroke="#242C42"/><text x="280" y="178" text-anchor="middle" fill="#E7EBF5" font-size="12">Train + evaluate</text>
+          <rect x="380" y="150" width="150" height="48" rx="7" fill="#161C2C" stroke="#242C42"/><text x="455" y="178" text-anchor="middle" fill="#E7EBF5" font-size="12">Eval gate</text>
+          <rect x="555" y="150" width="150" height="48" rx="7" fill="#161C2C" stroke="#FF9E2C"/><text x="630" y="178" text-anchor="middle" fill="#E7EBF5" font-size="12">Model registry</text>
+          <line x1="180" y1="174" x2="203" y2="174" stroke="#5D6784" marker-end="url(#arr3)"/>
+          <line x1="355" y1="174" x2="378" y2="174" stroke="#5D6784" marker-end="url(#arr3)"/>
+          <line x1="530" y1="174" x2="553" y2="174" stroke="#5D6784" marker-end="url(#arr3)"/>
+
+          <!-- Serving layer -->
+          <rect x="10" y="230" width="980" height="90" rx="10" fill="none" stroke="#242C42" stroke-dasharray="3 3"/>
+          <text x="26" y="250" fill="#5D6784" font-size="10.5">SERVING</text>
+          <rect x="30" y="260" width="150" height="48" rx="7" fill="#161C2C" stroke="#242C42"/><text x="105" y="288" text-anchor="middle" fill="#E7EBF5" font-size="12">API gateway</text>
+          <rect x="205" y="260" width="150" height="48" rx="7" fill="#161C2C" stroke="#3FA0F2"/><text x="280" y="282" text-anchor="middle" fill="#E7EBF5" font-size="12">Real-time endpoint</text><text x="280" y="296" text-anchor="middle" fill="#97A2BC" font-size="9.5">blue/green</text>
+          <rect x="380" y="260" width="150" height="48" rx="7" fill="#161C2C" stroke="#242C42"/><text x="455" y="288" text-anchor="middle" fill="#E7EBF5" font-size="12">Online feature lookup</text>
+          <rect x="555" y="260" width="150" height="48" rx="7" fill="#161C2C" stroke="#242C42"/><text x="630" y="288" text-anchor="middle" fill="#E7EBF5" font-size="12">Decision + response</text>
+          <line x1="180" y1="284" x2="203" y2="284" stroke="#5D6784" marker-end="url(#arr3)"/>
+          <line x1="355" y1="284" x2="378" y2="284" stroke="#5D6784" marker-end="url(#arr3)"/>
+          <line x1="530" y1="284" x2="553" y2="284" stroke="#5D6784" marker-end="url(#arr3)"/>
+
+          <!-- Monitoring layer -->
+          <rect x="10" y="340" width="980" height="65" rx="10" fill="none" stroke="#242C42" stroke-dasharray="3 3"/>
+          <text x="26" y="360" fill="#5D6784" font-size="10.5">MONITORING</text>
+          <rect x="30" y="368" width="220" height="30" rx="6" fill="#161C2C" stroke="#3FD98B"/><text x="140" y="388" text-anchor="middle" fill="#E7EBF5" font-size="11.5">Data capture + drift job</text>
+          <rect x="270" y="368" width="220" height="30" rx="6" fill="#161C2C" stroke="#F2C94C"/><text x="380" y="388" text-anchor="middle" fill="#E7EBF5" font-size="11.5">Alerting (ops + drift)</text>
+          <rect x="510" y="368" width="220" height="30" rx="6" fill="#161C2C" stroke="#242C42"/><text x="620" y="388" text-anchor="middle" fill="#E7EBF5" font-size="11.5">Business KPI dashboard</text>
+
+          <!-- vertical connectors -->
+          <line x1="630" y1="198" x2="280" y2="258" stroke="#5D6784" stroke-dasharray="3 3" marker-end="url(#arr3)"/>
+          <line x1="280" y1="308" x2="140" y2="366" stroke="#5D6784" stroke-dasharray="3 3" marker-end="url(#arr3)"/>
+          <line x1="140" y1="366" x2="105" y2="152" stroke="#3FA0F2" stroke-dasharray="3 3" marker-end="url(#arr3)"/>
+        </svg>
+      </div>
+      <p>The blue dashed line closing the loop — drift job back to pipeline trigger — is the difference between Level 2 and Level 3 maturity from earlier in this guide. Build that wire first; everything else in this diagram is comparatively easy to stand up on either cloud.</p>
+    </section>
+
+    <section class="section" id="case-studies">
+      <div class="eyebrow-row"><span class="badge badge-int">Intermediate</span></div>
+      <h2>Real-world case studies</h2>
+      <p class="lead">Composite, anonymized patterns drawn from common production setups across both clouds — representative of the trade-offs teams actually hit, not marketing case studies.</p>
+
+      <div class="case-card">
+        <div class="case-head"><h3>Retail: real-time recommendation ranking on AWS</h3><div class="case-meta"><span class="badge badge-aws">AWS</span><span class="badge badge-exp">Expert</span></div></div>
+        <p>A mid-size e-commerce retailer needed sub-100ms re-ranking of a candidate product list per page view, retrained daily against fresh clickstream data, serving ~4,000 requests/second at peak.</p>
+        <div class="case-stack"><span class="chip">SageMaker Feature Store</span><span class="chip">SageMaker Pipelines</span><span class="chip">Real-time endpoint (multi-model)</span><span class="chip">EventBridge</span><span class="chip">Model Monitor</span></div>
+        <div class="case-grid">
+          <div><h5>Architecture choice</h5><p>A <strong>multi-model endpoint</strong> hosted thousands of per-category ranking models behind one endpoint (lazy-loaded from S3), avoiding one instance fleet per category — the dominant cost lever at this scale.</p></div>
+          <div><h5>What broke first</h5><p>Cold-start latency on rarely-hit category models spiked p99 during flash sales when traffic shifted category mix suddenly. Fix: pre-warm the top 200 categories by predicted daily traffic before known sale windows.</p></div>
+          <div><h5>Retraining trigger</h5><p>Nightly SageMaker Pipeline run, gated on a minimum NDCG@10 improvement over the current production model measured on a held-out replay set — never promoted on training loss alone.</p></div>
+          <div><h5>Result</h5><p>Retraining lead time dropped from a 2-day manual process to a fully automated nightly run; CTR on ranked results improved ~6% over static rules, primarily from faster adaptation to trending items.</p></div>
+        </div>
+      </div>
+
+      <div class="case-card">
+        <div class="case-head"><h3>Fintech: transaction fraud detection on Azure</h3><div class="case-meta"><span class="badge badge-az">Azure</span><span class="badge badge-exp">Expert</span></div></div>
+        <p>A payments processor required &lt;50ms scoring per transaction with strict audit requirements — every decision had to be traceable to a specific model version, feature snapshot, and approval record for regulatory review.</p>
+        <div class="case-stack"><span class="chip">Azure ML managed online endpoint</span><span class="chip">Feature Store</span><span class="chip">Responsible AI dashboard</span><span class="chip">Azure DevOps</span><span class="chip">Key Vault</span></div>
+        <div class="case-grid">
+          <div><h5>Architecture choice</h5><p>Blue/green managed online endpoints with mandatory manual-approval Azure DevOps environments before any production traffic shift, satisfying the audit requirement that a named human approved every promotion.</p></div>
+          <div><h5>What broke first</h5><p>An early version retrained weekly on all available labeled fraud cases — but confirmed-fraud labels lag by up to 60 days (chargeback windows), so "fresh" training data was actually stale relative to the true label. Switched to a rolling 90-day window with explicit label-maturity filtering.</p></div>
+          <div><h5>Governance</h5><p>Fairness gate (disparate impact ratio across region/customer segment) via the Responsible AI dashboard blocked two promotion attempts that had improved raw accuracy but widened false-positive rates for a specific customer segment.</p></div>
+          <div><h5>Result</h5><p>False-positive rate (legitimate transactions blocked) dropped 22% over two quarters once label-maturity filtering was fixed — the biggest single lever wasn't model architecture, it was correcting the label lag bug.</p></div>
+        </div>
+      </div>
+
+      <div class="case-card">
+        <div class="case-head"><h3>Healthcare: batch risk scoring, dual-cloud</h3><div class="case-meta"><span class="badge badge-az">Azure</span><span class="badge badge-aws">AWS</span><span class="badge badge-int">Intermediate</span></div></div>
+        <p>A healthcare analytics vendor scores patient readmission risk nightly for hospital partners — some on Azure (Epic/Microsoft-aligned health systems), some on AWS (systems using Redshift-based data platforms) — from one shared modeling codebase.</p>
+        <div class="case-stack"><span class="chip">MLflow</span><span class="chip">Batch endpoints / Batch Transform</span><span class="chip">Terraform</span><span class="chip">HIPAA-eligible services only</span></div>
+        <div class="case-grid">
+          <div><h5>Architecture choice</h5><p>Model training and evaluation code stayed cloud-agnostic (plain Python + MLflow for tracking); only the orchestration/deployment layer forked per customer's cloud, using Terraform modules to keep the two infra definitions in lockstep.</p></div>
+          <div><h5>What broke first</h5><p>A HIPAA compliance review flagged that one region's batch job temporarily wrote intermediate features to a non-HIPAA-eligible storage tier by default. Fixed by hard-coding allowed storage classes into the Terraform modules rather than trusting defaults.</p></div>
+          <div><h5>Result</h5><p>New hospital partner onboarding time dropped from ~6 weeks to ~10 days once the Terraform modules matured, since 90% of the deployment was now parameterized rather than rebuilt per customer.</p></div>
+        </div>
+      </div>
+
+      <div class="case-card">
+        <div class="case-head"><h3>Manufacturing: predictive maintenance at the edge, AWS</h3><div class="case-meta"><span class="badge badge-aws">AWS</span><span class="badge badge-int">Intermediate</span></div></div>
+        <p>Factory sensor data needed local, offline-capable inference (unreliable connectivity) with periodic cloud-side retraining as new failure examples accumulated — a genuinely rare failure class (imbalanced ~1:8000).</p>
+        <div class="case-stack"><span class="chip">SageMaker Neo</span><span class="chip">IoT Greengrass</span><span class="chip">SageMaker Pipelines</span><span class="chip">S3 sync</span></div>
+        <div class="case-grid">
+          <div><h5>Architecture choice</h5><p>Models compiled with SageMaker Neo for the target edge hardware, deployed via IoT Greengrass; edge devices batch-uploaded sensor logs to S3 on connectivity windows, feeding the next cloud retraining cycle.</p></div>
+          <div><h5>What broke first</h5><p>Standard accuracy-based evaluation gates were nearly useless given the class imbalance — a model predicting "no failure" always scored 99.9% accuracy. Switched the gate to precision-recall AUC and a minimum recall floor at a fixed false-positive budget.</p></div>
+          <div><h5>Result</h5><p>Unplanned downtime dropped ~18% in the pilot facility; the bigger operational win was simply having a repeatable retraining pipeline instead of the prior ad hoc, rarely-updated model that had gone stale for over a year.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="llmops">
+      <div class="eyebrow-row"><span class="badge badge-exp">Expert</span></div>
+      <h2>LLMOps addendum</h2>
+      <p class="lead">Large language model systems inherit everything above, plus new failure surfaces that classic MLOps tooling doesn't cover out of the box.</p>
+      <ul>
+        <li><strong>Prompt versioning:</strong> treat prompts/system messages as versioned artifacts with the same rigor as model weights — a prompt edit is a deployment, and needs the same gate.</li>
+        <li><strong>Evaluation is harder:</strong> no single "AUC." Use a blend of automated eval (LLM-as-judge with a fixed rubric, embedding-similarity to reference answers) and human review sampling, tracked over time like any other quality metric.</li>
+        <li><strong>Retrieval pipeline (RAG) versioning:</strong> the vector index, chunking strategy, and embedding model version are all part of "the model" for reproducibility purposes — version them together.</li>
+        <li><strong>Cost and latency as first-class metrics:</strong> token cost per request and p99 latency belong on the same dashboard as quality, since a "better" model swap can silently 5x your inference bill.</li>
+        <li><strong>Guardrails as a pipeline stage:</strong> content-safety and jailbreak-resistance checks belong in the CI/CD gate, not bolted on only at the UI layer.</li>
+      </ul>
+      <div class="grid-2">
+        <div class="card"><h4>Azure</h4><p>Azure AI Foundry (formerly Azure AI Studio) layers prompt flow, evaluation, and content safety on top of the same Azure ML workspace/registry primitives covered above.</p></div>
+        <div class="card"><h4>AWS</h4><p>Amazon Bedrock plus SageMaker's model evaluation and Guardrails features extend the same SageMaker Pipelines/registry pattern to foundation-model workflows and RAG evaluation.</p></div>
+      </div>
+    </section>
+
+    <section class="section" id="interview-qa">
+      <div class="eyebrow-row"><span class="badge badge-exp">Expert</span></div>
+      <h2>Senior / 8+ year interview Q&amp;A</h2>
+      <p class="lead">The kind of questions that separate "has used SageMaker" from "has run MLOps at scale and been paged for it."</p>
+
+      <details class="qa"><summary>How do you decide between a shared feature store and letting each model own its feature pipeline?</summary>
+        <div class="qa-body"><p>Shared feature stores pay off when (a) multiple models consume overlapping features — churn, upsell, and fraud models all wanting "days since last purchase" — and (b) training/serving skew has already bitten the org once. They cost coordination overhead: a shared schema now needs a change-management process, and a bug in a shared feature blast-radiuses across every consuming model instead of one. For a single-model team, a well-tested local feature pipeline with strict point-in-time joins is often the right call until a second or third model shows up wanting the same features.</p></div>
+      </details>
+      <details class="qa"><summary>Your production model's offline eval metrics look fine but online business KPIs are degrading. Walk through your debugging process.</summary>
+        <div class="qa-body"><p>First separate "is the model getting different inputs" from "is the model behaving differently on the same inputs." Check prediction-distribution drift and input feature drift before touching the model itself — most of these incidents are upstream data issues, not model issues (see the churn/telco war story above). If inputs and predictions look stable, check for a training/serving skew bug — replay a batch of live production requests through the offline evaluation pipeline and diff. Only after ruling those out do you consider genuine concept drift requiring retraining.</p></div>
+      </details>
+      <details class="qa"><summary>How do you handle rollback when the "bad" model has already been serving for hours and downstream systems cached its outputs?</summary>
+        <div class="qa-body"><p>Rollback the serving traffic immediately (traffic-split flip, near-instant on both Azure managed endpoints and SageMaker production variants) — that stops new bad predictions. Separately, you need a remediation plan for outputs already consumed: if predictions were cached or wrote to a downstream store (e.g., a risk score persisted to a transactions table), you need a batch reprocessing job to correct those records, which is a different system than the serving rollback. Teams that only plan for "stop the bleeding" and not "clean up what already bled" get bitten on audits.</p></div>
+      </details>
+      <details class="qa"><summary>When would you choose a Kubernetes-based deployment (AKS/EKS) over the managed endpoint options on either cloud?</summary>
+        <div class="qa-body"><p>When you need capabilities the managed endpoint doesn't expose: custom sidecar containers, non-standard networking/service-mesh requirements, GPU-sharing across multiple models on one node for cost efficiency, or you're already running the rest of your microservices on that cluster and want one operational model instead of two. The cost is real: you now own node patching, cluster upgrades, and autoscaling tuning that the managed endpoint would have handled for you. Default to managed endpoints; justify Kubernetes with a specific unmet requirement, not "more control" as a vague preference.</p></div>
+      </details>
+      <details class="qa"><summary>How do you set a data-drift alert threshold that doesn't cry wolf?</summary>
+        <div class="qa-body"><p>Don't pick a PSI/threshold value from a blog post — compute the metric's natural variance on historical, known-stable periods first (e.g., week-over-week PSI across a quiet quarter) and set the alert threshold a few standard deviations above that baseline noise floor. Pair it with a minimum sustained-duration requirement (drift persisting 3 consecutive windows, not one blip) before paging anyone. Alerting on every daily fluctuation trains the on-call rotation to ignore the channel.</p></div>
+      </details>
+      <details class="qa"><summary>Explain the trade-off between shadow deployment and canary deployment, and when each is worth the cost.</summary>
+        <div class="qa-body"><p>Shadow costs double the inference compute (both models run on every request) but zero user risk — worth it when a wrong prediction is expensive (financial decision, medical triage) and you need real production-traffic validation before any user sees the new model's output. Canary costs less compute overhead but exposes a real slice of users to the new model — worth it when a wrong prediction is tolerable/recoverable (a slightly worse product recommendation) and you want faster iteration cycles than a full shadow-then-canary sequence allows.</p></div>
+      </details>
+      <details class="qa"><summary>How do you structure IAM/RBAC so a data scientist can iterate quickly without being able to accidentally push to production?</summary>
+        <div class="qa-body"><p>Separate roles by pipeline stage, not by person: a "training" role can read data, write to a scratch/staging registry namespace, and launch training jobs, but has no permission to update production endpoint traffic weights or approve a model package. Production promotion requires a distinct role, typically held by a service principal/pipeline identity that only acts after an explicit approval gate — not a personal credential, so "who can deploy to prod" is auditable as "which pipeline runs, triggered by which approval," not "who has the right IAM policy attached to their personal user."</p></div>
+      </details>
+      <details class="qa"><summary>Your team wants "one pipeline that works on both Azure and AWS." Is that a good goal?</summary>
+        <div class="qa-body"><p>Usually a partial goal, not a total one. Cloud-agnostic training code (plain Python/PyTorch/XGBoost, MLflow for tracking) is realistic and valuable — it protects you from platform lock-in on the part that changes most (model logic). Fully cloud-agnostic orchestration/deployment is usually not worth the abstraction cost: you end up building a thin, buggy re-implementation of whichever managed service you're avoiding, and lose native integrations (IAM, monitoring, cost tools) on both sides. The pragmatic split from the healthcare case study above — portable modeling code, forked infra/deployment layer per cloud — is the pattern that tends to actually ship.</p></div>
+      </details>
+    </section>
+
+    <section class="section" id="glossary">
+      <div class="eyebrow-row"><span class="badge badge-beg">Beginner</span></div>
+      <h2>Glossary</h2>
+      <div class="tbl-wrap">
+        <table>
+          <tr><th>Term</th><th>Definition</th></tr>
+          <tr><td>Training/serving skew</td><td>Discrepancy between how a feature is computed at training time vs. inference time, causing offline metrics to not match production behavior.</td></tr>
+          <tr><td>Concept drift</td><td>The true relationship between inputs and the target label changes over time, independent of input distribution changes.</td></tr>
+          <tr><td>Data drift</td><td>The distribution of model inputs changes over time, even if the input-output relationship hasn't.</td></tr>
+          <tr><td>Point-in-time correctness</td><td>Ensuring a feature value used for training reflects only information available as of the label's timestamp, avoiding label leakage.</td></tr>
+          <tr><td>Canary deployment</td><td>Routing a small percentage of live traffic to a new model version to validate it before a full rollout.</td></tr>
+          <tr><td>Shadow deployment</td><td>Running a new model on live traffic without serving its predictions, purely to log and compare behavior.</td></tr>
+          <tr><td>PSI (Population Stability Index)</td><td>A statistical measure of how much a distribution has shifted between two samples, commonly used for drift detection.</td></tr>
+          <tr><td>Feature store</td><td>A system providing consistent, versioned feature computation for both offline training and online low-latency serving.</td></tr>
+          <tr><td>Model registry</td><td>A versioned catalog of trained model artifacts with associated metadata, lineage, and promotion stage.</td></tr>
+          <tr><td>Continuous Training (CT)</td><td>Automated re-triggering of the training pipeline based on schedule, drift signal, or new label volume.</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <footer>
+      Single-file reference guide. Code samples are illustrative patterns, not copy-paste production code — adapt IAM roles, resource names, and gate thresholds to your environment before running.
+    </footer>
+
+  </main>
+</div>
+
+<div id="toTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+</div>
+
+<script>
+// ---- Progress bar ----
+const progressEl = document.getElementById('progress');
+const toTopEl = document.getElementById('toTop');
+window.addEventListener('scroll', () => {
+  const h = document.documentElement;
+  const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+  progressEl.style.width = scrolled + '%';
+  toTopEl.classList.toggle('show', h.scrollTop > 600);
+});
+
+// ---- Sidebar active link on scroll ----
+const navLinks = Array.from(document.querySelectorAll('.nav-list a'));
+const sections = navLinks.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting){
+      const id = '#' + entry.target.id;
+      navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === id));
+    }
+  });
+}, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+sections.forEach(s => io.observe(s));
+
+// ---- Collapsible nav groups ----
+function toggleGroup(btn){
+  btn.parentElement.classList.toggle('collapsed');
+}
+
+// ---- Nav filter ----
+function filterNav(query){
+  const q = query.trim().toLowerCase();
+  document.querySelectorAll('.nav-group').forEach(group => {
+    let anyVisible = false;
+    group.querySelectorAll('.nav-list li').forEach(li => {
+      const match = li.textContent.toLowerCase().includes(q);
+      li.style.display = match ? '' : 'none';
+      if(match) anyVisible = true;
+    });
+    group.style.display = (q === '' || anyVisible) ? '' : 'none';
+    if(q !== '' && anyVisible) group.classList.remove('collapsed');
+  });
+}
+
+// ---- Tabs ----
+function switchTab(evt, group, name){
+  const btnsWrap = evt.currentTarget.parentElement;
+  btnsWrap.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  evt.currentTarget.classList.add('active');
+  const panelsWrap = btnsWrap.nextElementSibling;
+  panelsWrap.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(group + '-' + name).classList.add('active');
+}
+
+// ---- Copy code ----
+function copyCode(btn){
+  const pre = btn.closest('.code-wrap').querySelector('pre');
+  const text = pre.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const old = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = old, 1400);
+  });
+}
+
+// ---- Mobile sidebar toggle ----
+function toggleSidebar(force){
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('overlay');
+  const open = typeof force === 'boolean' ? force : !sb.classList.contains('open');
+  sb.classList.toggle('open', open);
+  ov.classList.toggle('show', open);
+}
+// close mobile sidebar after clicking a link
+navLinks.forEach(a => a.addEventListener('click', () => { if(window.innerWidth <= 980) toggleSidebar(false); }));
+</script>
+</body>
+</html>
