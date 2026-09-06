@@ -417,8 +417,16 @@
   </div>
 
   <div class="toc-group">
-    <button class="toc-group-btn" data-target="g-ch15"><span>Ch.15 (extension) — Interview prep</span><span class="arrow">▾</span></button>
+    <button class="toc-group-btn" data-target="g-ch15"><span>Ch.15 (extension) — MLOps on Azure</span><span class="arrow">▾</span></button>
     <div class="toc-links" id="g-ch15">
+      <a href="#azure-mlops-setup">Set up: resources, secrets &amp; the model</a>
+      <a href="#azure-mlops-deploy">Deploy: containerize, ship &amp; monitor</a>
+    </div>
+  </div>
+
+  <div class="toc-group">
+    <button class="toc-group-btn" data-target="g-ch16"><span>Ch.16 (extension) — Interview prep</span><span class="arrow">▾</span></button>
+    <div class="toc-links" id="g-ch16">
       <a href="#interview-prep">Questions &amp; answers</a>
     </div>
   </div>
@@ -2558,9 +2566,309 @@ async def run_support_agent(state):
     <p class="figure-caption">Five separate checkpoints for one logical permission decision — that redundancy is the whole design. Any single layer having a bug or being bypassed still leaves four more standing between a request and an action it shouldn't be allowed to take.</p>
   </section>
 
-  <!-- ============ CHAPTER 15 (EXTENSION): INTERVIEW PREP ============ -->
-  <section id="interview-prep">
+  <!-- ============ CHAPTER 15 (EXTENSION): MLOPS ON AZURE ============ -->
+  <section id="azure-mlops-setup">
     <div class="chapter-num">Chapter 15 (extension)</div>
+    <h2>MLOps on Azure — a step-by-step walkthrough for beginners</h2>
+    <p>Everything on this page so far has been cloud-agnostic Python. This chapter takes the same ReAct agent from Pattern 01 and actually ships it, on Microsoft Azure, from an empty subscription to a monitored, auto-scaling endpoint. Every step includes both the exact command to run and, first, what that command is actually doing in plain terms — you shouldn't need any prior Azure experience to follow along.</p>
+
+    <div class="explain-box">
+      <span class="eb-label">In plain English</span>
+      <p>Think of shipping an agent like moving a small business into a new city. First you need an address — a plot of land to build on (a <strong>resource group</strong>). Then you need a safe you can lock important documents in (<strong>Key Vault</strong>) before you build anything else. Then you set up the actual workshop where your product gets built and labeled (the <strong>Azure ML workspace</strong> and <strong>model registry</strong>). Then you package your product so it can be shipped anywhere (a <strong>container image</strong>), open a storefront that customers can actually reach (a <strong>managed online endpoint</strong>), set up a reliable delivery truck that restocks the store automatically whenever you update the product (a <strong>CI/CD pipeline</strong>), and finally install security cameras so you know the moment something goes wrong (<strong>monitoring</strong>). This chapter does exactly that, in that order.</p>
+      <p><strong>MLOps</strong> is just "DevOps, but for machine learning systems" — the discipline of automating and standardizing how a model or agent moves from a developer's laptop into something real users can reliably depend on, instead of someone manually copying files onto a server by hand.</p>
+    </div>
+
+    <div class="callout">
+      <strong>Before you start</strong>
+      Every Azure resource created below costs real money while it exists (even a small amount). Follow the cleanup command at the very end of this chapter when you're done experimenting — <code>az group delete --name rg-agentic-rag</code> removes everything created here in one shot, since it all lives inside the same resource group.
+    </div>
+
+    <h3>Step 1 — Install the CLI and create your first resource group</h3>
+    <p>A <strong>resource group</strong> is a labeled folder that holds every Azure resource for one project, so you can see, manage, and delete them all together instead of hunting for pieces scattered across your account.</p>
+
+    <div class="code-block">
+      <div class="code-head"><span class="fname">terminal</span><span>bash</span></div>
+      <pre><code class="language-bash"># Install the Azure CLI first if you haven't already:
+# https://learn.microsoft.com/cli/azure/install-azure-cli
+# (Prefer clicking instead of typing? Everything below also has an
+# equivalent screen in the Azure Portal at portal.azure.com --
+# search for the same resource names, e.g. "Resource groups".)
+
+# Opens a browser window to sign in with your Microsoft/Azure account.
+az login
+
+# Install the machine-learning extension for the CLI -- this adds all
+# the "az ml ..." commands used later in this chapter.
+az extension add --name ml
+
+# Create the folder that will hold everything in this chapter.
+# --location picks which physical Azure datacenter region to use --
+# pick one close to your users for lower latency.
+az group create --name rg-agentic-rag --location eastus</code></pre>
+    </div>
+
+    <h3>Step 2 — Create an Azure ML workspace</h3>
+    <p>The <strong>workspace</strong> is the control center for everything ML/agent-related in this project: registered models, compute, deployed endpoints, and run logs all live inside it, viewable together in one place in the Azure Portal.</p>
+
+    <div class="code-block">
+      <div class="code-head"><span class="fname">terminal</span><span>bash</span></div>
+      <pre><code class="language-bash"># This one command actually creates SEVERAL resources for you
+# automatically: the workspace itself, a storage account for your
+# files, a Key Vault for secrets (used in Step 3), and Application
+# Insights for monitoring (used in Step 8) -- all wired together.
+az ml workspace create --name mlw-agentic-rag --resource-group rg-agentic-rag</code></pre>
+    </div>
+    <p class="figure-caption">After this finishes, open <a href="https://ml.azure.com">ml.azure.com</a> and select this workspace — you'll see a visual dashboard for everything the rest of this chapter creates.</p>
+
+    <h3>Step 3 — Store your secrets in Key Vault, never in code</h3>
+    <p>This is the Azure-specific version of the "never hardcode secrets" rule from Chapter 13. The workspace already created a Key Vault for you in Step 2 — you just need to add your actual secret to it.</p>
+
+    <div class="code-block">
+      <div class="code-head"><span class="fname">terminal</span><span>bash</span></div>
+      <pre><code class="language-bash"># Find the name of the Key Vault that was auto-created alongside your
+# workspace (Azure generates a random suffix, so we look it up rather
+# than guessing it).
+az keyvault list --resource-group rg-agentic-rag --query "[0].name" -o tsv
+
+# Store your model API key as a SECRET, not as plain text anywhere in
+# your code or config files.
+az keyvault secret set \
+  --vault-name &lt;your-keyvault-name&gt; \
+  --name "openai-api-key" \
+  --value "sk-..."</code></pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-head"><span class="fname">read_secret.py</span><span>python</span></div>
+      <pre><code class="language-python"># pip install azure-identity azure-keyvault-secrets
+from azure.identity import DefaultAzureCredential
+from azure.keyvault.secrets import SecretClient
+
+# DefaultAzureCredential automatically figures out how to prove who you
+# are: your own logged-in Azure CLI session while developing locally,
+# or the deployed app's own "managed identity" once it's running in
+# Azure -- the same code works in both places without changes.
+credential = DefaultAzureCredential()
+client = SecretClient(
+    vault_url="https://&lt;your-keyvault-name&gt;.vault.azure.net/",
+    credential=credential,
+)
+openai_api_key = client.get_secret("openai-api-key").value</code></pre>
+    </div>
+
+    <h3>Step 4 — Provision Azure OpenAI, and register your agent as a versioned model</h3>
+    <p>If you want Microsoft-hosted models instead of calling OpenAI directly, Azure OpenAI Service gives you the same models behind Azure's own network, billing, and access controls.</p>
+
+    <div class="code-block">
+      <div class="code-head"><span class="fname">terminal</span><span>bash</span></div>
+      <pre><code class="language-bash"># Create the Azure OpenAI resource itself...
+az cognitiveservices account create \
+  --name aoai-agentic-rag \
+  --resource-group rg-agentic-rag \
+  --kind OpenAI \
+  --sku S0 \
+  --location eastus
+
+# ...then deploy one specific model into it. This "deployment name"
+# (not the raw model name) is what your code will actually call.
+az cognitiveservices account deployment create \
+  --name aoai-agentic-rag \
+  --resource-group rg-agentic-rag \
+  --deployment-name gpt-4o-deployment \
+  --model-name gpt-4o \
+  --model-version "2026-06-01" \
+  --model-format OpenAI \
+  --sku-name Standard \
+  --sku-capacity 10</code></pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-head"><span class="fname">azure_client.py</span><span>python</span></div>
+      <pre><code class="language-python"># pip install langchain-openai
+from langchain_openai import AzureChatOpenAI
+
+# This is the Azure-flavored version of the ChatOpenAI client from the
+# very first Setup chapter -- every pattern on this page (ReAct,
+# Reflection, the supervisor, Agentic RAG...) works completely
+# unchanged once you swap in this client.
+frontier_model = AzureChatOpenAI(
+    azure_deployment="gpt-4o-deployment",     # the deployment name from above
+    azure_endpoint="https://aoai-agentic-rag.openai.azure.com/",
+    api_key=openai_api_key,                    # pulled from Key Vault in Step 3
+    api_version="2026-06-01",
+)</code></pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-head"><span class="fname">terminal</span><span>bash</span></div>
+      <pre><code class="language-bash"># "Registering" a model means: save this exact version of your agent's
+# code, prompts, and config as a tracked, named asset inside the
+# workspace, so every future deployment points at an exact, known
+# version -- this is the Azure ML equivalent of the AGENT_VERSION
+# metadata from Chapter 7.
+az ml model create \
+  --name react-support-agent \
+  --version 1 \
+  --path ./agent_package \
+  --resource-group rg-agentic-rag \
+  --workspace-name mlw-agentic-rag</code></pre>
+    </div>
+  </section>
+
+  <section id="azure-mlops-deploy">
+    <h2>Deploy: containerize, ship, and monitor</h2>
+    <p>With the workspace, secrets, and a registered model version in place, the second half of this chapter packages the agent, deploys it behind a real HTTP endpoint, wires up automatic deployment on every code change, and turns on monitoring.</p>
+
+    <h3>Step 5 — Package the agent into a container image</h3>
+    <p>A <strong>container</strong> bundles your code together with everything it needs to run (the exact Python version, exact library versions) into one shippable box, so it behaves identically on your laptop, in CI, and in Azure.</p>
+
+    <div class="code-block">
+      <div class="code-head"><span class="fname">Dockerfile</span><span>bash</span></div>
+      <pre><code class="language-bash">FROM python:3.11-slim
+WORKDIR /app
+
+# Copy just the dependency list first and install it -- this lets
+# Docker reuse this step from cache on future builds if only your
+# application code changed, not your dependencies, making rebuilds faster.
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+# Starts a small web server exposing the LangGraph agent from Pattern
+# 01 as an HTTP endpoint, using FastAPI + uvicorn as the web layer.
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]</code></pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-head"><span class="fname">terminal</span><span>bash</span></div>
+      <pre><code class="language-bash"># Azure Container Registry (ACR) is a private storage locker for your
+# container images -- like Docker Hub, but inside your own Azure
+# account, with access controlled the same way as everything else here.
+az acr create --name acragenticrag --resource-group rg-agentic-rag --sku Basic
+
+# "az acr build" does two jobs in one command: it builds your
+# Dockerfile in the cloud (no need for Docker installed locally) AND
+# pushes the finished image straight into your registry.
+az acr build --registry acragenticrag --image agent-service:v1 .</code></pre>
+    </div>
+
+    <h3>Step 6 — Deploy behind a Managed Online Endpoint</h3>
+    <p>An Azure ML <strong>Managed Online Endpoint</strong> is a real, secured HTTP address your application (or your users) can call, with autoscaling, logging, and traffic-splitting handled for you — no manually configuring load balancers or servers.</p>
+
+    <div class="code-block">
+      <div class="code-head"><span class="fname">endpoint.yml</span><span>bash</span></div>
+      <pre><code class="language-bash">$schema: https://azuremlschemas.azureedge.net/latest/managedOnlineEndpoint.schema.json
+name: agent-endpoint
+auth_mode: key   # callers need a key to reach this endpoint -- not open to the whole internet</code></pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-head"><span class="fname">deployment.yml</span><span>bash</span></div>
+      <pre><code class="language-bash">$schema: https://azuremlschemas.azureedge.net/latest/managedOnlineDeployment.schema.json
+name: blue                                 # "blue" is just a label for this specific deployed version
+endpoint_name: agent-endpoint
+model: azureml:react-support-agent:1        # the exact registered version from Step 4
+environment:
+  image: acragenticrag.azurecr.io/agent-service:v1
+instance_type: Standard_DS3_v2
+instance_count: 1</code></pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-head"><span class="fname">terminal</span><span>bash</span></div>
+      <pre><code class="language-bash"># Create the endpoint (the "storefront address")...
+az ml online-endpoint create -f endpoint.yml \
+  --resource-group rg-agentic-rag --workspace-name mlw-agentic-rag
+
+# ...then create the actual deployment behind it, and send it 100% of
+# traffic since it's the only version that exists so far.
+az ml online-deployment create -f deployment.yml --all-traffic \
+  --resource-group rg-agentic-rag --workspace-name mlw-agentic-rag</code></pre>
+    </div>
+    <p class="figure-caption">Naming this deployment "blue" isn't cosmetic — Managed Online Endpoints support native traffic splitting between multiple named deployments, which is exactly the canary mechanism from Chapter 7, built into the platform instead of hand-rolled.</p>
+
+    <h3>Step 7 — Automate it: GitHub Actions deploys on every merge</h3>
+    <p>This connects directly back to Chapter 7's eval-gated CI/CD — same idea, with the final step now actually pushing to Azure instead of a placeholder.</p>
+
+    <div class="code-block">
+      <div class="code-head"><span class="fname">.github/workflows/deploy-azure.yml</span><span>bash</span></div>
+      <pre><code class="language-bash">name: deploy-to-azure
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Lets this workflow authenticate to your Azure subscription using
+      # a service principal's credentials, stored as a GitHub secret --
+      # never typed directly into this file.
+      - uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - run: pip install -r requirements.txt
+      - run: pytest tests/unit
+      # The SAME eval gate from Chapter 7 -- a regression here blocks
+      # the Azure deployment from ever happening, exactly like it
+      # blocked the merge before.
+      - run: python ci/eval_gate.py --dataset agent-regression-set --min-score 0.85
+
+      - run: az acr build --registry acragenticrag --image agent-service:${{ github.sha }} .
+
+      # Deploy the new image as a SECOND deployment ("green"), and only
+      # route 10% of live traffic to it -- the canary pattern from
+      # Chapter 7, expressed here as one native Azure CLI command.
+      - run: |
+          az ml online-deployment create -f deployment-green.yml \
+            --resource-group rg-agentic-rag --workspace-name mlw-agentic-rag
+          az ml online-endpoint update --name agent-endpoint \
+            --traffic "blue=90 green=10" \
+            --resource-group rg-agentic-rag --workspace-name mlw-agentic-rag</code></pre>
+    </div>
+
+    <h3>Step 8 — Turn on monitoring</h3>
+    <p>The workspace already created an Application Insights resource for you back in Step 2 — this step just turns monitoring ON for this specific deployment and connects the observability code from Chapter 8 to it.</p>
+
+    <div class="code-block">
+      <div class="code-head"><span class="fname">terminal</span><span>bash</span></div>
+      <pre><code class="language-bash"># Turn on request/response logging and metrics for this deployment.
+az ml online-deployment update \
+  --name blue --endpoint-name agent-endpoint \
+  --set app_insights_enabled=true \
+  --resource-group rg-agentic-rag --workspace-name mlw-agentic-rag</code></pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-head"><span class="fname">azure_monitor.py</span><span>python</span></div>
+      <pre><code class="language-python"># pip install azure-monitor-opentelemetry
+from azure.monitor.opentelemetry import configure_azure_monitor
+
+# One line connects EVERYTHING instrumented back in Chapter 8's
+# OpenTelemetry setup -- every traced_node span, every tool call --
+# straight into Azure Monitor, viewable as dashboards and alerts in
+# the Application Insights blade of your workspace.
+configure_azure_monitor(
+    connection_string="InstrumentationKey=...;IngestionEndpoint=...",
+)</code></pre>
+    </div>
+
+    <p>Open your workspace at <a href="https://ml.azure.com">ml.azure.com</a>, select <strong>agent-endpoint</strong>, and you should now see live request counts, latency, and error rates — the production picture Chapter 7's AgentOps section described, now actually running.</p>
+
+    <div class="callout">
+      <strong>Clean up when you're done</strong>
+      Every resource in this chapter lives inside <code>rg-agentic-rag</code>. One command removes all of it — the workspace, the endpoint, the container registry, the Azure OpenAI resource, everything — so you don't keep paying for an experiment: <code>az group delete --name rg-agentic-rag --yes --no-wait</code>
+    </div>
+  </section>
+
+  <!-- ============ CHAPTER 16 (EXTENSION): INTERVIEW PREP ============ -->
+  <section id="interview-prep">
+    <div class="chapter-num">Chapter 16 (extension)</div>
     <h2>Interview questions &amp; answers</h2>
     <p>A run-through of everything on this page, phrased the way an interviewer might actually ask it. Click a question to reveal the answer — try answering in your own words first.</p>
 
@@ -2587,6 +2895,16 @@ async def run_support_agent(state):
         <summary><span>Why does increasing an agent's autonomy increase risk faster than you'd expect?</span><span class="q-mark"></span></summary>
         <div class="faq-answer"><p>Because errors compound across steps. If an agent is 95% reliable per step, that sounds fine — until it's chained across ten autonomous steps, where the odds of at least one step going wrong drop to roughly 60%. The fix isn't "make it more autonomous and hope," it's matching autonomy to the actual risk of the task and putting a human check at the steps that matter most.</p></div>
       </details>
+
+      <details class="faq-item">
+        <summary><span>Is "agentic AI" just marketing for a chatbot with function calling, or is there a real technical difference?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>Function calling alone is necessary but not sufficient. A chatbot with one tool call still just answers a single question. What makes something "agentic" is the loop — the system decides for itself, across multiple steps, whether to keep going, which tool to call next, and when it's actually done, without a human manually re-prompting it between each step. The distinguishing feature is autonomy over the control flow, not just the ability to call a function.</p></div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>Give an example of a task where you'd deliberately choose a rule-based system over an agent, even though an agent could technically do it.</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>Anything where correctness must be guaranteed and the logic is genuinely fixed — calculating sales tax, validating a password's format, routing a request based on a status code. An agent would work but adds latency, cost, and a small chance of an unpredictable answer, for a job a simple if/else already does perfectly and instantly. Reach for an agent when the task actually requires judgment under ambiguity, not by default.</p></div>
+      </details>
     </div>
 
     <!-- ---- Execution patterns ---- -->
@@ -2611,6 +2929,16 @@ async def run_support_agent(state):
       <details class="faq-item">
         <summary><span>In the ReAct graph, what's the actual role of <code>tools_condition</code>?</span><span class="q-mark"></span></summary>
         <div class="faq-answer"><p>It's the conditional edge that inspects the agent's last message: if the model asked to call a tool, route to the tools node; if it produced a normal answer instead, route to END. It's what turns a single request/response into a loop — without it, the graph would have no way to decide whether the conversation is actually finished.</p></div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>How would you combine two patterns — say, Plan-and-Execute with a supervisor — in one system?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>Patterns aren't mutually exclusive — they compose. A common combination is a supervisor that first calls a planner to break the goal into steps, then routes each individual step to whichever specialist agent owns that domain, executing steps in sequence rather than dynamically re-planning every turn. The five patterns in this handbook are best thought of as building blocks you mix, not five separate architectures you must choose between.</p></div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>What's a concrete failure mode of the supervisor pattern, and how would you catch it?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>The router misclassifying intent and sending a request to the wrong specialist — a billing question routed to shipping, for example — which then either fails silently or, worse, confidently answers something it shouldn't. You catch this with the trace-level "intent classification accuracy" eval from Chapter 3, run continuously in production, and by having each specialist's own system prompt explicitly refuse anything outside its domain rather than attempting a best-effort answer.</p></div>
       </details>
     </div>
 
@@ -2637,6 +2965,16 @@ async def run_support_agent(state):
         <summary><span>Why force tool arguments through a Pydantic schema instead of letting the model write free-form text?</span><span class="q-mark"></span></summary>
         <div class="faq-answer"><p>Free-form text handed straight to a database query or an API is an injection risk and a correctness risk — there's no guarantee the model's phrasing means what you think it means. A strict schema (named fields, types, validation rules like "amount must be greater than zero") forces the model's intent into an unambiguous, checkable shape before any code acts on it, and lets you reject bad input automatically instead of hoping the model got it right.</p></div>
       </details>
+
+      <details class="faq-item">
+        <summary><span>What's the difference between a checkpointer and a store, and why does that split matter for scaling?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>A checkpointer holds one conversation's active session steps and needs to be fast to read and write on every single turn, but only for the duration of that session. A store holds durable, cross-session facts that get looked up occasionally, not on every turn, and needs to scale across every user the system has ever seen. Mixing them — say, dumping long-term memory into the same fast session store — either bloats every session's storage with irrelevant history, or forces the wrong storage technology to serve both access patterns at once.</p></div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>A tool call is failing in production but passing in your test suite. Where do you look first?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>Check whether the tool's actual upstream API changed its response shape or added a new required field — a mismatch there is invisible to a test suite that still mocks the old response. This is exactly why the AgentOps callback logging in Chapter 7 records tool errors continuously in production: a spike in real tool errors, even with all tests green, is usually the first signal that something external moved underneath you.</p></div>
+      </details>
     </div>
 
     <!-- ---- Governance ---- -->
@@ -2656,6 +2994,16 @@ async def run_support_agent(state):
       <details class="faq-item">
         <summary><span>Why should the model never be the last step before a high-risk write operation?</span><span class="q-mark"></span></summary>
         <div class="faq-answer"><p>Because the model's job is inferring intent from language, which is inherently probabilistic — it can be manipulated, confidently wrong, or simply misread an ambiguous request. Deterministic validation and a human approval step are what turn "the model thinks this is right" into "we've confirmed this is right." Removing that gate for speed doesn't remove the risk — it just removes the safety net.</p></div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>If an approval queue gets a backlog and a human hasn't responded yet, what should the agent do while it waits?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>Nothing that touches the real action — the whole point of <code>interrupt</code> is that the graph is frozen at that exact point until a human resumes it, however long that takes. What the agent CAN safely do is tell the user their request is pending approval, so they're not left wondering if anything happened. Never add a timeout that auto-approves after N minutes "to keep things moving" — that quietly turns a human-in-the-loop gate back into an autonomous one.</p></div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>How do you decide which tools count as "high-risk" in the first place?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>Ask whether the action is reversible, whether it affects data or money belonging to someone other than the immediate user, and what the worst-case impact of a wrong call would be. A read-only lookup is almost never high-risk; anything that writes, deletes, sends, or spends usually is. This is exactly the judgment call the Chapter 6 discussion of the Agentic FDE flags as something to set together with the customer, not assume from a generic list.</p></div>
       </details>
     </div>
 
@@ -2677,6 +3025,16 @@ async def run_support_agent(state):
         <summary><span>If an MCP server is written by a third party, does it need the same guardrails as a hand-written tool?</span><span class="q-mark"></span></summary>
         <div class="faq-answer"><p>Yes, if anything — arguably more. An MCP server you didn't write is still just a tool provider, and any tool it offers should get the same risk tag and, if it writes data, the same human-in-the-loop policy gate as a tool you built yourself. Standardized plumbing doesn't imply trusted plumbing.</p></div>
       </details>
+
+      <details class="faq-item">
+        <summary><span>What's the practical difference between a local (stdio) MCP server and a remote (HTTP) one?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>A local stdio server is launched directly by your own process and communicates over standard input/output, so its trust boundary is really the operating system's process isolation — there's no network hop to secure. A remote HTTP server is reached over the network like any other API, which means it needs its own authentication (typically OAuth 2.1 bearer tokens), its own authorization checks, and its own availability guarantees, because it's a genuinely separate system you don't control end-to-end.</p></div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>Why might a Cypher query written by an LLM be more dangerous than a Cypher query a person writes by hand?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>Not because the model is more likely to write a malicious query on its own, but because <code>GraphCypherQAChain</code> can technically generate CREATE or DELETE statements, not just read queries, and the model's exact output isn't something a human reviewed before it ran. The safer fix is a database credential scoped to read-only access at the database level, so even a wrongly generated write-style query fails at the permissions layer regardless of what the model produced.</p></div>
+      </details>
     </div>
 
     <!-- ---- FDE role ---- -->
@@ -2691,6 +3049,16 @@ async def run_support_agent(state):
       <details class="faq-item">
         <summary><span>Why might two customers using the "same" agent need completely different policy-gate settings?</span><span class="q-mark"></span></summary>
         <div class="faq-answer"><p>Because "high-risk" isn't a property of the tool alone — it depends on the customer's own risk tolerance, regulatory environment, and blast radius if something goes wrong. A marketing team auto-sending draft social posts and a hospital auto-updating patient records both use a "send/write" tool, but only one of them can reasonably tolerate that happening without a human checking first. The FDE's job includes setting that bar with the customer, not assuming a default.</p></div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>How do you know when an FDE engagement is actually done, rather than just handed off half-finished?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>When the customer's own engineers (or the platform's ongoing support org) can operate, debug, and extend the deployment without the FDE in the room — evals are wired up and passing, the policy gate thresholds are documented and agreed, and someone other than the FDE has actually run the eval-gated CI pipeline at least once. An FDE who's still the only person who understands why the graph is shaped the way it is hasn't finished the job, they've just paused it.</p></div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>What's a warning sign that an FDE engagement is building something too custom to maintain?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>When nearly every piece of the graph is a one-off written just for this customer, with none of it resembling the general patterns (ReAct, supervisor, the policy gate) that other deployments use. Some customization is the whole point of the role, but a deployment that shares almost nothing with the platform's reusable building blocks is expensive to maintain long-term and usually signals the FDE should be pushing recurring needs back into the shared platform instead of re-solving them per customer.</p></div>
       </details>
     </div>
 
@@ -2717,6 +3085,16 @@ async def run_support_agent(state):
         <summary><span>Why should a kill switch be a flag you can flip instantly, rather than something requiring a new deployment?</span><span class="q-mark"></span></summary>
         <div class="faq-answer"><p>The entire purpose of a kill switch is to stop a misbehaving agent faster than a redeploy would allow — if turning it off requires the same code-review-and-deploy pipeline as a normal release, it's not actually an emergency control. Storing it as a feature flag or a database value means an on-call engineer can disable the agent in seconds, independent of the deployment pipeline's normal speed.</p></div>
       </details>
+
+      <details class="faq-item">
+        <summary><span>What should trigger an automatic rollback versus just an alert to an on-call engineer?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>A hard threshold breach with clear, low-ambiguity signal — like the canary's eval score dropping sharply below the trusted version's, or a tool error rate spiking well past its normal baseline — is a reasonable candidate for automatic rollback, since waiting for a human to notice and react costs real time during which the bad version keeps serving traffic. Softer, ambiguous signals — a slight uptick in cost, an unusual but not clearly wrong pattern of tool calls — are better routed to an alert for a human to investigate, since an automatic rollback on a false alarm has its own cost.</p></div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>Your eval gate passed in CI, but the agent still misbehaves for a specific class of real user. What does that tell you?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>It tells you the regression dataset doesn't cover that class of input — the eval gate can only catch what it's been given examples of. The fix isn't to distrust the gate in general, it's to add this exact failing case (and similar ones) to the dataset, the same "promote real production failures into the regression set" loop described in the LangSmith section, so this specific gap is caught automatically from now on.</p></div>
+      </details>
     </div>
 
     <!-- ---- Observability ---- -->
@@ -2736,6 +3114,16 @@ async def run_support_agent(state):
       <details class="faq-item">
         <summary><span>Why prefer structured (JSON) logs over plain text log lines?</span><span class="q-mark"></span></summary>
         <div class="faq-answer"><p>Plain text log lines are built for a human reading them one at a time. Structured logs are built for a machine searching across millions of them — "show me every failed tool_call for thread_id=session-88" is a simple filter against structured fields, but would require fragile text parsing against unstructured sentences.</p></div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>What's the relationship between a "thread_id" and a "trace" — are they the same thing?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>No — a thread_id identifies one ongoing conversation, which can span many turns and, in LangGraph, many separate invocations over time. A trace is the record of one single request/response cycle within that thread. Tagging every span with the thread_id (as the observability code does) is what lets you later pull every trace belonging to one conversation and reconstruct the full session, not just one isolated turn of it.</p></div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>How would you debug a specific user's complaint of "the agent gave me a wrong answer yesterday" without observability in place?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>Honestly, mostly by guessing — trying to reproduce the exact conversation, hoping the underlying data hasn't changed since, and hoping whatever went wrong is still reproducible today. With tracing in place, you instead look up that thread_id, pull the exact trace from yesterday, and see precisely which tool was called, what it returned, and what the model did with it — turning "I think I know what probably happened" into "here is exactly what happened."</p></div>
       </details>
     </div>
 
@@ -2757,6 +3145,16 @@ async def run_support_agent(state):
         <summary><span>Why keep growing a LangSmith regression dataset from production feedback instead of writing it once?</span><span class="q-mark"></span></summary>
         <div class="faq-answer"><p>A dataset written once only covers the failure modes the team thought of in advance. Real users ask questions nobody anticipated, and a thumbs-down on a real trace is direct evidence of an actual gap. Promoting those real cases into the regression set means the test suite keeps getting harder and more representative over time, instead of staying frozen at day-one coverage.</p></div>
       </details>
+
+      <details class="faq-item">
+        <summary><span>RAGAS gives you a faithfulness score of 0.95 on your test set. Is that good enough to ship?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>It depends entirely on what the number is being compared against and what the cost of a hallucination is in this domain. 0.95 is meaningless in isolation — what matters is whether it's higher or lower than your last known-good baseline, and whether the remaining 5% of failures cluster around something specific (a particular document type, a particular question pattern) that's worth investigating rather than an evenly spread, unavoidable noise floor. A medical or legal use case might need a much higher bar than a casual FAQ bot.</p></div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>Can RAGAS metrics replace human review entirely?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>No — RAGAS itself uses an LLM as the grader, which means it can share the same blind spots as the model being graded, and it can't judge things like tone, brand voice, or whether an answer is technically faithful but unhelpfully evasive. RAGAS is what makes continuous, automated regression testing possible at scale; periodic human review (and the thumbs-up/down feedback loop from LangSmith) is what catches the categories of problems automated grading tends to miss.</p></div>
+      </details>
     </div>
 
     <!-- ---- Reranking ---- -->
@@ -2771,6 +3169,11 @@ async def run_support_agent(state):
       <details class="faq-item">
         <summary><span>How many candidates should you retrieve before reranking, and how many should survive?</span><span class="q-mark"></span></summary>
         <div class="faq-answer"><p>There's no universal number — it's a trade-off between recall (wide enough to not miss the right document) and latency/cost (narrow enough that reranking stays fast). A common starting point is retrieving 20-50 candidates and reranking down to the top 3-5 that actually get passed to the generation step, then tuning both numbers against your own eval scores.</p></div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>Would you always add a reranker to a RAG pipeline, or are there cases where it's not worth it?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>Not always — it adds latency and cost to every single retrieval, so it's worth it when retrieval quality is actually the bottleneck (your RAGAS context precision/recall scores are noticeably weak) and when the domain has many similar-looking documents where embedding similarity alone struggles to pick the truly best one. If your document collection is small and well-organized enough that plain vector search already retrieves cleanly, a reranker is added complexity for marginal gain.</p></div>
       </details>
     </div>
 
@@ -2792,6 +3195,11 @@ async def run_support_agent(state):
         <summary><span>Why cache tool calls with an exact-match key instead of semantic matching?</span><span class="q-mark"></span></summary>
         <div class="faq-answer"><p>Tool arguments are already structured and exact (a ticker symbol, an invoice ID) rather than free-form natural language, so there's no ambiguity to resolve with embeddings — two identical argument sets mean the identical request, full stop. A plain hash-based cache key is simpler, faster, and has none of the "close enough" risk that a semantic cache carries.</p></div>
       </details>
+
+      <details class="faq-item">
+        <summary><span>What's a case where caching an agent's answer would actually be dangerous?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>Anything personalized or time-sensitive per user — caching "what's my account balance" would serve one user's cached balance to a completely different user who happened to phrase the question similarly, and caching a live stock price for too long serves stale data as if it were current. Cache the answer to genuinely shared, stable questions (general policy, documentation); never cache anything that depends on who's asking or that changes faster than your TTL accounts for.</p></div>
+      </details>
     </div>
 
     <!-- ---- Token optimization ---- -->
@@ -2811,6 +3219,16 @@ async def run_support_agent(state):
       <details class="faq-item">
         <summary><span>Why does asking for structured output (a tool call or a Pydantic object) tend to save tokens versus asking for a written explanation?</span><span class="q-mark"></span></summary>
         <div class="faq-answer"><p>A structured response only contains the specific fields you actually need — an amount, a ticker, a yes/no — with no narration around them. Asking the model to "explain your reasoning" or write full sentences naturally produces more tokens to convey the same underlying decision, even though only the decision itself is what your code will actually use.</p></div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>You're told to cut an agent's token bill by 50%. What do you check first?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>First, which model each step is actually using — it's common to find every node defaulting to the frontier model even for trivial classification, which is usually the single biggest and easiest win. Then check conversation length (is history being trimmed or summarized at all?) and cache hit rate (is a semantic cache even in place?) before touching anything more surgical like prompt wording — the biggest levers are almost always routing, trimming, and caching, in that rough order of impact.</p></div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>Is it ever worth spending MORE tokens on one step to save tokens overall?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>Yes — the reranking step in Chapter 10 is a good example: it costs extra compute, but by improving which documents actually get passed into the generation step, it can prevent a wasted, low-quality generation call (and, in a Reflection or Plan-and-Execute loop, prevent multiple wasted retries). Token optimization is about total cost for a correct outcome, not minimizing every individual step in isolation — sometimes paying a little more up front avoids paying much more later in retries or wrong answers.</p></div>
       </details>
     </div>
 
@@ -2836,6 +3254,16 @@ async def run_support_agent(state):
       <details class="faq-item">
         <summary><span>Why does an audit log need to be append-only rather than a normal editable database table?</span><span class="q-mark"></span></summary>
         <div class="faq-answer"><p>The entire point of an audit log is answering "what actually happened, and who approved it" with certainty, including in a dispute or an incident investigation. If the log lives in a normal table someone (or some bug, or an attacker) could edit after the fact, it can no longer be trusted as evidence of what really occurred — append-only, tamper-evident storage is what makes the log actually useful as an audit trail rather than just another log file.</p></div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>What's the difference between rate limiting and the kill switch from Chapter 7 — don't they overlap?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>They protect against different things. Rate limiting caps how much any single user can do, protecting against one abusive or buggy caller drowning out everyone else or running up cost — it's continuous and automatic. The kill switch stops the ENTIRE agent for EVERYONE, used when the agent itself is behaving badly regardless of who's calling it. You generally want both: rate limiting running always in the background, and a kill switch as the last-resort override on top.</p></div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>A tool needs to read a user's private data to do its job. How do you reconcile that with least privilege?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>Least privilege doesn't mean "never touch sensitive data," it means "touch only what's needed, only when needed, only for who's needed." In practice that's a credential scoped to read (not write) that specific data type, for that specific user's own records (not every user's), used only inside that one tool rather than shared broadly, with the access itself showing up in an audit log. The goal is a narrow, well-documented, monitored blast radius — not avoiding sensitive data entirely, which usually isn't realistic for a useful agent.</p></div>
       </details>
     </div>
 
@@ -2866,6 +3294,41 @@ async def run_support_agent(state):
       <details class="faq-item">
         <summary><span>Who is responsible for enforcing an MCP tool's authorization — the calling agent, or the MCP server?</span><span class="q-mark"></span></summary>
         <div class="faq-answer"><p>Both, but the server's check is the one that actually matters for security. A well-behaved client sending only scoped, delegated tokens is good practice, but it doesn't protect the system from a different client, a bug, or an attacker calling the MCP server directly and skipping the client's logic entirely. The MCP server must independently validate every incoming token's audience, scope, and expiry on every tool call — the same principle as never trusting client-side validation alone in any other API.</p></div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>Design question: a support agent needs to look up a customer's order history. Walk through the auth flow end to end.</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>The user's request arrives with a bearer token, verified once in <code>authn_node</code> to produce trusted claims (user_id, roles, tenant_id). The supervisor routes to the support specialist and exchanges the user's token for one scoped narrowly to <code>orders:read</code> for that tenant. The support agent's retrieval query filters by <code>tenant_id</code> and the caller's role, so it can only ever retrieve documents it's entitled to. If the order-lookup tool lives behind an MCP server, the delegated token is sent as a bearer header, and the MCP server independently checks that token's scope before returning anything — five separate checkpoints, none of which simply trusts the layer before it.</p></div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>Why is "the supervisor already authenticated the user" not a sufficient answer to "how is this tool call authorized"?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>Authentication answers "who is this," which the supervisor did check. Authorization answers a separate, narrower question — "is this specific identity allowed to do this specific thing, right now, to this specific resource" — which requires its own check at the point of action, not an inference from an earlier, more general check. A user can be perfectly authenticated and still not be authorized for a particular tool, a particular document's tenant, or a particular high-risk action; conflating the two is exactly the gap zero trust is designed to close.</p></div>
+      </details>
+    </div>
+
+    <!-- ---- MLOps on Azure ---- -->
+    <div class="qa-group">
+      <div class="qa-group-title">MLOps on Azure (Ch.15)</div>
+
+      <details class="faq-item">
+        <summary><span>What's the difference between an Azure ML "workspace" and a "resource group" — aren't they the same thing?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>A resource group is a general Azure concept — a folder that can hold literally any type of resource (a database, a website, a workspace, anything). A workspace is specific to Azure ML, and lives inside a resource group alongside other things. In practice, one resource group usually holds one workspace plus everything that workspace needs (storage, Key Vault, App Insights), but the resource group itself doesn't know or care that any of that is ML-related.</p></div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>Why deploy the agent as a container instead of just pointing Azure ML at your Python files directly?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>A container locks in the exact Python version and exact library versions your agent was tested against, so "it worked on my laptop" and "it works in production" are guaranteed to mean the same environment — not just similar ones. Without a container, a subtle library version mismatch between your dev machine and the deployment target can silently change behavior (or break entirely) in ways that are painful to debug after the fact.</p></div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>What does naming a deployment "blue" actually buy you, versus just always deploying over the same single deployment?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>Named, separate deployments let you run two versions side by side and split real traffic between them by percentage — which is exactly the canary pattern from Chapter 7, but implemented natively by the platform instead of hand-rolled with a random number generator in your own code. If the "green" version's error rate spikes, you shift traffic back to 100% "blue" with one command, with zero downtime and no redeploy of the trusted version needed.</p></div>
+      </details>
+
+      <details class="faq-item">
+        <summary><span>Why use DefaultAzureCredential instead of just putting your Azure login details in the code?</span><span class="q-mark"></span></summary>
+        <div class="faq-answer"><p>DefaultAzureCredential automatically finds whatever valid identity is available in the current environment — your own logged-in CLI session while developing locally, or the deployed service's own "managed identity" once it's actually running in Azure — without your code ever needing to know which one it is or store a password for either case. This is the cloud-native version of the "give each tool its own scoped credential" principle from Chapter 13: the deployed agent gets exactly the Key Vault access it needs, tied to its own identity, not a shared secret baked into a config file.</p></div>
       </details>
     </div>
   </section>
@@ -2938,6 +3401,10 @@ async def run_support_agent(state):
     <div class="pattern">
       <div class="pattern-num">+</div>
       <div><h3>AuthN/AuthZ in multi-agent MCP RAG (extension)</h3><p>Verify identity once at the edge, delegate scoped-down tokens between agents via OAuth Token Exchange, filter retrieval by permission inside the query itself, and require every downstream agent, tool, and MCP server to independently re-check — not just trust — the caller.</p></div>
+    </div>
+    <div class="pattern">
+      <div class="pattern-num">+</div>
+      <div><h3>MLOps on Azure (extension)</h3><p>An eight-step, beginner-friendly walkthrough shipping the ReAct agent from an empty Azure subscription to a monitored, canary-capable endpoint: resource group → workspace → Key Vault → Azure OpenAI → registered model → container → managed online endpoint → GitHub Actions CI/CD → Application Insights.</p></div>
     </div>
     <div class="pattern">
       <div class="pattern-num">+</div>
