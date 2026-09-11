@@ -262,6 +262,7 @@
       <a href="#guardrails">GuardRails</a>
       <a href="#security">AI Security</a>
       <a href="#prompt-engineering">Prompt Engineering</a>
+      <a href="#hallucination">Hallucination</a>
       <a href="#prompt-injection">Prompt Injection</a>
       <a href="#other-threats">Other Threats</a>
       <a href="#mcp">MCP &amp; Tools</a>
@@ -284,6 +285,7 @@
     <a href="#guardrails">GuardRails</a>
     <a href="#security">AI Security</a>
     <a href="#prompt-engineering">Prompt Engineering</a>
+    <a href="#hallucination">Hallucination</a>
     <a href="#prompt-injection">Prompt Injection</a>
     <a href="#other-threats">Other Threats</a>
     <a href="#mcp">MCP &amp; Tools</a>
@@ -731,12 +733,136 @@ disclosure, contact information.</pre>
   </div>
 </section>
 
+<!-- HALLUCINATION & LLM PARAMETERS -->
+<section class="section" id="hallucination">
+  <div class="wrap">
+    <div class="kicker">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#155245" stroke-width="1.3" stroke-dasharray="2 2"/><path d="M6 6.5C6.5 5.5 7.2 5 8 5C9 5 9.7 5.7 9.7 6.5C9.7 7.5 8.3 7.7 8.3 9" stroke="#155245" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="11.2" r="0.85" fill="#155245"/></svg>
+      07 &nbsp;·&nbsp; HALLUCINATION &amp; LLM PARAMETERS
+    </div>
+    <h2>When the AI answers confidently — and wrongly</h2>
+    <p class="intro">Hallucination is when a model states something false as if it were fact: a policy that doesn't exist, a regulation it invented, a number it made up to fill a gap. It happens because language models are built to produce a plausible-sounding next word, not to check a database — so a confident tone is never proof of a correct answer.</p>
+
+    <h3 style="font-size:1.15rem;margin-top:8px;">A. A hallucination in the wild</h3>
+    <div class="grid-2">
+      <div class="case">
+        <h3>Real-world case <span class="tag bad">FABRICATED POLICY</span></h3>
+        <p>A customer asks the bank's AI assistant, "Do you offer a grace period on overdraft fees?" The model has seen thousands of banking documents during training and confidently answers "Yes, FirstTrust offers a 3-day grace period before any overdraft fee applies" — a policy that sounds completely plausible and simply does not exist at this bank.</p>
+        <p>The customer overdraws expecting no fee, gets charged, and files a complaint quoting the bot's exact words. This is a textbook hallucination: fluent, specific, confident, and wrong — and because it's specific, it's more convincing than a vague guess would have been.</p>
+        <p>The fix isn't "train a smarter model" — even very capable models hallucinate. The fix is architectural: never let the model answer policy questions from memory alone.</p>
+      </div>
+
+      <div>
+        <pre class="code"><span class="cm"># Grounded answer with a required abstention path</span>
+<span class="kw">def</span> <span class="fn">answer_policy_question</span>(question):
+    docs = <span class="fn">retrieve_policy_docs</span>(question)  <span class="cm"># real, current documents only</span>
+    <span class="kw">if</span> <span class="kw">not</span> docs:
+        <span class="kw">return</span> <span class="st">"I don't have a verified policy document for that — "</span> \
+               <span class="st">"let me connect you with a specialist."</span>
+
+    prompt = <span class="st">f"""</span>
+<span class="st">Answer ONLY using the documents below.</span>
+<span class="st">If the answer isn't in them, say you don't know.</span>
+<span class="st">Cite the document name for any claim.</span>
+
+<span class="st">documents: {docs}</span>
+<span class="st">question: {question}</span>
+<span class="st">"""</span>
+    <span class="kw">return</span> model.generate(prompt)</pre>
+        <div class="code-cap">Retrieval-Augmented Generation (RAG): the model answers from real documents it was just handed, not from memory.</div>
+      </div>
+    </div>
+
+    <h3 style="font-size:1.15rem;margin-top:20px;">B. Techniques that catch or prevent it</h3>
+    <div class="threats">
+      <div class="threat">
+        <svg class="icon" viewBox="0 0 38 38" fill="none"><rect x="7" y="9" width="24" height="20" rx="3" stroke="#1F6F5C" stroke-width="1.6"/><path d="M12 15h14M12 20h10" stroke="#1F6F5C" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <h4>Grounding / RAG</h4>
+        <p>Feed the model real, current documents at answer time instead of relying on what it memorized during training.</p>
+        <div class="ex">Bank example: pulling the actual fee schedule PDF before answering a fee question.</div>
+      </div>
+      <div class="threat">
+        <svg class="icon" viewBox="0 0 38 38" fill="none"><path d="M10 24l6-10 6 6 6-12" stroke="#1F6F5C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="28" cy="8" r="2" fill="#1F6F5C"/></svg>
+        <h4>Required citations</h4>
+        <p>Force the model to name which document or field supports each claim — a claim with no source is a signal to hold it back.</p>
+        <div class="ex">Bank example: "per the Deposit Account Agreement, section 4.2" attached to every fee statement.</div>
+      </div>
+      <div class="threat">
+        <svg class="icon" viewBox="0 0 38 38" fill="none"><circle cx="19" cy="19" r="12" stroke="#1F6F5C" stroke-width="1.6"/><path d="M19 13v6l4 4" stroke="#1F6F5C" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <h4>Explicit abstention</h4>
+        <p>Instruct the model directly to say "I don't know" or escalate, rather than filling a gap with a guess.</p>
+        <div class="ex">Bank example: unclear tax questions route to a human instead of getting an invented answer.</div>
+      </div>
+      <div class="threat">
+        <svg class="icon" viewBox="0 0 38 38" fill="none"><path d="M9 19h20M9 13h20M9 25h14" stroke="#1F6F5C" stroke-width="1.6" stroke-linecap="round"/><circle cx="31" cy="25" r="3" stroke="#1F6F5C" stroke-width="1.5"/></svg>
+        <h4>Fact-check guardrail</h4>
+        <p>A second, independent check cross-references generated claims against a trusted source before the response ships.</p>
+        <div class="ex">Bank example: any stated interest rate is automatically diffed against the live rate table.</div>
+      </div>
+      <div class="threat">
+        <svg class="icon" viewBox="0 0 38 38" fill="none"><circle cx="14" cy="19" r="5" stroke="#1F6F5C" stroke-width="1.6"/><circle cx="24" cy="19" r="5" stroke="#1F6F5C" stroke-width="1.6"/><path d="M18 19h2" stroke="#1F6F5C" stroke-width="1.6"/></svg>
+        <h4>Self-consistency checks</h4>
+        <p>Ask the model the same question a few times, or with slightly different phrasing, and flag answers that don't agree with each other.</p>
+        <div class="ex">Bank example: three sampled answers to a rare edge case disagree — auto-escalate to a human.</div>
+      </div>
+      <div class="threat">
+        <svg class="icon" viewBox="0 0 38 38" fill="none"><path d="M19 6L32 13V25L19 32L6 25V13L19 6Z" stroke="#1F6F5C" stroke-width="1.6"/><path d="M14 19l3 3 7-7" stroke="#1F6F5C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <h4>Human review for high stakes</h4>
+        <p>The higher the cost of being wrong, the more a human should confirm the answer before it reaches a customer.</p>
+        <div class="ex">Bank example: any AI-drafted regulatory disclosure is reviewed by compliance before it's sent.</div>
+      </div>
+    </div>
+
+    <h3 style="font-size:1.15rem;margin-top:30px;">C. Generation parameters — the dials that shape hallucination risk</h3>
+    <p style="color:var(--text-soft);max-width:66ch;margin:-4px 0 4px;font-size:.97rem;">Beyond grounding, the settings used to call the model itself change how likely it is to wander from the facts. Banks tune these differently depending on the task.</p>
+    <div class="glossary" style="margin-top:20px;">
+      <div class="gterm"><strong>Temperature</strong><span>Controls randomness. Near 0 = focused and repeatable, good for compliance text. Higher (0.7–1.0) = more varied, better for marketing copy, riskier for facts.</span></div>
+      <div class="gterm"><strong>Top-p (nucleus sampling)</strong><span>Limits word choices to the smallest set covering p% of probability. Low top-p (e.g. 0.1) keeps answers tight and predictable; high top-p allows more surprising wording.</span></div>
+      <div class="gterm"><strong>Top-k</strong><span>Limits word choices to only the k most likely next words. A small top-k (e.g. 10) keeps output conservative; used alongside or instead of top-p.</span></div>
+      <div class="gterm"><strong>Max tokens</strong><span>Caps how long a response can run. Shorter caps reduce the chance a long answer drifts into invented detail near the end.</span></div>
+      <div class="gterm"><strong>Frequency penalty</strong><span>Discourages repeating the same words — helps readability, but doesn't by itself reduce factual errors.</span></div>
+      <div class="gterm"><strong>Presence penalty</strong><span>Nudges the model toward new topics instead of circling the same one — useful for brainstorming, risky for a precise factual answer.</span></div>
+    </div>
+
+    <div class="grid-2" style="margin-top:24px;">
+      <div class="case">
+        <h3>Real-world case <span class="tag good">PARAMETER CHOICE BY RISK</span></h3>
+        <p>The same underlying model powers two very different bank tools. A regulatory-disclosure drafting tool needs the answer to be nearly identical every time it's asked the same question — high stakes, low tolerance for creative drift. A marketing-copy assistant drafting a "new savings account" email benefits from some variety and flair.</p>
+        <p>Parameter practice: low temperature and low top-p for anything factual, compliance-adjacent, or customer-facing about money; higher temperature is reserved for clearly low-stakes creative tasks — and even then, a human reviews before anything ships.</p>
+      </div>
+      <div>
+        <pre class="code"><span class="cm"># Compliance answer — tight and repeatable</span>
+response = model.generate(
+    prompt=disclosure_prompt,
+    temperature=<span class="st">0.0</span>,
+    top_p=<span class="st">0.1</span>,
+    max_tokens=<span class="st">300</span>,
+)
+
+<span class="cm"># Marketing draft — allowed some creative variety</span>
+response = model.generate(
+    prompt=marketing_prompt,
+    temperature=<span class="st">0.8</span>,
+    top_p=<span class="st">0.9</span>,
+    max_tokens=<span class="st">150</span>,
+)  <span class="cm"># still goes to a human reviewer before sending</span></pre>
+        <div class="code-cap">Same model, different dials — chosen by how expensive a mistake would be.</div>
+      </div>
+    </div>
+
+    <div class="kid">
+      <div class="kid-label">🧸 Explain it like I'm 8</div>
+      <p>Hallucination is when the robot makes up a story that sounds true but isn't — like confidently telling you dinosaurs and astronauts were friends. The fix is making the robot check a real book before answering, and teaching it to say "I don't know" instead of making something up. Temperature is like a creativity dial: turned way down, the robot gives the same careful answer every time; turned up, it gets more playful and surprising — great for a bedtime story, risky for your bank balance.</p>
+    </div>
+  </div>
+</section>
+
 <!-- PROMPT INJECTION -->
-<section class="section" id="prompt-injection">
+<section class="section alt" id="prompt-injection">
   <div class="wrap">
     <div class="kicker">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8H14M8 2V14" stroke="#155245" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="8" r="6" stroke="#155245" stroke-width="1.3"/></svg>
-      07 &nbsp;·&nbsp; PROMPT INJECTION
+      08 &nbsp;·&nbsp; PROMPT INJECTION
     </div>
     <h2>When a sneaky message tries to hijack the AI's instructions</h2>
     <p class="intro">Many banks now use AI chat assistants for customer service. Prompt injection is when someone hides instructions inside a message — or inside a document the AI reads — trying to make the AI ignore its real rules and do something it shouldn't.</p>
@@ -781,11 +907,11 @@ You are BankBot.
 </section>
 
 <!-- OTHER THREATS -->
-<section class="section alt" id="other-threats">
+<section class="section" id="other-threats">
   <div class="wrap">
     <div class="kicker">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L14.5 5V11L8 14.5L1.5 11V5L8 1.5Z" stroke="#155245" stroke-width="1.3"/></svg>
-      08 &nbsp;·&nbsp; OTHER THREATS TO KNOW
+      09 &nbsp;·&nbsp; OTHER THREATS TO KNOW
     </div>
     <h2>More tricks banks watch for</h2>
     <p class="intro">Prompt injection is just one entry in a bigger family of AI-related risks banks now train for.</p>
@@ -837,11 +963,11 @@ You are BankBot.
 </section>
 
 <!-- MCP & TOOL INTEGRATION -->
-<section class="section" id="mcp">
+<section class="section alt" id="mcp">
   <div class="wrap">
     <div class="kicker">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2.5" y="3" width="4.5" height="4.5" rx="1" stroke="#155245" stroke-width="1.3"/><rect x="9" y="8.5" width="4.5" height="4.5" rx="1" stroke="#155245" stroke-width="1.3"/><path d="M7 5.2H10a2 2 0 0 1 2 2V8.5M4.7 7.5v1a2 2 0 0 0 2 2h1.6" stroke="#155245" stroke-width="1.3"/></svg>
-      09 &nbsp;·&nbsp; MCP &amp; TOOL INTEGRATION
+      10 &nbsp;·&nbsp; MCP &amp; TOOL INTEGRATION
     </div>
     <h2>Giving the AI a safe set of keys, not the whole keyring</h2>
     <p class="intro">The Model Context Protocol (MCP) is a standard way to connect an AI assistant to outside tools and data — a core banking ledger, a CRM, a document store — without hand-wiring a custom integration for every single system. Each connected "server" exposes only specific, well-defined actions the AI is allowed to call.</p>
@@ -886,11 +1012,11 @@ tools = [
 </section>
 
 <!-- LOAD TESTING & PERFORMANCE -->
-<section class="section alt" id="testing">
+<section class="section" id="testing">
   <div class="wrap">
     <div class="kicker">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 13.5L5.5 7L8.5 10L13.5 3" stroke="#155245" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 13.5H14" stroke="#155245" stroke-width="1.3" stroke-linecap="round"/></svg>
-      10 &nbsp;·&nbsp; SEEDED &amp; LOAD TESTING
+      11 &nbsp;·&nbsp; SEEDED &amp; LOAD TESTING
     </div>
     <h2>Rehearsing Black Friday before Black Friday happens</h2>
     <p class="intro">Before an AI system touches real money or real customers, banks hammer it with realistic, synthetic ("seeded") traffic — fake-but-representative transactions generated from a fixed random seed, so tests are repeatable without ever using real customer data.</p>
@@ -935,11 +1061,11 @@ p99 = <span class="fn">sorted</span>(latencies)[<span class="fn">int</span>(<spa
 </section>
 
 <!-- DRIFT, EXPLAINABILITY, MLOPS -->
-<section class="section" id="drift">
+<section class="section alt" id="drift">
   <div class="wrap">
     <div class="kicker">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 12C4 9 5 7 7 7C9 7 9 10 11 10C13 10 13.5 6 14 4" stroke="#155245" stroke-width="1.3" stroke-linecap="round"/></svg>
-      11 &nbsp;·&nbsp; DRIFT, EXPLAINABILITY &amp; MLOPS
+      12 &nbsp;·&nbsp; DRIFT, EXPLAINABILITY &amp; MLOPS
     </div>
     <h2>Watching the model age, and keeping receipts on every version</h2>
     <p class="intro">A model that was accurate on launch day can quietly get worse as the world changes — that's called drift. Banks pair drift monitoring with explainability tools and a model registry (like MLflow) or LLM tracing tools (like LangSmith) so every version of every model is tested, versioned, and explainable, not just deployed and forgotten.</p>
@@ -981,11 +1107,11 @@ p99 = <span class="fn">sorted</span>(latencies)[<span class="fn">int</span>(<spa
 </section>
 
 <!-- TRACEABILITY & MONITORING -->
-<section class="section alt" id="traceability">
+<section class="section" id="traceability">
   <div class="wrap">
     <div class="kicker">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.2" stroke="#155245" stroke-width="1.3"/><path d="M2 8C3 5 5.2 3.3 8 3.3C10.8 3.3 13 5 14 8C13 11 10.8 12.7 8 12.7C5.2 12.7 3 11 2 8Z" stroke="#155245" stroke-width="1.3"/></svg>
-      12 &nbsp;·&nbsp; TRACEABILITY &amp; MONITORING
+      13 &nbsp;·&nbsp; TRACEABILITY &amp; MONITORING
     </div>
     <h2>Leaving a paper trail, and watching the vault in real time</h2>
     <p class="intro">Governance sets the rules and guardrails enforce them live — but a bank also has to prove, after the fact, exactly what an AI system did and why, and it has to notice trouble the moment it starts, not eight months later. Traceability answers "what happened, on this one decision?" Monitoring answers "is something going wrong, right now, across everything?"</p>
@@ -1057,11 +1183,11 @@ BASELINE_PER_MIN = <span class="st">2</span>
 </section>
 
 <!-- MULTI-AGENT, FINE-TUNING, STRUCTURED OUTPUT -->
-<section class="section" id="agents">
+<section class="section alt" id="agents">
   <div class="wrap">
     <div class="kicker">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="4.5" cy="4.5" r="2" stroke="#155245" stroke-width="1.3"/><circle cx="11.5" cy="4.5" r="2" stroke="#155245" stroke-width="1.3"/><circle cx="8" cy="12" r="2" stroke="#155245" stroke-width="1.3"/><path d="M5.8 6.1L7.3 10.3M10.2 6.1L8.7 10.3" stroke="#155245" stroke-width="1.2"/></svg>
-      13 &nbsp;·&nbsp; MULTI-AGENT, FINE-TUNING &amp; STRUCTURED OUTPUT
+      14 &nbsp;·&nbsp; MULTI-AGENT, FINE-TUNING &amp; STRUCTURED OUTPUT
     </div>
     <h2>A team of specialist robots, each with one job</h2>
     <p class="intro">Rather than one AI trying to do everything, banks increasingly use a small team of specialized agents that hand work to each other, models fine-tuned on the bank's own documents and terminology, and structured output formats so every answer arrives as clean, checkable data rather than loose prose.</p>
@@ -1102,11 +1228,11 @@ result = risk_agent.run(application_data, response_model=RiskAssessment)
 </section>
 
 <!-- GLOSSARY -->
-<section class="section alt" id="glossary">
+<section class="section" id="glossary">
   <div class="wrap">
     <div class="kicker">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2.5" y="2.5" width="11" height="11" rx="2" stroke="#155245" stroke-width="1.3"/><path d="M5.5 6h5M5.5 9h3" stroke="#155245" stroke-width="1.3" stroke-linecap="round"/></svg>
-      14 &nbsp;·&nbsp; GLOSSARY
+      15 &nbsp;·&nbsp; GLOSSARY
     </div>
     <h2>Quick definitions, kid-tested</h2>
     <div class="glossary">
@@ -1132,16 +1258,19 @@ result = risk_agent.run(application_data, response_model=RiskAssessment)
       <div class="gterm"><strong>Prompt engineering</strong><span>Writing a clear, specific lunch order for the robot instead of a vague one, so it has far less room to guess wrong.</span></div>
       <div class="gterm"><strong>System prompt</strong><span>The hidden rulebook the bank writes once, telling the robot its job and what it's never allowed to do.</span></div>
       <div class="gterm"><strong>Few-shot examples</strong><span>A couple of sample answers shown to the robot first, so it copies the right style instead of guessing.</span></div>
+      <div class="gterm"><strong>Hallucination</strong><span>When the robot confidently makes up a story that sounds true but isn't — like saying dinosaurs and astronauts were friends.</span></div>
+      <div class="gterm"><strong>Grounding (RAG)</strong><span>Making the robot check a real book before answering, instead of relying only on what it remembers.</span></div>
+      <div class="gterm"><strong>Temperature</strong><span>A creativity dial — turned down for careful, repeatable answers; turned up for playful, more surprising ones.</span></div>
     </div>
   </div>
 </section>
 
 <!-- QUIZ -->
-<section class="section" id="quiz">
+<section class="section alt" id="quiz">
   <div class="wrap">
     <div class="kicker">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#155245" stroke-width="1.3"/><path d="M6 6.2C6 5.1 6.9 4.3 8 4.3C9.1 4.3 10 5.1 10 6.2C10 7.3 8 7.4 8 9" stroke="#155245" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="11.2" r="0.85" fill="#155245"/></svg>
-      15 &nbsp;·&nbsp; TEST YOURSELF
+      16 &nbsp;·&nbsp; TEST YOURSELF
     </div>
     <h2>Twelve questions, one for every topic above</h2>
     <p class="intro">A quick check to see what stuck — from fair lending to prompt injection to model drift. No pressure, just a fun recap.</p>
@@ -1269,6 +1398,30 @@ result = risk_agent.run(application_data, response_model=RiskAssessment)
       ],
       correct: 1,
       explain: "A vague prompt leaves the model to guess at facts and format. Grounding it in real data and an explicit required structure removes that guesswork."
+    },
+    {
+      tag: "Hallucination",
+      q: "A bank's chatbot confidently tells a customer about a 3-day overdraft grace period that doesn't actually exist. What's the most reliable fix?",
+      options: [
+        "Just use a bigger, smarter model — that alone solves it",
+        "Ground answers in real, retrieved policy documents and have the model say 'I don't know' when nothing supports an answer",
+        "Increase the temperature so answers sound more confident",
+        "Remove the customer service chatbot entirely"
+      ],
+      correct: 1,
+      explain: "Even capable models hallucinate. The reliable fix is architectural: retrieve real documents at answer time (RAG) and require abstention when there's no source to cite."
+    },
+    {
+      tag: "LLM Parameters",
+      q: "Why would a bank set temperature near 0 for a regulatory disclosure tool, but allow a higher temperature for marketing copy?",
+      options: [
+        "Temperature has no real effect on output",
+        "Low temperature gives focused, repeatable answers — important when facts and compliance matter; higher temperature adds variety, tolerable for low-stakes creative text",
+        "High temperature always makes answers more accurate",
+        "Marketing copy always requires the most expensive settings"
+      ],
+      correct: 1,
+      explain: "Temperature controls randomness in word choice. Compliance-sensitive text needs consistency; creative, low-stakes text can tolerate — even benefit from — more variation."
     },
     {
       tag: "Prompt Injection",
