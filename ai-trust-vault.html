@@ -61,27 +61,23 @@
   .brand{display:flex;align-items:center;gap:10px;color:var(--paper);text-decoration:none;}
   .brand span.name{font-family:'Fraunces',serif;font-weight:600;font-size:1.15rem;letter-spacing:.2px;}
   .brand svg{flex:none;}
-  nav.menu{display:flex;gap:2px;}
-  nav.menu a{
-    color:#CBD3DE;text-decoration:none;font-size:.93rem;font-weight:500;
-    padding:10px 14px;border-radius:8px;transition:color .15s ease, background .15s ease;
-    white-space:nowrap;
-  }
-  nav.menu a:hover, nav.menu a.active{color:var(--paper);background:#1B2C42;}
-  .burger{display:none;background:none;border:none;cursor:pointer;padding:8px;}
+  .burger{display:block;background:none;border:none;cursor:pointer;padding:8px;}
   .burger span{display:block;width:22px;height:2px;background:var(--paper);margin:5px 0;}
-  .drawer{display:none;}
-
-  @media (max-width:900px){
-    nav.menu{display:none;}
-    .burger{display:block;}
+  .drawer{
+    display:none;flex-direction:column;background:var(--ink);
+    border-top:1px solid #22344a;padding:8px 24px 18px;
+  }
+  .drawer.open{display:flex;}
+  .drawer a{color:#CBD3DE;text-decoration:none;padding:12px 4px;border-bottom:1px solid #1c2d43;font-size:.98rem;}
+  .drawer a:last-child{border-bottom:none;}
+  .drawer a:hover, .drawer a.active{color:var(--paper);}
+  @media (min-width:640px){
     .drawer{
-      display:none;flex-direction:column;background:var(--ink);
-      border-top:1px solid #22344a;padding:8px 24px 18px;
+      max-width:var(--maxw);margin:0 auto;padding:10px 24px 20px;
+      display:none;
     }
-    .drawer.open{display:flex;}
-    .drawer a{color:#CBD3DE;text-decoration:none;padding:12px 4px;border-bottom:1px solid #1c2d43;font-size:.98rem;}
-    .drawer a:last-child{border-bottom:none;}
+    .drawer.open{display:grid;grid-template-columns:repeat(3,1fr);gap:2px 28px;}
+    .drawer a{border-bottom:none;padding:10px 4px;}
   }
 
   /* ---------- HERO ---------- */
@@ -254,25 +250,6 @@
       </svg>
       <span class="name">The Trust Vault</span>
     </a>
-    <nav class="menu" aria-label="Primary">
-      <a href="#home">Home</a>
-      <a href="#responsible">Responsible AI</a>
-      <a href="#ethical">Ethical AI</a>
-      <a href="#governance">Governance</a>
-      <a href="#guardrails">GuardRails</a>
-      <a href="#security">AI Security</a>
-      <a href="#prompt-engineering">Prompt Engineering</a>
-      <a href="#hallucination">Hallucination</a>
-      <a href="#prompt-injection">Prompt Injection</a>
-      <a href="#other-threats">Other Threats</a>
-      <a href="#mcp">MCP &amp; Tools</a>
-      <a href="#testing">Load Testing</a>
-      <a href="#drift">Drift &amp; MLOps</a>
-      <a href="#traceability">Traceability</a>
-      <a href="#agents">Multi-Agent</a>
-      <a href="#glossary">Glossary</a>
-      <a href="#quiz">Quiz</a>
-    </nav>
     <button class="burger" aria-label="Open menu" aria-expanded="false" id="burgerBtn">
       <span></span><span></span><span></span>
     </button>
@@ -1301,7 +1278,7 @@ result = risk_agent.run(application_data, response_model=RiskAssessment)
   }));
 
   // Active link highlight on scroll
-  const links = document.querySelectorAll('nav.menu a');
+  const links = document.querySelectorAll('.drawer a');
   const sections = Array.from(links).map(a => document.querySelector(a.getAttribute('href')));
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
