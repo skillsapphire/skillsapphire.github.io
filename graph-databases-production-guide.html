@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Graphs in Production — A Field Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0e17;
+    --bg-alt:#0d1220;
+    --panel:#111a2c;
+    --panel-2:#141d33;
+    --border:#22304a;
+    --text:#eef2f9;
+    --muted:#8a97b3;
+    --muted-2:#5c6885;
+    --teal:#5eead4;
+    --teal-dim:#2c7a70;
+    --gold:#e8a855;
+    --danger:#f0707a;
+    --violet:#a78bfa;
+    --radius:10px;
+    --font-display:'Space Grotesk', sans-serif;
+    --font-body:'Inter', sans-serif;
+    --font-mono:'JetBrains Mono', monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0;
+    background:
+      radial-gradient(1200px 600px at 85% -10%, rgba(94,234,212,0.06), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(167,139,250,0.05), transparent 60%);
+    pointer-events:none;
+    z-index:0;
+  }
+  a{color:var(--teal); text-decoration:none;}
+
+  /* ---------- Layout ---------- */
+  .app{ display:grid; grid-template-columns:280px 1fr; min-height:100vh; position:relative; z-index:1;}
+  .topbar{
+    display:none;
+    position:sticky; top:0; z-index:30;
+    align-items:center; gap:12px;
+    padding:14px 18px;
+    background:rgba(10,14,23,0.92);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--border);
+  }
+  .topbar button{
+    background:var(--panel); border:1px solid var(--border); color:var(--text);
+    width:44px; height:44px; border-radius:8px; font-size:18px; cursor:pointer;
+    flex:none; -webkit-tap-highlight-color:transparent;
+  }
+  .topbar .brand{font-family:var(--font-display); font-weight:600; font-size:15px; letter-spacing:0.02em;}
+
+  /* ---------- Sidebar: rendered as a connected graph ---------- */
+  .sidebar{
+    position:sticky; top:0; height:100vh; overflow-y:auto;
+    background:linear-gradient(180deg, var(--bg-alt), var(--bg));
+    border-right:1px solid var(--border);
+    padding:28px 0 40px;
+  }
+  .sidebar .brand{
+    font-family:var(--font-display); font-weight:700; font-size:19px;
+    padding:0 24px 6px; letter-spacing:-0.01em;
+  }
+  .sidebar .brand span{color:var(--teal);}
+  .sidebar .tagline{
+    padding:0 24px 26px; font-size:12.5px; color:var(--muted-2); font-family:var(--font-mono);
+    border-bottom:1px solid var(--border); margin-bottom:10px;
+  }
+  nav.graph-nav{ position:relative; padding:14px 0 6px 0;}
+  nav.graph-nav::before{
+    content:"";
+    position:absolute; left:35px; top:6px; bottom:20px; width:2px;
+    background:linear-gradient(180deg, var(--teal-dim), var(--border) 90%);
+  }
+  .nav-node{
+    position:relative;
+    display:flex; align-items:center; gap:14px;
+    padding:11px 24px;
+    min-height:40px;
+    cursor:pointer;
+    color:var(--muted);
+    font-size:13.5px;
+    font-weight:500;
+    border:none; background:transparent; width:100%; text-align:left;
+    font-family:var(--font-body);
+    -webkit-tap-highlight-color:transparent;
+  }
+  .nav-node .dot{
+    position:relative; z-index:2;
+    width:11px; height:11px; border-radius:50%;
+    background:var(--panel-2); border:2px solid var(--muted-2);
+    flex:none; transition:all .18s ease;
+  }
+  .nav-node .lbl-num{ font-family:var(--font-mono); font-size:10.5px; color:var(--muted-2); width:16px;}
+  .nav-node:hover{ color:var(--text); }
+  .nav-node:hover .dot{ border-color:var(--teal); }
+  .nav-node.active{ color:var(--text); }
+  .nav-node.active .dot{ background:var(--teal); border-color:var(--teal); box-shadow:0 0 0 4px rgba(94,234,212,0.15);}
+  .nav-node.active::after{
+    content:""; position:absolute; left:0; top:4px; bottom:4px; width:3px; background:var(--teal); border-radius:0 3px 3px 0;
+  }
+
+  /* ---------- Main content ---------- */
+  main{ position:relative; z-index:1; padding:52px 56px 120px; max-width:960px;}
+  section{ display:none; animation:fade .35s ease; }
+  section.active{ display:block; }
+  @keyframes fade{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
+
+  .eyebrow{
+    font-family:var(--font-mono); font-size:12px; color:var(--teal);
+    letter-spacing:0.08em; text-transform:uppercase; margin-bottom:10px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .eyebrow::before{ content:""; width:18px; height:1px; background:var(--teal); }
+  h1{
+    font-family:var(--font-display); font-size:clamp(28px,4vw,40px); font-weight:700;
+    letter-spacing:-0.02em; margin-bottom:14px; line-height:1.15;
+  }
+  h1 span{color:var(--muted-2); font-weight:500;}
+  .lede{ font-size:16.5px; color:#c4cce0; max-width:66ch; margin-bottom:36px;}
+  h2{
+    font-family:var(--font-display); font-size:22px; font-weight:600; margin:44px 0 14px;
+    letter-spacing:-0.01em; display:flex; align-items:center; gap:10px;
+  }
+  h2::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--gold); flex:none;}
+  h3{ font-family:var(--font-display); font-size:16.5px; font-weight:600; margin:26px 0 10px; color:#dbe2f0;}
+  p{ margin-bottom:14px; color:#c4cce0; font-size:15px; max-width:72ch;}
+  ul,ol{ margin:0 0 16px 20px; color:#c4cce0; font-size:15px;}
+  li{ margin-bottom:7px; max-width:70ch;}
+  strong{ color:var(--text); font-weight:600;}
+  code{
+    font-family:var(--font-mono); font-size:0.86em; background:var(--panel-2);
+    padding:2px 6px; border-radius:5px; color:var(--teal); border:1px solid var(--border);
+  }
+  pre{
+    background:#0c1220; border:1px solid var(--border); border-radius:var(--radius);
+    padding:18px 20px; overflow-x:auto; margin:16px 0 22px; position:relative;
+  }
+  pre code{ background:none; border:none; padding:0; color:#d7deee; font-size:13px; line-height:1.6;}
+  pre .tag{
+    position:absolute; top:10px; right:14px; font-family:var(--font-mono); font-size:10.5px;
+    color:var(--muted-2); text-transform:uppercase; letter-spacing:0.06em;
+  }
+  .tok-kw{color:var(--violet);} .tok-str{color:#a3d9a5;} .tok-com{color:var(--muted-2);} .tok-fn{color:var(--teal);} .tok-num{color:var(--gold);}
+
+  /* ELI8 callout */
+  .eli8{
+    display:flex; gap:16px; background:linear-gradient(135deg, rgba(232,168,85,0.09), rgba(232,168,85,0.03));
+    border:1px solid rgba(232,168,85,0.28); border-radius:var(--radius);
+    padding:18px 20px; margin:20px 0;
+  }
+  .eli8 .icon{
+    flex:none; width:38px; height:38px; border-radius:50%; background:rgba(232,168,85,0.15);
+    display:flex; align-items:center; justify-content:center; font-size:18px;
+  }
+  .eli8 .label{ font-family:var(--font-mono); font-size:11px; color:var(--gold); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px; font-weight:600;}
+  .eli8 p{ margin-bottom:0; color:#dfe4ee; font-size:14.5px;}
+
+  /* Callout variants */
+  .callout{
+    border-radius:var(--radius); padding:16px 20px; margin:18px 0; border:1px solid var(--border);
+    background:var(--panel); font-size:14.5px; color:#c4cce0;
+  }
+  .callout.bank{ border-color:rgba(94,234,212,0.3); background:rgba(94,234,212,0.05); }
+  .callout.bank .label{ color:var(--teal); font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px; font-weight:600;}
+  .callout.warn{ border-color:rgba(240,112,122,0.3); background:rgba(240,112,122,0.05); }
+  .callout.warn .label{ color:var(--danger); font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px; font-weight:600;}
+
+  /* Card grid */
+  .grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; margin:20px 0;}
+  .card{
+    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+    padding:18px; transition:border-color .15s ease;
+  }
+  .card:hover{ border-color:var(--teal-dim); }
+  .card h4{ font-family:var(--font-display); font-size:14.5px; margin-bottom:8px; color:var(--text); display:flex; gap:8px; align-items:center;}
+  .card p{ font-size:13.5px; margin-bottom:0; color:var(--muted);}
+  .card .num{ font-family:var(--font-mono); color:var(--teal); font-size:12px;}
+
+  .table-scroll{ overflow-x:auto; margin:18px 0 26px; border-radius:var(--radius); -webkit-overflow-scrolling:touch;}
+  table{ width:100%; min-width:520px; border-collapse:collapse; margin:0; font-size:14px;}
+  th,td{ text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); color:#c4cce0;}
+  td{ white-space:normal; }
+  th{ color:var(--muted-2); font-family:var(--font-mono); font-size:11.5px; text-transform:uppercase; letter-spacing:0.05em; font-weight:500; white-space:nowrap;}
+  tr:hover td{ background:rgba(255,255,255,0.015); }
+
+  .diagram-wrap{
+    background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+    padding:22px; margin:20px 0 28px; overflow-x:auto;
+  }
+  .diagram-wrap svg{ display:block; margin:0 auto; }
+  .diagram-cap{ font-family:var(--font-mono); font-size:11.5px; color:var(--muted-2); text-align:center; margin-top:12px;}
+
+  .section-nav{
+    display:flex; justify-content:space-between; margin-top:56px; padding-top:24px; border-top:1px solid var(--border);
+    font-size:13px; color:var(--muted-2);
+  }
+  .section-nav button{
+    background:none; border:none; color:var(--muted); cursor:pointer; font-family:var(--font-body); font-size:13.5px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .section-nav button:hover{ color:var(--teal); }
+
+  ::-webkit-scrollbar{ width:9px; height:9px; }
+  ::-webkit-scrollbar-thumb{ background:var(--border); border-radius:10px; }
+  ::-webkit-scrollbar-track{ background:transparent; }
+
+  img,svg{ max-width:100%; height:auto; }
+
+  /* ---------- Tablet & below: collapse sidebar into a drawer ---------- */
+  @media (max-width: 860px){
+    .app{ grid-template-columns:1fr; }
+    .topbar{ display:flex; }
+    .sidebar{
+      position:fixed; top:0; left:0; width:280px; max-width:82vw; height:100vh; height:100dvh; z-index:40;
+      transform:translateX(-100%); transition:transform .25s ease; box-shadow:20px 0 40px rgba(0,0,0,0.4);
+    }
+    .sidebar.open{ transform:translateX(0); }
+    main{ padding:28px 24px 100px; max-width:100%; }
+    .overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:35;}
+    .overlay.show{ display:block; }
+    body.no-scroll{ overflow:hidden; }
+    h1{ font-size:clamp(24px,6vw,32px); }
+    .lede{ font-size:15.5px; margin-bottom:28px; }
+    h2{ font-size:19px; margin:36px 0 12px; }
+    .grid{ grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); }
+    .diagram-wrap{ padding:16px; }
+    pre{ padding:14px 16px; }
+    .section-nav{ flex-wrap:wrap; gap:14px; }
+  }
+
+  /* ---------- Phones ---------- */
+  @media (max-width: 560px){
+    .topbar{ padding:12px 16px; }
+    main{ padding:22px 16px 90px; }
+    h1{ font-size:clamp(22px,7vw,28px); line-height:1.2; }
+    .eyebrow{ font-size:11px; }
+    .lede{ font-size:14.5px; }
+    h2{ font-size:17.5px; margin:30px 0 10px; gap:8px; }
+    h3{ font-size:15px; }
+    p, ul, ol, li{ font-size:14px; }
+    .grid{ grid-template-columns:1fr; gap:10px; }
+    .card{ padding:15px; }
+    .eli8{ flex-direction:column; gap:10px; padding:16px; }
+    .eli8 .icon{ width:32px; height:32px; font-size:16px; }
+    .callout{ padding:14px 16px; font-size:14px; }
+    pre code{ font-size:12px; }
+    pre .tag{ position:static; display:block; margin-bottom:8px; }
+    .diagram-wrap{ padding:12px; }
+    .diagram-cap{ font-size:10.5px; }
+    .section-nav{ flex-direction:column; align-items:flex-start; margin-top:40px; }
+    table{ min-width:460px; font-size:13px; }
+    th,td{ padding:8px 10px; }
+    .sidebar{ width:250px; }
+    .sidebar .brand{ font-size:17px; }
+  }
+
+  /* ---------- Very small phones ---------- */
+  @media (max-width: 360px){
+    main{ padding:18px 12px 80px; }
+    h1{ font-size:22px; }
+    .topbar .brand{ font-size:13px; }
+    .sidebar{ width:88vw; max-width:88vw; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.01ms !important; transition-duration:0.01ms !important; scroll-behavior:auto !important; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <button id="menuBtn" aria-label="Open menu">☰</button>
+    <div class="brand">graph<span style="color:var(--teal)">://</span>production</div>
+  </div>
+  <div class="overlay" id="overlay"></div>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">graph<span>://</span>production</div>
+    <div class="tagline">nodes · edges · banking-grade systems</div>
+    <nav class="graph-nav" id="navGraph">
+      <!-- nav nodes injected by JS -->
+    </nav>
+  </aside>
+
+  <main id="main">
+    <!-- sections injected by JS -->
+  </main>
+</div>
+
+<script>
+const SECTIONS = [
+  {id:'home', label:'Why Graphs'},
+  {id:'basics', label:'Graph DB Basics'},
+  {id:'neo4j', label:'Neo4j & Cypher'},
+  {id:'kg', label:'Knowledge Graphs'},
+  {id:'graphrag', label:'GraphRAG'},
+  {id:'graphiti', label:'Graphiti (Temporal)'},
+  {id:'python', label:'Python Toolkit'},
+  {id:'banking', label:'Banking Use Cases'},
+  {id:'agentic', label:'Agentic Architecture'},
+  {id:'ragprod', label:'Production RAG'},
+  {id:'more', label:'More Concepts'},
+];
+
+const navGraph = document.getElementById('navGraph');
+SECTIONS.forEach((s,i)=>{
+  const btn = document.createElement('button');
+  btn.className = 'nav-node';
+  btn.dataset.target = s.id;
+  btn.innerHTML = `<span class="lbl-num">${String(i).padStart(2,'0')}</span><span class="dot"></span><span>${s.label}</span>`;
+  btn.addEventListener('click', ()=> showSection(s.id));
+  navGraph.appendChild(btn);
+});
+
+function showSection(id){
+  document.querySelectorAll('section').forEach(sec=> sec.classList.toggle('active', sec.id===id));
+  document.querySelectorAll('.nav-node').forEach(n=> n.classList.toggle('active', n.dataset.target===id));
+  document.getElementById('main').scrollTo({top:0, behavior:'instant'});
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+  document.body.classList.remove('no-scroll');
+  window.scrollTo({top:0});
+}
+
+document.getElementById('menuBtn').addEventListener('click', ()=>{
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('show');
+  document.body.classList.toggle('no-scroll');
+});
+document.getElementById('overlay').addEventListener('click', ()=>{
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('show');
+  document.body.classList.remove('no-scroll');
+});
+
+function goRel(delta){
+  const active = document.querySelector('.nav-node.active').dataset.target;
+  const idx = SECTIONS.findIndex(s=>s.id===active);
+  const next = SECTIONS[(idx+delta+SECTIONS.length)%SECTIONS.length];
+  showSection(next.id);
+}
+window.goRel = goRel;
+</script>
+
+<script>
+let HTML = "";
+
+/* ============ HOME ============ */
+HTML += `
+<section id="home">
+  <div class="eyebrow">Start here</div>
+  <h1>Why graphs matter <span>when relationships are the point</span></h1>
+  <p class="lede">A relational table is great at answering "what is this row?" A graph is built for a different question: "what is this thing connected to, and what is <em>that</em> connected to?" In banking, fraud, risk, and personalization are all questions about connections — which is exactly where graphs win.</p>
+
+  <div class="eli8">
+    <div class="icon">🧸</div>
+    <div>
+      <div class="label">Explain it like I'm 8</div>
+      <p>Imagine your friends at school. A spreadsheet lists their names, one row each. But it can't easily tell you "who is friends with who, and who is friends with THEIR friends." A graph is like a big web of yarn connecting friend to friend — you can trace any thread and instantly see the whole web of connections.</p>
+    </div>
+  </div>
+
+  <h2>What this guide covers</h2>
+  <div class="grid">
+    <div class="card"><span class="num">01</span><h4>Graph DB Basics</h4><p>Nodes, edges, properties, traversal — the core vocabulary.</p></div>
+    <div class="card"><span class="num">02</span><h4>Neo4j & Cypher</h4><p>The most widely used production graph database, and its query language.</p></div>
+    <div class="card"><span class="num">03</span><h4>Knowledge Graphs</h4><p>Turning scattered facts into a connected map of entities and relationships.</p></div>
+    <div class="card"><span class="num">04</span><h4>GraphRAG</h4><p>Retrieval-augmented generation that reasons over relationships, not just text chunks.</p></div>
+    <div class="card"><span class="num">05</span><h4>Graphiti</h4><p>Temporal knowledge graphs built for AI agent memory that changes over time.</p></div>
+    <div class="card"><span class="num">06</span><h4>Python Toolkit</h4><p>The libraries that connect all of the above into working code.</p></div>
+    <div class="card"><span class="num">07</span><h4>Banking Use Cases</h4><p>Fraud rings, AML, KYC, credit exposure — real production patterns.</p></div>
+    <div class="card"><span class="num">08</span><h4>Agentic Architecture</h4><p>How an AI agent uses a graph as memory and a tool in production.</p></div>
+    <div class="card"><span class="num">09</span><h4>Production RAG</h4><p>A full pipeline: ingestion to guardrails to observability.</p></div>
+    <div class="card"><span class="num">10</span><h4>More Concepts</h4><p>Vector vs. graph, algorithms, governance, and what's easy to miss.</p></div>
+  </div>
+
+  <div class="section-nav"><span></span><button onclick="goRel(1)">Next: Graph DB Basics →</button></div>
+</section>`;
+
+/* ============ BASICS ============ */
+HTML += `
+<section id="basics">
+  <div class="eyebrow">01 — Foundations</div>
+  <h1>Graph database basics</h1>
+  <p class="lede">Every graph database, no matter the vendor, is built from four ideas. Get these right and everything else — Cypher, GraphRAG, Graphiti — is just a variation on the theme.</p>
+
+  <div class="eli8">
+    <div class="icon">🎈</div>
+    <div>
+      <div class="label">Explain it like I'm 8</div>
+      <p>A <strong>node</strong> is a balloon — one thing, like "Mom" or "Bank Account #123." An <strong>edge</strong> is a string tying two balloons together, like "owns" or "sent money to." A <strong>property</strong> is a sticky note on a balloon, like "age: 8" or "balance: $500." A <strong>label</strong> is the color of the balloon, telling you what kind of thing it is — red balloons are "People," blue balloons are "Accounts."</p>
+    </div>
+  </div>
+
+  <h2>The four building blocks</h2>
+  <table>
+    <tr><th>Concept</th><th>What it is</th><th>Banking example</th></tr>
+    <tr><td><strong>Node</strong></td><td>An entity — a "thing" in the world</td><td>A customer, an account, a device, a merchant</td></tr>
+    <tr><td><strong>Edge / Relationship</strong></td><td>A directed, typed connection between two nodes</td><td><code>(Customer)-[:OWNS]->(Account)</code></td></tr>
+    <tr><td><strong>Property</strong></td><td>A key-value fact attached to a node or edge</td><td><code>amount: 4500, currency: "USD", date: "2026-08-12"</code></td></tr>
+    <tr><td><strong>Label / Type</strong></td><td>The category a node or edge belongs to</td><td><code>:Customer</code>, <code>:Account</code>, <code>:TRANSFERRED_TO</code></td></tr>
+  </table>
+
+  <h2>Why not just use SQL joins?</h2>
+  <p>A relational database <em>can</em> represent relationships — that's what foreign keys and JOINs are for. The problem is depth. Finding "accounts two hops from this one" is one JOIN. Finding "all accounts within 5 hops, where money moved in a loop" is five nested JOINs that get slower and messier at every step, because the database has to re-discover the relationships each time from scratch.</p>
+  <p>A graph database stores the relationship itself as a first-class, indexed pointer. Walking from node to node costs roughly the same whether you're 1 hop away or 10 — this is often called <strong>index-free adjacency</strong>. That's the whole reason banks use graphs for fraud: fraud rings are deep, multi-hop patterns, and graphs traverse deep patterns cheaply.</p>
+
+  <div class="callout bank">
+    <div class="label">Banking angle</div>
+    In a core banking data warehouse, "customer → account → transaction → counterparty account → counterparty customer" is a common multi-hop question — "is this money eventually coming back to the same person through a different account?" That's a graph traversal, not a table scan.
+  </div>
+
+  <h2>Property graph vs. other graph models</h2>
+  <p>Most production systems (Neo4j, Amazon Neptune, ArangoDB) use the <strong>Labeled Property Graph (LPG)</strong> model described above. You'll also hear about <strong>RDF triple stores</strong> (subject–predicate–object, used heavily in knowledge-graph and semantic-web contexts, queried with SPARQL). They express similar ideas — LPG is more pragmatic and developer-friendly for application building; RDF is closer to formal ontologies and standards-based data interchange, common in regulatory and reference-data contexts.</p>
+
+  <h2>Graph algorithms you'll actually use</h2>
+  <div class="grid">
+    <div class="card"><h4>Shortest Path</h4><p>Cheapest route between two nodes — e.g. how is Customer A connected to Customer B?</p></div>
+    <div class="card"><h4>PageRank</h4><p>Which nodes are most "influential" by virtue of who points to them — used to rank suspicious accounts.</p></div>
+    <div class="card"><h4>Community Detection</h4><p>Clusters of densely connected nodes — surfaces fraud rings and money-laundering networks automatically.</p></div>
+    <div class="card"><h4>Centrality</h4><p>Which node sits at the crossroads of many paths — often a mule account or hub in a laundering scheme.</p></div>
+    <div class="card"><h4>Similarity</h4><p>Nodes with overlapping neighborhoods — used for entity resolution ("are these two customer records the same person?").</p></div>
+    <div class="card"><h4>Cycle Detection</h4><p>Money that loops back to its origin through several accounts — a classic laundering signature.</p></div>
+  </div>
+
+  <div class="section-nav"><button onclick="goRel(-1)">← Why Graphs</button><button onclick="goRel(1)">Next: Neo4j & Cypher →</button></div>
+</section>`;
+</script>
+
+<script>
+/* ============ NEO4J ============ */
+HTML += `
+<section id="neo4j">
+  <div class="eyebrow">02 — The industry workhorse</div>
+  <h1>Neo4j & Cypher</h1>
+  <p class="lede">Neo4j is the most widely deployed native graph database in production. It stores nodes and relationships directly (not simulated on top of tables), and you query it with <strong>Cypher</strong> — a language designed to look like the pattern you're searching for.</p>
+
+  <div class="eli8">
+    <div class="icon">🔍</div>
+    <div>
+      <div class="label">Explain it like I'm 8</div>
+      <p>If SQL is like giving very precise step-by-step instructions ("first do this, then do that"), Cypher is like drawing a little picture of what you want and asking "find me more things that look like this picture." You literally draw circles and arrows in the query.</p>
+    </div>
+  </div>
+
+  <h2>Reading Cypher's ASCII-art syntax</h2>
+  <p>Round brackets <code>()</code> are nodes (circles). Square brackets <code>[]</code> inside dashes are relationships (arrows). It reads left to right like a sentence.</p>
+  <pre><code><span class="tok-com">// "Find customers who sent money to an account owned by someone on a watchlist"</span>
+<span class="tok-kw">MATCH</span> (sender:Customer)-[:OWNS]->(:Account)-[t:TRANSFERRED_TO]->(:Account)<-[:OWNS]-(recipient:Customer)
+<span class="tok-kw">WHERE</span> recipient.watchlist_flag = <span class="tok-kw">true</span>
+  <span class="tok-kw">AND</span> t.amount > <span class="tok-num">10000</span>
+<span class="tok-kw">RETURN</span> sender.name, recipient.name, t.amount, t.date
+<span class="tok-kw">ORDER BY</span> t.amount <span class="tok-kw">DESC</span></code><span class="tag">Cypher</span></pre>
+
+  <h3>Finding a laundering ring (multi-hop cycle)</h3>
+  <pre><code><span class="tok-com">// Money that leaves an account and comes back within 5 hops = a loop</span>
+<span class="tok-kw">MATCH</span> path = (a:Account)-[:TRANSFERRED_TO*2..5]->(a)
+<span class="tok-kw">WHERE</span> ALL(r <span class="tok-kw">IN</span> relationships(path) <span class="tok-kw">WHERE</span> r.date > <span class="tok-str">"2026-06-01"</span>)
+<span class="tok-kw">RETURN</span> path <span class="tok-kw">LIMIT</span> <span class="tok-num">25</span></code><span class="tag">Cypher</span></pre>
+
+  <h2>Why banks pick Neo4j specifically</h2>
+  <div class="grid">
+    <div class="card"><h4>ACID transactions</h4><p>Full transactional guarantees — non-negotiable for core financial data.</p></div>
+    <div class="card"><h4>Native graph storage</h4><p>Relationships are physical pointers on disk, not computed joins — traversal speed stays flat as hop-depth grows.</p></div>
+    <div class="card"><h4>Graph Data Science library</h4><p>Built-in PageRank, Louvain community detection, similarity, and centrality algorithms, runnable at scale.</p></div>
+    <div class="card"><h4>Causal clustering</h4><p>Neo4j Aura / Enterprise supports clustering and read replicas for the throughput a core banking workload needs.</p></div>
+    <div class="card"><h4>Role-based access control</h4><p>Fine-grained security down to labels and properties — important for PII and regulated data segregation.</p></div>
+    <div class="card"><h4>Mature ecosystem</h4><p>Drivers for Python, Java, .NET, Go, plus Bloom for visual investigation — analysts can explore fraud graphs visually, not just query them.</p></div>
+  </div>
+
+  <div class="callout warn">
+    <div class="label">Where a graph DB is the wrong tool</div>
+    High-volume, single-record lookups by primary key (e.g. "get this one account balance right now") are usually faster and simpler in a key-value store or relational DB with an index. Reach for a graph when the <em>question itself</em> is about relationships and depth — not as a universal database replacement.
+  </div>
+
+  <div class="section-nav"><button onclick="goRel(-1)">← Graph DB Basics</button><button onclick="goRel(1)">Next: Knowledge Graphs →</button></div>
+</section>`;
+
+/* ============ KNOWLEDGE GRAPHS ============ */
+HTML += `
+<section id="kg">
+  <div class="eyebrow">03 — Structured meaning</div>
+  <h1>Knowledge graphs</h1>
+  <p class="lede">A knowledge graph is a graph database with a specific job: representing <strong>real-world entities and the facts connecting them</strong> in a way both machines and humans can reason over — "Acme Corp" is a <em>company</em>, it <em>is_subsidiary_of</em> "Acme Holdings," which <em>is_registered_in</em> "Cayman Islands."</p>
+
+  <div class="eli8">
+    <div class="icon">🗺️</div>
+    <div>
+      <div class="label">Explain it like I'm 8</div>
+      <p>Think of a knowledge graph like a giant family tree, but for everything — not just people, but companies, products, places, and events too — all connected by labeled arrows that say exactly how they relate: "works for," "owned by," "located in."</p>
+    </div>
+  </div>
+
+  <h2>Knowledge graph vs. plain graph database</h2>
+  <p>Every knowledge graph is stored in a graph database, but not every graph database holds a knowledge graph. The difference is intent: a knowledge graph is curated around <strong>entities, types, and an ontology</strong> (a schema of what kinds of things and relationships are allowed) so that facts stay consistent and machine-interpretable — often enriched via entity resolution, extraction from documents, and linkage to external reference data.</p>
+
+  <h2>How a knowledge graph gets built</h2>
+  <ol>
+    <li><strong>Entity extraction</strong> — pull named entities (people, companies, accounts) out of structured systems and unstructured text (contracts, KYC filings, news) using NLP or an LLM.</li>
+    <li><strong>Relationship extraction</strong> — identify how entities relate ("X is a director of Y") from the same sources.</li>
+    <li><strong>Entity resolution</strong> — decide that "J. Smith," "John Smith," and "Smith, John A." in three different systems are the same person, and merge them into one node.</li>
+    <li><strong>Ontology mapping</strong> — assign each entity and relationship a type from a controlled schema (Basel/KYC taxonomies, LEI reference data, internal product hierarchies).</li>
+    <li><strong>Continuous enrichment</strong> — new transactions, filings, and documents keep adding nodes and edges over time.</li>
+  </ol>
+
+  <div class="callout bank">
+    <div class="label">Banking angle: beneficial ownership</div>
+    Regulators require banks to know who <em>ultimately</em> owns and controls a corporate customer — not just the name on the account. A knowledge graph traces <code>Person → owns 30% → Shell Co A → owns 60% → Shell Co B → is the account holder</code> across as many layers of shell companies as exist, then computes effective ownership percentage along every path. This is close to impossible to do reliably with joined tables alone.
+  </div>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 720 300" width="100%" style="max-width:680px" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="arrKG" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#8a97b3"/></marker>
+      </defs>
+      <line x1="120" y1="60" x2="260" y2="150" stroke="#22304a" stroke-width="1.5" marker-end="url(#arrKG)"/>
+      <line x1="260" y1="150" x2="420" y2="80" stroke="#22304a" stroke-width="1.5" marker-end="url(#arrKG)"/>
+      <line x1="420" y1="80" x2="580" y2="150" stroke="#22304a" stroke-width="1.5" marker-end="url(#arrKG)"/>
+      <line x1="260" y1="150" x2="260" y2="250" stroke="#22304a" stroke-width="1.5" marker-end="url(#arrKG)"/>
+      <line x1="580" y1="150" x2="580" y2="250" stroke="#22304a" stroke-width="1.5" marker-end="url(#arrKG)"/>
+      <text x="185" y="98" fill="#5c6885" font-size="10.5" font-family="JetBrains Mono">owns 40%</text>
+      <text x="335" y="107" fill="#5c6885" font-size="10.5" font-family="JetBrains Mono">director of</text>
+      <text x="500" y="107" fill="#5c6885" font-size="10.5" font-family="JetBrains Mono">owns 65%</text>
+      <text x="270" y="205" fill="#5c6885" font-size="10.5" font-family="JetBrains Mono">registered in</text>
+      <text x="590" y="205" fill="#5c6885" font-size="10.5" font-family="JetBrains Mono">account at</text>
+
+      <circle cx="120" cy="60" r="26" fill="#141d33" stroke="#a78bfa" stroke-width="2"/>
+      <text x="120" y="64" text-anchor="middle" fill="#eef2f9" font-size="10.5" font-family="Inter">Person</text>
+
+      <circle cx="260" cy="150" r="26" fill="#141d33" stroke="#e8a855" stroke-width="2"/>
+      <text x="260" y="147" text-anchor="middle" fill="#eef2f9" font-size="9.5" font-family="Inter">Shell</text>
+      <text x="260" y="159" text-anchor="middle" fill="#eef2f9" font-size="9.5" font-family="Inter">Co A</text>
+
+      <circle cx="420" cy="80" r="26" fill="#141d33" stroke="#a78bfa" stroke-width="2"/>
+      <text x="420" y="76" text-anchor="middle" fill="#eef2f9" font-size="9.5" font-family="Inter">Nominee</text>
+      <text x="420" y="88" text-anchor="middle" fill="#eef2f9" font-size="9.5" font-family="Inter">Director</text>
+
+      <circle cx="580" cy="150" r="26" fill="#141d33" stroke="#e8a855" stroke-width="2"/>
+      <text x="580" y="147" text-anchor="middle" fill="#eef2f9" font-size="9.5" font-family="Inter">Shell</text>
+      <text x="580" y="159" text-anchor="middle" fill="#eef2f9" font-size="9.5" font-family="Inter">Co B</text>
+
+      <circle cx="260" cy="250" r="26" fill="#141d33" stroke="#5eead4" stroke-width="2"/>
+      <text x="260" y="254" text-anchor="middle" fill="#eef2f9" font-size="9.5" font-family="Inter">Cayman</text>
+
+      <circle cx="580" cy="250" r="26" fill="#141d33" stroke="#f0707a" stroke-width="2"/>
+      <text x="580" y="247" text-anchor="middle" fill="#eef2f9" font-size="9" font-family="Inter">Bank</text>
+      <text x="580" y="258" text-anchor="middle" fill="#eef2f9" font-size="9" font-family="Inter">Account</text>
+    </svg>
+    <div class="diagram-cap">A beneficial-ownership knowledge graph — effective ownership is computed by walking every path from Person to Account</div>
+  </div>
+
+  <div class="section-nav"><button onclick="goRel(-1)">← Neo4j & Cypher</button><button onclick="goRel(1)">Next: GraphRAG →</button></div>
+</section>`;
+</script>
+
+<script>
+/* ============ GRAPHRAG ============ */
+HTML += `
+<section id="graphrag">
+  <div class="eyebrow">04 — Retrieval that understands connections</div>
+  <h1>GraphRAG</h1>
+  <p class="lede">Standard RAG (Retrieval-Augmented Generation) finds text chunks that are semantically <em>similar</em> to a question and feeds them to an LLM. GraphRAG adds a second retrieval path: it also walks a knowledge graph to find facts that are <em>connected</em> to the question — even if those facts never appear near each other in any document.</p>
+
+  <div class="eli8">
+    <div class="icon">🧩</div>
+    <div>
+      <div class="label">Explain it like I'm 8</div>
+      <p>Normal RAG is like asking a librarian for books that sound similar to your question. GraphRAG is like asking a detective who has drawn a big map connecting every clue — the detective can follow the string from clue to clue, even if two clues were never mentioned in the same book.</p>
+    </div>
+  </div>
+
+  <h2>The core limitation GraphRAG solves</h2>
+  <p>Vector search retrieves chunks that are <em>textually similar</em> to a query. But the answer to "did this customer's linked accounts show unusual activity last quarter across three subsidiaries?" isn't sitting in one chunk of text anywhere — it's a fact that only exists once you traverse relationships between separate records. Vector similarity can't discover that; graph traversal can.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 760 260" width="100%" style="max-width:720px" xmlns="http://www.w3.org/2000/svg">
+      <defs><marker id="arrGR" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#5c6885"/></marker></defs>
+      <rect x="20" y="105" width="110" height="46" rx="8" fill="#141d33" stroke="#5eead4" stroke-width="1.6"/>
+      <text x="75" y="132" text-anchor="middle" fill="#eef2f9" font-size="12" font-family="Inter">User Query</text>
+
+      <line x1="130" y1="118" x2="240" y2="55" stroke="#22304a" stroke-width="1.5" marker-end="url(#arrGR)"/>
+      <line x1="130" y1="138" x2="240" y2="200" stroke="#22304a" stroke-width="1.5" marker-end="url(#arrGR)"/>
+
+      <rect x="240" y="20" width="150" height="60" rx="8" fill="#141d33" stroke="#a78bfa" stroke-width="1.6"/>
+      <text x="315" y="45" text-anchor="middle" fill="#eef2f9" font-size="11.5" font-family="Inter">Vector search</text>
+      <text x="315" y="62" text-anchor="middle" fill="#8a97b3" font-size="10" font-family="Inter">similar text chunks</text>
+
+      <rect x="240" y="170" width="150" height="60" rx="8" fill="#141d33" stroke="#e8a855" stroke-width="1.6"/>
+      <text x="315" y="195" text-anchor="middle" fill="#eef2f9" font-size="11.5" font-family="Inter">Graph traversal</text>
+      <text x="315" y="212" text-anchor="middle" fill="#8a97b3" font-size="10" font-family="Inter">connected entities</text>
+
+      <line x1="390" y1="50" x2="490" y2="118" stroke="#22304a" stroke-width="1.5" marker-end="url(#arrGR)"/>
+      <line x1="390" y1="200" x2="490" y2="138" stroke="#22304a" stroke-width="1.5" marker-end="url(#arrGR)"/>
+
+      <rect x="490" y="100" width="150" height="56" rx="8" fill="#141d33" stroke="#5eead4" stroke-width="1.6"/>
+      <text x="565" y="123" text-anchor="middle" fill="#eef2f9" font-size="11.5" font-family="Inter">Context builder</text>
+      <text x="565" y="140" text-anchor="middle" fill="#8a97b3" font-size="10" font-family="Inter">merges + de-dupes</text>
+
+      <line x1="640" y1="128" x2="710" y2="128" stroke="#22304a" stroke-width="1.5" marker-end="url(#arrGR)"/>
+      <rect x="670" y="100" width="0" height="0"/>
+      <circle cx="732" cy="128" r="28" fill="#141d33" stroke="#f0707a" stroke-width="1.8"/>
+      <text x="732" y="124" text-anchor="middle" fill="#eef2f9" font-size="9.5" font-family="Inter">LLM</text>
+      <text x="732" y="136" text-anchor="middle" fill="#eef2f9" font-size="9.5" font-family="Inter">answer</text>
+    </svg>
+    <div class="diagram-cap">GraphRAG runs vector similarity and graph traversal in parallel, then merges both into one grounded context</div>
+  </div>
+
+  <h2>Two flavors of GraphRAG in production</h2>
+  <div class="grid">
+    <div class="card"><h4>Local (entity-anchored)</h4><p>Start from entities mentioned in the query, walk N hops outward, pull in their properties and neighboring facts. Good for "tell me everything connected to Account X."</p></div>
+    <div class="card"><h4>Global (community-summarized)</h4><p>Pre-computed summaries of graph communities/clusters answer broad questions like "what are the major risk themes across our corporate portfolio this quarter?" — Microsoft's original GraphRAG paper popularized this pattern.</p></div>
+  </div>
+
+  <h2>Minimal retrieval pattern</h2>
+  <pre><code><span class="tok-com"># 1. Extract entities mentioned in the user's question (LLM or NER)</span>
+entities = extract_entities(question)  <span class="tok-com"># e.g. ["Acme Corp", "Q3 2026"]</span>
+
+<span class="tok-com"># 2. Graph traversal: pull the local neighborhood around each entity</span>
+graph_context = neo4j_driver.execute_query(<span class="tok-str">"""
+    MATCH (e)-[r*1..2]-(neighbor)
+    WHERE e.name IN $entities
+    RETURN e, r, neighbor LIMIT 50
+"""</span>, entities=entities)
+
+<span class="tok-com"># 3. Vector search: pull semantically similar document chunks</span>
+vector_context = vector_store.similarity_search(question, k=<span class="tok-num">8</span>)
+
+<span class="tok-com"># 4. Merge, de-duplicate, and rank before sending to the LLM</span>
+context = merge_and_rank(graph_context, vector_context)
+answer = llm.generate(question, context)</code><span class="tag">python</span></pre>
+
+  <div class="callout bank">
+    <div class="label">Banking angle</div>
+    An analyst asks a co-pilot: "Is there any relationship between this loan applicant and our existing watchlisted customers?" A pure vector search over documents will likely miss this — no document says so directly. GraphRAG traverses shared addresses, shared directors, and shared beneficial owners in the knowledge graph and surfaces the connection even though it was never written down as a sentence anywhere.
+  </div>
+
+  <div class="section-nav"><button onclick="goRel(-1)">← Knowledge Graphs</button><button onclick="goRel(1)">Next: Graphiti →</button></div>
+</section>`;
+
+/* ============ GRAPHITI ============ */
+HTML += `
+<section id="graphiti">
+  <div class="eyebrow">05 — Memory that changes over time</div>
+  <h1>Graphiti — temporal knowledge graphs</h1>
+  <p class="lede">Graphiti (from Zep) is an open-source framework for building knowledge graphs that are <strong>temporally aware</strong> and built to be updated continuously and incrementally — designed specifically as memory for AI agents, rather than a one-time static knowledge graph you rebuild in a batch job.</p>
+
+  <div class="eli8">
+    <div class="icon">⏳</div>
+    <div>
+      <div class="label">Explain it like I'm 8</div>
+      <p>A normal knowledge graph is like a photo of your family tree — accurate for the moment it was taken, but wrong the day someone moves house. Graphiti is like a video instead of a photo: it remembers "this fact was true from June to August, then this NEW fact became true," so you can ask "what did we believe on July 1st?" and get the right answer.</p>
+    </div>
+  </div>
+
+  <h2>Why static knowledge graphs aren't enough for agents</h2>
+  <p>Most knowledge graphs are built in a batch pipeline: extract, resolve, load, and periodically rebuild from scratch. That's fine for reference data that changes slowly. But an AI agent having an ongoing conversation, watching a live transaction feed, or updating customer risk continuously needs a graph that can accept small, fast, incremental updates <strong>without a full rebuild</strong> — and needs to know not just what's true now, but what was true when.</p>
+
+  <h2>Graphiti's core ideas</h2>
+  <table>
+    <tr><th>Concept</th><th>What it means</th></tr>
+    <tr><td><strong>Bi-temporal model</strong></td><td>Every fact tracks two timelines: when it was <em>true in the world</em> (valid time) and when the system <em>learned about it</em> (transaction time) — critical for audit trails.</td></tr>
+    <tr><td><strong>Incremental updates</strong></td><td>New facts are added as events without invalidating or rebuilding the rest of the graph — old facts are marked as superseded, not deleted.</td></tr>
+    <tr><td><strong>Episodic ingestion</strong></td><td>Graphiti ingests "episodes" — a chat message, a document, a JSON event — and automatically extracts entities and relationships from each one.</td></tr>
+    <tr><td><strong>Hybrid retrieval</strong></td><td>Combines semantic (embedding) search, keyword (BM25) search, and graph traversal in one query for agent recall.</td></tr>
+    <tr><td><strong>Point-in-time queries</strong></td><td>You can ask the graph what it believed at a specific past timestamp — reconstructing historical state.</td></tr>
+  </table>
+
+  <div class="callout bank">
+    <div class="label">Banking angle</div>
+    A relationship-manager copilot needs to remember that a client's risk appetite changed after a phone call last Tuesday, without forgetting or corrupting everything it knew before that call. Bi-temporal tracking also matters directly for compliance: regulators may ask "what did the bank know about this customer's ownership structure on the date this transaction was approved?" — a question only a bi-temporal graph can answer precisely.
+  </div>
+
+  <h3>Minimal Graphiti usage pattern</h3>
+  <pre><code><span class="tok-kw">from</span> graphiti_core <span class="tok-kw">import</span> Graphiti
+
+graphiti = Graphiti(uri=<span class="tok-str">"bolt://localhost:7687"</span>, user=<span class="tok-str">"neo4j"</span>, password=<span class="tok-str">"..."</span>)
+
+<span class="tok-com"># Add a new "episode" -- Graphiti extracts entities/relationships and</span>
+<span class="tok-com"># timestamps them automatically</span>
+<span class="tok-kw">await</span> graphiti.add_episode(
+    name=<span class="tok-str">"advisor_call_2026_08_29"</span>,
+    episode_body=<span class="tok-str">"Client requested to lower portfolio risk after market volatility."</span>,
+    source_description=<span class="tok-str">"CRM call transcript"</span>,
+    reference_time=datetime.now()
+)
+
+<span class="tok-com"># Later: hybrid search across semantic + keyword + graph signals</span>
+results = <span class="tok-kw">await</span> graphiti.search(<span class="tok-str">"what is this client's current risk appetite?"</span>)</code><span class="tag">python</span></pre>
+
+  <h3>Graphiti vs. a classic static knowledge graph</h3>
+  <div class="grid">
+    <div class="card"><h4>Update pattern</h4><p>Static KG: periodic batch rebuild. Graphiti: continuous incremental writes as events happen.</p></div>
+    <div class="card"><h4>Time awareness</h4><p>Static KG: single current snapshot. Graphiti: bi-temporal, queryable at any past point.</p></div>
+    <div class="card"><h4>Best fit</h4><p>Static KG: reference data, org charts, product taxonomies. Graphiti: agent memory, live conversations, streaming events.</p></div>
+  </div>
+
+  <div class="section-nav"><button onclick="goRel(-1)">← GraphRAG</button><button onclick="goRel(1)">Next: Python Toolkit →</button></div>
+</section>`;
+</script>
+
+<script>
+/* ============ PYTHON ============ */
+HTML += `
+<section id="python">
+  <div class="eyebrow">06 — Wiring it together</div>
+  <h1>The Python toolkit</h1>
+  <p class="lede">Python is the connective tissue between graph databases, embedding models, and LLMs. Here's the practical stack used across most production graph-AI systems.</p>
+
+  <div class="eli8">
+    <div class="icon">🧰</div>
+    <div>
+      <div class="label">Explain it like I'm 8</div>
+      <p>If Neo4j is a toy box full of connected LEGO, Python is your hands — it's how you reach in, grab pieces, ask questions about how they're connected, and hand the results to the AI to talk about.</p>
+    </div>
+  </div>
+
+  <h2>Talking to Neo4j directly</h2>
+  <pre><code><span class="tok-kw">from</span> neo4j <span class="tok-kw">import</span> GraphDatabase
+
+driver = GraphDatabase.driver(<span class="tok-str">"bolt://localhost:7687"</span>, auth=(<span class="tok-str">"neo4j"</span>, <span class="tok-str">"password"</span>))
+
+<span class="tok-kw">def</span> <span class="tok-fn">find_fraud_ring</span>(tx, account_id):
+    query = <span class="tok-str">"""
+        MATCH path = (a:Account {id: $account_id})-[:TRANSFERRED_TO*2..6]->(a)
+        RETURN path LIMIT 10
+    """</span>
+    <span class="tok-kw">return</span> [record[<span class="tok-str">"path"</span>] <span class="tok-kw">for</span> record <span class="tok-kw">in</span> tx.run(query, account_id=account_id)]
+
+<span class="tok-kw">with</span> driver.session() <span class="tok-kw">as</span> session:
+    rings = session.execute_read(find_fraud_ring, account_id=<span class="tok-str">"ACC-88213"</span>)</code><span class="tag">python — neo4j driver</span></pre>
+
+  <h2>The layered stack</h2>
+  <div class="grid">
+    <div class="card"><h4>neo4j (official driver)</h4><p>Raw Cypher execution, transactions, connection pooling — the foundation layer.</p></div>
+    <div class="card"><h4>LangChain / LlamaIndex</h4><p>Higher-level orchestration: <code>Neo4jGraph</code>, <code>GraphCypherQAChain</code>, and GraphRAG retrievers that wrap Cypher generation and context assembly.</p></div>
+    <div class="card"><h4>graphiti-core</h4><p>Temporal knowledge graph layer for agent memory, built on top of Neo4j (or FalkorDB).</p></div>
+    <div class="card"><h4>sentence-transformers / OpenAI / Voyage</h4><p>Embedding models that turn text into vectors for the vector-search half of hybrid retrieval.</p></div>
+    <div class="card"><h4>networkx</h4><p>In-memory graph algorithms for prototyping — not for production scale, but great for quick analysis and testing.</p></div>
+    <div class="card"><h4>spaCy / GLiNER / an LLM</h4><p>Named-entity and relationship extraction used to build the knowledge graph from raw text sources.</p></div>
+  </div>
+
+  <h2>LangChain's natural-language-to-Cypher pattern</h2>
+  <pre><code><span class="tok-kw">from</span> langchain_community.graphs <span class="tok-kw">import</span> Neo4jGraph
+<span class="tok-kw">from</span> langchain.chains <span class="tok-kw">import</span> GraphCypherQAChain
+<span class="tok-kw">from</span> langchain_anthropic <span class="tok-kw">import</span> ChatAnthropic
+
+graph = Neo4jGraph(url=<span class="tok-str">"bolt://localhost:7687"</span>, username=<span class="tok-str">"neo4j"</span>, password=<span class="tok-str">"..."</span>)
+llm = ChatAnthropic(model=<span class="tok-str">"claude-sonnet-4-6"</span>)
+
+chain = GraphCypherQAChain.from_llm(llm, graph=graph, verbose=<span class="tok-kw">True</span>)
+
+<span class="tok-com"># The LLM writes the Cypher, runs it, and explains the result in plain English</span>
+response = chain.invoke({<span class="tok-str">"query"</span>: <span class="tok-str">"Which customers share a device ID with a flagged account?"</span>})</code><span class="tag">python — langchain</span></pre>
+
+  <div class="callout warn">
+    <div class="label">Production caution</div>
+    Letting an LLM generate raw Cypher against production data needs guardrails: a read-only database user, query timeouts, row limits, and validation that the generated query doesn't touch write clauses like <code>DELETE</code> or <code>MERGE</code> unless that's explicitly intended and permissioned.
+  </div>
+
+  <div class="section-nav"><button onclick="goRel(-1)">← Graphiti</button><button onclick="goRel(1)">Next: Banking Use Cases →</button></div>
+</section>`;
+
+/* ============ BANKING ============ */
+HTML += `
+<section id="banking">
+  <div class="eyebrow">07 — Where this earns its keep</div>
+  <h1>Real production use cases in banking</h1>
+  <p class="lede">These are patterns actually running in production at banks and fintechs today, not hypotheticals — graph databases sit under fraud engines, AML systems, and KYC platforms at most major financial institutions.</p>
+
+  <h2>Fraud ring detection</h2>
+  <div class="eli8">
+    <div class="icon">🕵️</div>
+    <div>
+      <div class="label">Explain it like I'm 8</div>
+      <p>Imagine ten kids all secretly trading the same fake candy back and forth between each other so it looks like real trades happened. One trade looks normal. Ten trades in a circle, between accounts that also share the same home address and phone number, looks very suspicious — and a graph is what lets you SEE the circle.</p>
+    </div>
+  </div>
+  <p>Fraud rings share subtle signals: the same device fingerprint, IP address, phone number, or physical address across accounts that otherwise look unrelated. A graph models <code>(Account)-[:USED_DEVICE]->(Device)<-[:USED_DEVICE]-(Account)</code> and runs community detection to surface tightly-connected clusters of accounts opened around the same time with shared attributes — a strong synthetic-identity-fraud signal that a row-by-row rules engine misses entirely.</p>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 640 260" width="100%" style="max-width:600px" xmlns="http://www.w3.org/2000/svg">
+      <defs><marker id="arrFR" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#f0707a"/></marker></defs>
+      <polygon points="320,50 460,120 410,220 230,220 180,120" fill="none" stroke="#f0707a" stroke-width="1.2" stroke-dasharray="4 3" opacity="0.5"/>
+      <line x1="320" y1="50" x2="460" y2="120" stroke="#f0707a" stroke-width="1.6" marker-end="url(#arrFR)"/>
+      <line x1="460" y1="120" x2="410" y2="220" stroke="#f0707a" stroke-width="1.6" marker-end="url(#arrFR)"/>
+      <line x1="410" y1="220" x2="230" y2="220" stroke="#f0707a" stroke-width="1.6" marker-end="url(#arrFR)"/>
+      <line x1="230" y1="220" x2="180" y2="120" stroke="#f0707a" stroke-width="1.6" marker-end="url(#arrFR)"/>
+      <line x1="180" y1="120" x2="320" y2="50" stroke="#f0707a" stroke-width="1.6" marker-end="url(#arrFR)"/>
+      <circle cx="320" cy="50" r="24" fill="#141d33" stroke="#f0707a" stroke-width="2"/>
+      <circle cx="460" cy="120" r="24" fill="#141d33" stroke="#f0707a" stroke-width="2"/>
+      <circle cx="410" cy="220" r="24" fill="#141d33" stroke="#f0707a" stroke-width="2"/>
+      <circle cx="230" cy="220" r="24" fill="#141d33" stroke="#f0707a" stroke-width="2"/>
+      <circle cx="180" cy="120" r="24" fill="#141d33" stroke="#f0707a" stroke-width="2"/>
+      <text x="320" y="54" text-anchor="middle" fill="#eef2f9" font-size="9.5" font-family="Inter">Acc A</text>
+      <text x="460" y="124" text-anchor="middle" fill="#eef2f9" font-size="9.5" font-family="Inter">Acc B</text>
+      <text x="410" y="224" text-anchor="middle" fill="#eef2f9" font-size="9.5" font-family="Inter">Acc C</text>
+      <text x="230" y="224" text-anchor="middle" fill="#eef2f9" font-size="9.5" font-family="Inter">Acc D</text>
+      <text x="180" y="124" text-anchor="middle" fill="#eef2f9" font-size="9.5" font-family="Inter">Acc E</text>
+      <circle cx="320" cy="150" r="18" fill="#141d33" stroke="#e8a855" stroke-width="1.8" stroke-dasharray="3 2"/>
+      <text x="320" y="153" text-anchor="middle" fill="#e8a855" font-size="8" font-family="Inter">shared</text>
+      <text x="320" y="163" text-anchor="middle" fill="#e8a855" font-size="8" font-family="Inter" dy="0">device</text>
+    </svg>
+    <div class="diagram-cap">A closed transaction loop between accounts sharing a device fingerprint — invisible in a flat transaction table, obvious as a cycle in a graph</div>
+  </div>
+
+  <h2>Anti-Money Laundering (AML) transaction monitoring</h2>
+  <p>Regulators require banks to detect "layering" — moving money through many accounts to obscure its origin. Graph-based AML systems model every transaction as an edge and continuously run cycle detection, unusual-path-length analysis, and community detection to flag structuring and layering patterns that rule-based thresholds (e.g. "flag transfers over $10k") consistently miss, because launderers deliberately structure transfers just under any single threshold.</p>
+
+  <h2>KYC / entity resolution & beneficial ownership</h2>
+  <p>Before onboarding a corporate customer, a bank must resolve "who ultimately owns and controls this entity" through potentially many layers of holding companies — exactly the beneficial-ownership graph shown in the Knowledge Graphs section. Entity resolution across CRM, KYC, and transaction systems (deduplicating "same person, different spelling") is itself a graph similarity problem.</p>
+
+  <h2>Credit risk & counterparty exposure</h2>
+  <p>A bank's risk to a single default rarely stops at one loan — related entities (subsidiaries, guarantors, shared collateral) mean a default can cascade. Graphs model the full web of counterparty relationships so risk teams can query "what is our total exposure to this corporate family, including all subsidiaries and guarantees?" as a single traversal instead of a manual, error-prone spreadsheet exercise.</p>
+
+  <h2>Customer 360 & next-best-action</h2>
+  <p>Retail banks connect a customer's accounts, products, life events, and household relationships (joint accounts, shared addresses) in a graph to power recommendation and servicing — "customers similar to this one, three hops away in the product-and-behavior graph, typically adopt a mortgage next."</p>
+
+  <h2>Payment network resilience & fraud typology discovery</h2>
+  <p>Card networks and payment processors model merchant-acquirer-issuer relationships as a graph to detect merchant collusion rings and identify systemic weak points — nodes whose failure or compromise would cascade across the network (centrality analysis).</p>
+
+  <table>
+    <tr><th>Use case</th><th>Core graph technique</th><th>Business outcome</th></tr>
+    <tr><td>Fraud ring detection</td><td>Community detection, shared-attribute traversal</td><td>Catches synthetic identity & first-party fraud rules miss</td></tr>
+    <tr><td>AML layering detection</td><td>Cycle detection, path analysis</td><td>Surfaces structuring patterns for SAR filing</td></tr>
+    <tr><td>Beneficial ownership / KYC</td><td>Multi-hop traversal, entity resolution</td><td>Meets regulatory UBO disclosure requirements</td></tr>
+    <tr><td>Counterparty credit risk</td><td>Aggregation across relationship paths</td><td>Accurate total exposure per corporate family</td></tr>
+    <tr><td>Customer 360 / cross-sell</td><td>Similarity, shortest path</td><td>Higher-precision next-best-action recommendations</td></tr>
+    <tr><td>Network resilience</td><td>Centrality, PageRank</td><td>Identifies systemic single points of failure</td></tr>
+  </table>
+
+  <div class="section-nav"><button onclick="goRel(-1)">← Python Toolkit</button><button onclick="goRel(1)">Next: Agentic Architecture →</button></div>
+</section>`;
+</script>
+
+<script>
+/* ============ AGENTIC ARCHITECTURE ============ */
+HTML += `
+<section id="agentic">
+  <div class="eyebrow">08 — Design</div>
+  <h1>Agentic solution architecture for banking</h1>
+  <p class="lede">An "agent" here means an LLM that plans multi-step actions, calls tools, and uses a graph as both long-term memory and a live source of truth — not just a chatbot with a single retrieval step.</p>
+
+  <div class="eli8">
+    <div class="icon">🤖</div>
+    <div>
+      <div class="label">Explain it like I'm 8</div>
+      <p>A regular chatbot is like a kid who can only answer using what's already in their head. An agent is like a kid with a phone, a notebook, and permission to ask a teacher for help — it can look things up, remember what it learned, check its work, and only tell you the answer once it's sure.</p>
+    </div>
+  </div>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 900 520" width="100%" style="max-width:860px" xmlns="http://www.w3.org/2000/svg">
+      <defs><marker id="arrAG" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#5c6885"/></marker></defs>
+
+      <rect x="40" y="20" width="160" height="50" rx="8" fill="#141d33" stroke="#5eead4" stroke-width="1.6"/>
+      <text x="120" y="50" text-anchor="middle" fill="#eef2f9" font-size="12.5" font-family="Inter">Relationship Manager</text>
+
+      <line x1="200" y1="45" x2="330" y2="45" stroke="#22304a" stroke-width="1.5" marker-end="url(#arrAG)"/>
+
+      <rect x="330" y="15" width="220" height="60" rx="8" fill="#141d33" stroke="#a78bfa" stroke-width="1.8"/>
+      <text x="440" y="40" text-anchor="middle" fill="#eef2f9" font-size="12.5" font-family="Inter">Orchestrator / Planner Agent</text>
+      <text x="440" y="58" text-anchor="middle" fill="#8a97b3" font-size="10" font-family="Inter">breaks request into steps</text>
+
+      <line x1="440" y1="75" x2="440" y2="120" stroke="#22304a" stroke-width="1.5" marker-end="url(#arrAG)"/>
+
+      <rect x="300" y="120" width="280" height="50" rx="8" fill="#141d33" stroke="#e8a855" stroke-width="1.8"/>
+      <text x="440" y="150" text-anchor="middle" fill="#eef2f9" font-size="12" font-family="Inter">Tool Router</text>
+
+      <!-- Tools row -->
+      <line x1="360" y1="170" x2="130" y2="230" stroke="#22304a" stroke-width="1.3" marker-end="url(#arrAG)"/>
+      <line x1="410" y1="170" x2="320" y2="230" stroke="#22304a" stroke-width="1.3" marker-end="url(#arrAG)"/>
+      <line x1="470" y1="170" x2="560" y2="230" stroke="#22304a" stroke-width="1.3" marker-end="url(#arrAG)"/>
+      <line x1="520" y1="170" x2="750" y2="230" stroke="#22304a" stroke-width="1.3" marker-end="url(#arrAG)"/>
+
+      <rect x="40" y="230" width="180" height="56" rx="8" fill="#0e1526" stroke="#22304a" stroke-width="1.4"/>
+      <text x="130" y="254" text-anchor="middle" fill="#eef2f9" font-size="11" font-family="Inter">Graph DB tool</text>
+      <text x="130" y="270" text-anchor="middle" fill="#8a97b3" font-size="9.5" font-family="Inter">Cypher / traversal</text>
+
+      <rect x="240" y="230" width="180" height="56" rx="8" fill="#0e1526" stroke="#22304a" stroke-width="1.4"/>
+      <text x="330" y="254" text-anchor="middle" fill="#eef2f9" font-size="11" font-family="Inter">GraphRAG tool</text>
+      <text x="330" y="270" text-anchor="middle" fill="#8a97b3" font-size="9.5" font-family="Inter">docs + vector search</text>
+
+      <rect x="440" y="230" width="180" height="56" rx="8" fill="#0e1526" stroke="#22304a" stroke-width="1.4"/>
+      <text x="530" y="254" text-anchor="middle" fill="#eef2f9" font-size="11" font-family="Inter">Core banking API</text>
+      <text x="530" y="270" text-anchor="middle" fill="#8a97b3" font-size="9.5" font-family="Inter">balances, holds, KYC</text>
+
+      <rect x="660" y="230" width="200" height="56" rx="8" fill="#0e1526" stroke="#22304a" stroke-width="1.4"/>
+      <text x="760" y="254" text-anchor="middle" fill="#eef2f9" font-size="11" font-family="Inter">Rules / compliance engine</text>
+      <text x="760" y="270" text-anchor="middle" fill="#8a97b3" font-size="9.5" font-family="Inter">policy checks</text>
+
+      <!-- back to memory -->
+      <line x1="130" y1="286" x2="130" y2="330" stroke="#22304a" stroke-width="1.3" marker-end="url(#arrAG)"/>
+      <line x1="330" y1="286" x2="330" y2="330" stroke="#22304a" stroke-width="1.3" marker-end="url(#arrAG)"/>
+      <line x1="530" y1="286" x2="530" y2="330" stroke="#22304a" stroke-width="1.3" marker-end="url(#arrAG)"/>
+      <line x1="760" y1="286" x2="760" y2="330" stroke="#22304a" stroke-width="1.3" marker-end="url(#arrAG)"/>
+
+      <rect x="80" y="330" width="740" height="60" rx="8" fill="#141d33" stroke="#5eead4" stroke-width="1.8"/>
+      <text x="450" y="356" text-anchor="middle" fill="#eef2f9" font-size="12.5" font-family="Inter">Graphiti — temporal agent memory (Neo4j)</text>
+      <text x="450" y="374" text-anchor="middle" fill="#8a97b3" font-size="10" font-family="Inter">conversation history · resolved entities · what changed and when</text>
+
+      <line x1="450" y1="390" x2="450" y2="425" stroke="#22304a" stroke-width="1.5" marker-end="url(#arrAG)"/>
+
+      <rect x="270" y="425" width="360" height="50" rx="8" fill="#141d33" stroke="#f0707a" stroke-width="1.8"/>
+      <text x="450" y="455" text-anchor="middle" fill="#eef2f9" font-size="12" font-family="Inter">Guardrails: policy, PII redaction, human-in-loop</text>
+
+      <line x1="450" y1="475" x2="450" y2="500" stroke="#22304a" stroke-width="1.5" marker-end="url(#arrAG)"/>
+      <text x="450" y="512" text-anchor="middle" fill="#8a97b3" font-size="10.5" font-family="JetBrains Mono">→ response + audit trail</text>
+    </svg>
+    <div class="diagram-cap">Planner agent routes to tools (including the graph itself); everything is grounded through a shared temporal memory and guardrails before reaching the user</div>
+  </div>
+
+  <h2>Layer by layer</h2>
+  <div class="grid">
+    <div class="card"><h4>1. Orchestrator / Planner</h4><p>Decomposes a request into steps ("check exposure, then check watchlist, then draft summary"). Usually a single capable LLM with a ReAct- or plan-and-execute-style loop.</p></div>
+    <div class="card"><h4>2. Tool Router</h4><p>Decides which tool answers which sub-question. The graph database is <em>one tool among several</em>, not the whole system.</p></div>
+    <div class="card"><h4>3. Graph DB tool</h4><p>Executes constrained, validated Cypher against Neo4j — read-only credentials, row limits, query timeouts.</p></div>
+    <div class="card"><h4>4. GraphRAG tool</h4><p>Combines vector search over policy/document text with graph traversal for connected-entity context.</p></div>
+    <div class="card"><h4>5. Core banking / systems-of-record tools</h4><p>Direct, governed API calls for live balances, holds, and KYC status — not everything belongs in the graph.</p></div>
+    <div class="card"><h4>6. Temporal memory (Graphiti)</h4><p>Remembers what the agent has learned across the whole conversation and prior sessions, with time-awareness for audit.</p></div>
+    <div class="card"><h4>7. Guardrails</h4><p>PII redaction, policy checks, and human-in-the-loop approval before any action with financial or compliance consequence executes.</p></div>
+  </div>
+
+  <div class="callout warn">
+    <div class="label">Design principle</div>
+    Keep the graph as a <strong>read path for reasoning</strong>, not the transactional system of record. Core balances and ledger entries still live in the bank's core banking system; the graph is optimized for relationship questions, not for being the source of truth on "how much money is in this account right now."
+  </div>
+
+  <div class="section-nav"><button onclick="goRel(-1)">← Banking Use Cases</button><button onclick="goRel(1)">Next: Production RAG →</button></div>
+</section>`;
+</script>
+
+<script>
+/* ============ PRODUCTION RAG ============ */
+HTML += `
+<section id="ragprod">
+  <div class="eyebrow">09 — End to end</div>
+  <h1>Production RAG system architecture</h1>
+  <p class="lede">A demo RAG system is a vector store and a prompt. A production RAG system is an entire pipeline with ingestion, hybrid retrieval, evaluation, and observability — because the cost of a wrong answer in banking is a compliance incident, not just an awkward chat reply.</p>
+
+  <div class="eli8">
+    <div class="icon">🏭</div>
+    <div>
+      <div class="label">Explain it like I'm 8</div>
+      <p>A demo is like answering a homework question by peeking at one page of one book. A production system is like a whole library with a librarian who double-checks the page, cites where it came from, and a teacher who reviews any answer that seems risky before it goes home in your backpack.</p>
+    </div>
+  </div>
+
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 940 460" width="100%" style="max-width:900px" xmlns="http://www.w3.org/2000/svg">
+      <defs><marker id="arrPR" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#5c6885"/></marker></defs>
+
+      <rect x="20" y="20" width="150" height="50" rx="8" fill="#0e1526" stroke="#22304a" stroke-width="1.4"/>
+      <text x="95" y="50" text-anchor="middle" fill="#eef2f9" font-size="11" font-family="Inter">Docs · policies · transactions</text>
+
+      <line x1="170" y1="45" x2="230" y2="45" stroke="#22304a" stroke-width="1.5" marker-end="url(#arrPR)"/>
+      <rect x="230" y="20" width="130" height="50" rx="8" fill="#141d33" stroke="#5eead4" stroke-width="1.6"/>
+      <text x="295" y="50" text-anchor="middle" fill="#eef2f9" font-size="11.5" font-family="Inter">Ingestion / ETL</text>
+
+      <line x1="360" y1="45" x2="420" y2="45" stroke="#22304a" stroke-width="1.5" marker-end="url(#arrPR)"/>
+      <rect x="420" y="20" width="180" height="50" rx="8" fill="#141d33" stroke="#5eead4" stroke-width="1.6"/>
+      <text x="510" y="42" text-anchor="middle" fill="#eef2f9" font-size="11" font-family="Inter">Chunking +</text>
+      <text x="510" y="58" text-anchor="middle" fill="#eef2f9" font-size="11" font-family="Inter">entity/relation extraction</text>
+
+      <line x1="510" y1="70" x2="510" y2="105" stroke="#22304a" stroke-width="1.5" marker-end="url(#arrPR)"/>
+      <rect x="420" y="105" width="180" height="46" rx="8" fill="#141d33" stroke="#a78bfa" stroke-width="1.6"/>
+      <text x="510" y="133" text-anchor="middle" fill="#eef2f9" font-size="11.5" font-family="Inter">Embedding model</text>
+
+      <line x1="510" y1="151" x2="330" y2="200" stroke="#22304a" stroke-width="1.4" marker-end="url(#arrPR)"/>
+      <line x1="510" y1="151" x2="700" y2="200" stroke="#22304a" stroke-width="1.4" marker-end="url(#arrPR)"/>
+
+      <rect x="200" y="200" width="220" height="54" rx="8" fill="#141d33" stroke="#e8a855" stroke-width="1.8"/>
+      <text x="310" y="224" text-anchor="middle" fill="#eef2f9" font-size="11.5" font-family="Inter">Vector store</text>
+      <text x="310" y="242" text-anchor="middle" fill="#8a97b3" font-size="9.5" font-family="Inter">chunk embeddings</text>
+
+      <rect x="620" y="200" width="220" height="54" rx="8" fill="#141d33" stroke="#e8a855" stroke-width="1.8"/>
+      <text x="730" y="224" text-anchor="middle" fill="#eef2f9" font-size="11.5" font-family="Inter">Knowledge graph store</text>
+      <text x="730" y="242" text-anchor="middle" fill="#8a97b3" font-size="9.5" font-family="Inter">Neo4j / Graphiti</text>
+
+      <line x1="310" y1="254" x2="440" y2="300" stroke="#22304a" stroke-width="1.4" marker-end="url(#arrPR)"/>
+      <line x1="730" y1="254" x2="530" y2="300" stroke="#22304a" stroke-width="1.4" marker-end="url(#arrPR)"/>
+
+      <rect x="370" y="300" width="220" height="50" rx="8" fill="#141d33" stroke="#5eead4" stroke-width="1.8"/>
+      <text x="480" y="330" text-anchor="middle" fill="#eef2f9" font-size="12" font-family="Inter">Hybrid retriever + re-ranker</text>
+
+      <line x1="480" y1="350" x2="480" y2="385" stroke="#22304a" stroke-width="1.5" marker-end="url(#arrPR)"/>
+      <rect x="330" y="385" width="300" height="50" rx="8" fill="#141d33" stroke="#f0707a" stroke-width="1.8"/>
+      <text x="480" y="411" text-anchor="middle" fill="#eef2f9" font-size="12" font-family="Inter">LLM + guardrails + citation check</text>
+
+      <!-- Observability wrap -->
+      <rect x="655" y="290" width="255" height="150" rx="8" fill="none" stroke="#22304a" stroke-width="1.2" stroke-dasharray="5 3"/>
+      <text x="782" y="308" text-anchor="middle" fill="#8a97b3" font-size="10" font-family="JetBrains Mono">observability &amp; eval loop</text>
+      <text x="700" y="335" fill="#c4cce0" font-size="10" font-family="Inter">• trace every retrieval</text>
+      <text x="700" y="355" fill="#c4cce0" font-size="10" font-family="Inter">• groundedness scoring</text>
+      <text x="700" y="375" fill="#c4cce0" font-size="10" font-family="Inter">• latency &amp; cost metrics</text>
+      <text x="700" y="395" fill="#c4cce0" font-size="10" font-family="Inter">• human feedback capture</text>
+      <line x1="655" y1="365" x2="630" y2="410" stroke="#22304a" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#arrPR)"/>
+    </svg>
+    <div class="diagram-cap">Dual-store ingestion (vector + graph), hybrid retrieval, and a guardrail/observability layer wrapped around the whole pipeline</div>
+  </div>
+
+  <h2>Stage by stage</h2>
+  <div class="grid">
+    <div class="card"><h4>Ingestion & ETL</h4><p>Pulls from document stores, core banking feeds, and policy systems; normalizes formats; tags data sensitivity for downstream masking.</p></div>
+    <div class="card"><h4>Chunking + extraction</h4><p>Splits documents into retrievable chunks <em>and</em> runs entity/relationship extraction in the same pass to feed the graph store.</p></div>
+    <div class="card"><h4>Embedding</h4><p>Turns chunks (and often entity descriptions) into vectors for semantic search.</p></div>
+    <div class="card"><h4>Dual storage</h4><p>Vector store for chunk similarity; knowledge graph store for relationships — both updated from the same ingestion event.</p></div>
+    <div class="card"><h4>Hybrid retriever + re-ranker</h4><p>Merges vector hits, graph traversal results, and keyword search; a re-ranking model orders the combined set by true relevance.</p></div>
+    <div class="card"><h4>LLM + guardrails</h4><p>Generates the answer, checks it against retrieved context for groundedness, redacts PII, and enforces response policies before returning.</p></div>
+    <div class="card"><h4>Observability & eval loop</h4><p>Every query traced end-to-end; groundedness, latency, and cost tracked; human feedback and flagged answers feed back into evaluation datasets.</p></div>
+  </div>
+
+  <h2>Production concerns specific to banking</h2>
+  <ul>
+    <li><strong>Data residency & masking</strong> — PII and account data must be masked or tokenized before reaching any model that isn't approved for regulated data, including third-party LLM APIs.</li>
+    <li><strong>Access control at retrieval time</strong> — retrieval must respect the same entitlements the requesting user has in source systems (row-level security carried through to the vector/graph layer), not just at the UI layer.</li>
+    <li><strong>Groundedness / citation checks</strong> — every generated claim should be traceable to a specific retrieved chunk or graph fact; ungrounded claims are flagged or blocked, not just discouraged by prompting.</li>
+    <li><strong>Audit trail</strong> — what was retrieved, what the model said, and what data it was grounded in must be logged and retained per regulatory record-keeping requirements.</li>
+    <li><strong>Evaluation before every release</strong> — a held-out eval set of banking-specific questions, scored for accuracy and groundedness, gates any change to prompts, retrieval logic, or models.</li>
+  </ul>
+
+  <div class="section-nav"><button onclick="goRel(-1)">← Agentic Architecture</button><button onclick="goRel(1)">Next: More Concepts →</button></div>
+</section>`;
+</script>
+
+<script>
+/* ============ MORE CONCEPTS ============ */
+HTML += `
+<section id="more">
+  <div class="eyebrow">10 — Filling the gaps</div>
+  <h1>More concepts worth knowing</h1>
+  <p class="lede">A few important ideas that don't fit neatly into one earlier section but come up constantly once a graph-AI system reaches production.</p>
+
+  <h2>Vector database vs. graph database — use both, not one</h2>
+  <table>
+    <tr><th></th><th>Vector database</th><th>Graph database</th></tr>
+    <tr><td>Best question</td><td>"What sounds like this?"</td><td>"What is this connected to?"</td></tr>
+    <tr><td>Core operation</td><td>Nearest-neighbor similarity search</td><td>Multi-hop traversal</td></tr>
+    <tr><td>Strong for</td><td>Unstructured text, semantic search</td><td>Relationships, structured entities, explainability</td></tr>
+    <tr><td>Weak for</td><td>Precise multi-hop relationship logic</td><td>Fuzzy "similar meaning" text matching</td></tr>
+  </table>
+  <p>Production GraphRAG systems typically run both side by side (see the Production RAG diagram) — they answer different halves of most real questions.</p>
+
+  <h2>Graph Neural Networks (GNNs) — the ML layer above the database</h2>
+  <div class="eli8">
+    <div class="icon">🧠</div>
+    <div>
+      <div class="label">Explain it like I'm 8</div>
+      <p>A graph database stores the web of connections. A Graph Neural Network is a student who studies that web and learns to guess things about it — like predicting which balloon is about to pop (which account is about to go fraudulent) just from how it's tied to the others.</p>
+    </div>
+  </div>
+  <p>GNNs learn numeric representations of nodes based on their position and neighbors in the graph, and are used for tasks like fraud <em>prediction</em> (not just detection of known patterns), link prediction (will these two entities become connected?), and node classification (is this an individual or a shell company, based on its connection pattern alone). Neo4j's Graph Data Science library and standalone frameworks like PyTorch Geometric are the common tooling here.</p>
+
+  <h2>Entity resolution in depth</h2>
+  <p>The unglamorous but critical step: deciding two records refer to the same real-world entity across systems with inconsistent spelling, formatting, and identifiers. In banking this directly affects sanctions screening accuracy — miss a match and you might onboard a sanctioned entity under a slightly different spelling; over-match and you generate false positives that overwhelm compliance teams. Techniques range from fuzzy string matching to graph-based similarity (shared attributes and neighbors) to learned matching models.</p>
+
+  <h2>Graph schema design & governance</h2>
+  <ul>
+    <li><strong>Model relationships, not just entities</strong> — a common beginner mistake is under-using edges and over-using node properties, which recreates a relational table inside a graph and loses the traversal benefits.</li>
+    <li><strong>Version your ontology</strong> — as regulatory taxonomies (KYC categories, product hierarchies) evolve, schema changes need migration plans, just like a relational schema.</li>
+    <li><strong>Data lineage as a graph</strong> — many banks model their own data lineage (which system feeds which report) as a graph, since "trace this number back to its source" is itself a graph traversal question, useful for regulatory reporting audits (BCBS 239 and similar).</li>
+  </ul>
+
+  <h2>Scalability & operations</h2>
+  <div class="grid">
+    <div class="card"><h4>Clustering</h4><p>Neo4j Aura/Enterprise causal clustering, read replicas for query throughput, and horizontal sharding (Fabric) for very large graphs.</p></div>
+    <div class="card"><h4>Query performance</h4><p>Index on node labels and frequently filtered properties; bound traversal depth (<code>*1..4</code> not unbounded <code>*</code>) to avoid runaway queries.</p></div>
+    <div class="card"><h4>Backup & disaster recovery</h4><p>Point-in-time backups matter even more for a graph acting as agent memory — losing relationship history is costlier than losing a flat table you can re-derive.</p></div>
+    <div class="card"><h4>Cost management</h4><p>Embedding and LLM calls dominate RAG cost at scale — cache embeddings, batch ingestion, and cap retrieval breadth (top-k, hop limits) deliberately.</p></div>
+  </div>
+
+  <h2>Security & compliance specifics</h2>
+  <ul>
+    <li><strong>Role-based access at the graph level</strong> — different analyst roles should see different subgraphs (e.g. a fraud analyst may see transaction patterns but not raw account balances).</li>
+    <li><strong>PII minimization</strong> — store identifiers and tokens in the graph where possible, resolving to sensitive data only through a governed lookup, not by embedding raw PII directly in node properties that flow into LLM prompts.</li>
+    <li><strong>Explainability</strong> — regulators increasingly expect model decisions to be explainable; a graph traversal that produced a fraud flag is inherently more explainable ("here is the exact path of connections") than an opaque ML score alone, which is a major reason graphs pair well with AI in regulated industries.</li>
+  </ul>
+
+  <div class="callout bank">
+    <div class="label">Putting it together</div>
+    The strongest production banking systems don't pick one technology — they layer a property graph (Neo4j) for relationships, a vector store for unstructured text, Graphiti-style temporal memory for agents, GNNs for prediction on top of the graph structure, and strict governance wrapping all of it. Each piece answers a different shape of question; the architecture's job is routing each question to the right one.
+  </div>
+
+  <div class="section-nav"><button onclick="goRel(-1)">← Production RAG</button><button onclick="goRel(1)">Back to start →</button></div>
+</section>`;
+
+document.getElementById('main').innerHTML = HTML;
+
+// Wrap every table so wide tables scroll horizontally instead of breaking layout on mobile
+document.querySelectorAll('#main table').forEach(t=>{
+  const wrap = document.createElement('div');
+  wrap.className = 'table-scroll';
+  t.parentNode.insertBefore(wrap, t);
+  wrap.appendChild(t);
+});
+
+showSection('home');
+
+// Close the mobile drawer automatically if the viewport is resized past the breakpoint
+window.addEventListener('resize', ()=>{
+  if(window.innerWidth > 860){
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('overlay').classList.remove('show');
+    document.body.classList.remove('no-scroll');
+  }
+});
+</script>
+
+</body>
+</html>
