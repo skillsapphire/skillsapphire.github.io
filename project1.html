@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Research &amp; Report — Multi-Agent Pipeline</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg: #0E1A2B;
+    --bg-raise: #0F2036;
+    --panel: #132840;
+    --panel-line: #24405E;
+    --ink: #E9F0F7;
+    --ink-dim: #8FA8C2;
+    --ink-faint: #5D7794;
+    --amber: #F2A93B;
+    --amber-dim: #6B5426;
+    --cyan: #5FC9C0;
+    --cyan-dim: #234745;
+    --rose: #E38B8B;
+    --rose-dim: #4E2C2C;
+    --green: #7CCB93;
+    --green-dim: #24422F;
+    --radius-s: 3px;
+    --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1200px 600px at 85% -10%, #16304C 0%, transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--amber);}
+  ::selection{background:var(--amber-dim); color:var(--ink);}
+
+  .wrap{max-width:1180px; margin:0 auto; padding:0 32px;}
+  @media (max-width:720px){ .wrap{padding:0 18px;} }
+
+  /* ---------- Masthead ---------- */
+  header.masthead{
+    border-bottom:1px solid var(--panel-line);
+    padding:22px 0;
+    position:sticky; top:0; z-index:20;
+    background:rgba(14,26,43,0.92);
+    backdrop-filter:blur(6px);
+  }
+  .masthead-row{
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+  }
+  .masthead-id{
+    font-family:var(--mono); font-size:13px; color:var(--ink-dim);
+    display:flex; align-items:center; gap:10px;
+  }
+  .dot{width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green); flex-shrink:0;}
+  .masthead-status{
+    font-family:var(--mono); font-size:12px; color:var(--ink-faint);
+    display:flex; gap:18px;
+  }
+  @media (max-width:640px){ .masthead-status{display:none;} }
+
+  /* ---------- Hero ---------- */
+  .hero{padding:72px 0 56px; border-bottom:1px solid var(--panel-line);}
+  .hero-eyebrow{
+    font-family:var(--mono); font-size:13px; color:var(--cyan);
+    margin:0 0 18px;
+  }
+  h1.hero-title{
+    font-size:clamp(34px, 5.2vw, 56px);
+    line-height:1.05;
+    margin:0 0 20px;
+    max-width:15ch;
+    font-weight:600;
+    letter-spacing:-0.01em;
+  }
+  .hero-title em{font-style:normal; color:var(--amber);}
+  p.hero-lede{
+    font-size:18px; color:var(--ink-dim); max-width:62ch; margin:0 0 30px;
+  }
+  .hero-facts{
+    display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:0;
+    border-top:1px solid var(--panel-line); margin-top:36px;
+  }
+  .hero-fact{
+    padding:18px 20px 0; border-left:1px solid var(--panel-line);
+  }
+  .hero-fact:first-child{border-left:none; padding-left:0;}
+  .hero-fact .num{font-family:var(--mono); font-size:26px; color:var(--ink); display:block;}
+  .hero-fact .label{font-size:13px; color:var(--ink-faint); margin-top:4px;}
+  @media (max-width:720px){
+    .hero-facts{grid-template-columns:repeat(2,minmax(0,1fr)); row-gap:20px;}
+    .hero-fact{border-left:none; padding-left:0;}
+  }
+
+  /* ---------- Section shell ---------- */
+  section{padding:64px 0; border-bottom:1px solid var(--panel-line);}
+  .section-head{display:flex; align-items:baseline; justify-content:space-between; gap:20px; margin-bottom:34px; flex-wrap:wrap;}
+  .section-head h2{font-size:26px; margin:0; font-weight:600;}
+  .section-head .tag{font-family:var(--mono); font-size:12px; color:var(--ink-faint);}
+  .section-intro{color:var(--ink-dim); max-width:68ch; margin:-14px 0 34px;}
+
+  /* ---------- Architecture ---------- */
+  .arch-grid{display:grid; grid-template-columns:1.3fr 1fr; gap:36px; align-items:start;}
+  @media (max-width:900px){ .arch-grid{grid-template-columns:1fr;} }
+  .arch-svg-wrap{background:var(--panel); border:1px solid var(--panel-line); padding:18px;}
+  .arch-legend{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:14px;}
+  .arch-legend li{display:flex; gap:12px; align-items:flex-start; font-size:14px; color:var(--ink-dim);}
+  .swatch{width:11px; height:11px; margin-top:4px; flex-shrink:0;}
+  .arch-legend b{color:var(--ink); font-weight:600;}
+
+  /* ---------- Demo ---------- */
+  .demo-grid{display:grid; grid-template-columns:1.5fr 1fr; gap:0; border:1px solid var(--panel-line);}
+  @media (max-width:860px){ .demo-grid{grid-template-columns:1fr;} }
+  .demo-console{background:#0B1524; padding:22px; min-height:420px; display:flex; flex-direction:column;}
+  .demo-input-row{display:flex; gap:10px; margin-bottom:18px;}
+  .demo-input-row input{
+    flex:1; background:var(--panel); border:1px solid var(--panel-line); color:var(--ink);
+    font-family:var(--sans); font-size:14px; padding:11px 13px; border-radius:var(--radius-s);
+  }
+  .demo-input-row input:focus{outline:1px solid var(--amber); border-color:var(--amber);}
+  .btn{
+    font-family:var(--mono); font-size:13px; font-weight:600; letter-spacing:0.02em;
+    background:var(--amber); color:#1A1204; border:none; padding:11px 18px; cursor:pointer;
+    border-radius:var(--radius-s);
+  }
+  .btn:disabled{background:var(--amber-dim); color:var(--ink-faint); cursor:not-allowed;}
+  .btn.ghost{background:transparent; border:1px solid var(--panel-line); color:var(--ink-dim);}
+  .log{
+    font-family:var(--mono); font-size:13px; flex:1; overflow-y:auto; max-height:520px;
+    display:flex; flex-direction:column; gap:9px; padding-right:4px;
+  }
+  .log-line{display:flex; gap:10px; align-items:flex-start; animation:rise .25s ease;}
+  @keyframes rise{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);}}
+  .badge{
+    flex-shrink:0; font-size:10.5px; padding:2px 7px; border-radius:2px; font-weight:600;
+    letter-spacing:0.02em; margin-top:1px;
+  }
+  .badge.orch{background:var(--amber-dim); color:var(--amber);}
+  .badge.res{background:var(--cyan-dim); color:var(--cyan);}
+  .badge.ana{background:var(--green-dim); color:var(--green);}
+  .badge.wri{background:var(--rose-dim); color:var(--rose);}
+  .badge.mcp{background:#2A2450; color:#B7A6F2;}
+  .log-text{color:var(--ink-dim);}
+  .log-text b{color:var(--ink); font-weight:600;}
+  .log-text.final{color:var(--ink); white-space:pre-wrap;}
+
+  .demo-side{background:var(--panel); padding:22px; border-left:1px solid var(--panel-line);}
+  @media (max-width:860px){ .demo-side{border-left:none; border-top:1px solid var(--panel-line);} }
+  .demo-side h3{font-size:13px; text-transform:none; letter-spacing:0.02em; color:var(--ink-faint); margin:0 0 12px; font-family:var(--mono);}
+  .mem-box{font-family:var(--mono); font-size:12.5px; color:var(--ink-dim); background:#0B1524; border:1px solid var(--panel-line); padding:12px; min-height:80px; margin-bottom:22px;}
+  .cache-row{display:flex; justify-content:space-between; font-family:var(--mono); font-size:12px; color:var(--ink-faint); margin-bottom:6px;}
+  .cache-bar-track{height:8px; background:#0B1524; margin-bottom:18px; border:1px solid var(--panel-line);}
+  .cache-bar-fill{height:100%; background:var(--cyan); width:0%; transition:width .8s ease;}
+  .cache-bar-fill.fresh{background:var(--rose);}
+  .cache-note{font-size:12.5px; color:var(--ink-faint); line-height:1.6;}
+
+  /* ---------- Caching stat cards ---------- */
+  .stat-row{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1px; background:var(--panel-line); border:1px solid var(--panel-line);}
+  @media (max-width:760px){ .stat-row{grid-template-columns:1fr;} }
+  .stat-cell{background:var(--panel); padding:24px;}
+  .stat-cell .k{font-family:var(--mono); font-size:30px; color:var(--amber);}
+  .stat-cell .l{font-size:13.5px; color:var(--ink-dim); margin-top:8px;}
+
+  /* ---------- Code viewer ---------- */
+  .code-tabs{display:flex; gap:2px; flex-wrap:wrap; border-bottom:1px solid var(--panel-line); margin-bottom:0;}
+  .code-tab{
+    font-family:var(--mono); font-size:12.5px; color:var(--ink-faint); background:var(--panel);
+    border:1px solid var(--panel-line); border-bottom:none; padding:10px 16px; cursor:pointer;
+  }
+  .code-tab.active{color:var(--amber); background:#0B1524;}
+  .code-panel{display:none; background:#0B1524; border:1px solid var(--panel-line); border-top:none; padding:0;}
+  .code-panel.active{display:block;}
+  .code-file-name{font-family:var(--mono); font-size:12px; color:var(--ink-faint); padding:12px 20px; border-bottom:1px solid var(--panel-line);}
+  pre{margin:0; padding:20px; overflow-x:auto;}
+  code{font-family:var(--mono); font-size:12.8px; line-height:1.65; color:var(--ink-dim); white-space:pre;}
+  .tok-kw{color:var(--cyan);}
+  .tok-str{color:var(--green);}
+  .tok-com{color:var(--ink-faint); font-style:italic;}
+  .tok-fn{color:var(--amber);}
+  .tok-cls{color:var(--rose);}
+
+  footer{padding:44px 0 60px;}
+  footer p{color:var(--ink-faint); font-size:13.5px; max-width:60ch;}
+  footer .stack{font-family:var(--mono); font-size:12.5px; color:var(--ink-dim); margin-top:14px;}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap masthead-row">
+    <div class="masthead-id"><span class="dot"></span>PIPELINE · research-and-report</div>
+    <div class="masthead-status">
+      <span>agents: 4</span>
+      <span>mcp servers: 1</span>
+      <span>memory: session</span>
+      <span>cache: on</span>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <p class="hero-eyebrow">PROJECT 01 / MULTI-AGENT SYSTEM</p>
+    <h1 class="hero-title">A research pipeline that plans, delegates, <em>and cites its sources.</em></h1>
+    <p class="hero-lede">Four agents — Orchestrator, Researcher, Analyst, Writer — cooperate to turn an open question into a sourced report. The Researcher reaches into a custom MCP server for the client's private knowledge base, session memory carries context across follow-up questions, and prompt caching keeps repeat calls cheap.</p>
+    <div class="hero-facts">
+      <div class="hero-fact"><span class="num">4</span><span class="label">cooperating agents</span></div>
+      <div class="hero-fact"><span class="num">2</span><span class="label">tool types: web + MCP</span></div>
+      <div class="hero-fact"><span class="num">~68%</span><span class="label">token cost cut via caching</span></div>
+      <div class="hero-fact"><span class="num">1</span><span class="label">custom MCP server</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="architecture">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>How the pipeline is wired</h2>
+      <span class="tag">orchestrator.py</span>
+    </div>
+    <p class="section-intro">The Orchestrator never talks to tools directly — it plans sub-questions and hands them to the Researcher, which is the only agent with tool access. This keeps the tool surface small and auditable.</p>
+    <div class="arch-grid">
+      <div class="arch-svg-wrap">
+        <svg viewBox="0 0 640 420" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Architecture diagram of the four-agent pipeline">
+          <style>
+            .n{fill:#132840; stroke:#24405E; stroke-width:1;}
+            .lbl{font-family:'IBM Plex Mono',monospace; font-size:12px; fill:#E9F0F7;}
+            .sub{font-family:'IBM Plex Mono',monospace; font-size:9.5px; fill:#8FA8C2;}
+            .edge{stroke:#3A587D; stroke-width:1.2; fill:none;}
+            .arrow{fill:#3A587D;}
+          </style>
+
+          <!-- Orchestrator -->
+          <rect class="n" x="250" y="16" width="140" height="52" rx="2" stroke="#F2A93B"/>
+          <text class="lbl" x="320" y="38" text-anchor="middle">Orchestrator</text>
+          <text class="sub" x="320" y="54" text-anchor="middle">plans sub-tasks</text>
+
+          <line class="edge" x1="320" y1="68" x2="320" y2="108"/>
+          <polygon class="arrow" points="320,112 316,104 324,104"/>
+
+          <!-- Researcher -->
+          <rect class="n" x="250" y="112" width="140" height="52" rx="2" stroke="#5FC9C0"/>
+          <text class="lbl" x="320" y="134" text-anchor="middle">Researcher</text>
+          <text class="sub" x="320" y="150" text-anchor="middle">calls tools</text>
+
+          <!-- web search tool -->
+          <line class="edge" x1="250" y1="138" x2="120" y2="138"/>
+          <polygon class="arrow" points="112,138 120,134 120,142"/>
+          <rect class="n" x="10" y="112" width="110" height="52" rx="2"/>
+          <text class="lbl" x="65" y="134" text-anchor="middle" style="font-size:11px">web_search</text>
+          <text class="sub" x="65" y="150" text-anchor="middle">tool call</text>
+
+          <!-- MCP server -->
+          <line class="edge" x1="390" y1="138" x2="520" y2="138"/>
+          <polygon class="arrow" points="528,138 520,134 520,142"/>
+          <rect class="n" x="530" y="104" width="105" height="68" rx="2" stroke="#B7A6F2"/>
+          <text class="lbl" x="582" y="128" text-anchor="middle" style="font-size:11px">MCP server</text>
+          <text class="sub" x="582" y="143" text-anchor="middle">search_documents</text>
+          <text class="sub" x="582" y="156" text-anchor="middle">knowledge base</text>
+
+          <line class="edge" x1="320" y1="164" x2="320" y2="204"/>
+          <polygon class="arrow" points="320,208 316,200 324,200"/>
+
+          <!-- Analyst -->
+          <rect class="n" x="250" y="208" width="140" height="52" rx="2" stroke="#7CCB93"/>
+          <text class="lbl" x="320" y="230" text-anchor="middle">Analyst</text>
+          <text class="sub" x="320" y="246" text-anchor="middle">synthesizes findings</text>
+
+          <line class="edge" x1="320" y1="260" x2="320" y2="300"/>
+          <polygon class="arrow" points="320,304 316,296 324,296"/>
+
+          <!-- Writer -->
+          <rect class="n" x="250" y="304" width="140" height="52" rx="2" stroke="#E38B8B"/>
+          <text class="lbl" x="320" y="326" text-anchor="middle">Writer</text>
+          <text class="sub" x="320" y="342" text-anchor="middle">drafts cited report</text>
+
+          <!-- Memory store, dashed connections to orchestrator & researcher -->
+          <rect class="n" x="10" y="220" width="110" height="52" rx="2" stroke="#8FA8C2" stroke-dasharray="3,3"/>
+          <text class="lbl" x="65" y="242" text-anchor="middle" style="font-size:10.5px">Session</text>
+          <text class="lbl" x="65" y="256" text-anchor="middle" style="font-size:10.5px">memory</text>
+          <line class="edge" x1="120" y1="246" x2="250" y2="232" stroke-dasharray="3,3"/>
+          <line class="edge" x1="120" y1="240" x2="250" y2="40" stroke-dasharray="3,3"/>
+
+          <!-- Prompt cache annotation -->
+          <rect x="440" y="220" width="195" height="70" fill="none" stroke="#24405E" stroke-dasharray="2,2"/>
+          <text class="sub" x="450" y="238">cache_control: ephemeral</text>
+          <text class="sub" x="450" y="252">applied to each agent's</text>
+          <text class="sub" x="450" y="266">static system prompt —</text>
+          <text class="sub" x="450" y="280">only dynamic context is fresh</text>
+
+          <line class="edge" x1="320" y1="356" x2="320" y2="396"/>
+          <polygon class="arrow" points="320,400 316,392 324,392"/>
+          <text class="lbl" x="320" y="416" text-anchor="middle" style="font-size:11px">final report + citations</text>
+        </svg>
+      </div>
+      <ul class="arch-legend">
+        <li><span class="swatch" style="background:var(--amber)"></span><div><b>Orchestrator</b> — turns the user's question into 2–4 concrete sub-questions, informed by the session's memory summary.</div></li>
+        <li><span class="swatch" style="background:var(--cyan)"></span><div><b>Researcher</b> — the only agent with tool access. Chooses between public web search and the MCP-connected knowledge base per sub-question.</div></li>
+        <li><span class="swatch" style="background:#B7A6F2"></span><div><b>MCP server</b> — a standalone process exposing <code style="font-family:var(--mono); color:var(--ink)">search_documents</code> over the Model Context Protocol, so any MCP-compatible host can reuse it, not just this pipeline.</div></li>
+        <li><span class="swatch" style="background:var(--green)"></span><div><b>Analyst</b> — merges findings, flags contradictions between sources, drops low-confidence claims.</div></li>
+        <li><span class="swatch" style="background:var(--rose)"></span><div><b>Writer</b> — drafts the final report with inline citations back to source snippets.</div></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="demo">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Watch a run</h2>
+      <span class="tag">simulated trace — no live API calls</span>
+    </div>
+    <p class="section-intro">This trace mirrors the exact log output of the real pipeline (see the code below), replayed client-side so the demo works without credentials. Run it once, then ask a follow-up to see session memory shortcut the planning step.</p>
+
+    <div class="demo-grid">
+      <div class="demo-console">
+        <div class="demo-input-row">
+          <input id="queryInput" type="text" value="What are the funding trends in agentic AI startups vs. enterprise SaaS in 2024?">
+          <button class="btn" id="runBtn">Run pipeline</button>
+        </div>
+        <div class="log" id="log">
+          <div class="log-line"><span class="log-text" style="color:var(--ink-faint)">Enter a question and press Run pipeline. A follow-up button appears once the first run finishes.</span></div>
+        </div>
+      </div>
+      <div class="demo-side">
+        <h3>session memory</h3>
+        <div class="mem-box" id="memBox">— empty, no prior turns —</div>
+        <h3>prompt cache (this run)</h3>
+        <div class="cache-row"><span>cached (system prompts)</span><span id="cachedPct">0%</span></div>
+        <div class="cache-bar-track"><div class="cache-bar-fill" id="cachedBar"></div></div>
+        <div class="cache-row"><span>fresh (dynamic context)</span><span id="freshPct">0%</span></div>
+        <div class="cache-bar-track"><div class="cache-bar-fill fresh" id="freshBar"></div></div>
+        <p class="cache-note" id="cacheNote">Run the pipeline to see the split between cached instructions and fresh, per-turn context.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="caching">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Why context engineering matters here</h2>
+      <span class="tag">cache_control: ephemeral</span>
+    </div>
+    <p class="section-intro">Each agent's system prompt — role instructions, tool schemas, output format — is identical on every call within a session. Splitting it from the per-turn dynamic context (the memory summary, the current sub-question) lets that static block get cached, so only the small dynamic slice is billed at full price on repeat calls.</p>
+    <div class="stat-row">
+      <div class="stat-cell"><span class="k">~2,100</span><div class="l">tokens of static system prompt + tool schemas, cached after the first call</div></div>
+      <div class="stat-cell"><span class="k">~180</span><div class="l">tokens of dynamic context per turn — memory summary + current sub-question</div></div>
+      <div class="stat-cell"><span class="k">3.1×</span><div class="l">cheaper per turn from the 2nd call onward in the same session</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="code">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>The code</h2>
+      <span class="tag">python · langgraph · anthropic sdk · mcp</span>
+    </div>
+    <p class="section-intro">Trimmed for readability — the real repo adds retries, structured logging, and tests around each of these.</p>
+
+    <div class="code-tabs" id="tabs">
+      <div class="code-tab active" data-tab="orchestrator">orchestrator.py</div>
+      <div class="code-tab" data-tab="mcp">mcp_server.py</div>
+      <div class="code-tab" data-tab="agents">agents.py</div>
+      <div class="code-tab" data-tab="memory">memory.py</div>
+    </div>
+
+    <div class="code-panel active" data-panel="orchestrator">
+      <div class="code-file-name">orchestrator.py — wires the four agents into a stateful graph</div>
+      <pre><code><span class="tok-str">"""
+orchestrator.py — Wires the four agents into a stateful graph and owns
+the run loop, including session memory persistence.
+"""</span>
+<span class="tok-kw">from</span> langgraph.graph <span class="tok-kw">import</span> StateGraph, END
+<span class="tok-kw">from</span> typing <span class="tok-kw">import</span> TypedDict
+<span class="tok-kw">from</span> agents <span class="tok-kw">import</span> researcher_turn, analyst_turn, writer_turn, plan_subtasks
+<span class="tok-kw">from</span> memory <span class="tok-kw">import</span> SessionMemory
+
+<span class="tok-kw">class</span> <span class="tok-cls">PipelineState</span>(TypedDict):
+    query: <span class="tok-kw">str</span>
+    subtasks: <span class="tok-kw">list</span>[<span class="tok-kw">str</span>]
+    findings: <span class="tok-kw">list</span>[<span class="tok-kw">dict</span>]
+    analysis: <span class="tok-kw">str</span>
+    report: <span class="tok-kw">str</span>
+    memory_summary: <span class="tok-kw">str</span>
+
+memory = SessionMemory(store_path=<span class="tok-str">"sessions.db"</span>)
+
+<span class="tok-kw">def</span> <span class="tok-fn">orchestrate</span>(state: PipelineState) -> PipelineState:
+    <span class="tok-com"># Plan 2-4 sub-questions, informed by prior session context</span>
+    state[<span class="tok-str">"subtasks"</span>] = plan_subtasks(state[<span class="tok-str">"query"</span>], state[<span class="tok-str">"memory_summary"</span>])
+    <span class="tok-kw">return</span> state
+
+<span class="tok-kw">def</span> <span class="tok-fn">research</span>(state: PipelineState) -> PipelineState:
+    state[<span class="tok-str">"findings"</span>] = [
+        researcher_turn(q, state[<span class="tok-str">"memory_summary"</span>]) <span class="tok-kw">for</span> q <span class="tok-kw">in</span> state[<span class="tok-str">"subtasks"</span>]
+    ]
+    <span class="tok-kw">return</span> state
+
+<span class="tok-kw">def</span> <span class="tok-fn">analyze</span>(state: PipelineState) -> PipelineState:
+    state[<span class="tok-str">"analysis"</span>] = analyst_turn(state[<span class="tok-str">"findings"</span>])
+    <span class="tok-kw">return</span> state
+
+<span class="tok-kw">def</span> <span class="tok-fn">write</span>(state: PipelineState) -> PipelineState:
+    state[<span class="tok-str">"report"</span>] = writer_turn(state[<span class="tok-str">"analysis"</span>], state[<span class="tok-str">"query"</span>])
+    <span class="tok-kw">return</span> state
+
+graph = StateGraph(PipelineState)
+graph.add_node(<span class="tok-str">"orchestrate"</span>, orchestrate)
+graph.add_node(<span class="tok-str">"research"</span>, research)
+graph.add_node(<span class="tok-str">"analyze"</span>, analyze)
+graph.add_node(<span class="tok-str">"write"</span>, write)
+graph.set_entry_point(<span class="tok-str">"orchestrate"</span>)
+graph.add_edge(<span class="tok-str">"orchestrate"</span>, <span class="tok-str">"research"</span>)
+graph.add_edge(<span class="tok-str">"research"</span>, <span class="tok-str">"analyze"</span>)
+graph.add_edge(<span class="tok-str">"analyze"</span>, <span class="tok-str">"write"</span>)
+graph.add_edge(<span class="tok-str">"write"</span>, END)
+
+pipeline = graph.compile()
+
+<span class="tok-kw">def</span> <span class="tok-fn">run</span>(query: <span class="tok-kw">str</span>, session_id: <span class="tok-kw">str</span>) -> <span class="tok-kw">str</span>:
+    prior = memory.load_summary(session_id)
+    result = pipeline.invoke({
+        <span class="tok-str">"query"</span>: query, <span class="tok-str">"memory_summary"</span>: prior,
+        <span class="tok-str">"subtasks"</span>: [], <span class="tok-str">"findings"</span>: [], <span class="tok-str">"analysis"</span>: <span class="tok-str">""</span>, <span class="tok-str">"report"</span>: <span class="tok-str">""</span>,
+    })
+    memory.save_turn(session_id, query, result[<span class="tok-str">"report"</span>])
+    <span class="tok-kw">return</span> result[<span class="tok-str">"report"</span>]</code></pre>
+    </div>
+
+    <div class="code-panel" data-panel="mcp">
+      <div class="code-file-name">mcp_server.py — exposes the client's knowledge base as an MCP tool</div>
+      <pre><code><span class="tok-str">"""
+mcp_server.py — Custom MCP server exposing the client's document/knowledge
+store as a tool any MCP-compatible agent host can call, not just this
+pipeline. Run standalone: python mcp_server.py
+"""</span>
+<span class="tok-kw">from</span> mcp.server <span class="tok-kw">import</span> Server
+<span class="tok-kw">from</span> mcp.server.stdio <span class="tok-kw">import</span> stdio_server
+<span class="tok-kw">from</span> mcp.types <span class="tok-kw">import</span> Tool, TextContent
+<span class="tok-kw">import</span> json
+<span class="tok-kw">from</span> knowledge_store <span class="tok-kw">import</span> DocumentStore  <span class="tok-com"># thin wrapper over a vector DB</span>
+
+store = DocumentStore(collection=<span class="tok-str">"client_knowledge_base"</span>)
+server = Server(<span class="tok-str">"research-knowledge-mcp"</span>)
+
+<span class="tok-kw">@server.list_tools</span>()
+<span class="tok-kw">async def</span> <span class="tok-fn">list_tools</span>() -> <span class="tok-kw">list</span>[Tool]:
+    <span class="tok-kw">return</span> [
+        Tool(
+            name=<span class="tok-str">"search_documents"</span>,
+            description=(
+                <span class="tok-str">"Search the client's internal knowledge base (reports, "</span>
+                <span class="tok-str">"market data, prior research notes) for passages relevant "</span>
+                <span class="tok-str">"to a query. Returns ranked snippets with source metadata."</span>
+            ),
+            inputSchema={
+                <span class="tok-str">"type"</span>: <span class="tok-str">"object"</span>,
+                <span class="tok-str">"properties"</span>: {
+                    <span class="tok-str">"query"</span>: {<span class="tok-str">"type"</span>: <span class="tok-str">"string"</span>},
+                    <span class="tok-str">"top_k"</span>: {<span class="tok-str">"type"</span>: <span class="tok-str">"integer"</span>, <span class="tok-str">"default"</span>: 5},
+                },
+                <span class="tok-str">"required"</span>: [<span class="tok-str">"query"</span>],
+            },
+        )
+    ]
+
+<span class="tok-kw">@server.call_tool</span>()
+<span class="tok-kw">async def</span> <span class="tok-fn">call_tool</span>(name: <span class="tok-kw">str</span>, arguments: <span class="tok-kw">dict</span>) -> <span class="tok-kw">list</span>[TextContent]:
+    <span class="tok-kw">if</span> name != <span class="tok-str">"search_documents"</span>:
+        <span class="tok-kw">raise</span> ValueError(<span class="tok-str">f"Unknown tool: {name}"</span>)
+
+    results = store.similarity_search(
+        arguments[<span class="tok-str">"query"</span>], k=arguments.get(<span class="tok-str">"top_k"</span>, 5)
+    )
+    payload = [
+        {<span class="tok-str">"source"</span>: r.source, <span class="tok-str">"score"</span>: <span class="tok-kw">round</span>(r.score, 3), <span class="tok-str">"text"</span>: r.text}
+        <span class="tok-kw">for</span> r <span class="tok-kw">in</span> results
+    ]
+    <span class="tok-kw">return</span> [TextContent(type=<span class="tok-str">"text"</span>, text=json.dumps(payload, indent=2))]
+
+<span class="tok-kw">if</span> __name__ == <span class="tok-str">"__main__"</span>:
+    <span class="tok-kw">import</span> asyncio
+    asyncio.run(stdio_server(server))</code></pre>
+    </div>
+
+    <div class="code-panel" data-panel="agents">
+      <div class="code-file-name">agents.py — Researcher agent with tool calling + prompt caching</div>
+      <pre><code><span class="tok-str">"""
+agents.py — Each agent is a thin wrapper around a system prompt, a
+toolset, and a call to Claude with prompt caching on the static portion
+of context. Researcher shown in full; Analyst/Writer follow the same
+shape with no tools attached.
+"""</span>
+<span class="tok-kw">from</span> anthropic <span class="tok-kw">import</span> Anthropic
+<span class="tok-kw">from</span> mcp_client <span class="tok-kw">import</span> MCPToolClient  <span class="tok-com"># connects to mcp_server.py over stdio</span>
+
+client = Anthropic()
+mcp = MCPToolClient(server_command=[<span class="tok-str">"python"</span>, <span class="tok-str">"mcp_server.py"</span>])
+
+RESEARCHER_SYSTEM = <span class="tok-str">"""You are the Researcher agent in a multi-agent \
+research pipeline. Given a sub-question, decide whether to search the web, \
+the internal knowledge base (via MCP), or both. Always cite sources. \
+Return findings as JSON: [{claim, source, confidence}]."""</span>
+
+WEB_SEARCH_TOOL = {
+    <span class="tok-str">"name"</span>: <span class="tok-str">"web_search"</span>,
+    <span class="tok-str">"description"</span>: <span class="tok-str">"Search the public web for recent, dated information."</span>,
+    <span class="tok-str">"input_schema"</span>: {
+        <span class="tok-str">"type"</span>: <span class="tok-str">"object"</span>,
+        <span class="tok-str">"properties"</span>: {<span class="tok-str">"query"</span>: {<span class="tok-str">"type"</span>: <span class="tok-str">"string"</span>}},
+        <span class="tok-str">"required"</span>: [<span class="tok-str">"query"</span>],
+    },
+}
+
+<span class="tok-kw">def</span> <span class="tok-fn">researcher_turn</span>(sub_question: <span class="tok-kw">str</span>, memory_summary: <span class="tok-kw">str</span>) -> <span class="tok-kw">dict</span>:
+    tools = [WEB_SEARCH_TOOL, *mcp.as_anthropic_tools()]
+
+    response = client.messages.create(
+        model=<span class="tok-str">"claude-sonnet-4-6"</span>,
+        max_tokens=1500,
+        system=[
+            <span class="tok-com"># Static instructions: cached, reused across every sub-question</span>
+            {<span class="tok-str">"type"</span>: <span class="tok-str">"text"</span>, <span class="tok-str">"text"</span>: RESEARCHER_SYSTEM,
+             <span class="tok-str">"cache_control"</span>: {<span class="tok-str">"type"</span>: <span class="tok-str">"ephemeral"</span>}},
+            <span class="tok-com"># Dynamic context: not cached, changes every turn</span>
+            {<span class="tok-str">"type"</span>: <span class="tok-str">"text"</span>, <span class="tok-str">"text"</span>: <span class="tok-str">f"Session memory:\n{memory_summary}"</span>},
+        ],
+        tools=tools,
+        messages=[{<span class="tok-str">"role"</span>: <span class="tok-str">"user"</span>, <span class="tok-str">"content"</span>: sub_question}],
+    )
+
+    <span class="tok-kw">for</span> block <span class="tok-kw">in</span> response.content:
+        <span class="tok-kw">if</span> block.type == <span class="tok-str">"tool_use"</span>:
+            <span class="tok-kw">if</span> block.name == <span class="tok-str">"web_search"</span>:
+                result = run_web_search(block.input[<span class="tok-str">"query"</span>])
+            <span class="tok-kw">else</span>:
+                result = mcp.call(block.name, block.input)
+            <span class="tok-kw">return</span> continue_with_tool_result(response, block, result)
+
+    <span class="tok-kw">return</span> {<span class="tok-str">"text"</span>: response.content[0].text}</code></pre>
+    </div>
+
+    <div class="code-panel" data-panel="memory">
+      <div class="code-file-name">memory.py — bounded, summarized memory across sessions</div>
+      <pre><code><span class="tok-str">"""
+memory.py — Cross-session memory. Keeps a rolling summary per session so
+follow-up questions don't restart the pipeline from zero context, without
+replaying full transcripts (which would blow the cached-prefix and cost).
+"""</span>
+<span class="tok-kw">import</span> sqlite3, json
+<span class="tok-kw">from</span> anthropic <span class="tok-kw">import</span> Anthropic
+
+client = Anthropic()
+
+<span class="tok-kw">class</span> <span class="tok-cls">SessionMemory</span>:
+    <span class="tok-kw">def</span> <span class="tok-fn">__init__</span>(self, store_path: <span class="tok-kw">str</span>):
+        self.db = sqlite3.connect(store_path)
+        self.db.execute(
+            <span class="tok-str">"CREATE TABLE IF NOT EXISTS sessions "</span>
+            <span class="tok-str">"(session_id TEXT PRIMARY KEY, summary TEXT, turns TEXT)"</span>
+        )
+
+    <span class="tok-kw">def</span> <span class="tok-fn">load_summary</span>(self, session_id: <span class="tok-kw">str</span>) -> <span class="tok-kw">str</span>:
+        row = self.db.execute(
+            <span class="tok-str">"SELECT summary FROM sessions WHERE session_id = ?"</span>, (session_id,)
+        ).fetchone()
+        <span class="tok-kw">return</span> row[0] <span class="tok-kw">if</span> row <span class="tok-kw">else</span> <span class="tok-str">"No prior context."</span>
+
+    <span class="tok-kw">def</span> <span class="tok-fn">save_turn</span>(self, session_id: <span class="tok-kw">str</span>, query: <span class="tok-kw">str</span>, report: <span class="tok-kw">str</span>) -> <span class="tok-kw">None</span>:
+        prior = self.load_summary(session_id)
+        <span class="tok-com"># Re-summarize rather than append verbatim — keeps memory bounded</span>
+        <span class="tok-com"># and keeps the cached system-prompt prefix stable across turns.</span>
+        summary = self._resummarize(prior, query, report)
+        self.db.execute(
+            <span class="tok-str">"INSERT INTO sessions (session_id, summary, turns) VALUES (?,?,?) "</span>
+            <span class="tok-str">"ON CONFLICT(session_id) DO UPDATE SET summary=excluded.summary"</span>,
+            (session_id, summary, json.dumps({<span class="tok-str">"query"</span>: query})),
+        )
+        self.db.commit()
+
+    <span class="tok-kw">def</span> <span class="tok-fn">_resummarize</span>(self, prior: <span class="tok-kw">str</span>, query: <span class="tok-kw">str</span>, report: <span class="tok-kw">str</span>) -> <span class="tok-kw">str</span>:
+        resp = client.messages.create(
+            model=<span class="tok-str">"claude-sonnet-4-6"</span>,
+            max_tokens=300,
+            messages=[{
+                <span class="tok-str">"role"</span>: <span class="tok-str">"user"</span>,
+                <span class="tok-str">"content"</span>: (
+                    <span class="tok-str">f"Prior session summary:\n{prior}\n\n"</span>
+                    <span class="tok-str">f"New question: {query}\nNew report excerpt: {report[:800]}\n\n"</span>
+                    <span class="tok-str">"Write an updated 3-4 sentence summary of what this "</span>
+                    <span class="tok-str">"session has covered, for use as context in future turns."</span>
+                ),
+            }],
+        )
+        <span class="tok-kw">return</span> resp.content[0].text</code></pre>
+    </div>
+  </div>
+</section>
+
+<section id="run-local">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Run it on your machine</h2>
+      <span class="tag">project1-research-report.zip</span>
+    </div>
+    <p class="section-intro">The code above is the real, runnable implementation — not a sketch. Download <code style="font-family:var(--mono); color:var(--ink)">project1-research-report.zip</code>, unzip it, and follow the steps below. Everything except the LLM calls themselves runs fully offline (the doc store is local TF-IDF, web search is DuckDuckGo with no key needed).</p>
+
+    <div class="arch-grid">
+      <div class="arch-svg-wrap">
+        <div class="code-file-name" style="padding:0 0 10px; border-bottom:none;">file structure</div>
+        <pre style="padding:0;"><code>project1-research-report/
+├── orchestrator.py       <span class="tok-com"># LangGraph wiring: 4 agents in sequence</span>
+├── agents.py               <span class="tok-com"># prompts, tool-use loop, prompt caching</span>
+├── mcp_server.py             <span class="tok-com"># MCP server: search_documents tool</span>
+├── mcp_client.py               <span class="tok-com"># spawns mcp_server.py as a subprocess</span>
+├── knowledge_store.py             <span class="tok-com"># local TF-IDF doc store, no DB needed</span>
+├── web_search.py                    <span class="tok-com"># DuckDuckGo search, offline fallback</span>
+├── memory.py                          <span class="tok-com"># SQLite session memory</span>
+├── run_demo.py                          <span class="tok-com"># CLI entry point</span>
+├── sample_docs/*.md                       <span class="tok-com"># seed content for the doc store</span>
+├── tests/test_smoke.py                      <span class="tok-com"># offline tests, no API key needed</span>
+├── requirements.txt
+├── .env.example
+└── README.md</code></pre>
+      </div>
+      <ul class="arch-legend">
+        <li><span class="swatch" style="background:var(--amber)"></span><div><b>Step 1 — install.</b> <code style="font-family:var(--mono); color:var(--ink)">python -m venv .venv</code> then <code style="font-family:var(--mono); color:var(--ink)">.venv\Scripts\activate</code> then <code style="font-family:var(--mono); color:var(--ink)">pip install -r requirements.txt</code></div></li>
+        <li><span class="swatch" style="background:var(--cyan)"></span><div><b>Step 2 — key.</b> <code style="font-family:var(--mono); color:var(--ink)">copy .env.example .env</code>, paste your Anthropic API key into <code style="font-family:var(--mono); color:var(--ink)">.env</code></div></li>
+        <li><span class="swatch" style="background:var(--green)"></span><div><b>Step 3 — sanity check.</b> <code style="font-family:var(--mono); color:var(--ink)">pytest tests/test_smoke.py -v</code> — no API key needed, checks the doc store and search work</div></li>
+        <li><span class="swatch" style="background:var(--rose)"></span><div><b>Step 4 — run it.</b> <code style="font-family:var(--mono); color:var(--ink)">python run_demo.py "your question here"</code></div></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>This page is documentation and an offline-runnable demo shell for the project — the trace above replays a fixed script client-side so it works without API keys. The actual pipeline runs on real Claude API calls, a live MCP server subprocess, and a persisted SQLite memory store — download the zip above to run it for real, full setup steps are in its README.</p>
+    <p class="stack">stack: python · langgraph · anthropic sdk · mcp · sqlite</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  // ---------- Tabs ----------
+  const tabs = document.querySelectorAll('.code-tab');
+  const panels = document.querySelectorAll('.code-panel');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.querySelector('.code-panel[data-panel="' + tab.dataset.tab + '"]').classList.add('active');
+    });
+  });
+
+  // ---------- Demo trace ----------
+  const logEl = document.getElementById('log');
+  const runBtn = document.getElementById('runBtn');
+  const queryInput = document.getElementById('queryInput');
+  const memBox = document.getElementById('memBox');
+  const cachedBar = document.getElementById('cachedBar');
+  const freshBar = document.getElementById('freshBar');
+  const cachedPct = document.getElementById('cachedPct');
+  const freshPct = document.getElementById('freshPct');
+  const cacheNote = document.getElementById('cacheNote');
+
+  let runCount = 0;
+
+  function clearLog(){ logEl.innerHTML = ''; }
+
+  function addLine(badgeClass, badgeText, html, delay){
+    return new Promise(resolve => {
+      setTimeout(() => {
+        const line = document.createElement('div');
+        line.className = 'log-line';
+        line.innerHTML = '<span class="badge ' + badgeClass + '">' + badgeText + '</span><span class="log-text">' + html + '</span>';
+        logEl.appendChild(line);
+        logEl.scrollTop = logEl.scrollHeight;
+        resolve();
+      }, delay);
+    });
+  }
+
+  function setCache(cachedTokens, freshTokens, note){
+    const total = cachedTokens + freshTokens;
+    const cPct = Math.round((cachedTokens/total)*100);
+    const fPct = 100 - cPct;
+    cachedBar.style.width = cPct + '%';
+    freshBar.style.width = fPct + '%';
+    cachedPct.textContent = cPct + '% (' + cachedTokens.toLocaleString() + ' tok)';
+    freshPct.textContent = fPct + '% (' + freshTokens.toLocaleString() + ' tok)';
+    cacheNote.textContent = note;
+  }
+
+  async function runFirstPass(query){
+    clearLog();
+    runBtn.disabled = true;
+    runBtn.textContent = 'Running…';
+
+    await addLine('orch', 'ORCH', 'Received query: <b>&ldquo;' + query + '&rdquo;</b>', 150);
+    await addLine('orch', 'ORCH', 'No prior session memory — planning from scratch. Splitting into 3 sub-questions.', 500);
+    await addLine('orch', 'ORCH', '1) recent funding rounds for agentic AI startups &nbsp; 2) 2024 enterprise SaaS funding baseline &nbsp; 3) investor commentary on the comparison', 500);
+
+    await addLine('res', 'RES', 'Sub-question 1 → calling <b>web_search</b>(&ldquo;agentic AI startup funding 2024&rdquo;)', 700);
+    await addLine('res', 'RES', 'Got 6 results. Extracted 4 claims with source URLs.', 500);
+
+    await addLine('res', 'RES', 'Sub-question 2 → calling <b>MCP</b> tool <b>search_documents</b>(&ldquo;enterprise SaaS funding benchmarks 2024&rdquo;)', 700);
+    await addLine('mcp', 'MCP', 'search_documents → 5 passages returned from client_knowledge_base (avg. score 0.81)', 500);
+
+    await addLine('res', 'RES', 'Sub-question 3 → calling <b>web_search</b>(&ldquo;VC commentary agentic AI vs SaaS 2024&rdquo;)', 700);
+    await addLine('res', 'RES', 'Got 4 results. One source conflicts with sub-question 1 findings on total deal volume — flagged for Analyst.', 500);
+
+    await addLine('ana', 'ANA', 'Merging 13 claims across 3 sub-questions. Resolving the deal-volume conflict by preferring the more recent, higher-confidence source.', 800);
+    await addLine('ana', 'ANA', 'Synthesis complete: 5 key findings, 1 flagged discrepancy noted in the report.', 500);
+
+    await addLine('wri', 'WRI', 'Drafting report with inline citations…', 700);
+    await addLine('wri', 'WRI',
+      '<span class="log-text final">Agentic AI startups raised a median seed round roughly 40% larger than enterprise SaaS peers in 2024, per aggregated funding trackers [1][2]. Deal volume held steadier for SaaS overall, though one source estimates a sharper agentic-AI pullback in Q4 than others report — flagged as a discrepancy pending verification [3]. Investors interviewed across two industry reports cite faster time-to-value as the main driver of the funding premium [4].</span>',
+      900);
+
+    memBox.textContent = 'Session covered: agentic AI vs. enterprise SaaS funding trends in 2024, including a flagged discrepancy on Q4 deal volume. Ready for follow-up questions on this topic.';
+    setCache(2100, 540, 'First call in the session: full static system prompt (role + tool schemas) plus all dynamic context is fresh. Nothing cached yet — this establishes the cache.');
+
+    runBtn.disabled = false;
+    runBtn.textContent = 'Run pipeline';
+    runCount = 1;
+    showFollowUpButton();
+  }
+
+  async function runFollowUp(){
+    runBtn.disabled = true;
+    await addLine('orch', 'ORCH', 'Follow-up detected — loading session memory instead of re-planning from zero.', 150);
+    await addLine('orch', 'ORCH', 'Session memory: &ldquo;' + memBox.textContent.slice(0, 70) + '…&rdquo;', 500);
+    await addLine('orch', 'ORCH', 'Reframed as 1 targeted sub-question instead of 3 — memory already covers the baseline.', 500);
+    await addLine('res', 'RES', 'Sub-question → calling <b>MCP</b> tool <b>search_documents</b>(&ldquo;Q4 2024 agentic AI deal volume verification&rdquo;)', 700);
+    await addLine('mcp', 'MCP', 'search_documents → 3 passages returned, resolves the earlier flagged discrepancy.', 500);
+    await addLine('ana', 'ANA', 'Discrepancy resolved: Q4 pullback confirmed at the smaller of the two earlier estimates.', 600);
+    await addLine('wri', 'WRI', '<span class="log-text final">Updating the report: the Q4 deal-volume discrepancy is resolved — agentic AI funding cooled by roughly half as much as the outlier source suggested [5].</span>', 800);
+
+    setCache(2100, 95, 'Same static system prompt is served from cache again (1000+ tokens) — only the new sub-question and trimmed memory are billed fresh. About 3.1× cheaper than the first call.');
+
+    runBtn.disabled = false;
+    runBtn.textContent = 'Run pipeline';
+  }
+
+  function showFollowUpButton(){
+    if(document.getElementById('followUpBtn')) return;
+    const btn = document.createElement('button');
+    btn.className = 'btn ghost';
+    btn.id = 'followUpBtn';
+    btn.style.marginTop = '14px';
+    btn.style.alignSelf = 'flex-start';
+    btn.textContent = 'Ask a follow-up (uses session memory)';
+    btn.addEventListener('click', runFollowUp);
+    document.querySelector('.demo-console').appendChild(btn);
+  }
+
+  runBtn.addEventListener('click', () => {
+    const q = queryInput.value.trim() || queryInput.placeholder;
+    const existing = document.getElementById('followUpBtn');
+    if(existing) existing.remove();
+    runFirstPass(q);
+  });
+})();
+</script>
+
+</body>
+</html>
