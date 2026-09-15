@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ledger &amp; Loop — LangChain, LangGraph &amp; LangSmith for Banking AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/dockerfile.min.js"></script>
+<style>
+:root{
+  --ink:#12181B;
+  --ink-2:#1B2327;
+  --ink-3:#232D31;
+  --paper:#FBF9F4;
+  --paper-2:#F2EFE6;
+  --line:#DDD8C9;
+  --line-dark:#2E3A3F;
+  --text:#1A1F22;
+  --text-dim:#5B6266;
+  --accent:#1F6F5C;
+  --accent-bright:#2C9678;
+  --gold:#B9922E;
+  --danger:#A23B3B;
+  --kid:#3D74B0;
+  --kid-dark:#2A5A8C;
+  --sidebar-w:296px;
+  --maxw:840px;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  font-family:'IBM Plex Sans',sans-serif;
+  color:var(--text);
+  background:var(--paper);
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion: reduce){
+  html{scroll-behavior:auto;}
+  *{animation-duration:0.01ms !important; transition-duration:0.01ms !important;}
+}
+h1,h2,h3,h4{
+  font-family:'Source Serif 4',serif;
+  font-weight:600;
+  color:var(--ink);
+  line-height:1.18;
+  margin:0 0 .5em 0;
+}
+p{line-height:1.7; margin:0 0 1.1em 0; max-width:74ch;}
+a{color:var(--accent);}
+code{font-family:'IBM Plex Mono',monospace; font-size:.88em;}
+
+/* ===== Layout shell ===== */
+.shell{display:flex; min-height:100vh;}
+
+/* ===== Sidebar ===== */
+.sidebar{
+  width:var(--sidebar-w);
+  flex-shrink:0;
+  background:var(--ink);
+  color:#CDD6D3;
+  position:fixed;
+  top:0; left:0; bottom:0;
+  overflow-y:auto;
+  padding:28px 0 40px 0;
+  border-right:1px solid var(--line-dark);
+  z-index:20;
+}
+.sidebar::-webkit-scrollbar{width:8px;}
+.sidebar::-webkit-scrollbar-thumb{background:var(--line-dark); border-radius:4px;}
+
+.brand{
+  padding:0 26px 22px 26px;
+  border-bottom:1px solid var(--line-dark);
+  margin-bottom:18px;
+}
+.brand .mark{
+  display:inline-flex; align-items:center; gap:9px;
+  font-family:'Source Serif 4',serif; font-weight:700; font-size:1.28rem; color:var(--paper);
+}
+.brand .mark .dot{
+  width:9px;height:9px;border-radius:50%;background:var(--accent-bright);
+  box-shadow:0 0 0 3px rgba(44,150,120,.22);
+}
+.brand .sub{
+  margin-top:8px; font-size:.78rem; color:#8A9793; line-height:1.5;
+  font-family:'IBM Plex Mono',monospace; letter-spacing:.01em;
+}
+
+.navgroup{padding:0 14px; margin-bottom:6px;}
+.navgroup-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.68rem;
+  color:#6F7C78;
+  padding:14px 12px 6px 12px;
+  letter-spacing:.04em;
+}
+.navlink{
+  display:flex; align-items:baseline; gap:10px;
+  width:100%; text-align:left; background:none; border:none;
+  color:#B9C3C0; text-decoration:none;
+  font-family:'IBM Plex Sans',sans-serif;
+  font-size:.895rem;
+  padding:9px 12px;
+  border-radius:7px;
+  cursor:pointer;
+  line-height:1.35;
+}
+.navlink .num{
+  font-family:'IBM Plex Mono',monospace; font-size:.72rem; color:#5E6B67; flex-shrink:0; padding-top:1px;
+}
+.navlink:hover{background:var(--ink-2); color:var(--paper);}
+.navlink.active{background:var(--ink-3); color:#fff; box-shadow:inset 3px 0 0 var(--accent-bright);}
+.navlink.active .num{color:var(--accent-bright);}
+
+/* ===== Main content ===== */
+.main{
+  margin-left:var(--sidebar-w);
+  flex:1;
+  min-width:0;
+  padding:56px 48px 120px 56px;
+  display:flex;
+  justify-content:center;
+}
+.content{max-width:var(--maxw); width:100%;}
+
+.section{display:none;}
+.section.active{display:block; animation:fadein .35s ease;}
+@keyframes fadein{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+.kicker{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.78rem;
+  color:var(--accent);
+  margin-bottom:10px;
+}
+.section h1{font-size:2.15rem; margin-bottom:.3em;}
+.section > .dek{font-size:1.12rem; color:var(--text-dim); max-width:66ch; margin-bottom:2.2em; line-height:1.6;}
+.section h2{font-size:1.42rem; margin-top:2.4em; padding-top:.2em; border-top:1px solid var(--line);}
+.section h2:first-of-type{border-top:none; margin-top:0;}
+.section h3{font-size:1.1rem; margin-top:1.7em; color:var(--ink);}
+ul,ol{line-height:1.75; padding-left:1.35em; margin:0 0 1.2em 0; max-width:72ch;}
+li{margin-bottom:.35em;}
+
+/* code blocks */
+.code-wrap{
+  margin:1.1em 0 1.6em 0;
+  border-radius:10px;
+  overflow:hidden;
+  border:1px solid var(--line-dark);
+  background:#1E2528;
+}
+.code-label{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:8px 14px;
+  background:#242C2F;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.72rem;
+  color:#8FA39C;
+  letter-spacing:.02em;
+  border-bottom:1px solid #2E3A3F;
+}
+pre{margin:0; padding:16px 18px; overflow-x:auto; font-size:.83rem; line-height:1.6;}
+pre code.hljs{background:transparent; padding:0;}
+
+/* callouts */
+.callout{
+  border:1px solid var(--line);
+  border-left:4px solid var(--accent);
+  background:var(--paper-2);
+  border-radius:8px;
+  padding:16px 20px;
+  margin:1.4em 0;
+}
+.callout.gold{border-left-color:var(--gold);}
+.callout.danger{border-left-color:var(--danger);}
+.callout.kid{border-left-color:var(--kid); background:#EEF4FA;}
+.callout-label{
+  font-family:'IBM Plex Mono',monospace; font-size:.72rem;
+  text-transform:none; color:var(--accent); margin-bottom:6px; display:block;
+}
+.callout.gold .callout-label{color:#8A6C1E;}
+.callout.danger .callout-label{color:var(--danger);}
+.callout.kid .callout-label{color:var(--kid-dark);}
+.callout.kid p{font-size:.98rem; line-height:1.75;}
+.callout ul,.callout ol,.callout p{margin-bottom:0;}
+.callout ul{margin-top:.4em;}
+
+/* grid cards */
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:1.4em 0;}
+.grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; margin:1.4em 0;}
+.card{
+  border:1px solid var(--line); background:#fff;
+  border-radius:10px; padding:16px 18px;
+}
+.card h4{font-family:'IBM Plex Sans',sans-serif; font-size:.92rem; font-weight:600; margin-bottom:.4em; color:var(--ink);}
+.card p{font-size:.88rem; color:var(--text-dim); margin-bottom:0;}
+
+/* roadmap timeline (overview only — genuinely sequential) */
+.timeline{border-left:2px solid var(--line); margin:1.8em 0 1.8em .4em; padding-left:24px;}
+.tl-item{position:relative; margin-bottom:26px;}
+.tl-item::before{
+  content:attr(data-n);
+  position:absolute; left:-35px; top:0;
+  width:24px; height:24px; border-radius:50%;
+  background:var(--ink); color:var(--paper);
+  font-family:'IBM Plex Mono',monospace; font-size:.68rem;
+  display:flex; align-items:center; justify-content:center;
+}
+.tl-item h4{margin-bottom:.25em; font-size:1rem; font-family:'IBM Plex Sans',sans-serif; font-weight:600;}
+.tl-item p{font-size:.9rem; margin-bottom:0; color:var(--text-dim);}
+
+table{width:100%; border-collapse:collapse; margin:1.3em 0; font-size:.87rem;}
+th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--line);}
+th{font-family:'IBM Plex Mono',monospace; font-size:.72rem; color:var(--text-dim); font-weight:500;}
+
+.footnav{
+  display:flex; justify-content:space-between; align-items:center;
+  margin-top:3.2em; padding-top:1.4em; border-top:1px solid var(--line);
+}
+.footnav button{
+  font-family:'IBM Plex Sans',sans-serif; font-size:.86rem; font-weight:500;
+  background:var(--ink); color:var(--paper); border:none; border-radius:7px;
+  padding:11px 18px; cursor:pointer;
+}
+.footnav button:hover{background:var(--ink-3);}
+.footnav .ghost{background:none; color:var(--text-dim); border:1px solid var(--line);}
+.footnav .ghost:hover{color:var(--text); border-color:var(--text-dim);}
+
+.progresswrap{padding:0 26px; margin-bottom:4px;}
+.progressbar{height:4px; background:var(--ink-3); border-radius:2px; overflow:hidden;}
+.progressbar > div{height:100%; background:var(--accent-bright); width:6.25%; transition:width .3s ease;}
+.progresstext{font-family:'IBM Plex Mono',monospace; font-size:.68rem; color:#6F7C78; margin-top:7px;}
+
+/* mobile menu toggle */
+.menu-toggle{
+  display:none;
+  position:fixed; top:16px; left:16px; z-index:30;
+  background:var(--ink); color:var(--paper); border:none; border-radius:8px;
+  width:42px; height:42px; align-items:center; justify-content:center; cursor:pointer;
+}
+.scrim{display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:15;}
+
+@media (max-width:980px){
+  .grid2,.grid3{grid-template-columns:1fr;}
+}
+@media (max-width:860px){
+  .sidebar{transform:translateX(-100%); transition:transform .25s ease; width:82vw; max-width:320px;}
+  .sidebar.open{transform:translateX(0);}
+  .main{margin-left:0; padding:80px 20px 100px 20px;}
+  .menu-toggle{display:flex;}
+  .scrim.show{display:block;}
+  .section h1{font-size:1.7rem;}
+}
+</style>
+</head>
+<body>
+
+<button class="menu-toggle" id="menuToggle" aria-label="Open menu">☰</button>
+<div class="scrim" id="scrim"></div>
+
+<div class="shell">
+  <nav class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="mark"><span class="dot"></span>Ledger &amp; Loop</div>
+      <div class="sub">LangChain · LangGraph · LangSmith<br>for banking-grade AI systems</div>
+    </div>
+    <div class="progresswrap">
+      <div class="progressbar"><div id="progressFill"></div></div>
+      <div class="progresstext" id="progressText">Section 1 of 16</div>
+    </div>
+
+    <div class="navgroup">
+      <div class="navgroup-label">FOUNDATIONS</div>
+      <button class="navlink" data-target="overview"><span class="num">01</span><span>Zero → Hero roadmap</span></button>
+      <button class="navlink" data-target="langchain-basics"><span class="num">02</span><span>LangChain fundamentals</span></button>
+      <button class="navlink" data-target="langgraph-basics"><span class="num">03</span><span>LangGraph fundamentals</span></button>
+      <button class="navlink" data-target="langsmith-basics"><span class="num">04</span><span>LangSmith: trace &amp; evaluate</span></button>
+    </div>
+
+    <div class="navgroup">
+      <div class="navgroup-label">AGENTS &amp; ADVANCED PATTERNS</div>
+      <button class="navlink" data-target="agent-architectures"><span class="num">05</span><span>Agent architectures</span></button>
+      <button class="navlink" data-target="rag-banking"><span class="num">06</span><span>RAG for banking documents</span></button>
+      <button class="navlink" data-target="mcp-banking"><span class="num">07</span><span>MCP: tool servers</span></button>
+      <button class="navlink" data-target="multi-agent-banking"><span class="num">08</span><span>Multi-agent systems</span></button>
+    </div>
+
+    <div class="navgroup">
+      <div class="navgroup-label">PRODUCTION &amp; OPERATIONS</div>
+      <button class="navlink" data-target="deployment"><span class="num">09</span><span>Production deployment</span></button>
+      <button class="navlink" data-target="cicd"><span class="num">10</span><span>CI/CD &amp; release strategy</span></button>
+      <button class="navlink" data-target="guardrails"><span class="num">11</span><span>Guardrails &amp; safety</span></button>
+      <button class="navlink" data-target="observability"><span class="num">12</span><span>Observability</span></button>
+      <button class="navlink" data-target="cost-optimization"><span class="num">13</span><span>Cost optimization</span></button>
+      <button class="navlink" data-target="security"><span class="num">14</span><span>Security &amp; compliance</span></button>
+      <button class="navlink" data-target="llm-routing"><span class="num">15</span><span>LLM routing &amp; fallback</span></button>
+      <button class="navlink" data-target="best-practices"><span class="num">16</span><span>Reference architecture</span></button>
+    </div>
+  </nav>
+
+  <main class="main">
+    <div class="content" id="content">
+<section class="section" id="overview">
+  <div class="kicker">01 / FOUNDATIONS</div>
+  <h1>Zero → Hero: LangChain, LangGraph &amp; LangSmith</h1>
+  <p class="dek">A complete path from first LLM call to a production banking AI platform — agents, RAG, MCP tool servers, multi-agent orchestration, and everything needed to run it safely at scale.</p>
+
+  <div class="callout kid">
+    <span class="callout-label">🧒 EXPLAIN LIKE YOU'RE IN CLASS 7</span>
+    <p>Think about learning to cook. First you learn simple things — how to hold a knife, how to turn on the stove. Then you learn to follow a recipe with steps in order. Later, you learn to taste your food and fix it if something's missing before you serve it. This whole page is like that, but for building a helpful AI robot for a bank: we start with the easiest tools, and slowly build up to a team of robots that can safely answer questions about people's money.</p>
+  </div>
+
+  <h2>Why these three tools, together</h2>
+  <p><strong>LangChain</strong> gives you the building blocks — model wrappers, prompt templates, retrievers, output parsers — glued together with a composition syntax called LCEL. <strong>LangGraph</strong> sits on top and gives you control flow: state machines with branches, loops, retries and human checkpoints, which is what a real agent needs instead of a single straight-line chain. <strong>LangSmith</strong> is the operational layer — it traces every run, lets you build evaluation datasets, and watches quality and cost once you're live.</p>
+  <p>Think of it as backend engineering for language models: LangChain is your libraries, LangGraph is your orchestrator/state machine, and LangSmith is your APM and test suite. We'll build every example against a single running scenario — a retail and commercial banking assistant — so the concepts stay grounded instead of abstract.</p>
+
+  <h2>The running scenario</h2>
+  <div class="callout">
+    <span class="callout-label">SCENARIO</span>
+    <p>A regional bank is building an internal + customer-facing AI layer: a customer service assistant, a loan eligibility advisor, a fraud-review copilot for analysts, and a policy/KYC question-answering tool for compliance staff. It has to connect to core banking APIs, internal PDFs (credit policy, KYC manuals), and must be auditable, cost-controlled, and safe to put in front of real customers and real money.</p>
+  </div>
+
+  <h2>The roadmap</h2>
+  <div class="timeline">
+    <div class="tl-item" data-n="1"><h4>LangChain fundamentals</h4><p>Models, prompt templates, output parsers, LCEL chains, memory, and tool/function calling — the vocabulary everything else is built from.</p></div>
+    <div class="tl-item" data-n="2"><h4>LangGraph fundamentals</h4><p>State graphs, nodes and edges, conditional routing, cycles, checkpointing/persistence, human-in-the-loop interrupts, and streaming.</p></div>
+    <div class="tl-item" data-n="3"><h4>LangSmith</h4><p>Tracing every call, building evaluation datasets, running automated + LLM-as-judge evals, and monitoring production quality.</p></div>
+    <div class="tl-item" data-n="4"><h4>Agent architectures</h4><p>ReAct, tool-calling agents and plan-and-execute agents — built as a Banking Loan Advisor.</p></div>
+    <div class="tl-item" data-n="5"><h4>RAG for banking documents</h4><p>Chunking, embeddings, vector stores, hybrid retrieval, reranking and citation-grounded answers over KYC and credit policy PDFs.</p></div>
+    <div class="tl-item" data-n="6"><h4>MCP tool servers</h4><p>Exposing core banking systems (accounts, transactions, credit bureau) as a standardized Model Context Protocol server any agent can call.</p></div>
+    <div class="tl-item" data-n="7"><h4>Multi-agent systems</h4><p>A supervisor agent routing between specialist agents — fraud, loans, support — each with its own tools and guardrails.</p></div>
+    <div class="tl-item" data-n="8"><h4>Production hardening</h4><p>Deployment, CI/CD, guardrails, observability, cost control, security and LLM routing — the difference between a demo and a system you can trust with money.</p></div>
+  </div>
+
+  <h2>What "hero" looks like</h2>
+  <div class="grid3">
+    <div class="card"><h4>Correct</h4><p>Grounded in real data, evaluated against a golden dataset, with measured hallucination and citation-accuracy rates.</p></div>
+    <div class="card"><h4>Governed</h4><p>Every output passes through guardrails: PII redaction, policy checks, and human approval on high-risk actions like fund transfers.</p></div>
+    <div class="card"><h4>Observable</h4><p>Every trace, token, and dollar is visible — you can answer "why did it say that" and "what did it cost" for any request.</p></div>
+  </div>
+
+  <h2>Prerequisites</h2>
+  <ul>
+    <li>Comfortable reading Python; no prior LangChain/LangGraph experience assumed.</li>
+    <li>An Anthropic or OpenAI API key for running the examples (code below is model-agnostic where possible).</li>
+    <li>Basic familiarity with REST APIs and Docker helps in the production sections but isn't required to follow along.</li>
+  </ul>
+
+</section>
+<section class="section" id="langchain-basics">
+  <div class="kicker">02 / FOUNDATIONS</div>
+  <h1>LangChain fundamentals</h1>
+  <p class="dek">Models, prompts, output parsers, and LCEL — the composition syntax that turns individual pieces into a chain.</p>
+
+  <div class="callout kid">
+    <span class="callout-label">🧒 EXPLAIN LIKE YOU'RE IN CLASS 7</span>
+    <p>LangChain is like a box of LEGO blocks made for talking to AI. There's a block for asking a question, a block for the AI's answer, a block for remembering what you said earlier, and a block for using tools like a calculator. You snap these blocks together with a simple connector (the <code>|</code> symbol you'll see below) to build something bigger — just like joining LEGO pieces to build a house.</p>
+  </div>
+
+  <h2>Chat models</h2>
+  <p>Everything starts with a model wrapper. LangChain normalizes chat models from different providers behind one interface, so swapping Anthropic for OpenAI is a one-line change.</p>
+  <div class="code-wrap">
+    <div class="code-label">python · model.py</div>
+    <pre><code class="language-python">from langchain_anthropic import ChatAnthropic
+
+llm = ChatAnthropic(
+    model="claude-sonnet-4-6",
+    temperature=0,          # deterministic — important for financial answers
+    max_tokens=1024,
+)
+
+response = llm.invoke("Explain a fixed deposit in one sentence.")
+print(response.content)</code></pre>
+  </div>
+  <p><code>temperature=0</code> matters more in banking than in most domains: you want the same question to produce the same eligibility answer every time.</p>
+
+  <h2>Prompt templates</h2>
+  <p>Never format prompts with raw f-strings in production — templates keep variables typed, reusable, and versionable in LangSmith's Prompt Hub.</p>
+  <div class="code-wrap">
+    <div class="code-label">python · prompts.py</div>
+    <pre><code class="language-python">from langchain_core.prompts import ChatPromptTemplate
+
+loan_prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are a loan eligibility assistant for {bank_name}. "
+               "Only use the policy facts provided. Never invent interest rates."),
+    ("human", "Customer profile: {profile}\n\nPolicy excerpt:\n{policy}\n\n"
+              "Question: {question}"),
+])
+
+chain = loan_prompt | llm
+result = chain.invoke({
+    "bank_name": "Meridian Bank",
+    "profile": "Salaried, monthly income ₹85,000, credit score 742",
+    "policy": "Personal loans require credit score >= 700 and income >= ₹25,000/mo.",
+    "question": "Is this customer eligible for a personal loan?",
+})</code></pre>
+  </div>
+
+  <h2>LCEL — the pipe operator</h2>
+  <p>LangChain Expression Language (LCEL) lets you compose runnables with <code>|</code>. Every piece — prompt, model, parser, retriever — implements the same <code>Runnable</code> interface, so it composes like Unix pipes.</p>
+  <div class="code-wrap">
+    <div class="code-label">python · lcel_chain.py</div>
+    <pre><code class="language-python">from langchain_core.output_parsers import JsonOutputParser
+from pydantic import BaseModel, Field
+
+class EligibilityResult(BaseModel):
+    eligible: bool = Field(description="Whether the customer qualifies")
+    reason: str = Field(description="One-sentence justification citing the policy")
+
+parser = JsonOutputParser(pydantic_object=EligibilityResult)
+
+chain = loan_prompt | llm | parser
+
+# Same object, but now .invoke / .batch / .stream all work for free
+result = chain.invoke({...})
+batch_results = chain.batch([{...}, {...}, {...}])   # concurrent, built in
+for chunk in chain.stream({...}):                     # token-level streaming
+    print(chunk, end="")</code></pre>
+  </div>
+  <div class="callout">
+    <span class="callout-label">WHY IT MATTERS</span>
+    <p>LCEL gives you <code>.batch()</code>, <code>.stream()</code>, async variants, retries, and fallbacks on every chain automatically — you don't hand-roll concurrency or streaming logic per endpoint.</p>
+  </div>
+
+  <h2>Structured output</h2>
+  <p>For anything that flows into another system — like an eligibility decision hitting a core banking API — skip free-text parsing and force structured output directly against the model.</p>
+  <div class="code-wrap">
+    <div class="code-label">python · structured_output.py</div>
+    <pre><code class="language-python">structured_llm = llm.with_structured_output(EligibilityResult)
+result: EligibilityResult = structured_llm.invoke(loan_prompt.format(...))
+print(result.eligible, result.reason)</code></pre>
+  </div>
+
+  <h2>Tools and function calling</h2>
+  <p>Tools are typed Python functions the model can choose to call. This is the primitive every agent in this course is built from.</p>
+  <div class="code-wrap">
+    <div class="code-label">python · tools.py</div>
+    <pre><code class="language-python">from langchain_core.tools import tool
+
+@tool
+def get_account_balance(account_id: str) -> dict:
+    """Fetch the current balance and currency for a bank account."""
+    return core_banking_api.get_balance(account_id)
+
+@tool
+def check_credit_score(customer_id: str) -> int:
+    """Look up a customer's latest bureau credit score."""
+    return bureau_api.get_score(customer_id)
+
+llm_with_tools = llm.bind_tools([get_account_balance, check_credit_score])
+ai_msg = llm_with_tools.invoke("What's the credit score for customer C-4021?")
+print(ai_msg.tool_calls)  # [{'name': 'check_credit_score', 'args': {'customer_id': 'C-4021'}, ...}]</code></pre>
+  </div>
+
+  <h2>Memory</h2>
+  <p>Modern LangChain manages conversation memory as explicit message state rather than a hidden object — this is also the bridge into LangGraph, which persists that state for you.</p>
+  <div class="code-wrap">
+    <div class="code-label">python · memory.py</div>
+    <pre><code class="language-python">from langchain_core.messages import HumanMessage, AIMessage
+
+history = [
+    HumanMessage(content="What's the interest rate on a 2-year FD?"),
+    AIMessage(content="Our 2-year fixed deposit rate is 7.1% per annum."),
+]
+history.append(HumanMessage(content="And if I extend it to 3 years?"))
+response = llm.invoke(history)</code></pre>
+  </div>
+
+  <h3>Core vocabulary</h3>
+  <table>
+    <tr><th>Concept</th><th>What it is</th></tr>
+    <tr><td>ChatModel</td><td>Provider-agnostic wrapper around an LLM's chat endpoint</td></tr>
+    <tr><td>PromptTemplate</td><td>Parameterized, versionable prompt text</td></tr>
+    <tr><td>Runnable / LCEL</td><td>Common interface (<code>invoke/batch/stream</code>) that lets pieces be piped together</td></tr>
+    <tr><td>OutputParser</td><td>Turns raw model text into JSON, Pydantic objects, or lists</td></tr>
+    <tr><td>Tool</td><td>A typed function the model can call by name with arguments</td></tr>
+    <tr><td>Retriever</td><td>A component that fetches relevant documents for a query (used in RAG)</td></tr>
+  </table>
+
+</section>
+<section class="section" id="langgraph-basics">
+  <div class="kicker">03 / FOUNDATIONS</div>
+  <h1>LangGraph fundamentals</h1>
+  <p class="dek">LangChain gives you chains — straight lines. Real agents need branches, loops, and memory across turns. That's what LangGraph adds: a state machine for LLM applications.</p>
+
+  <div class="callout kid">
+    <span class="callout-label">🧒 EXPLAIN LIKE YOU'RE IN CLASS 7</span>
+    <p>LangGraph is like a board game with a map instead of one straight path. In a board game, depending on what happens, you might move forward, go back a step, or take a shortcut. LangGraph lets the AI decide "what should I do next?" based on what just happened — check something again, ask a question, or stop — instead of always doing the exact same steps in the exact same order every time.</p>
+  </div>
+
+  <h2>State, nodes and edges</h2>
+  <p>A LangGraph app is a graph over a shared <strong>state</strong> object. Each <strong>node</strong> is a function that reads state and returns updates to it; <strong>edges</strong> decide which node runs next.</p>
+  <div class="code-wrap">
+    <div class="code-label">python · basic_graph.py</div>
+    <pre><code class="language-python">from typing import TypedDict, Annotated
+from langgraph.graph import StateGraph, START, END
+from langgraph.graph.message import add_messages
+
+class SupportState(TypedDict):
+    messages: Annotated[list, add_messages]   # auto-appends instead of overwriting
+    customer_id: str
+    escalated: bool
+
+def classify_intent(state: SupportState) -> dict:
+    last = state["messages"][-1].content
+    escalate = "fraud" in last.lower() or "dispute" in last.lower()
+    return {"escalated": escalate}
+
+def answer_faq(state: SupportState) -> dict:
+    reply = llm.invoke(state["messages"])
+    return {"messages": [reply]}
+
+def escalate_to_human(state: SupportState) -> dict:
+    return {"messages": [AIMessage(content="Connecting you to a fraud specialist now.")]}
+
+graph = StateGraph(SupportState)
+graph.add_node("classify", classify_intent)
+graph.add_node("answer", answer_faq)
+graph.add_node("escalate", escalate_to_human)
+
+graph.add_edge(START, "classify")
+graph.add_conditional_edges(
+    "classify",
+    lambda s: "escalate" if s["escalated"] else "answer",
+    {"escalate": "escalate", "answer": "answer"},
+)
+graph.add_edge("answer", END)
+graph.add_edge("escalate", END)
+
+app = graph.compile()
+result = app.invoke({"messages": [HumanMessage("I think there's a fraudulent charge on my card")], "customer_id": "C-4021"})</code></pre>
+  </div>
+
+  <h2>Cycles: the loop that makes agents work</h2>
+  <p>A tool-calling agent is really just a loop: call the model, if it wants a tool run the tool, feed the result back, repeat until it answers. LangGraph expresses this as a cycle instead of special-casing it.</p>
+  <div class="code-wrap">
+    <div class="code-label">python · react_loop.py</div>
+    <pre><code class="language-python">from langgraph.prebuilt import ToolNode
+
+def call_model(state):
+    return {"messages": [llm_with_tools.invoke(state["messages"])]}
+
+def should_continue(state):
+    last = state["messages"][-1]
+    return "tools" if last.tool_calls else END
+
+graph = StateGraph(SupportState)
+graph.add_node("agent", call_model)
+graph.add_node("tools", ToolNode([get_account_balance, check_credit_score]))
+graph.add_edge(START, "agent")
+graph.add_conditional_edges("agent", should_continue, {"tools": "tools", END: END})
+graph.add_edge("tools", "agent")   # ← the cycle: tool result goes back to the model
+app = graph.compile()</code></pre>
+  </div>
+
+  <h2>Checkpointing &amp; persistence</h2>
+  <p>Checkpointers snapshot state after every node, so a conversation — or a stalled loan application — survives process restarts and can resume exactly where it left off.</p>
+  <div class="code-wrap">
+    <div class="code-label">python · checkpointing.py</div>
+    <pre><code class="language-python">from langgraph.checkpoint.postgres import PostgresSaver
+
+checkpointer = PostgresSaver.from_conn_string(POSTGRES_URL)
+app = graph.compile(checkpointer=checkpointer)
+
+config = {"configurable": {"thread_id": "loan-application-88213"}}
+app.invoke({"messages": [HumanMessage("I'd like to apply for a car loan")]}, config)
+# ...customer closes the app, comes back next day...
+app.invoke({"messages": [HumanMessage("continuing my application from yesterday")]}, config)</code></pre>
+  </div>
+
+  <h2>Human-in-the-loop</h2>
+  <p><code>interrupt()</code> pauses the graph before a sensitive step — like actually moving money — and waits for a human to approve, edit, or reject before continuing.</p>
+  <div class="code-wrap">
+    <div class="code-label">python · human_in_the_loop.py</div>
+    <pre><code class="language-python">from langgraph.types import interrupt, Command
+
+def initiate_transfer(state):
+    decision = interrupt({
+        "action": "wire_transfer",
+        "amount": state["amount"],
+        "to_account": state["to_account"],
+    })
+    if decision["approved"]:
+        return {"status": core_banking_api.execute_transfer(state)}
+    return {"status": "cancelled_by_reviewer"}
+
+# Analyst-side, after reviewing the paused graph in a queue:
+app.invoke(Command(resume={"approved": True}), config)</code></pre>
+  </div>
+
+  <h2>Streaming</h2>
+  <p>LangGraph streams at three granularities — full state updates, individual node outputs, or raw LLM tokens — so a UI can show "thinking" progress rather than a blank screen during a multi-step agent run.</p>
+  <div class="code-wrap">
+    <div class="code-label">python · streaming.py</div>
+    <pre><code class="language-python">for event in app.stream({"messages": [...]}, config, stream_mode="updates"):
+    print(event)   # {'agent': {...}} then {'tools': {...}} as each node completes</code></pre>
+  </div>
+
+  <h3>LangChain vs LangGraph — when to reach for which</h3>
+  <table>
+    <tr><th>Use LangChain (LCEL) when</th><th>Use LangGraph when</th></tr>
+    <tr><td>The flow is linear: retrieve → prompt → parse</td><td>The model needs to loop, branch, or retry</td></tr>
+    <tr><td>No cross-turn state beyond raw message history</td><td>You need durable state, checkpoints, or resumability</td></tr>
+    <tr><td>A single agent, no approval steps</td><td>Human approval gates or multi-agent handoffs</td></tr>
+  </table>
+
+</section>
+<section class="section" id="langsmith-basics">
+  <div class="kicker">04 / FOUNDATIONS</div>
+  <h1>LangSmith: trace, evaluate, monitor</h1>
+  <p class="dek">You can't fix what you can't see. LangSmith is the observability and evaluation layer that turns "it seemed to work" into measured, versioned confidence.</p>
+
+  <div class="callout kid">
+    <span class="callout-label">🧒 EXPLAIN LIKE YOU'RE IN CLASS 7</span>
+    <p>LangSmith is like a CCTV camera plus a report card for your AI robot. The camera records everything the robot said and did, so if something goes wrong, you can rewind and watch exactly what happened and why. The report card gives the robot marks on practice tests, so you know if it's actually getting better or worse before you let it talk to real customers.</p>
+  </div>
+
+  <h2>Tracing — turn it on first</h2>
+  <p>Tracing needs zero code changes to your chains — it's environment variables. Every prompt, tool call, token count, latency and dollar cost is captured automatically.</p>
+  <div class="code-wrap">
+    <div class="code-label">bash · .env</div>
+    <pre><code class="language-bash">export LANGCHAIN_TRACING_V2=true
+export LANGCHAIN_API_KEY="ls__..."
+export LANGCHAIN_PROJECT="meridian-bank-prod"</code></pre>
+  </div>
+  <p>Every run becomes a trace tree: agent → tool calls → sub-chains, each with input/output, latency, and token usage — essential when a customer disputes what the loan bot told them.</p>
+
+  <h2>Datasets and evaluation</h2>
+  <p>Build a "golden set" of representative banking questions with expected answers, then run it against every prompt or model change before it ships.</p>
+  <div class="code-wrap">
+    <div class="code-label">python · build_dataset.py</div>
+    <pre><code class="language-python">from langsmith import Client
+
+client = Client()
+dataset = client.create_dataset("loan-eligibility-golden-set")
+
+examples = [
+    {"inputs": {"profile": "credit score 650, income 20000"}, "outputs": {"eligible": False}},
+    {"inputs": {"profile": "credit score 780, income 90000"}, "outputs": {"eligible": True}},
+    # ...curate 50-200 real, adversarial and edge cases
+]
+client.create_examples(dataset_id=dataset.id, examples=examples)</code></pre>
+  </div>
+
+  <h2>Running evaluations</h2>
+  <p>Combine deterministic checks (does the JSON schema match?) with an LLM-as-judge grader for qualities like "does the answer cite the policy correctly?"</p>
+  <div class="code-wrap">
+    <div class="code-label">python · run_eval.py</div>
+    <pre><code class="language-python">from langsmith.evaluation import evaluate
+
+def correctness(run, example):
+    predicted = run.outputs["eligible"]
+    expected = example.outputs["eligible"]
+    return {"key": "eligibility_correct", "score": int(predicted == expected)}
+
+def no_fabricated_rate(run, example):
+    # LLM-as-judge: did the model invent a number not present in the policy excerpt?
+    verdict = judge_llm.invoke(f"Policy: {example.inputs['policy']}\nAnswer: {run.outputs}\n"
+                                "Does the answer cite ONLY figures present in the policy? yes/no")
+    return {"key": "grounded", "score": 1 if "yes" in verdict.content.lower() else 0}
+
+results = evaluate(
+    lambda inputs: loan_chain.invoke(inputs),
+    data="loan-eligibility-golden-set",
+    evaluators=[correctness, no_fabricated_rate],
+    experiment_prefix="loan-agent-v3",
+)</code></pre>
+  </div>
+  <div class="callout">
+    <span class="callout-label">PRACTICE</span>
+    <p>Run this evaluation in CI on every prompt or model change (see Section 10). A prompt tweak that improves one test case can silently break another — the golden set is your regression suite for language, not just code.</p>
+  </div>
+
+  <h2>Production monitoring</h2>
+  <ul>
+    <li><strong>Online evaluators</strong> — sample a percentage of live traffic and score it automatically (toxicity, groundedness, refusal rate).</li>
+    <li><strong>Feedback</strong> — attach thumbs-up/down or analyst overrides directly to a trace to build a review queue of low-confidence runs.</li>
+    <li><strong>Dashboards</strong> — track P50/P95 latency, cost per conversation, and error rate by agent, model, and prompt version.</li>
+    <li><strong>Alerts</strong> — trigger on regressions: e.g. groundedness score dropping below 0.9 for the RAG assistant.</li>
+  </ul>
+
+  <h2>Prompt versioning</h2>
+  <p>Push prompts to the LangSmith Prompt Hub instead of hardcoding them, so a prompt change is a reviewable diff and a rollback is one click, not a redeploy.</p>
+  <div class="code-wrap">
+    <div class="code-label">python · prompt_hub.py</div>
+    <pre><code class="language-python">client.push_prompt("meridian/loan-eligibility-v3", object=loan_prompt)
+loan_prompt = client.pull_prompt("meridian/loan-eligibility-v3")</code></pre>
+  </div>
+
+</section>
+<section class="section" id="agent-architectures">
+  <div class="kicker">05 / AGENTS &amp; ADVANCED PATTERNS</div>
+  <h1>Agent architectures</h1>
+  <p class="dek">Three shapes cover almost every real agent: ReAct, direct tool-calling, and plan-and-execute. We'll build a Banking Loan Advisor with each.</p>
+
+  <div class="callout kid">
+    <span class="callout-label">🧒 EXPLAIN LIKE YOU'RE IN CLASS 7</span>
+    <p>There are different kinds of helpers. One kind thinks out loud step by step before answering — like showing your working for a maths problem. Another kind just knows the answer instantly and says it right away — like answering "what is 2+2" without needing to think. A third kind makes a full plan first, like writing a to-do list before starting your homework, and then ticks off each task one by one.</p>
+  </div>
+
+  <h2>ReAct — reason, act, observe, repeat</h2>
+  <p>The model narrates a thought, picks a tool, observes the result, and loops until it has enough information to answer. It's the most general pattern and the easiest to debug because the reasoning is explicit.</p>
+  <div class="code-wrap">
+    <div class="code-label">python · react_loan_advisor.py</div>
+    <pre><code class="language-python">from langgraph.prebuilt import create_react_agent
+
+tools = [check_credit_score, get_account_balance, calculate_emi, fetch_loan_policy]
+
+loan_advisor = create_react_agent(
+    model=llm,
+    tools=tools,
+    prompt=("You are Meridian Bank's loan eligibility advisor. Always check the "
+            "customer's credit score and current policy before giving a verdict. "
+            "Never state an interest rate you have not retrieved from a tool."),
+)
+
+result = loan_advisor.invoke({
+    "messages": [("user", "Customer C-4021 wants a ₹12,00,000 car loan over 5 years — eligible?")]
+})</code></pre>
+  </div>
+  <p>Under the hood this expands into the exact agent/tools cycle you built by hand in Section 3 — <code>create_react_agent</code> is a prebuilt shortcut for that same graph.</p>
+
+  <h2>Direct tool-calling agent (single-pass)</h2>
+  <p>When you know a request needs exactly one lookup, skip the reasoning loop and call the tool deterministically — cheaper, faster, and easier to test.</p>
+  <div class="code-wrap">
+    <div class="code-label">python · direct_balance_check.py</div>
+    <pre><code class="language-python">def balance_lookup_node(state):
+    account_id = extract_account_id(state["messages"][-1].content)  # regex or small classifier
+    balance = get_account_balance.invoke({"account_id": account_id})
+    return {"messages": [AIMessage(content=f"Your available balance is {balance['amount']} {balance['currency']}.")]}</code></pre>
+  </div>
+  <div class="callout gold">
+    <span class="callout-label">DESIGN CALL</span>
+    <p>Not every request needs an LLM to decide which tool to call. Route simple, high-volume intents (balance check, branch locator) to deterministic code paths, and reserve the reasoning loop for genuinely ambiguous requests. This is also your first cost-optimization lever — see Section 13.</p>
+  </div>
+
+  <h2>Plan-and-execute</h2>
+  <p>For multi-step tasks — like a full loan application — have the model draft a plan up front, then execute each step with room to replan if a step fails or reveals new information.</p>
+  <div class="code-wrap">
+    <div class="code-label">python · plan_and_execute.py</div>
+    <pre><code class="language-python">class PlanState(TypedDict):
+    request: str
+    plan: list[str]
+    past_steps: list[tuple]
+    response: str
+
+def planner(state: PlanState) -> dict:
+    plan = planning_llm.invoke(
+        f"Break this into ordered steps: {state['request']}\n"
+        "Available capabilities: credit check, income verification, policy lookup, EMI calculation."
+    )
+    return {"plan": parse_steps(plan.content)}
+
+def executor(state: PlanState) -> dict:
+    step = state["plan"][0]
+    result = loan_advisor.invoke({"messages": [("user", step)]})
+    return {"past_steps": state["past_steps"] + [(step, result)], "plan": state["plan"][1:]}
+
+def replan_or_finish(state: PlanState) -> dict:
+    if not state["plan"]:
+        summary = llm.invoke(f"Summarize the final decision from: {state['past_steps']}")
+        return {"response": summary.content}
+    return {}
+
+graph = StateGraph(PlanState)
+graph.add_node("planner", planner)
+graph.add_node("executor", executor)
+graph.add_node("replan", replan_or_finish)
+graph.add_edge(START, "planner")
+graph.add_edge("planner", "executor")
+graph.add_edge("executor", "replan")
+graph.add_conditional_edges("replan", lambda s: END if s.get("response") else "executor", {END: END, "executor": "executor"})</code></pre>
+  </div>
+
+  <h3>Choosing an architecture</h3>
+  <table>
+    <tr><th>Pattern</th><th>Best for</th><th>Trade-off</th></tr>
+    <tr><td>Direct tool call</td><td>Single, well-defined intent</td><td>No flexibility for ambiguous asks</td></tr>
+    <tr><td>ReAct</td><td>Open-ended Q&amp;A needing 1-4 tool calls</td><td>Higher latency &amp; token cost per turn</td></tr>
+    <tr><td>Plan-and-execute</td><td>Long multi-step workflows (loan application, dispute resolution)</td><td>More moving parts, needs replanning logic</td></tr>
+    <tr><td>Multi-agent (Sec. 08)</td><td>Distinct domains needing different tools/guardrails</td><td>Coordination and routing overhead</td></tr>
+  </table>
+
+</section>
+<section class="section" id="rag-banking">
+  <div class="kicker">06 / AGENTS &amp; ADVANCED PATTERNS</div>
+  <h1>RAG: grounding answers in banking documents</h1>
+  <p class="dek">A compliance officer asking "can we waive the processing fee for a salaried customer switching from another bank?" needs an answer traceable to a specific clause — not a plausible-sounding guess.</p>
+
+  <div class="callout kid">
+    <span class="callout-label">🧒 EXPLAIN LIKE YOU'RE IN CLASS 7</span>
+    <p>This is like an open-book exam. Instead of the AI trying to remember bank rules from its own memory (where it could easily get something wrong), it opens the actual "rule book" (the bank's documents), finds the right page, and reads the answer from there before replying. That way, it's answering from the book, not just guessing.</p>
+  </div>
+
+  <h2>Pipeline overview</h2>
+  <ol>
+    <li><strong>Ingest</strong> — load KYC manuals, credit policy PDFs, product T&amp;Cs.</li>
+    <li><strong>Chunk</strong> — split into overlapping passages that preserve clause boundaries.</li>
+    <li><strong>Embed</strong> — convert chunks to vectors capturing semantic meaning.</li>
+    <li><strong>Index</strong> — store in a vector database with metadata (document, section, effective date).</li>
+    <li><strong>Retrieve</strong> — fetch the top-k relevant chunks for a query, often combined with keyword search.</li>
+    <li><strong>Rerank</strong> — re-score candidates for precision before they hit the prompt.</li>
+    <li><strong>Generate</strong> — answer using only retrieved context, with citations.</li>
+  </ol>
+
+  <h2>Ingest &amp; chunk</h2>
+  <div class="code-wrap">
+    <div class="code-label">python · ingest.py</div>
+    <pre><code class="language-python">from langchain_community.document_loaders import PyPDFLoader
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+loader = PyPDFLoader("credit_policy_2026.pdf")
+docs = loader.load()
+
+splitter = RecursiveCharacterTextSplitter(
+    chunk_size=800, chunk_overlap=120,
+    separators=["\n\n", "\n", ". ", " "],
+)
+chunks = splitter.split_documents(docs)
+for c in chunks:
+    c.metadata["doc_type"] = "credit_policy"
+    c.metadata["effective_date"] = "2026-01-01"</code></pre>
+  </div>
+
+  <h2>Embed &amp; index</h2>
+  <div class="code-wrap">
+    <div class="code-label">python · index.py</div>
+    <pre><code class="language-python">from langchain_anthropic import AnthropicEmbeddings
+from langchain_community.vectorstores import PGVector
+
+embeddings = AnthropicEmbeddings(model="claude-embed-v1")   # or a dedicated embedding provider
+vectorstore = PGVector.from_documents(
+    documents=chunks,
+    embedding=embeddings,
+    connection_string=POSTGRES_URL,
+    collection_name="bank_policy_docs",
+)</code></pre>
+  </div>
+
+  <h2>Hybrid retrieval + reranking</h2>
+  <p>Vector search alone misses exact terms like account codes or regulation numbers. Combine it with keyword (BM25) search, then rerank the merged candidates.</p>
+  <div class="code-wrap">
+    <div class="code-label">python · retrieve.py</div>
+    <pre><code class="language-python">from langchain.retrievers import EnsembleRetriever, ContextualCompressionRetriever
+from langchain_community.retrievers import BM25Retriever
+from langchain_cohere import CohereRerank
+
+bm25 = BM25Retriever.from_documents(chunks)
+bm25.k = 10
+vector_retriever = vectorstore.as_retriever(search_kwargs={"k": 10})
+
+hybrid = EnsembleRetriever(retrievers=[bm25, vector_retriever], weights=[0.4, 0.6])
+compressor = CohereRerank(model="rerank-english-v3.0", top_n=4)
+retriever = ContextualCompressionRetriever(base_compressor=compressor, base_retriever=hybrid)</code></pre>
+  </div>
+
+  <h2>Grounded generation with citations</h2>
+  <div class="code-wrap">
+    <div class="code-label">python · rag_chain.py</div>
+    <pre><code class="language-python">RAG_PROMPT = ChatPromptTemplate.from_messages([
+    ("system", "Answer strictly from the provided policy excerpts. Cite the source "
+               "document and section for every claim. If the excerpts don't cover the "
+               "question, say you don't have enough information — never guess."),
+    ("human", "Excerpts:\n{context}\n\nQuestion: {question}"),
+])
+
+def format_docs(docs):
+    return "\n\n".join(f"[{d.metadata['doc_type']} §{d.metadata.get('section','?')}]\n{d.page_content}" for d in docs)
+
+rag_chain = (
+    {"context": retriever | format_docs, "question": lambda x: x}
+    | RAG_PROMPT | llm | StrOutputParser()
+)
+
+answer = rag_chain.invoke("Can the processing fee be waived for a salary-account switch?")</code></pre>
+  </div>
+
+  <div class="callout">
+    <span class="callout-label">GROUNDING CHECK</span>
+    <p>Run an LLM-as-judge evaluator (Section 04) that flags any claim in the answer not traceable to a retrieved chunk — this is your primary defense against hallucinated policy terms.</p>
+  </div>
+
+  <h2>Keeping the index current</h2>
+  <ul>
+    <li>Re-index on document version changes; tag chunks with <code>effective_date</code> and filter at query time so a superseded policy never surfaces.</li>
+    <li>Use metadata filters (product line, region, customer segment) to keep retrieval scoped — a savings-account policy shouldn't answer a mortgage question.</li>
+    <li>Track retrieval quality (recall@k, MRR) in LangSmith the same way you track generation quality.</li>
+  </ul>
+
+</section>
+<section class="section" id="mcp-banking">
+  <div class="kicker">07 / AGENTS &amp; ADVANCED PATTERNS</div>
+  <h1>MCP: exposing core banking systems as tools</h1>
+  <p class="dek">The Model Context Protocol standardizes how an agent discovers and calls external tools — one server, callable from any MCP-compatible client, instead of re-wiring bespoke tools into every agent.</p>
+
+  <div class="callout kid">
+    <span class="callout-label">🧒 EXPLAIN LIKE YOU'RE IN CLASS 7</span>
+    <p>MCP is like a universal remote control. Normally, every TV brand needs its own special remote. A universal remote works with any TV. MCP lets any AI robot talk to any bank tool — checking a balance, checking a credit score — using the same simple "remote control," instead of needing a different plug for every single tool.</p>
+  </div>
+
+  <h2>Why MCP instead of ad-hoc tools</h2>
+  <p>The <code>@tool</code> decorator from Section 02 works, but it ties tools to one Python process. A bank typically has many consumers — the customer chatbot, the internal analyst copilot, a batch reconciliation agent — that all need the same underlying capabilities: look up an account, list transactions, check a credit bureau score. MCP lets you build that capability once, as a server, and expose it everywhere.</p>
+  <div class="grid3">
+    <div class="card"><h4>Standardized</h4><p>Any MCP-aware agent framework can discover and call your tools without custom glue code.</p></div>
+    <div class="card"><h4>Centralized governance</h4><p>Auth, rate limits and audit logging live in one server instead of scattered across agent codebases.</p></div>
+    <div class="card"><h4>Reusable</h4><p>The same core-banking server backs the customer bot, the fraud copilot, and internal tooling.</p></div>
+  </div>
+
+  <h2>Building an MCP server</h2>
+  <div class="code-wrap">
+    <div class="code-label">python · core_banking_mcp_server.py</div>
+    <pre><code class="language-python">from mcp.server.fastmcp import FastMCP
+
+mcp = FastMCP("core-banking")
+
+@mcp.tool()
+def get_account_summary(account_id: str) -> dict:
+    """Return balance, account type and status for an account."""
+    _authorize(account_id)               # RBAC check — see Security section
+    return core_banking_api.summary(account_id)
+
+@mcp.tool()
+def list_recent_transactions(account_id: str, days: int = 30) -> list[dict]:
+    """List transactions on an account for the last N days (max 90)."""
+    days = min(days, 90)
+    return core_banking_api.transactions(account_id, days)
+
+@mcp.tool()
+def check_bureau_score(customer_id: str, consent_token: str) -> int:
+    """Fetch a credit bureau score. Requires a valid customer consent token."""
+    if not consent_service.is_valid(consent_token, customer_id):
+        raise PermissionError("Missing or expired customer consent")
+    return bureau_api.get_score(customer_id)
+
+if __name__ == "__main__":
+    mcp.run(transport="streamable-http")   # served over HTTP for multiple clients</code></pre>
+  </div>
+
+  <h2>Connecting from a LangGraph agent</h2>
+  <div class="code-wrap">
+    <div class="code-label">python · mcp_client.py</div>
+    <pre><code class="language-python">from langchain_mcp_adapters.client import MultiServerMCPClient
+
+mcp_client = MultiServerMCPClient({
+    "core-banking": {"transport": "streamable_http", "url": "https://internal.meridianbank.com/mcp/core-banking"},
+    "credit-bureau": {"transport": "streamable_http", "url": "https://internal.meridianbank.com/mcp/bureau"},
+})
+
+tools = await mcp_client.get_tools()          # discovered dynamically from server schemas
+agent = create_react_agent(model=llm, tools=tools)</code></pre>
+  </div>
+
+  <div class="callout danger">
+    <span class="callout-label">GUARDRAIL</span>
+    <p>An MCP server that touches money or PII is an attack surface: enforce authentication per client, scope tool access by role (a customer-facing bot should never see <code>list_recent_transactions</code> for an account it doesn't own), and log every call with the calling agent's identity for audit. Treat it exactly like any other internal microservice — because it is one.</p>
+  </div>
+
+  <h2>Resources and prompts, not just tools</h2>
+  <p>MCP also standardizes <strong>resources</strong> (read-only context like a policy document) and <strong>prompts</strong> (reusable prompt templates the server exposes) — useful for keeping the credit-policy RAG corpus from Section 06 centrally managed and versioned alongside the tools that use it.</p>
+
+</section>
+<section class="section" id="multi-agent-banking">
+  <div class="kicker">08 / AGENTS &amp; ADVANCED PATTERNS</div>
+  <h1>Multi-agent systems: a banking supervisor</h1>
+  <p class="dek">One agent trying to be a fraud analyst, a loan officer and a customer service rep at once accumulates conflicting instructions and an unmanageable tool list. Splitting by domain keeps each agent focused, testable, and separately guardrailed.</p>
+
+  <div class="callout kid">
+    <span class="callout-label">🧒 EXPLAIN LIKE YOU'RE IN CLASS 7</span>
+    <p>Think of a hospital. You don't ask one doctor to do everything — there's a receptionist who listens to your problem first and then sends you to the right doctor: eye doctor, dentist, or bone doctor. In this bank AI, there's a "receptionist" robot (the supervisor) that decides if your question is about fraud, loans, or general help, and sends you to the specialist robot trained for exactly that job.</p>
+  </div>
+
+  <h2>The pattern: supervisor + specialists</h2>
+  <p>A lightweight supervisor classifies intent and hands off; each specialist owns its own tools, prompt, and guardrails, and reports back through shared state.</p>
+  <div class="code-wrap">
+    <div class="code-label">python · supervisor_graph.py</div>
+    <pre><code class="language-python">from typing import Literal
+from langgraph.graph import StateGraph, START, END
+
+class BankState(TypedDict):
+    messages: Annotated[list, add_messages]
+    next_agent: str
+
+fraud_agent = create_react_agent(model=llm, tools=[flag_transaction, freeze_card, list_recent_transactions],
+    prompt="You are a fraud triage specialist. Be conservative — when uncertain, escalate to a human analyst rather than freezing an account.")
+
+loan_agent = create_react_agent(model=llm, tools=[check_credit_score, calculate_emi, fetch_loan_policy],
+    prompt="You are a loan eligibility specialist. Cite policy figures exactly; never state a rate you didn't retrieve.")
+
+support_agent = create_react_agent(model=llm, tools=[get_account_summary, get_branch_locations],
+    prompt="You are a general customer support specialist for routine, non-sensitive queries.")
+
+def supervisor(state: BankState) -> dict:
+    intent = router_llm.invoke(
+        f"Classify this banking request into exactly one label: fraud, loan, support.\n"
+        f"Request: {state['messages'][-1].content}"
+    ).content.strip().lower()
+    return {"next_agent": intent if intent in ("fraud", "loan", "support") else "support"}
+
+def route(state: BankState) -> Literal["fraud", "loan", "support"]:
+    return state["next_agent"]
+
+graph = StateGraph(BankState)
+graph.add_node("supervisor", supervisor)
+graph.add_node("fraud", fraud_agent)
+graph.add_node("loan", loan_agent)
+graph.add_node("support", support_agent)
+graph.add_edge(START, "supervisor")
+graph.add_conditional_edges("supervisor", route, {"fraud": "fraud", "loan": "loan", "support": "support"})
+graph.add_edge("fraud", END)
+graph.add_edge("loan", END)
+graph.add_edge("support", END)
+
+app = graph.compile(checkpointer=checkpointer)</code></pre>
+  </div>
+
+  <h2>Why split by domain instead of one mega-agent</h2>
+  <table>
+    <tr><th>Concern</th><th>Single agent</th><th>Supervisor + specialists</th></tr>
+    <tr><td>Tool list size</td><td>Grows unbounded, confuses tool selection</td><td>Small, focused per specialist</td></tr>
+    <tr><td>Guardrails</td><td>One-size-fits-all, hard to tune</td><td>Fraud agent stays conservative; support agent stays fast</td></tr>
+    <tr><td>Evaluation</td><td>One noisy golden set for everything</td><td>Separate golden sets per domain (Section 04)</td></tr>
+    <tr><td>Blast radius of a bad prompt change</td><td>Affects all conversations</td><td>Contained to one specialist</td></tr>
+  </table>
+
+  <h2>Handoffs mid-conversation</h2>
+  <p>Real conversations cross domains — a support chat that reveals a fraud pattern needs to hand off without losing context. Specialists can return a routing signal instead of ending the turn.</p>
+  <div class="code-wrap">
+    <div class="code-label">python · handoff.py</div>
+    <pre><code class="language-python">def support_with_handoff(state: BankState) -> dict:
+    result = support_agent.invoke(state)
+    if "possible fraud" in result["messages"][-1].content.lower():
+        return {**result, "next_agent": "fraud"}
+    return result
+
+graph.add_conditional_edges("support", lambda s: s.get("next_agent", END), {"fraud": "fraud", END: END})</code></pre>
+  </div>
+
+  <h2>Parallel specialists for a single request</h2>
+  <p>Some requests need multiple specialists in parallel — a full loan application might need credit, income, and fraud pre-checks simultaneously. LangGraph fans work out with parallel edges and merges results before continuing.</p>
+  <div class="code-wrap">
+    <div class="code-label">python · parallel_checks.py</div>
+    <pre><code class="language-python">graph.add_edge("intake", "credit_check")
+graph.add_edge("intake", "income_check")
+graph.add_edge("intake", "fraud_prescreen")
+graph.add_edge("credit_check", "decision")
+graph.add_edge("income_check", "decision")
+graph.add_edge("fraud_prescreen", "decision")   # decision node runs once all three complete</code></pre>
+  </div>
+
+  <div class="callout gold">
+    <span class="callout-label">PRODUCTION NOTE</span>
+    <p>Give every specialist agent its own LangSmith project tag and its own cost/latency budget (Section 13). When something goes wrong, you want to know it was the fraud agent, not "the bot."</p>
+  </div>
+
+</section>
+<section class="section" id="deployment">
+  <div class="kicker">09 / PRODUCTION &amp; OPERATIONS</div>
+  <h1>Production deployment</h1>
+  <p class="dek">A graph that works in a notebook needs a serving layer, a container, and a rollout strategy before it can touch real customers.</p>
+
+  <div class="callout kid">
+    <span class="callout-label">🧒 EXPLAIN LIKE YOU'RE IN CLASS 7</span>
+    <p>Before a shop can open for business, you need the building ready, the lights working, and enough staff to handle customers without a long queue. "Deployment" is exactly that for our AI robot — giving it a proper place to live (a server), making sure it switches on reliably, and making sure it can handle lots of people talking to it at the same time without crashing.</p>
+  </div>
+
+  <h2>Serving layer: FastAPI + LangGraph</h2>
+  <div class="code-wrap">
+    <div class="code-label">python · server.py</div>
+    <pre><code class="language-python">from fastapi import FastAPI, Depends
+from fastapi.responses import StreamingResponse
+
+app_api = FastAPI(title="meridian-agent-gateway")
+
+@app_api.post("/v1/chat")
+async def chat(req: ChatRequest, identity=Depends(verify_jwt)):
+    config = {"configurable": {"thread_id": req.session_id}}
+    async def event_stream():
+        async for event in banking_graph.astream({"messages": [("user", req.message)]}, config, stream_mode="messages"):
+            yield f"data: {event[0].content}\n\n"
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
+
+@app_api.get("/healthz")
+async def health():
+    return {"status": "ok", "checkpointer": await checkpointer.aping()}</code></pre>
+  </div>
+
+  <h2>Containerizing</h2>
+  <div class="code-wrap">
+    <div class="code-label">dockerfile · Dockerfile</div>
+    <pre><code class="language-dockerfile">FROM python:3.12-slim AS base
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+RUN useradd -m appuser && chown -R appuser /app
+USER appuser
+EXPOSE 8080
+HEALTHCHECK --interval=15s --timeout=3s CMD curl -f http://localhost:8080/healthz || exit 1
+CMD ["uvicorn", "server:app_api", "--host", "0.0.0.0", "--port", "8080", "--workers", "4"]</code></pre>
+  </div>
+
+  <h2>Kubernetes: autoscaling &amp; resilience</h2>
+  <div class="code-wrap">
+    <div class="code-label">yaml · deployment.yaml</div>
+    <pre><code class="language-yaml">apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-gateway
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate: { maxSurge: 1, maxUnavailable: 0 }
+  template:
+    spec:
+      containers:
+        - name: agent-gateway
+          image: registry.meridianbank.com/agent-gateway:${GIT_SHA}
+          resources:
+            requests: { cpu: "500m", memory: "512Mi" }
+            limits:   { cpu: "2",    memory: "1Gi" }
+          readinessProbe: { httpGet: { path: /healthz, port: 8080 }, periodSeconds: 5 }
+          envFrom:
+            - secretRef: { name: agent-gateway-secrets }   # API keys via secret store, never baked into image
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: { name: agent-gateway-hpa }
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: agent-gateway }
+  minReplicas: 3
+  maxReplicas: 30
+  metrics:
+    - type: Pods
+      pods: { metric: { name: inflight_llm_requests }, target: { type: AverageValue, averageValue: "10" } }</code></pre>
+  </div>
+  <p>Scale on <em>in-flight LLM requests</em> rather than raw CPU — a request spends most of its time waiting on the model provider, not burning CPU, so CPU-based autoscaling under-provisions.</p>
+
+  <h2>Checkpointer &amp; state store in production</h2>
+  <ul>
+    <li>Use a managed Postgres or Redis-backed checkpointer, not the in-memory one — pods are ephemeral and get rescheduled.</li>
+    <li>Set a TTL/archival policy on conversation threads to satisfy data-retention requirements (Section 14).</li>
+    <li>Separate the checkpoint store per environment (dev/staging/prod) — never point a staging agent at production customer state.</li>
+  </ul>
+
+  <h2>Deployment topologies</h2>
+  <div class="grid3">
+    <div class="card"><h4>Blue-green</h4><p>Two full environments; switch traffic atomically, instant rollback by flipping back.</p></div>
+    <div class="card"><h4>Canary</h4><p>Route a small % of traffic to the new version, watch LangSmith quality/cost metrics, then ramp.</p></div>
+    <div class="card"><h4>Shadow</h4><p>New version runs on real traffic but its output is never shown — compare quietly before it's live.</p></div>
+  </div>
+
+</section>
+<section class="section" id="cicd">
+  <div class="kicker">10 / PRODUCTION &amp; OPERATIONS</div>
+  <h1>CI/CD &amp; release strategy</h1>
+  <p class="dek">The extra step beyond normal software CI/CD: prompts and models are also releasable artifacts, and every release needs an evaluation gate, not just a test-pass gate.</p>
+
+  <div class="callout kid">
+    <span class="callout-label">🧒 EXPLAIN LIKE YOU'RE IN CLASS 7</span>
+    <p>This is like a quality-check line in a toy factory. Before a toy is sent to a shop, workers check that no parts are broken, everything works properly, and it's safe to play with. CI/CD does this for every update to our AI robot — it tests each change carefully before letting real customers use it, and can undo the change quickly if something turns out to be wrong.</p>
+  </div>
+
+  <h2>Pipeline stages</h2>
+  <div class="timeline">
+    <div class="tl-item" data-n="1"><h4>Unit &amp; integration tests</h4><p>Standard code tests: tool functions, parsers, API contracts — fast, deterministic, run on every commit.</p></div>
+    <div class="tl-item" data-n="2"><h4>Golden-set evaluation</h4><p>Run the LangSmith evaluation suite from Section 04 against the changed prompt/graph/model. Block merge on regression.</p></div>
+    <div class="tl-item" data-n="3"><h4>Guardrail &amp; red-team tests</h4><p>Adversarial prompts (jailbreaks, injection attempts, PII exfiltration attempts) must be caught — see Section 11.</p></div>
+    <div class="tl-item" data-n="4"><h4>Staging canary</h4><p>Deploy to staging with production-shaped traffic replay; watch cost, latency, groundedness for a burn-in window.</p></div>
+    <div class="tl-item" data-n="5"><h4>Progressive production rollout</h4><p>5% → 25% → 100% traffic with automatic rollback triggers on quality or error-rate regression.</p></div>
+  </div>
+
+  <h2>Example pipeline</h2>
+  <div class="code-wrap">
+    <div class="code-label">yaml · .github/workflows/deploy.yml</div>
+    <pre><code class="language-yaml">name: agent-release
+on: { push: { branches: [main] } }
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install -r requirements.txt
+      - run: pytest tests/unit tests/tools --cov=app --cov-fail-under=85
+
+  evaluate:
+    needs: test
+    runs-on: ubuntu-latest
+    env: { LANGCHAIN_API_KEY: ${{ secrets.LANGSMITH_KEY }} }
+    steps:
+      - run: python scripts/run_golden_eval.py --experiment "ci-${{ github.sha }}"
+      - run: python scripts/check_eval_gate.py --min-score 0.92 --experiment "ci-${{ github.sha }}"
+
+  redteam:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - run: python scripts/run_redteam_suite.py --fail-on-any-bypass
+
+  build-and-push:
+    needs: [evaluate, redteam]
+    runs-on: ubuntu-latest
+    steps:
+      - run: docker build -t registry.meridianbank.com/agent-gateway:${{ github.sha }} .
+      - run: docker push registry.meridianbank.com/agent-gateway:${{ github.sha }}
+
+  deploy-canary:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - run: kubectl set image deployment/agent-gateway-canary agent-gateway=registry.meridianbank.com/agent-gateway:${{ github.sha }}
+      - run: python scripts/watch_canary.py --duration 30m --max-error-rate 0.02 --min-groundedness 0.9
+      - run: kubectl rollout status deployment/agent-gateway --timeout=120s   # promote to 100% only if canary passed</code></pre>
+  </div>
+
+  <h2>Automatic rollback triggers</h2>
+  <ul>
+    <li>Groundedness or eligibility-accuracy score drops below threshold on live-traffic sampling.</li>
+    <li>Guardrail block rate spikes (could mean a prompt regression is provoking more unsafe outputs, or a legitimate feature broke).</li>
+    <li>P95 latency or provider error rate exceeds SLO for N consecutive minutes.</li>
+    <li>Cost-per-conversation exceeds budget ceiling (Section 13) — catches a routing bug sending everything to the expensive model.</li>
+  </ul>
+
+  <div class="callout">
+    <span class="callout-label">TREAT PROMPTS AS CODE</span>
+    <p>Store prompts in version control (or LangSmith Prompt Hub with git-synced export), require review on changes, and tag every production run with the exact prompt version and model ID it used — this is what makes an incident reconstructible after the fact.</p>
+  </div>
+
+</section>
+<section class="section" id="guardrails">
+  <div class="kicker">11 / PRODUCTION &amp; OPERATIONS</div>
+  <h1>Guardrails &amp; safety</h1>
+  <p class="dek">In banking, a guardrail failure isn't a bad joke — it's a wrong balance, a leaked account number, or an unauthorized transfer. Guardrails run on both sides of the model: input and output.</p>
+
+  <div class="callout kid">
+    <span class="callout-label">🧒 EXPLAIN LIKE YOU'RE IN CLASS 7</span>
+    <p>Guardrails are like the safety fences and seatbelts on an amusement park ride. They stop the AI robot from doing something dangerous — like giving away someone's private information, or sending someone's money without permission — even if a clever person tries to trick it into breaking the rules.</p>
+  </div>
+
+  <h2>Layered defense</h2>
+  <div class="grid2">
+    <div class="card"><h4>Input guardrails</h4><p>Prompt-injection detection, jailbreak classifiers, topic/scope restriction, rate limiting per user.</p></div>
+    <div class="card"><h4>Output guardrails</h4><p>PII/PAN redaction, groundedness checks, policy-compliance checks, toxicity/refusal validation.</p></div>
+  </div>
+
+  <h2>Input validation</h2>
+  <div class="code-wrap">
+    <div class="code-label">python · input_guardrails.py</div>
+    <pre><code class="language-python">from guardrails_lib import PromptInjectionClassifier, ScopeClassifier
+
+injection_guard = PromptInjectionClassifier()
+scope_guard = ScopeClassifier(allowed_topics=["banking products", "account queries", "loan eligibility"])
+
+def guarded_entry(state: BankState) -> dict:
+    user_msg = state["messages"][-1].content
+    if injection_guard.score(user_msg) > 0.8:
+        return {"messages": [AIMessage(content="I can't process that request.")], "next_agent": "blocked"}
+    if not scope_guard.in_scope(user_msg):
+        return {"messages": [AIMessage(content="I can only help with banking-related questions.")], "next_agent": "blocked"}
+    return {"next_agent": None}</code></pre>
+  </div>
+
+  <h2>Output validation &amp; PII redaction</h2>
+  <div class="code-wrap">
+    <div class="code-label">python · output_guardrails.py</div>
+    <pre><code class="language-python">import re
+
+PAN_PATTERN = re.compile(r"\b\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}\b")   # card numbers
+AADHAAR_PATTERN = re.compile(r"\b\d{4}\s?\d{4}\s?\d{4}\b")
+
+def redact_pii(text: str) -> str:
+    text = PAN_PATTERN.sub("[CARD NUMBER REDACTED]", text)
+    text = AADHAAR_PATTERN.sub("[ID NUMBER REDACTED]", text)
+    return text
+
+def output_guard_node(state: BankState) -> dict:
+    reply = state["messages"][-1]
+    clean = redact_pii(reply.content)
+    grounded = groundedness_judge.invoke({"answer": clean, "context": state.get("retrieved_context", "")})
+    if grounded.score < 0.7:
+        clean = "I don't have enough verified information to answer that confidently — let me connect you with an agent."
+    return {"messages": [AIMessage(content=clean)]}</code></pre>
+  </div>
+
+  <h2>Guardrailing high-risk actions</h2>
+  <p>Any tool call that moves money, changes account status, or alters customer data should require an explicit policy check plus, for anything above a threshold, human approval via the <code>interrupt()</code> pattern from Section 03.</p>
+  <div class="code-wrap">
+    <div class="code-label">python · action_policy.py</div>
+    <pre><code class="language-python">HIGH_RISK_TOOLS = {"execute_transfer", "freeze_card", "close_account"}
+TRANSFER_AUTO_APPROVE_LIMIT = 5000  # in local currency
+
+def enforce_action_policy(tool_name: str, args: dict) -> str:
+    if tool_name == "execute_transfer" and args["amount"] > TRANSFER_AUTO_APPROVE_LIMIT:
+        return "requires_human_approval"
+    if tool_name in HIGH_RISK_TOOLS:
+        return "requires_dual_control"   # two-person authorization, common in banking ops
+    return "auto_approved"</code></pre>
+  </div>
+
+  <h2>What to guard against</h2>
+  <table>
+    <tr><th>Threat</th><th>Mitigation</th></tr>
+    <tr><td>Prompt injection via retrieved documents or tool output</td><td>Treat all retrieved/tool content as untrusted data, never as instructions; sanitize before including in context</td></tr>
+    <tr><td>Jailbreaks asking the model to ignore its system prompt</td><td>Injection classifier + system prompt reinforcement + refusal evaluator</td></tr>
+    <tr><td>Hallucinated interest rates or eligibility criteria</td><td>Structured output constrained to retrieved facts; groundedness scoring; deterministic calculation tools instead of model arithmetic</td></tr>
+    <tr><td>PII/account data leakage in responses</td><td>Output redaction; role-scoped tool access; least-privilege data retrieval</td></tr>
+    <tr><td>Unauthorized high-value transactions</td><td>Human-in-the-loop approval; dual control; hard limits enforced in code, not prompt instructions</td></tr>
+  </table>
+
+  <div class="callout danger">
+    <span class="callout-label">NEVER RELY ON THE PROMPT ALONE</span>
+    <p>"Never transfer more than $5,000" in a system prompt is a suggestion to the model, not a control. Hard limits, authorization checks, and approval gates belong in code that runs regardless of what the model decides to do.</p>
+  </div>
+
+</section>
+<section class="section" id="observability">
+  <div class="kicker">12 / PRODUCTION &amp; OPERATIONS</div>
+  <h1>Observability</h1>
+  <p class="dek">LangSmith gives you LLM-native tracing; pair it with standard infrastructure observability so you have one story from "the API is slow" down to "this specific tool call cost 40 cents and hallucinated."</p>
+
+  <div class="callout kid">
+    <span class="callout-label">🧒 EXPLAIN LIKE YOU'RE IN CLASS 7</span>
+    <p>This is like the dashboard in a car — the speed meter, the fuel gauge, and the warning lights. It lets engineers see how fast the AI robot is working, how much it's costing, and whether something is going wrong, all in one glance, instead of guessing and hoping for the best.</p>
+  </div>
+
+  <h2>Three layers of visibility</h2>
+  <div class="grid3">
+    <div class="card"><h4>Trace-level (LangSmith)</h4><p>Every prompt, tool call, token count and intermediate reasoning step, tied to a conversation thread.</p></div>
+    <div class="card"><h4>Metric-level (Prometheus/Grafana)</h4><p>Request rate, latency percentiles, error rate, queue depth, cost-per-request — aggregated over time.</p></div>
+    <div class="card"><h4>Log-level (structured logs)</h4><p>Correlated request IDs across the gateway, agent graph, MCP servers, and core banking APIs.</p></div>
+  </div>
+
+  <h2>Correlating traces with infra metrics</h2>
+  <div class="code-wrap">
+    <div class="code-label">python · instrumentation.py</div>
+    <pre><code class="language-python">from opentelemetry import trace
+from langsmith.run_helpers import get_current_run_tree
+
+tracer = trace.get_tracer("agent-gateway")
+
+@app_api.middleware("http")
+async def add_trace_context(request, call_next):
+    with tracer.start_as_current_span("chat_request") as span:
+        response = await call_next(request)
+        run = get_current_run_tree()
+        if run:
+            span.set_attribute("langsmith.run_id", str(run.id))   # jump from Grafana trace straight into LangSmith
+        return response</code></pre>
+  </div>
+
+  <h2>Metrics that matter for an agent system</h2>
+  <table>
+    <tr><th>Metric</th><th>Why it matters</th></tr>
+    <tr><td>Tokens in / out per conversation</td><td>Primary cost driver; spikes reveal prompt bloat or runaway loops</td></tr>
+    <tr><td>Tool-call count per turn</td><td>An agent stuck in a retry loop shows up here before it shows up in cost</td></tr>
+    <tr><td>Groundedness / correctness score (sampled)</td><td>Quality regression, not just uptime — the thing traditional APM misses entirely</td></tr>
+    <tr><td>Guardrail block rate</td><td>Sudden spike = possible attack; sudden drop = possible guardrail regression</td></tr>
+    <tr><td>Escalation-to-human rate</td><td>Tracks whether the agent is actually resolving requests or punting them</td></tr>
+    <tr><td>P50/P95/P99 latency by node</td><td>Pinpoints whether slowness is the model, a tool, or a downstream API</td></tr>
+  </table>
+
+  <h2>Alerting</h2>
+  <div class="code-wrap">
+    <div class="code-label">yaml · alerts.yaml</div>
+    <pre><code class="language-yaml">groups:
+  - name: agent-quality
+    rules:
+      - alert: GroundednessRegression
+        expr: avg_over_time(langsmith_groundedness_score[15m]) < 0.85
+        for: 10m
+        labels: { severity: page }
+      - alert: GuardrailBlockRateSpike
+        expr: rate(guardrail_blocks_total[5m]) > 3 * rate(guardrail_blocks_total[1h] offset 1d)
+        for: 5m
+        labels: { severity: page }
+      - alert: CostPerConversationHigh
+        expr: avg_over_time(cost_per_conversation_usd[30m]) > 0.75
+        for: 15m
+        labels: { severity: warn }</code></pre>
+  </div>
+
+  <div class="callout">
+    <span class="callout-label">RUNBOOK HABIT</span>
+    <p>For every alert, write down in advance what a human should check first (which LangSmith project, which dashboard panel) — agent incidents move fast and a 2am on-call engineer shouldn't be discovering the debugging path from scratch.</p>
+  </div>
+
+</section>
+<section class="section" id="cost-optimization">
+  <div class="kicker">13 / PRODUCTION &amp; OPERATIONS</div>
+  <h1>Cost optimization</h1>
+  <p class="dek">Token costs scale with usage in a way traditional compute doesn't — a viral support flow can 10x your bill overnight. Cost control is an architecture decision, not a finance afterthought.</p>
+
+  <div class="callout kid">
+    <span class="callout-label">🧒 EXPLAIN LIKE YOU'RE IN CLASS 7</span>
+    <p>This is about saving pocket money. If a question is easy, ask the cheap, fast helper. If it's a really hard question, ask the more expensive, smarter helper. Also, if the same question gets asked again and again, just remember the answer instead of working it out from scratch every single time — that saves both time and money.</p>
+  </div>
+
+  <h2>Levers, cheapest to hardest</h2>
+  <div class="timeline">
+    <div class="tl-item" data-n="1"><h4>Caching</h4><p>Exact-match and semantic caching for repeated questions ("what are your savings account rates" gets asked hundreds of times a day).</p></div>
+    <div class="tl-item" data-n="2"><h4>Model routing by complexity</h4><p>Send simple lookups to a small/cheap model, reserve the frontier model for genuinely hard reasoning (see Section 15).</p></div>
+    <div class="tl-item" data-n="3"><h4>Prompt &amp; context trimming</h4><p>Summarize long conversation history instead of resending it in full every turn; trim retrieved context to what's actually relevant.</p></div>
+    <div class="tl-item" data-n="4"><h4>Batching</h4><p>Non-interactive workloads (nightly compliance re-checks) use batch APIs at a fraction of real-time pricing.</p></div>
+    <div class="tl-item" data-n="5"><h4>Deterministic shortcuts</h4><p>Skip the LLM entirely for pure lookups — a balance check doesn't need reasoning, just a tool call.</p></div>
+  </div>
+
+  <h2>Semantic caching</h2>
+  <div class="code-wrap">
+    <div class="code-label">python · semantic_cache.py</div>
+    <pre><code class="language-python">from langchain.globals import set_llm_cache
+from langchain_community.cache import RedisSemanticCache
+
+set_llm_cache(RedisSemanticCache(
+    redis_url=REDIS_URL,
+    embedding=embeddings,
+    score_threshold=0.97,   # high bar — banking answers must match near-exactly to reuse
+))</code></pre>
+  </div>
+
+  <h2>Model routing by task complexity</h2>
+  <div class="code-wrap">
+    <div class="code-label">python · tiered_models.py</div>
+    <pre><code class="language-python">small_model = ChatAnthropic(model="claude-haiku-4-5")     # fast, cheap — FAQ, classification, extraction
+large_model = ChatAnthropic(model="claude-sonnet-4-6")    # reasoning-heavy — eligibility decisions, disputes
+
+def pick_model(task_type: str):
+    return small_model if task_type in ("faq", "intent_classification", "data_extraction") else large_model</code></pre>
+  </div>
+
+  <h2>Context management</h2>
+  <div class="code-wrap">
+    <div class="code-label">python · summarize_history.py</div>
+    <pre><code class="language-python">def trim_or_summarize(state: BankState) -> dict:
+    if len(state["messages"]) > 20:
+        summary = small_model.invoke(
+            f"Summarize this conversation in 3 sentences, keeping any account numbers or figures mentioned:\n"
+            f"{state['messages'][:-6]}"
+        )
+        return {"messages": [SystemMessage(content=f"Earlier context: {summary.content}")] + state["messages"][-6:]}
+    return {}</code></pre>
+  </div>
+
+  <h2>Tracking cost per unit of value</h2>
+  <p>Raw dollar spend means little without a denominator. Track cost <em>per resolved conversation</em>, per agent, and per customer segment — a fraud investigation costing $2 in tokens is cheap next to the fraud it prevents; the same $2 on a routine balance check is a routing bug.</p>
+  <table>
+    <tr><th>Metric</th><th>Target pattern</th></tr>
+    <tr><td>Cost per conversation, by intent</td><td>FAQ/support ≪ loan eligibility ≪ fraud investigation</td></tr>
+    <tr><td>Cache hit rate</td><td>High for FAQ-style traffic; near-zero expected on personalized queries</td></tr>
+    <tr><td>% traffic on small vs. large model</td><td>Majority of high-volume, low-complexity intents on the cheaper tier</td></tr>
+    <tr><td>Tokens per turn trend</td><td>Flat or declining as conversations lengthen (summarization working)</td></tr>
+  </table>
+
+  <div class="callout gold">
+    <span class="callout-label">SET BUDGETS, NOT JUST DASHBOARDS</span>
+    <p>Put a hard per-conversation and per-day cost ceiling in code (fail gracefully to a cheaper fallback or a "please contact support" message) rather than discovering the overspend at month-end billing.</p>
+  </div>
+
+</section>
+<section class="section" id="security">
+  <div class="kicker">14 / PRODUCTION &amp; OPERATIONS</div>
+  <h1>Security &amp; compliance</h1>
+  <p class="dek">Everything from Sections 09-13 sits inside a regulated environment. Security here means the usual application security controls, applied with extra care around what an LLM can see and do.</p>
+
+  <div class="callout kid">
+    <span class="callout-label">🧒 EXPLAIN LIKE YOU'RE IN CLASS 7</span>
+    <p>This is like the locks, keys, and cameras protecting a bank locker room. Only the right person can open their own locker, every visit gets written down in a logbook, and nothing valuable is left lying around where the wrong person could just pick it up.</p>
+  </div>
+
+  <h2>Secrets &amp; credentials</h2>
+  <div class="code-wrap">
+    <div class="code-label">python · secrets.py</div>
+    <pre><code class="language-python">import boto3
+
+def get_secret(name: str) -> str:
+    client = boto3.client("secretsmanager")
+    return client.get_secret_value(SecretId=name)["SecretString"]
+
+ANTHROPIC_API_KEY = get_secret("prod/agent-gateway/anthropic-key")
+# Never: hardcoded keys, .env files committed to git, keys baked into container images</code></pre>
+  </div>
+
+  <h2>Role-scoped tool access</h2>
+  <p>The same MCP server (Section 07) serves multiple agents — enforce that each caller only reaches the tools and data its role permits.</p>
+  <div class="code-wrap">
+    <div class="code-label">python · rbac.py</div>
+    <pre><code class="language-python">ROLE_TOOL_ACCESS = {
+    "customer_chatbot": {"get_account_summary", "get_branch_locations"},
+    "fraud_specialist":  {"get_account_summary", "list_recent_transactions", "flag_transaction", "freeze_card"},
+    "loan_specialist":   {"check_credit_score", "fetch_loan_policy", "calculate_emi"},
+}
+
+def authorize_tool_call(caller_role: str, tool_name: str, account_owner: str, requester_id: str):
+    if tool_name not in ROLE_TOOL_ACCESS.get(caller_role, set()):
+        raise PermissionError(f"{caller_role} is not permitted to call {tool_name}")
+    if caller_role == "customer_chatbot" and account_owner != requester_id:
+        raise PermissionError("Customers may only access their own account data")</code></pre>
+  </div>
+
+  <h2>Data handling</h2>
+  <ul>
+    <li><strong>Minimize what reaches the model</strong> — pass only the fields a tool call needs, not entire customer records.</li>
+    <li><strong>Encrypt in transit and at rest</strong> — TLS to all model/MCP endpoints; encrypted checkpoint and vector stores.</li>
+    <li><strong>Data residency</strong> — route requests through model deployments in the required region for customer data that can't leave a jurisdiction.</li>
+    <li><strong>Retention limits</strong> — expire conversation threads and traces per your regulatory retention schedule, not indefinitely.</li>
+    <li><strong>Vendor data-use terms</strong> — confirm whether the model provider trains on your data and disable it contractually where required (zero-data-retention agreements).</li>
+  </ul>
+
+  <h2>Audit logging</h2>
+  <div class="code-wrap">
+    <div class="code-label">python · audit_log.py</div>
+    <pre><code class="language-python">def audit(event: str, **fields):
+    logger.info(json.dumps({
+        "event": event, "timestamp": utcnow(), "trace_id": current_trace_id(),
+        **fields,
+    }))
+
+audit("tool_call", tool="execute_transfer", actor="agent:loan_specialist",
+      on_behalf_of="customer:C-4021", amount=4200, approval_status="auto_approved")</code></pre>
+  </div>
+  <p>Every high-risk action needs a durable, queryable record of what was requested, by which agent/prompt version, under whose authorization, and what the outcome was — this is what regulators and internal audit will ask for after any incident.</p>
+
+  <h2>Compliance touchpoints</h2>
+  <table>
+    <tr><th>Concern</th><th>Practical control</th></tr>
+    <tr><td>Explainability of automated decisions</td><td>Structured output + retained retrieval context so any eligibility decision can be reconstructed</td></tr>
+    <tr><td>Fair lending / non-discrimination</td><td>Exclude protected attributes from prompts; bias-test the golden eval set across demographic slices</td></tr>
+    <tr><td>Consent for data use (credit bureau pulls, etc.)</td><td>Consent tokens enforced at the tool layer (Section 07), not assumed by the model</td></tr>
+    <tr><td>Right to human review</td><td>Human-in-the-loop escalation path always available, never a dead end</td></tr>
+  </table>
+
+  <div class="callout danger">
+    <span class="callout-label">DEFENSE IN DEPTH</span>
+    <p>Guardrails (Section 11), RBAC, and audit logging are complementary, not redundant. A prompt-injection attempt that slips past the guardrail should still be blocked by role-scoped tool access, and still show up in the audit log either way.</p>
+  </div>
+
+</section>
+<section class="section" id="llm-routing">
+  <div class="kicker">15 / PRODUCTION &amp; OPERATIONS</div>
+  <h1>LLM routing &amp; fallback</h1>
+  <p class="dek">No single model is the right choice for every request, and no single provider should be a single point of failure for a system handling banking traffic.</p>
+
+  <div class="callout kid">
+    <span class="callout-label">🧒 EXPLAIN LIKE YOU'RE IN CLASS 7</span>
+    <p>Imagine you have two friends you can call for help: one answers fast but only knows easy stuff, and one is super smart but takes longer to reply. You pick the right friend depending on how hard your question is. And if your favourite friend's phone is switched off, you have a backup friend to call — so you're never left stuck with no help at all.</p>
+  </div>
+
+  <h2>Semantic routing by task</h2>
+  <div class="code-wrap">
+    <div class="code-label">python · semantic_router.py</div>
+    <pre><code class="language-python">ROUTES = {
+    "faq":               {"model": small_model, "max_tokens": 256},
+    "eligibility_check":  {"model": large_model, "max_tokens": 1024},
+    "fraud_investigation":{"model": large_model, "max_tokens": 2048, "temperature": 0},
+    "small_talk":         {"model": small_model, "max_tokens": 128},
+}
+
+def classify_and_route(user_message: str) -> dict:
+    label = intent_classifier.predict(user_message)   # small, fast classifier — not the main LLM
+    return ROUTES.get(label, ROUTES["faq"])</code></pre>
+  </div>
+
+  <h2>Provider fallback &amp; circuit breaking</h2>
+  <p>LCEL runnables support fallbacks natively — if the primary provider errors or times out, retry against a secondary without the caller ever seeing a failure.</p>
+  <div class="code-wrap">
+    <div class="code-label">python · fallback.py</div>
+    <pre><code class="language-python">primary = ChatAnthropic(model="claude-sonnet-4-6", timeout=8)
+secondary = ChatOpenAI(model="gpt-4.1", timeout=8)
+
+resilient_llm = primary.with_fallbacks([secondary])
+resilient_llm = resilient_llm.with_retry(stop_after_attempt=2, wait_exponential_jitter=True)</code></pre>
+  </div>
+
+  <h2>Circuit breaker for a degrading provider</h2>
+  <div class="code-wrap">
+    <div class="code-label">python · circuit_breaker.py</div>
+    <pre><code class="language-python">class CircuitBreaker:
+    def __init__(self, failure_threshold=5, cooldown_seconds=60):
+        self.failures, self.threshold, self.cooldown = 0, failure_threshold, cooldown_seconds
+        self.open_until = None
+
+    def call(self, fn, *args, **kwargs):
+        if self.open_until and time.time() < self.open_until:
+            raise ProviderUnavailable("circuit open — using fallback")
+        try:
+            result = fn(*args, **kwargs)
+            self.failures = 0
+            return result
+        except Exception:
+            self.failures += 1
+            if self.failures >= self.threshold:
+                self.open_until = time.time() + self.cooldown
+            raise</code></pre>
+  </div>
+
+  <h2>Why routing is also a cost and safety control</h2>
+  <div class="grid3">
+    <div class="card"><h4>Cost</h4><p>Most traffic is simple — routing it away from the frontier model is the single biggest lever in Section 13.</p></div>
+    <div class="card"><h4>Latency</h4><p>Small models respond faster; route latency-sensitive intents (live chat) accordingly.</p></div>
+    <div class="card"><h4>Resilience</h4><p>Multi-provider fallback means a single vendor outage doesn't take down customer-facing banking services.</p></div>
+  </div>
+
+  <div class="callout">
+    <span class="callout-label">EVALUATE EACH ROUTE SEPARATELY</span>
+    <p>A cheaper model routed to "simple" traffic still needs its own golden-set evaluation (Section 04) — complexity classification is imperfect, and a misrouted eligibility question answered by the small model is a quality bug, not a cost win.</p>
+  </div>
+
+</section>
+<section class="section" id="best-practices">
+  <div class="kicker">16 / PRODUCTION &amp; OPERATIONS</div>
+  <h1>Reference architecture &amp; checklist</h1>
+  <p class="dek">Putting every section together into one picture of a production banking agent platform.</p>
+
+  <div class="callout kid">
+    <span class="callout-label">🧒 EXPLAIN LIKE YOU'RE IN CLASS 7</span>
+    <p>This is like a pilot's checklist before an airplane takes off — checking fuel, engines, doors, and instruments one by one, in order, every single time. Before letting real people use our bank AI robot, we go through a checklist just like this to make sure every important thing has been taken care of first.</p>
+  </div>
+
+  <h2>The full stack</h2>
+  <div class="code-wrap">
+    <div class="code-label">architecture</div>
+    <pre><code class="nohighlight">Client (web / mobile / branch console)
+        │  HTTPS + JWT
+        ▼
+API Gateway  ──► Rate limiting · Auth · Input guardrails (Sec 11)
+        │
+        ▼
+Supervisor Graph (LangGraph)  ──► Semantic router (Sec 15) picks model tier
+        │
+        ├──► Fraud Agent ─────┐
+        ├──► Loan Agent ──────┼──► MCP Tool Servers (Sec 07) ──► Core Banking APIs
+        └──► Support Agent ───┘         │
+        │                               └──► RBAC + audit log (Sec 14)
+        ▼
+Output guardrails (Sec 11) ──► PII redaction · groundedness check
+        │
+        ▼
+Checkpointer (Postgres/Redis) ◄──► Conversation state, resumable, retention-limited
+        │
+        ▼
+Response to client (streamed)
+
+Cross-cutting, always on:
+  LangSmith (Sec 04)      → tracing, eval, prompt versioning, monitoring
+  Observability (Sec 12)  → metrics, logs, alerts correlated to traces
+  Cost tracking (Sec 13)  → per-conversation budget enforcement
+  CI/CD (Sec 10)          → eval-gated, canaried releases</code></pre>
+  </div>
+
+  <h2>Checklist before going live</h2>
+  <div class="grid2">
+    <div class="card"><h4>Correctness</h4><p>Golden evaluation set covering common, edge, and adversarial cases, run in CI on every change with a hard quality gate.</p></div>
+    <div class="card"><h4>Grounding</h4><p>Every factual claim about rates, policy, or eligibility traceable to a retrieved source or a deterministic tool call — never free-form model arithmetic.</p></div>
+    <div class="card"><h4>Guardrails</h4><p>Input and output guardrails independent of the model's own judgment; hard limits on high-risk actions enforced in code.</p></div>
+    <div class="card"><h4>Human-in-the-loop</h4><p>An approval or escalation path for anything above a defined risk threshold, and an always-available route to a human.</p></div>
+    <div class="card"><h4>Observability</h4><p>Trace-level, metric-level, and log-level visibility, correlated, with alerts tied to written runbooks.</p></div>
+    <div class="card"><h4>Cost control</h4><p>Caching, tiered model routing, and hard per-conversation budget ceilings enforced in code, not just tracked in a dashboard.</p></div>
+    <div class="card"><h4>Security</h4><p>Secrets in a vault, RBAC on every tool, encryption in transit and at rest, and durable audit logs for every high-risk action.</p></div>
+    <div class="card"><h4>Resilience</h4><p>Multi-provider fallback, circuit breakers, and a rollback path tested before it's needed in an incident.</p></div>
+    <div class="card"><h4>Compliance</h4><p>Explainable decisions, bias-tested eval slices, enforced consent, and a defined data retention policy.</p></div>
+    <div class="card"><h4>Release discipline</h4><p>Prompts and models versioned like code, canaried before full rollout, with automatic rollback triggers.</p></div>
+  </div>
+
+  <h2>Where to go from here</h2>
+  <ul>
+    <li>Start with a single narrow use case (Section 05's loan advisor) fully hardened end-to-end, rather than a broad but shallow assistant.</li>
+    <li>Build the golden evaluation set (Section 04) before writing the second version of any prompt — you'll need it immediately.</li>
+    <li>Add specialists and MCP tool servers incrementally (Sections 07-08); resist building one large agent that does everything.</li>
+    <li>Treat Sections 09-15 as non-optional — they're the difference between a convincing demo and a system a bank can actually run.</li>
+  </ul>
+
+  <div class="callout gold">
+    <span class="callout-label">CLOSING NOTE</span>
+    <p>LangChain, LangGraph and LangSmith give you the primitives; the discipline in Sections 09 through 16 is what turns those primitives into something a risk committee will actually approve. Build the boring parts — evaluation, guardrails, observability, cost ceilings — at the same time as the exciting parts, not after.</p>
+  </div>
+
+
+</section>
+    </div>
+  </main>
+</div>
+
+<script>
+const order = ["overview","langchain-basics","langgraph-basics","langsmith-basics","agent-architectures","rag-banking","mcp-banking","multi-agent-banking","deployment","cicd","guardrails","observability","cost-optimization","security","llm-routing","best-practices"];
+const titles = {
+  "overview":"Zero → Hero roadmap","langchain-basics":"LangChain fundamentals","langgraph-basics":"LangGraph fundamentals",
+  "langsmith-basics":"LangSmith: trace & evaluate","agent-architectures":"Agent architectures","rag-banking":"RAG for banking documents",
+  "mcp-banking":"MCP: tool servers","multi-agent-banking":"Multi-agent systems","deployment":"Production deployment",
+  "cicd":"CI/CD & release strategy","guardrails":"Guardrails & safety","observability":"Observability",
+  "cost-optimization":"Cost optimization","security":"Security & compliance","llm-routing":"LLM routing & fallback",
+  "best-practices":"Reference architecture"
+};
+
+function showSection(id, scrollTop=true){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.navlink').forEach(s=>s.classList.remove('active'));
+  const sec = document.getElementById(id);
+  if(sec) sec.classList.add('active');
+  const link = document.querySelector('.navlink[data-target="'+id+'"]');
+  if(link) link.classList.add('active');
+  const idx = order.indexOf(id);
+  document.getElementById('progressFill').style.width = (((idx+1)/order.length)*100)+'%';
+  document.getElementById('progressText').textContent = 'Section '+(idx+1)+' of '+order.length;
+  if(scrollTop) document.querySelector('.main').scrollTo({top:0,behavior:'auto'});
+  window.scrollTo({top:0,behavior:'auto'});
+  closeSidebar();
+  try{ history.replaceState(null,'','#'+id); }catch(e){ /* URL state changes are blocked in some sandboxed/embedded contexts — safe to ignore */ }
+}
+
+function buildFootnav(){
+  document.querySelectorAll('.section').forEach(sec=>{
+    const id = sec.id;
+    const idx = order.indexOf(id);
+    const foot = document.createElement('div');
+    foot.className='footnav';
+    const prevId = order[idx-1];
+    const nextId = order[idx+1];
+    foot.innerHTML = (prevId ? '<button class="ghost" data-nav="'+prevId+'">← '+titles[prevId]+'</button>' : '<span></span>') +
+      (nextId ? '<button data-nav="'+nextId+'">'+titles[nextId]+' →</button>' : '<span></span>');
+    sec.appendChild(foot);
+  });
+  document.body.addEventListener('click', e=>{
+    const btn = e.target.closest('[data-nav]');
+    if(btn){ showSection(btn.getAttribute('data-nav')); }
+  });
+}
+
+document.querySelectorAll('.navlink').forEach(btn=>{
+  btn.addEventListener('click', ()=> showSection(btn.getAttribute('data-target')));
+});
+
+const sidebar = document.getElementById('sidebar');
+const scrim = document.getElementById('scrim');
+document.getElementById('menuToggle').addEventListener('click', ()=>{
+  sidebar.classList.add('open'); scrim.classList.add('show');
+});
+function closeSidebar(){ sidebar.classList.remove('open'); scrim.classList.remove('show'); }
+scrim.addEventListener('click', closeSidebar);
+
+window.addEventListener('DOMContentLoaded', ()=>{
+  buildFootnav();
+  let hash = '';
+  try{ hash = window.location.hash.replace('#',''); }catch(e){ hash = ''; }
+  showSection(order.includes(hash) ? hash : order[0]);
+  if(window.hljs){
+    try{ hljs.configure({ ignoreUnescapedHTML: true }); hljs.highlightAll(); }
+    catch(e){ console.warn('Syntax highlighting skipped:', e); }
+  }
+});
+</script>
+</body>
+</html>
