@@ -1,0 +1,1979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mission Control: FastAPI &amp; Python, Zero to Bank-Grade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0B1220;
+    --bg-panel:#101a2e;
+    --bg-panel-2:#0e1729;
+    --line:#22314f;
+    --text:#E7ECF5;
+    --text-dim:#8FA0BE;
+    --text-faint:#5c6f92;
+    --cyan:#5EEAD4;
+    --amber:#FDBA74;
+    --coral:#FB7185;
+    --violet:#C4B5FD;
+    --code-bg:#0a0e1a;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',system-ui,sans-serif;
+    font-size:16px;
+    line-height:1.65;
+  }
+  h1,h2,h3,h4{font-family:'Space Grotesk',sans-serif;margin:0 0 .5em 0;font-weight:600;letter-spacing:-0.01em;}
+  a{color:var(--cyan);}
+  p{margin:0 0 1em 0;color:var(--text);}
+  code{font-family:'JetBrains Mono',monospace;font-size:.9em;background:var(--code-bg);padding:.15em .4em;border-radius:5px;color:var(--amber);}
+
+  /* ---- Layout ---- */
+  .app{display:flex;min-height:100vh;}
+
+  /* Sidebar */
+  .sidebar{
+    width:290px;
+    flex-shrink:0;
+    background:var(--bg-panel);
+    border-right:1px solid var(--line);
+    padding:24px 16px 60px 16px;
+    position:sticky;
+    top:0;
+    height:100vh;
+    overflow-y:auto;
+  }
+  .brand{padding:4px 8px 20px 8px;border-bottom:1px solid var(--line);margin-bottom:16px;}
+  .brand .tag{color:var(--cyan);font-size:.72rem;text-transform:uppercase;letter-spacing:.14em;font-weight:600;}
+  .brand h1{font-size:1.25rem;margin-top:6px;line-height:1.3;}
+  .brand .sub{color:var(--text-dim);font-size:.85rem;margin-top:6px;}
+
+  .group-label{font-size:.72rem;color:var(--text-faint);text-transform:uppercase;letter-spacing:.12em;margin:22px 8px 8px 8px;font-weight:600;}
+  .navlist{list-style:none;margin:0;padding:0;}
+  .navlist li{margin:2px 0;}
+  .navbtn{
+    display:flex;align-items:center;gap:10px;
+    width:100%;text-align:left;background:none;border:none;
+    color:var(--text-dim);font-family:'Inter',sans-serif;font-size:.92rem;
+    padding:9px 10px;border-radius:8px;cursor:pointer;
+    transition:background .15s ease, color .15s ease;
+  }
+  .navbtn .num{
+    font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text-faint);
+    width:20px;flex-shrink:0;
+  }
+  .navbtn:hover{background:var(--bg-panel-2);color:var(--text);}
+  .navbtn.active{background:rgba(94,234,212,0.1);color:var(--cyan);}
+  .navbtn.active .num{color:var(--cyan);}
+
+  /* Mobile toggle */
+  .menu-toggle{
+    display:none;position:fixed;top:14px;left:14px;z-index:50;
+    background:var(--bg-panel);border:1px solid var(--line);color:var(--text);
+    padding:10px 12px;border-radius:8px;font-size:1rem;cursor:pointer;
+  }
+
+  /* Main */
+  main{flex:1;min-width:0;padding:48px 56px 120px 56px;max-width:900px;}
+  .panel{display:none;}
+  .panel.active{display:block;animation:fadein .25s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;color:var(--text-dim);font-size:.85rem;margin-bottom:10px;}
+  .level-pill{font-size:.68rem;padding:3px 9px;border-radius:99px;font-weight:600;letter-spacing:.03em;}
+  .lv-beginner{background:rgba(94,234,212,.15);color:var(--cyan);}
+  .lv-intermediate{background:rgba(253,186,116,.15);color:var(--amber);}
+  .lv-advanced{background:rgba(251,113,133,.15);color:var(--coral);}
+  .lv-cloud{background:rgba(196,181,253,.15);color:var(--violet);}
+
+  .panel h2{font-size:2rem;margin-bottom:6px;}
+  .panel .dek{color:var(--text-dim);font-size:1.05rem;max-width:640px;margin-bottom:32px;}
+
+  section.block{margin:38px 0;}
+  section.block h3{font-size:1.3rem;color:var(--text);border-top:1px solid var(--line);padding-top:28px;}
+  section.block h4{font-size:1.05rem;color:var(--cyan);margin-top:20px;}
+
+  /* ELI7 callout */
+  .eli7{
+    background:linear-gradient(180deg, rgba(253,186,116,.08), rgba(253,186,116,.03));
+    border:1px solid rgba(253,186,116,.35);
+    border-left:3px solid var(--amber);
+    border-radius:var(--radius);
+    padding:16px 20px;
+    margin:16px 0 22px 0;
+  }
+  .eli7 .lbl{color:var(--amber);font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;display:block;}
+  .eli7 p{margin-bottom:0;color:var(--text);}
+  .eli7 p + p{margin-top:.6em;}
+
+  /* Note / warning callouts */
+  .note{background:rgba(94,234,212,.06);border:1px solid rgba(94,234,212,.3);border-left:3px solid var(--cyan);border-radius:var(--radius);padding:14px 18px;margin:16px 0;}
+  .note .lbl{color:var(--cyan);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;display:block;}
+  .warn{background:rgba(251,113,133,.06);border:1px solid rgba(251,113,133,.3);border-left:3px solid var(--coral);border-radius:var(--radius);padding:14px 18px;margin:16px 0;}
+  .warn .lbl{color:var(--coral);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;display:block;}
+
+  /* Code blocks */
+  .codewrap{position:relative;margin:14px 0 22px 0;}
+  .codewrap .fname{
+    background:var(--bg-panel-2);color:var(--text-faint);font-family:'JetBrains Mono',monospace;
+    font-size:.75rem;padding:7px 14px;border-radius:8px 8px 0 0;border:1px solid var(--line);border-bottom:none;
+  }
+  pre{
+    background:var(--code-bg);border:1px solid var(--line);
+    padding:16px 18px;border-radius:8px;overflow-x:auto;margin:0;
+  }
+  .codewrap .fname + pre{border-radius:0 0 8px 8px;}
+  pre code{background:none;padding:0;color:#d7e0f2;font-size:.85rem;line-height:1.6;}
+  .tok-kw{color:#C4B5FD;} .tok-str{color:#FDBA74;} .tok-com{color:#5c6f92;} .tok-fn{color:#5EEAD4;} .tok-num{color:#FB7185;}
+
+  table{width:100%;border-collapse:collapse;margin:16px 0 24px 0;font-size:.92rem;}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);}
+  th{color:var(--text-dim);font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;}
+
+  ul.plain, ol.plain{padding-left:22px;margin:10px 0 16px 0;}
+  ul.plain li, ol.plain li{margin-bottom:6px;}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0;}
+  .card{background:var(--bg-panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;}
+  .card h4{margin-top:0;}
+
+  .diagram{
+    background:var(--bg-panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px;margin:16px 0 24px 0;font-family:'JetBrains Mono',monospace;font-size:.82rem;
+    color:var(--text-dim);overflow-x:auto;white-space:pre;line-height:1.55;
+  }
+  .diagram .h{color:var(--cyan);}
+
+  .prevnext{display:flex;justify-content:space-between;margin-top:56px;border-top:1px solid var(--line);padding-top:24px;}
+  .prevnext button{background:var(--bg-panel);border:1px solid var(--line);color:var(--text);padding:10px 16px;border-radius:8px;cursor:pointer;font-family:'Inter',sans-serif;font-size:.88rem;}
+  .prevnext button:hover{border-color:var(--cyan);color:var(--cyan);}
+
+  @media (max-width: 900px){
+    .sidebar{position:fixed;left:-300px;top:0;z-index:40;transition:left .2s ease;box-shadow:0 0 40px rgba(0,0,0,.5);}
+    .sidebar.open{left:0;}
+    .menu-toggle{display:block;}
+    main{padding:80px 20px 100px 20px;}
+    .grid2{grid-template-columns:1fr;}
+    .panel h2{font-size:1.5rem;}
+  }
+</style>
+</head>
+<body>
+
+<button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">☰ Menu</button>
+
+<div class="app">
+  <nav class="sidebar" id="sidebar">
+    <div class="brand">
+      <span class="tag">Mission Control</span>
+      <h1>FastAPI &amp; Python<br>Zero → Bank-Grade</h1>
+      <div class="sub">Pick a station on the map. Every stop has a kid-simple explanation, the real technical version, and working code.</div>
+    </div>
+
+    <div class="group-label">Launch Pad</div>
+    <ul class="navlist">
+      <li><button class="navbtn" data-target="p-intro"><span class="num">00</span> What's an API, really?</button></li>
+      <li><button class="navbtn" data-target="p-python"><span class="num">01</span> Python Quick Refresher</button></li>
+    </ul>
+
+    <div class="group-label">Beginner</div>
+    <ul class="navlist">
+      <li><button class="navbtn" data-target="p-fastapi-basics"><span class="num">02</span> FastAPI Basics</button></li>
+      <li><button class="navbtn" data-target="p-patterns"><span class="num">03</span> Design Patterns</button></li>
+    </ul>
+
+    <div class="group-label">Intermediate</div>
+    <ul class="navlist">
+      <li><button class="navbtn" data-target="p-fastapi-adv"><span class="num">04</span> FastAPI Advanced</button></li>
+      <li><button class="navbtn" data-target="p-db"><span class="num">05</span> SQL, MongoDB &amp; Sync</button></li>
+      <li><button class="navbtn" data-target="p-security"><span class="num">06</span> JWT, OAuth2 &amp; OIDC</button></li>
+    </ul>
+
+    <div class="group-label">Advanced</div>
+    <ul class="navlist">
+      <li><button class="navbtn" data-target="p-bank"><span class="num">07</span> Capstone: Bank Backend</button></li>
+      <li><button class="navbtn" data-target="p-micro"><span class="num">08</span> Microservices Architecture</button></li>
+      <li><button class="navbtn" data-target="p-sysdesign"><span class="num">09</span> System Design</button></li>
+    </ul>
+
+    <div class="group-label">Ship It: Cloud &amp; DevOps</div>
+    <ul class="navlist">
+      <li><button class="navbtn" data-target="p-docker-k8s"><span class="num">10</span> Docker, Kubernetes &amp; AKS</button></li>
+      <li><button class="navbtn" data-target="p-cicd"><span class="num">11</span> CI/CD, Logging &amp; Monitoring</button></li>
+      <li><button class="navbtn" data-target="p-iac"><span class="num">12</span> Terraform &amp; Azure Bicep</button></li>
+    </ul>
+
+    <div class="group-label">Full-Stack Capstone</div>
+    <ul class="navlist">
+      <li><button class="navbtn" data-target="p-react"><span class="num">13</span> React + FastAPI + Mongo CRUD</button></li>
+    </ul>
+
+    <div class="group-label">Event Streaming</div>
+    <ul class="navlist">
+      <li><button class="navbtn" data-target="p-kafka"><span class="num">14</span> Kafka Basics + FastAPI</button></li>
+    </ul>
+  </nav>
+
+  <main id="main">
+    <section class="panel active" id="p-intro">
+      <div class="eyebrow"><span class="level-pill lv-beginner">Station 00</span></div>
+      <h2>What's an API, really?</h2>
+      <p class="dek">Before FastAPI, before banks, before Kubernetes — one idea underneath all of it: computers asking each other for things.</p>
+
+      <section class="block">
+        <div class="eli7">
+          <span class="lbl">Explain it like I'm in 7th grade</span>
+          <p>Imagine a restaurant. You (the customer) don't walk into the kitchen and cook your own food. You tell the <strong>waiter</strong> what you want from the menu. The waiter takes your order to the kitchen, the kitchen makes it, and the waiter brings it back.</p>
+          <p>An <strong>API</strong> (Application Programming Interface) is the waiter. Your phone app is the customer. The server (a powerful computer somewhere) is the kitchen. The "menu" is the list of things you're allowed to ask for — like "get my bank balance" or "send $10 to my friend."</p>
+        </div>
+
+        <h4>The technical version</h4>
+        <p>An API is a contract: a set of URLs ("endpoints"), the data you must send, and the data you'll get back. The most common style on the web is <strong>REST</strong>, which uses HTTP methods to mean different actions:</p>
+        <table>
+          <tr><th>HTTP Method</th><th>Meaning</th><th>Bank example</th></tr>
+          <tr><td><code>GET</code></td><td>Read data</td><td><code>GET /accounts/42</code> → view account 42</td></tr>
+          <tr><td><code>POST</code></td><td>Create something new</td><td><code>POST /transfers</code> → make a new transfer</td></tr>
+          <tr><td><code>PUT/PATCH</code></td><td>Update something</td><td><code>PATCH /accounts/42</code> → update account details</td></tr>
+          <tr><td><code>DELETE</code></td><td>Remove something</td><td><code>DELETE /cards/9</code> → cancel a card</td></tr>
+        </table>
+
+        <p>A request and response usually travel as <strong>JSON</strong> — plain text formatted so both humans and computers can read it easily:</p>
+        <div class="codewrap"><div class="fname">Example: what your phone sends and gets back</div><pre><code>// Request:  POST /transfers
+{
+  "from_account": "42",
+  "to_account": "77",
+  "amount": 10.00
+}
+
+// Response: 201 Created
+{
+  "transfer_id": "tx_9F2A",
+  "status": "completed",
+  "amount": 10.00
+}</code></pre></div>
+
+        <div class="note"><span class="lbl">Why FastAPI?</span><p>FastAPI is a Python tool for building these APIs fast — it's fast to write, and the resulting API is fast to run. It also automatically builds you a live, clickable "menu" of your API (called Swagger/OpenAPI docs), so you never have to write that menu by hand.</p></div>
+      </section>
+
+      <div class="prevnext"><button disabled>← Start</button><button data-prevnext="next">Next: Python Quick Refresher →</button></div>
+    </section>
+    <section class="panel" id="p-python">
+      <div class="eyebrow"><span class="level-pill lv-beginner">Station 01</span></div>
+      <h2>Python Quick Refresher</h2>
+      <p class="dek">Just enough Python to read every example on this page. Skip this if you already know Python.</p>
+
+      <section class="block">
+        <div class="eli7">
+          <span class="lbl">Explain it like I'm in 7th grade</span>
+          <p>Python is a language for talking to computers using words that look a lot like English. A <strong>variable</strong> is a labeled box that holds a value. A <strong>function</strong> is a mini-recipe you can reuse. A <strong>class</strong> is a blueprint for making similar objects — like a cookie cutter for cookies.</p>
+        </div>
+
+        <h4>Variables &amp; types</h4>
+        <div class="codewrap"><pre><code>name = "Asha"        # a piece of text (string)
+age = 13              # a whole number (int)
+balance = 249.50       # a decimal number (float)
+is_active = True       # True or False (bool)
+pets = ["cat", "dog"]  # a list, ordered, can change
+person = {"name": "Asha", "age": 13}  # a dict: labeled data</code></pre></div>
+
+        <h4>Functions</h4>
+        <div class="codewrap"><pre><code>def add_interest(balance: float, rate: float) -> float:
+    """Adds interest to a balance and returns the new balance."""
+    return balance + (balance * rate)
+
+new_balance = add_interest(1000, 0.05)   # 1050.0</code></pre></div>
+        <p>The <code>: float</code> and <code>-&gt; float</code> bits are <strong>type hints</strong> — they tell Python (and FastAPI!) what kind of data goes in and comes out. FastAPI uses these hints to validate data automatically, which is why they matter so much here.</p>
+
+        <h4>Classes — a blueprint for objects</h4>
+        <div class="codewrap"><pre><code>class Account:
+    def __init__(self, owner: str, balance: float = 0):
+        self.owner = owner
+        self.balance = balance
+
+    def deposit(self, amount: float):
+        self.balance += amount
+
+acc = Account("Asha", 100)
+acc.deposit(50)
+print(acc.balance)   # 150</code></pre></div>
+
+        <h4>Async / await — doing many things at once</h4>
+        <div class="eli7">
+          <span class="lbl">Explain it like I'm in 7th grade</span>
+          <p>Imagine you put toast in the toaster. A bad cook stares at the toaster doing nothing until it pops. A good cook starts the toast, then chops fruit while waiting. <code>async</code> code is the good cook — while one task is waiting (like fetching data from a database), Python can work on other tasks instead of just standing still.</p>
+        </div>
+        <div class="codewrap"><pre><code>import asyncio
+
+async def get_balance(account_id: str) -> float:
+    await asyncio.sleep(1)   # pretend this is a slow database call
+    return 1050.0
+
+async def main():
+    balance = await get_balance("42")
+    print(balance)</code></pre></div>
+        <p>FastAPI is built around <code>async def</code> endpoints so it can handle thousands of waiting requests (like slow database calls) without getting stuck.</p>
+      </section>
+
+      <div class="prevnext"><button data-prevnext="prev">← Back</button><button data-prevnext="next">Next: FastAPI Basics →</button></div>
+    </section>
+    <section class="panel" id="p-fastapi-basics">
+      <div class="eyebrow"><span class="level-pill lv-beginner">Station 02</span></div>
+      <h2>FastAPI Basics</h2>
+      <p class="dek">Your first working API, path/query parameters, and automatic data validation with Pydantic.</p>
+
+      <section class="block">
+        <div class="eli7">
+          <span class="lbl">Explain it like I'm in 7th grade</span>
+          <p>FastAPI lets you write a Python function, stick a "sign" above it saying which web address it answers to, and it becomes a real website API. It also checks that anyone sending you data followed the rules — like a bouncer checking IDs at a door — before your code ever runs.</p>
+        </div>
+
+        <h4>Install &amp; run</h4>
+        <div class="codewrap"><pre><code>pip install fastapi "uvicorn[standard]"</code></pre></div>
+
+        <h4>Hello, World</h4>
+        <div class="codewrap"><div class="fname">main.py</div><pre><code>from fastapi import FastAPI
+
+app = FastAPI(title="Piggy Bank API")
+
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to Piggy Bank API"}
+
+# Run with:  uvicorn main:app --reload
+# Docs auto-generated at:  http://127.0.0.1:8000/docs</code></pre></div>
+
+        <h4>Path parameters</h4>
+        <p>Part of the URL itself is a variable — like a locker number.</p>
+        <div class="codewrap"><pre><code>@app.get("/accounts/{account_id}")
+def get_account(account_id: int):
+    return {"account_id": account_id, "balance": 1050.0}
+
+# GET /accounts/42  ->  {"account_id": 42, "balance": 1050.0}
+# GET /accounts/abc ->  422 error: "abc" is not a valid int, automatically!</code></pre></div>
+
+        <h4>Query parameters</h4>
+        <p>Extra optional bits after a <code>?</code> in the URL.</p>
+        <div class="codewrap"><pre><code>@app.get("/transactions")
+def list_transactions(account_id: int, limit: int = 10, min_amount: float = 0):
+    # GET /transactions?account_id=42&limit=5
+    return {"account_id": account_id, "limit": limit}</code></pre></div>
+
+        <h4>Request bodies with Pydantic — the "ID checker"</h4>
+        <div class="eli7">
+          <span class="lbl">Explain it like I'm in 7th grade</span>
+          <p>A <strong>Pydantic model</strong> is a form you make someone fill out correctly before you accept their request — every field has a required type, so if they send "ten dollars" instead of <code>10.0</code>, FastAPI rejects it automatically, before your code even sees it.</p>
+        </div>
+        <div class="codewrap"><div class="fname">schemas.py</div><pre><code>from pydantic import BaseModel, Field
+
+class TransferRequest(BaseModel):
+    from_account: str
+    to_account: str
+    amount: float = Field(gt=0, description="Must be positive")
+
+class TransferResponse(BaseModel):
+    transfer_id: str
+    status: str</code></pre></div>
+        <div class="codewrap"><div class="fname">main.py</div><pre><code>from fastapi import FastAPI
+from schemas import TransferRequest, TransferResponse
+import uuid
+
+app = FastAPI()
+
+@app.post("/transfers", response_model=TransferResponse, status_code=201)
+def create_transfer(payload: TransferRequest):
+    # payload.amount is guaranteed to be a positive float here
+    return TransferResponse(transfer_id=str(uuid.uuid4()), status="completed")</code></pre></div>
+
+        <div class="note"><span class="lbl">Try it yourself</span><p>Run the server, then open <code>/docs</code> in your browser. FastAPI reads your type hints and Pydantic models and builds a full interactive test page for you — no extra work.</p></div>
+      </section>
+
+      <div class="prevnext"><button data-prevnext="prev">← Back</button><button data-prevnext="next">Next: Design Patterns →</button></div>
+    </section>
+    <section class="panel" id="p-patterns">
+      <div class="eyebrow"><span class="level-pill lv-beginner">Station 03</span></div>
+      <h2>Design Patterns</h2>
+      <p class="dek">Reusable solutions to problems every programmer eventually hits. We'll use bank examples for every one.</p>
+
+      <section class="block">
+        <div class="eli7">
+          <span class="lbl">Explain it like I'm in 7th grade</span>
+          <p>A design pattern is like a LEGO instruction booklet. It doesn't give you the finished castle — it gives you a proven way to assemble certain pieces so the castle doesn't fall over. Programmers reuse these patterns instead of inventing a new way to solve the same old problem every time.</p>
+        </div>
+
+        <h4>Singleton — only one of something must exist</h4>
+        <p>Used for things like a single shared database connection pool.</p>
+        <div class="codewrap"><pre><code>class DBConnectionPool:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.connections = []
+        return cls._instance
+
+# Both variables point to the exact same object
+pool_a = DBConnectionPool()
+pool_b = DBConnectionPool()
+assert pool_a is pool_b</code></pre></div>
+
+        <h4>Factory — a "maker" that decides which object to build</h4>
+        <div class="codewrap"><pre><code>class SavingsAccount: ...
+class CheckingAccount: ...
+
+def account_factory(kind: str):
+    if kind == "savings":
+        return SavingsAccount()
+    if kind == "checking":
+        return CheckingAccount()
+    raise ValueError("Unknown account type")
+
+acc = account_factory("savings")</code></pre></div>
+
+        <h4>Strategy — swap the "how" without changing the "what"</h4>
+        <p>Great for interest calculation rules that change per account type.</p>
+        <div class="codewrap"><pre><code>class SimpleInterest:
+    def calculate(self, balance, rate): return balance * rate
+
+class CompoundInterest:
+    def calculate(self, balance, rate): return balance * ((1 + rate) - 1)
+
+class Account:
+    def __init__(self, interest_strategy):
+        self.interest_strategy = interest_strategy
+
+    def apply_interest(self, balance, rate):
+        return self.interest_strategy.calculate(balance, rate)</code></pre></div>
+
+        <h4>Repository — hide the database behind a simple interface</h4>
+        <div class="codewrap"><pre><code>class AccountRepository:
+    def __init__(self, db_session):
+        self.db = db_session
+
+    def get(self, account_id: str):
+        return self.db.query(Account).filter_by(id=account_id).first()
+
+    def save(self, account):
+        self.db.add(account)
+        self.db.commit()
+
+# Your business logic calls repo.get(), never writes raw SQL directly.
+# Swap Postgres for MongoDB later without touching business logic.</code></pre></div>
+
+        <h4>Dependency Injection — hand in what's needed, don't build it inside</h4>
+        <div class="eli7">
+          <span class="lbl">Explain it like I'm in 7th grade</span>
+          <p>Instead of a chef growing their own vegetables inside the kitchen (hard to test, hard to swap), someone delivers fresh vegetables to the door every morning. The kitchen just uses whatever arrives. FastAPI's <code>Depends()</code> is exactly this delivery system, covered next.</p>
+        </div>
+
+        <table>
+          <tr><th>Pattern</th><th>Bank problem it solves</th></tr>
+          <tr><td>Singleton</td><td>One shared DB connection pool app-wide</td></tr>
+          <tr><td>Factory</td><td>Creating the right account type from a string</td></tr>
+          <tr><td>Strategy</td><td>Swapping interest/fee rules per product</td></tr>
+          <tr><td>Repository</td><td>Isolating business logic from the database</td></tr>
+          <tr><td>Unit of Work</td><td>Making a group of DB changes succeed/fail together</td></tr>
+          <tr><td>Circuit Breaker</td><td>Stop hammering a downstream service that's down</td></tr>
+          <tr><td>CQRS</td><td>Separate "read fast" paths from "write safely" paths</td></tr>
+        </table>
+        <p>We'll use several of these for real in the <strong>Bank Capstone</strong> and <strong>Microservices</strong> stations.</p>
+      </section>
+
+      <div class="prevnext"><button data-prevnext="prev">← Back</button><button data-prevnext="next">Next: FastAPI Advanced →</button></div>
+    </section>
+    <section class="panel" id="p-fastapi-adv">
+      <div class="eyebrow"><span class="level-pill lv-intermediate">Station 04</span></div>
+      <h2>FastAPI Advanced</h2>
+      <p class="dek">Dependency injection, routers, middleware, background tasks, and clean error handling.</p>
+
+      <section class="block">
+        <h4>Routers — organizing endpoints into files</h4>
+        <div class="eli7"><span class="lbl">Explain it like I'm in 7th grade</span><p>Instead of writing every rule of a school in one giant book, you split it into a Math handbook, a Sports handbook, and a Lunch handbook. A FastAPI <strong>router</strong> is one of those handbooks — a file full of related endpoints that plugs into the main app.</p></div>
+        <div class="codewrap"><div class="fname">routers/accounts.py</div><pre><code>from fastapi import APIRouter
+
+router = APIRouter(prefix="/accounts", tags=["accounts"])
+
+@router.get("/{account_id}")
+def get_account(account_id: str):
+    return {"account_id": account_id}</code></pre></div>
+        <div class="codewrap"><div class="fname">main.py</div><pre><code>from fastapi import FastAPI
+from routers import accounts
+
+app = FastAPI()
+app.include_router(accounts.router)</code></pre></div>
+
+        <h4>Dependency Injection with <code>Depends()</code></h4>
+        <div class="codewrap"><pre><code>from fastapi import Depends, FastAPI
+from sqlalchemy.orm import Session
+
+app = FastAPI()
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db          # "deliver" the db session
+    finally:
+        db.close()          # always clean up after the request
+
+@app.get("/accounts/{account_id}")
+def get_account(account_id: str, db: Session = Depends(get_db)):
+    return db.query(Account).filter_by(id=account_id).first()</code></pre></div>
+        <p>This same pattern is used later to inject the <strong>current logged-in user</strong> from a JWT token into any endpoint that needs it.</p>
+
+        <h4>Middleware — code that runs around every request</h4>
+        <div class="codewrap"><pre><code>import time
+from fastapi import Request
+
+@app.middleware("http")
+async def add_timing_header(request: Request, call_next):
+    start = time.time()
+    response = await call_next(request)
+    response.headers["X-Process-Time"] = str(time.time() - start)
+    return response</code></pre></div>
+
+        <h4>Background tasks — reply first, finish the chore later</h4>
+        <div class="eli7"><span class="lbl">Explain it like I'm in 7th grade</span><p>You tell a friend "done!" for a chore, then actually finish tidying up after they leave, so they don't have to stand around waiting. Sending a "transfer confirmation" email doesn't need to block the API response.</p></div>
+        <div class="codewrap"><pre><code>from fastapi import BackgroundTasks
+
+def send_email(to: str, subject: str):
+    ...  # slow network call to an email provider
+
+@app.post("/transfers")
+def create_transfer(payload: TransferRequest, background_tasks: BackgroundTasks):
+    result = process_transfer(payload)
+    background_tasks.add_task(send_email, payload.from_account, "Transfer sent")
+    return result</code></pre></div>
+
+        <h4>Clean error handling</h4>
+        <div class="codewrap"><pre><code>from fastapi import HTTPException
+
+class InsufficientFundsError(Exception):
+    pass
+
+@app.exception_handler(InsufficientFundsError)
+async def handle_insufficient_funds(request, exc):
+    return JSONResponse(status_code=400, content={"error": "insufficient_funds"})
+
+@app.post("/withdraw")
+def withdraw(account_id: str, amount: float):
+    if amount > get_balance(account_id):
+        raise InsufficientFundsError()
+    ...</code></pre></div>
+
+        <h4>Pydantic Settings — configuration done right</h4>
+        <div class="codewrap"><pre><code>from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    database_url: str
+    jwt_secret: str
+    class Config:
+        env_file = ".env"
+
+settings = Settings()   # reads DATABASE_URL, JWT_SECRET from environment / .env</code></pre></div>
+        <div class="warn"><span class="lbl">Never do this</span><p>Never hard-code secrets (database passwords, JWT signing keys) directly in your code. Load them from environment variables — this matters even more once we deploy to Kubernetes and use Secrets.</p></div>
+      </section>
+
+      <div class="prevnext"><button data-prevnext="prev">← Back</button><button data-prevnext="next">Next: SQL, MongoDB &amp; Sync →</button></div>
+    </section>
+    <section class="panel" id="p-db">
+      <div class="eyebrow"><span class="level-pill lv-intermediate">Station 05</span></div>
+      <h2>SQL, MongoDB &amp; Data Synchronization</h2>
+      <p class="dek">Two very different filing cabinets, when to use each, and how to keep them in sync.</p>
+
+      <section class="block">
+        <div class="eli7">
+          <span class="lbl">Explain it like I'm in 7th grade</span>
+          <p><strong>SQL</strong> (like PostgreSQL) is a filing cabinet with strict labeled folders — every folder has the exact same tabs (columns), so nothing gets misplaced. Great for money, where every row must follow the same strict rules.</p>
+          <p><strong>MongoDB</strong> is a big box where each item can be wrapped differently — one product might have 5 fields, another 12. Great for things that change shape often, like product catalogs or activity logs.</p>
+        </div>
+
+        <table>
+          <tr><th></th><th>SQL (PostgreSQL)</th><th>MongoDB</th></tr>
+          <tr><td>Structure</td><td>Fixed schema, tables &amp; rows</td><td>Flexible schema, documents (JSON-like)</td></tr>
+          <tr><td>Relationships</td><td>Strong (foreign keys, joins)</td><td>Weaker, often embedded/denormalized</td></tr>
+          <tr><td>Transactions</td><td>Rock-solid ACID by default</td><td>Supports ACID too, but usually used differently</td></tr>
+          <tr><td>Best for banking</td><td>Ledgers, balances, transactions</td><td>Audit logs, notifications, device sessions</td></tr>
+        </table>
+
+        <h4>SQL with FastAPI (SQLAlchemy / SQLModel)</h4>
+        <div class="codewrap"><div class="fname">models.py</div><pre><code>from sqlmodel import SQLModel, Field
+from decimal import Decimal
+
+class Account(SQLModel, table=True):
+    id: str = Field(primary_key=True)
+    owner: str
+    balance: Decimal = Field(default=0)
+
+class Transaction(SQLModel, table=True):
+    id: str = Field(primary_key=True)
+    account_id: str = Field(foreign_key="account.id")
+    amount: Decimal
+    kind: str   # "deposit" | "withdrawal" | "transfer"</code></pre></div>
+        <div class="codewrap"><div class="fname">main.py</div><pre><code>from sqlmodel import Session, select
+
+@app.get("/accounts/{account_id}/transactions")
+def list_transactions(account_id: str, session: Session = Depends(get_session)):
+    stmt = select(Transaction).where(Transaction.account_id == account_id)
+    return session.exec(stmt).all()</code></pre></div>
+        <div class="note"><span class="lbl">Always use Decimal, never float, for money</span><p>Floats round money incorrectly (0.1 + 0.2 isn't exactly 0.3 in binary). Use Python's <code>Decimal</code> type and your database's <code>NUMERIC</code> column type for anything involving currency.</p></div>
+
+        <h4>MongoDB with FastAPI (Motor, async driver)</h4>
+        <div class="codewrap"><pre><code>from motor.motor_asyncio import AsyncIOMotorClient
+
+client = AsyncIOMotorClient("mongodb://localhost:27017")
+db = client.bank_logs
+
+@app.post("/audit-log")
+async def log_event(event: dict):
+    result = await db.events.insert_one(event)
+    return {"id": str(result.inserted_id)}
+
+@app.get("/audit-log/{account_id}")
+async def get_events(account_id: str):
+    cursor = db.events.find({"account_id": account_id}).limit(50)
+    return [doc async for doc in cursor]</code></pre></div>
+
+        <h4>Data synchronization techniques</h4>
+        <div class="eli7"><span class="lbl">Explain it like I'm in 7th grade</span><p>If you write your homework in two different notebooks, you have to make sure both notebooks say the same thing, or you'll get confused about what's actually true. Keeping two databases in agreement is the same problem, just for computers.</p></div>
+
+        <h4>1. Dual write (simple, but risky)</h4>
+        <div class="codewrap"><pre><code>def create_transfer(data):
+    save_to_postgres(data)     # if this succeeds...
+    save_to_mongo_audit(data)  # ...but this fails, they disagree!</code></pre></div>
+        <div class="warn"><span class="lbl">Why this is dangerous</span><p>If the second write fails, your two data stores now disagree, and nothing tells you. Avoid dual writes for anything that must always match, like money.</p></div>
+
+        <h4>2. Outbox pattern (reliable)</h4>
+        <div class="diagram"><span class="h">Outbox Pattern</span>
+1. Write transaction + an "outbox" row     in ONE Postgres transaction
+   (both succeed together, or both fail together)
+2. A separate worker reads unsent outbox rows
+3. Worker publishes an event  →  message queue (Kafka / Azure Service Bus)
+4. Mongo-writing service consumes the event  →  updates MongoDB
+5. Worker marks the outbox row as "sent"</div>
+        <p>Because step 1 uses a single database transaction, the transaction and the "I need to sync this" note are saved atomically — nothing can succeed halfway.</p>
+
+        <h4>3. Change Data Capture (CDC)</h4>
+        <p>Tools like Debezium watch Postgres's internal write-ahead log and automatically stream every row change out as an event — no code changes needed in your app at all.</p>
+        <div class="diagram">Postgres  --(WAL changes)-->  Debezium  --(events)-->  Kafka  --> MongoDB / Search / Cache</div>
+
+        <h4>4. Event-driven sync (used across microservices)</h4>
+        <div class="codewrap"><pre><code># Account service publishes an event after committing to SQL
+async def transfer_completed(event: dict):
+    await kafka_producer.send("transfers.completed", event)
+
+# Notification service (separate microservice) listens and writes to Mongo
+async def on_transfer_completed(event: dict):
+    await mongo_db.notifications.insert_one({
+        "user_id": event["user_id"],
+        "message": f"Transfer of {event['amount']} completed",
+    })</code></pre></div>
+        <table>
+          <tr><th>Technique</th><th>Consistency</th><th>Complexity</th><th>Use when</th></tr>
+          <tr><td>Dual write</td><td>Weak</td><td>Low</td><td>Non-critical, toy projects only</td></tr>
+          <tr><td>Outbox pattern</td><td>Strong (eventual)</td><td>Medium</td><td>Money-related events</td></tr>
+          <tr><td>CDC (Debezium)</td><td>Strong (eventual)</td><td>Medium-High</td><td>Syncing without touching app code</td></tr>
+          <tr><td>Event-driven</td><td>Eventual</td><td>Medium</td><td>Microservices reacting to each other</td></tr>
+        </table>
+      </section>
+
+      <div class="prevnext"><button data-prevnext="prev">← Back</button><button data-prevnext="next">Next: JWT, OAuth2 &amp; OIDC →</button></div>
+    </section>
+    <section class="panel" id="p-security">
+      <div class="eyebrow"><span class="level-pill lv-intermediate">Station 06</span></div>
+      <h2>JWT, OAuth2 &amp; OIDC</h2>
+      <p class="dek">Three names that get mixed up constantly. Here's exactly what each one actually does.</p>
+
+      <section class="block">
+        <div class="eli7">
+          <span class="lbl">Explain it like I'm in 7th grade</span>
+          <p><strong>JWT</strong> is a stamped hall pass — a piece of paper that proves "yes, the teacher already checked this student, they're allowed in." <strong>OAuth2</strong> is the rulebook for how you're allowed to ask for, and get handed, that hall pass without giving away your actual password to every hallway monitor. <strong>OIDC</strong> adds a photo ID to the hall pass — it doesn't just prove you're allowed in, it also proves exactly who you are.</p>
+        </div>
+
+        <h3>JWT — JSON Web Token</h3>
+        <p>A JWT is a compact, signed string with three parts separated by dots: <code>header.payload.signature</code>.</p>
+        <div class="diagram"><span class="h">Anatomy of a JWT</span>
+eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0MiIsImV4cCI6MTcwMDAwfQ.4f8a2c...
+└──────── header ────────┘└────────── payload ──────────┘└─ signature ─┘
+
+Header:    { "alg": "HS256", "typ": "JWT" }
+Payload:   { "sub": "42", "role": "customer", "exp": 1700000000 }
+Signature: created using a SECRET KEY only the server knows
+
+The payload is only ENCODED (base64), not encrypted — anyone can
+read it. The signature is what proves nobody TAMPERED with it.</div>
+        <div class="warn"><span class="lbl">Important</span><p>Never put secrets (passwords, card numbers) inside a JWT payload — it's readable by anyone who has the token. The signature protects against forgery, not against reading.</p></div>
+
+        <h4>Issuing and verifying JWTs in FastAPI</h4>
+        <div class="codewrap"><div class="fname">pip install python-jose[cryptography] passlib[bcrypt]</div></div>
+        <div class="codewrap"><div class="fname">auth.py</div><pre><code>from datetime import datetime, timedelta
+from jose import jwt, JWTError
+from fastapi import Depends, HTTPException
+from fastapi.security import OAuth2PasswordBearer
+
+SECRET_KEY = settings.jwt_secret   # from environment, never hard-coded
+ALGORITHM = "HS256"
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+def create_access_token(user_id: str, expires_minutes: int = 30):
+    payload = {
+        "sub": user_id,
+        "exp": datetime.utcnow() + timedelta(minutes=expires_minutes),
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+def get_current_user(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    return user_id</code></pre></div>
+        <div class="codewrap"><div class="fname">main.py</div><pre><code>@app.post("/token")
+def login(username: str, password: str):
+    user = authenticate(username, password)   # check DB + hashed password
+    if not user:
+        raise HTTPException(status_code=401, detail="Bad credentials")
+    return {"access_token": create_access_token(user.id), "token_type": "bearer"}
+
+@app.get("/accounts/me")
+def my_account(user_id: str = Depends(get_current_user)):
+    return get_account_by_owner(user_id)</code></pre></div>
+
+        <h3>OAuth2 — the rulebook for delegated access</h3>
+        <p>OAuth2 defines roles and flows so an app can act on your behalf <em>without ever seeing your password</em>.</p>
+        <table>
+          <tr><th>Role</th><th>Who they are</th></tr>
+          <tr><td>Resource Owner</td><td>You, the customer</td></tr>
+          <tr><td>Client</td><td>The app asking for access (e.g. a budgeting app)</td></tr>
+          <tr><td>Authorization Server</td><td>Issues tokens after you approve (e.g. your bank's login page)</td></tr>
+          <tr><td>Resource Server</td><td>The API holding your actual data (e.g. the bank's account API)</td></tr>
+        </table>
+        <div class="diagram"><span class="h">Authorization Code Flow (the safe, standard one)</span>
+1. Budgeting App redirects you  --> Bank's login page
+2. You log in directly on the Bank's page (app never sees your password)
+3. Bank redirects back with a one-time  "authorization code"
+4. Budgeting App exchanges the code (+ its own client secret)
+      for an  access_token   at the Bank's token endpoint
+5. Budgeting App calls Bank API using:  Authorization: Bearer &lt;access_token&gt;</div>
+
+        <h4>Using FastAPI's built-in OAuth2 password flow (simple case)</h4>
+        <div class="codewrap"><pre><code>from fastapi.security import OAuth2PasswordRequestForm
+
+@app.post("/token")
+def login(form: OAuth2PasswordRequestForm = Depends()):
+    user = authenticate(form.username, form.password)
+    if not user:
+        raise HTTPException(status_code=401)
+    token = create_access_token(user.id)
+    return {"access_token": token, "token_type": "bearer"}</code></pre></div>
+        <div class="note"><span class="lbl">Scopes — fine-grained permission</span><p>OAuth2 tokens can carry <strong>scopes</strong> like <code>accounts:read</code> or <code>transfers:write</code>, so a budgeting app can be granted "read my balance" without ever being allowed to move money.</p></div>
+
+        <h3>OIDC — OpenID Connect (identity on top of OAuth2)</h3>
+        <p>OAuth2 alone only proves "this app has permission." It doesn't formally prove <em>who you are</em>. OIDC adds exactly that, with one extra token:</p>
+        <table>
+          <tr><th>Token</th><th>Purpose</th></tr>
+          <tr><td>Access Token</td><td>"This app may call the API" (OAuth2)</td></tr>
+          <tr><td>ID Token</td><td>"This person is definitely who they claim to be" (OIDC, always a JWT)</td></tr>
+          <tr><td>Refresh Token</td><td>Used to get a new access token without logging in again</td></tr>
+        </table>
+        <div class="codewrap"><div class="fname">Decoded ID Token (OIDC)</div><pre><code>{
+  "iss": "https://login.mybank.com",
+  "sub": "user_42",
+  "aud": "budgeting-app-client-id",
+  "email": "asha@example.com",
+  "email_verified": true,
+  "exp": 1700003600
+}</code></pre></div>
+        <p>This is exactly how "Sign in with Google" works — Google is the OIDC provider, and it hands the app a verified ID Token proving your identity.</p>
+
+        <h4>Verifying an external OIDC provider's token in FastAPI</h4>
+        <div class="codewrap"><pre><code>import httpx
+from jose import jwt
+
+async def verify_oidc_token(id_token: str):
+    jwks = await httpx.AsyncClient().get(
+        "https://login.mybank.com/.well-known/jwks.json"
+    )
+    return jwt.decode(
+        id_token, jwks.json(), algorithms=["RS256"], audience="budgeting-app-client-id"
+    )</code></pre></div>
+        <div class="note"><span class="lbl">In one sentence</span><p><strong>JWT</strong> is the token format. <strong>OAuth2</strong> is the flow for getting permission. <strong>OIDC</strong> is OAuth2 plus a signed proof of identity.</p></div>
+      </section>
+
+      <div class="prevnext"><button data-prevnext="prev">← Back</button><button data-prevnext="next">Next: Bank Capstone →</button></div>
+    </section>
+    <section class="panel" id="p-bank">
+      <div class="eyebrow"><span class="level-pill lv-advanced">Station 07</span></div>
+      <h2>Capstone: A Bank Backend</h2>
+      <p class="dek">Putting FastAPI, SQL, JWT, and design patterns together into a real system: accounts, double-entry ledger, and safe transfers.</p>
+
+      <section class="block">
+        <div class="eli7">
+          <span class="lbl">Explain it like I'm in 7th grade</span>
+          <p>A real bank never just changes one number when you send money — it writes down <em>two</em> matching entries: "$10 left account A" and "$10 arrived in account B." This is called <strong>double-entry bookkeeping</strong>, and it means the bank can always prove where every cent came from and went.</p>
+        </div>
+
+        <h4>The data model</h4>
+        <div class="codewrap"><pre><code>class Account(SQLModel, table=True):
+    id: str = Field(primary_key=True)
+    owner_id: str
+    currency: str = "USD"
+    # NOTE: balance is a DERIVED value, computed from ledger entries,
+    # never trusted as the single source of truth
+
+class LedgerEntry(SQLModel, table=True):
+    id: str = Field(primary_key=True)
+    transfer_id: str
+    account_id: str
+    amount: Decimal        # negative = debit, positive = credit
+    created_at: datetime</code></pre></div>
+
+        <h4>Why idempotency matters</h4>
+        <div class="eli7"><span class="lbl">Explain it like I'm in 7th grade</span><p>If your phone loses signal right after you tap "Send $10" and you tap it again "just in case," the bank must not send $20. <strong>Idempotency</strong> means doing the same request twice has the same effect as doing it once.</p></div>
+        <div class="codewrap"><pre><code>class TransferRequest(BaseModel):
+    from_account: str
+    to_account: str
+    amount: Decimal
+    idempotency_key: str   # client generates a unique key per attempt
+
+@app.post("/transfers")
+def create_transfer(payload: TransferRequest, db: Session = Depends(get_db)):
+    existing = db.exec(
+        select(Transfer).where(Transfer.idempotency_key == payload.idempotency_key)
+    ).first()
+    if existing:
+        return existing   # already processed — return the same result, don't redo it
+    return process_new_transfer(payload, db)</code></pre></div>
+
+        <h4>The transfer itself — atomic and consistent</h4>
+        <div class="codewrap"><pre><code>def process_new_transfer(payload: TransferRequest, db: Session):
+    with db.begin():   # everything below succeeds together, or rolls back together
+        balance = get_balance(db, payload.from_account)
+        if balance < payload.amount:
+            raise InsufficientFundsError()
+
+        transfer = Transfer(id=str(uuid4()), idempotency_key=payload.idempotency_key,
+                             status="completed")
+        db.add(transfer)
+        db.add(LedgerEntry(transfer_id=transfer.id, account_id=payload.from_account,
+                             amount=-payload.amount))
+        db.add(LedgerEntry(transfer_id=transfer.id, account_id=payload.to_account,
+                             amount=payload.amount))
+        db.add(OutboxEvent(type="transfer.completed", payload=transfer.dict()))
+    return transfer
+
+def get_balance(db: Session, account_id: str) -> Decimal:
+    total = db.exec(
+        select(func.sum(LedgerEntry.amount)).where(LedgerEntry.account_id == account_id)
+    ).one()
+    return total or Decimal(0)</code></pre></div>
+        <p>Notice the <code>OutboxEvent</code> row saved in the <em>same</em> transaction — this is the Outbox Pattern from the Databases station, guaranteeing the event will eventually reach other services (like the notification service) even if the message queue is briefly down.</p>
+
+        <h4>Wiring in JWT authentication</h4>
+        <div class="codewrap"><pre><code>@app.post("/transfers")
+def create_transfer(
+    payload: TransferRequest,
+    user_id: str = Depends(get_current_user),   # from the JWT, Station 06
+    db: Session = Depends(get_db),
+):
+    account = get_account(db, payload.from_account)
+    if account.owner_id != user_id:
+        raise HTTPException(status_code=403, detail="Not your account")
+    return process_new_transfer(payload, db)</code></pre></div>
+
+        <div class="warn"><span class="lbl">Real bank systems also need</span><p>Fraud checks, rate limiting, dual authorization for large amounts, encryption at rest, PCI-DSS compliance, and full audit trails. This capstone shows the architecture skeleton — production banking software has many more layers of safety.</p></div>
+      </section>
+
+      <div class="prevnext"><button data-prevnext="prev">← Back</button><button data-prevnext="next">Next: Microservices Architecture →</button></div>
+    </section>
+    <section class="panel" id="p-micro">
+      <div class="eyebrow"><span class="level-pill lv-advanced">Station 08</span></div>
+      <h2>Microservices Architecture</h2>
+      <p class="dek">Splitting the bank into small, independent services instead of one giant program.</p>
+
+      <section class="block">
+        <div class="eli7">
+          <span class="lbl">Explain it like I'm in 7th grade</span>
+          <p>Imagine one kid trying to be the entire school by themselves — teacher, cook, nurse, and janitor all at once. If they get sick, the whole school shuts down. Instead, a real school has separate people for each job who can work at their own pace and be replaced individually. <strong>Microservices</strong> split a big application the same way: separate small services, each doing one job well.</p>
+        </div>
+
+        <h4>Splitting the bank</h4>
+        <div class="diagram"><span class="h">Bank Microservices</span>
+                     ┌───────────────┐
+   Mobile App ─────▶│  API Gateway  │
+                     └───────┬───────┘
+       ┌───────────┬─────────┼─────────┬───────────────┐
+       ▼           ▼         ▼         ▼               ▼
+ ┌──────────┐┌──────────┐┌─────────┐┌───────────┐┌─────────────┐
+ │  Auth    ││ Accounts ││Transfers││Notification││   Fraud     │
+ │ Service  ││ Service  ││ Service ││  Service   ││  Service    │
+ │(JWT/OIDC)││ (SQL)    ││ (SQL)   ││ (MongoDB)  ││ (streaming) │
+ └──────────┘└──────────┘└─────────┘└───────────┘└─────────────┘
+       Each service: own database, own deploy, own team</div>
+
+        <h4>API Gateway — the single front door</h4>
+        <p>All external traffic enters through one gateway that handles routing, TLS, rate limiting, and authentication checks before forwarding to the right service.</p>
+
+        <h4>Sync vs. async communication</h4>
+        <table>
+          <tr><th></th><th>Synchronous (REST/gRPC)</th><th>Asynchronous (message queue)</th></tr>
+          <tr><td>How</td><td>Service A calls Service B directly and waits</td><td>Service A publishes an event; others react whenever</td></tr>
+          <tr><td>Coupling</td><td>Tighter — B must be up</td><td>Looser — B can be down temporarily</td></tr>
+          <tr><td>Good for</td><td>"Is this account valid right now?"</td><td>"A transfer just completed" (many listeners)</td></tr>
+        </table>
+
+        <h4>Service-to-service auth (not user JWTs — service identity)</h4>
+        <div class="codewrap"><pre><code>@app.get("/accounts/{account_id}")
+def get_account(
+    account_id: str,
+    service_token: str = Depends(verify_service_token),  # mTLS or service JWT
+):
+    ...</code></pre></div>
+
+        <h4>The Saga Pattern — transactions across services</h4>
+        <div class="eli7"><span class="lbl">Explain it like I'm in 7th grade</span><p>If moving money now means "tell Service A, then Service B, then Service C" and Service C fails, you can't just undo it like closing one notebook — you have to send each earlier service a note saying "please undo your part too." A Saga is that chain of do-this / undo-this steps.</p></div>
+        <div class="codewrap"><pre><code>async def transfer_saga(payload):
+    try:
+        await accounts_service.reserve_funds(payload.from_account, payload.amount)
+        await ledger_service.record_transfer(payload)
+        await notification_service.notify(payload.to_account)
+    except Exception:
+        await accounts_service.release_reserved_funds(payload.from_account, payload.amount)
+        raise</code></pre></div>
+
+        <h4>Circuit Breaker — protecting yourself from a struggling service</h4>
+        <div class="codewrap"><pre><code>from pybreaker import CircuitBreaker
+
+fraud_service_breaker = CircuitBreaker(fail_max=5, reset_timeout=30)
+
+@fraud_service_breaker
+def check_fraud(payload):
+    return httpx.post("http://fraud-service/check", json=payload).json()
+
+# After 5 failures, the breaker "opens" and fails fast for 30s
+# instead of piling up slow, doomed requests against a struggling service.</code></pre></div>
+
+        <div class="note"><span class="lbl">Trade-off to remember</span><p>Microservices buy you independent scaling and deployment, at the cost of network complexity, harder debugging, and eventual (not instant) consistency between services. Don't split a small app into 12 services on day one — start simpler, split when a real scaling or team-boundary pain shows up.</p></div>
+      </section>
+
+      <div class="prevnext"><button data-prevnext="prev">← Back</button><button data-prevnext="next">Next: System Design →</button></div>
+    </section>
+    <section class="panel" id="p-sysdesign">
+      <div class="eyebrow"><span class="level-pill lv-advanced">Station 09</span></div>
+      <h2>System Design</h2>
+      <p class="dek">How the bank system survives real traffic: scaling, caching, load balancing, and consistency trade-offs.</p>
+
+      <section class="block">
+        <div class="eli7">
+          <span class="lbl">Explain it like I'm in 7th grade</span>
+          <p>If one cash register in a store gets a long line, you open a second register — that's <strong>scaling</strong>. A manager telling customers which open register to go to is a <strong>load balancer</strong>. Keeping a few pre-made popular sandwiches ready instead of cooking from scratch every time is a <strong>cache</strong>.</p>
+        </div>
+
+        <h4>Horizontal scaling</h4>
+        <div class="diagram"><span class="h">Scaling FastAPI</span>
+                    ┌───────────────────┐
+   Users  ────────▶│   Load Balancer    │
+                    └─────────┬──────────┘
+        ┌──────────┬──────────┼──────────┬──────────┐
+        ▼          ▼          ▼          ▼          ▼
+     Pod #1     Pod #2     Pod #3     Pod #4     Pod #5
+   (FastAPI)  (FastAPI)  (FastAPI)  (FastAPI)  (FastAPI)
+        └──────────┴──────────┴──────────┴──────────┘
+                        shared Postgres + Redis</div>
+        <p>Because FastAPI pods are <strong>stateless</strong> (they keep no user data in memory between requests — it's all in the database/cache), Kubernetes can freely add or remove pods to match traffic.</p>
+
+        <h4>Caching with Redis</h4>
+        <div class="codewrap"><pre><code>import redis
+r = redis.Redis(host="redis", port=6379)
+
+@app.get("/accounts/{account_id}/balance")
+def get_balance(account_id: str):
+    cached = r.get(f"balance:{account_id}")
+    if cached:
+        return {"balance": float(cached)}
+    balance = compute_balance_from_db(account_id)
+    r.setex(f"balance:{account_id}", 10, balance)   # cache for 10 seconds
+    return {"balance": balance}</code></pre></div>
+        <div class="warn"><span class="lbl">Cache carefully with money</span><p>Never cache the balance used to authorize a withdrawal — always read the real database for anything that spends money. Caching is fine for "display" reads, dangerous for "decision" reads.</p></div>
+
+        <h4>CAP theorem, the short version</h4>
+        <div class="eli7"><span class="lbl">Explain it like I'm in 7th grade</span><p>If your two best friends are in different classrooms and can't talk to each other right now (a network problem), they each have to choose: either both stop answering questions until they can compare notes (pick <strong>Consistency</strong>), or both keep answering with maybe-outdated info (pick <strong>Availability</strong>). You can't have perfectly agreeing, always-answering friends during an actual network split.</p></div>
+        <p>CAP theorem: during a network Partition, a distributed system must choose between <strong>Consistency</strong> (every read sees the latest write) and <strong>Availability</strong> (every request gets a response). Bank ledgers usually favor consistency for money movement, and availability for things like "show recent activity."</p>
+
+        <h4>Rate limiting</h4>
+        <div class="codewrap"><pre><code>from slowapi import Limiter
+from slowapi.util import get_remote_address
+
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+
+@app.post("/transfers")
+@limiter.limit("5/minute")
+def create_transfer(...):
+    ...</code></pre></div>
+
+        <h4>CQRS — separate read and write models</h4>
+        <p>Writes (transfers) go through the strict, validated ledger path. Reads (dashboard, statements) can be served from a pre-computed, denormalized, fast-read copy — updated asynchronously by the events from the Outbox pattern.</p>
+        <div class="diagram">Write path:  API -> validate -> Postgres ledger -> Outbox event
+Read path:   Event -> projector -> read-optimized table / cache -> API (fast reads)</div>
+
+        <h4>Back-of-envelope estimation (interview-style thinking)</h4>
+        <table>
+          <tr><th>Question</th><th>Rough approach</th></tr>
+          <tr><td>How many DB writes/sec at 1M daily active users?</td><td>1M users × ~5 transfers/day ÷ 86,400s ≈ 58 writes/sec average (plan for 5-10× peak)</td></tr>
+          <tr><td>How much storage for 5 years of ledger entries?</td><td>rows/day × row size × 365 × 5 — then plan partitioning/archiving</td></tr>
+        </table>
+      </section>
+
+      <div class="prevnext"><button data-prevnext="prev">← Back</button><button data-prevnext="next">Next: Docker, Kubernetes &amp; AKS →</button></div>
+    </section>
+    <section class="panel" id="p-docker-k8s">
+      <div class="eyebrow"><span class="level-pill lv-cloud">Station 10</span></div>
+      <h2>Docker, Kubernetes &amp; Azure Kubernetes Service</h2>
+      <p class="dek">Packaging the app so it runs the same everywhere, and letting Kubernetes keep it alive and scaled on Azure.</p>
+
+      <section class="block">
+        <div class="eli7">
+          <span class="lbl">Explain it like I'm in 7th grade</span>
+          <p><strong>Docker</strong> is like packing a complete lunchbox — your food, your fork, your napkin — so it tastes exactly the same no matter whose kitchen you eat it in. A <strong>container</strong> is that sealed lunchbox: your app plus everything it needs to run. <strong>Kubernetes</strong> is the lunchroom monitor who makes sure there are always enough working lunchboxes out, replaces any that spill, and hands out more when more kids show up hungry. <strong>AKS</strong> is that lunchroom, run for you by Microsoft Azure.</p>
+        </div>
+
+        <h4>Dockerfile for the FastAPI bank service</h4>
+        <div class="codewrap"><div class="fname">Dockerfile</div><pre><code>FROM python:3.12-slim
+
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8000
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]</code></pre></div>
+        <div class="codewrap"><pre><code>docker build -t bank-accounts-service:1.0 .
+docker run -p 8000:8000 --env-file .env bank-accounts-service:1.0</code></pre></div>
+
+        <h4>docker-compose for local development</h4>
+        <div class="codewrap"><div class="fname">docker-compose.yml</div><pre><code>services:
+  api:
+    build: .
+    ports: ["8000:8000"]
+    environment:
+      - DATABASE_URL=postgresql://postgres:pass@db:5432/bank
+    depends_on: [db, redis]
+  db:
+    image: postgres:16
+    environment:
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=bank
+  redis:
+    image: redis:7</code></pre></div>
+
+        <h4>Kubernetes core concepts</h4>
+        <table>
+          <tr><th>Concept</th><th>7th-grade version</th></tr>
+          <tr><td>Pod</td><td>One running lunchbox (your container, running)</td></tr>
+          <tr><td>Deployment</td><td>"Always keep 5 lunchboxes ready" instructions</td></tr>
+          <tr><td>Service</td><td>A single label/address that points at whichever lunchboxes are currently ready</td></tr>
+          <tr><td>Ingress</td><td>The front gate that routes outside traffic in by URL path</td></tr>
+          <tr><td>ConfigMap / Secret</td><td>Notes taped inside the lunchbox: settings, and secret passwords</td></tr>
+          <tr><td>Namespace</td><td>Separate lunchrooms for different classes (e.g. staging vs. production)</td></tr>
+        </table>
+
+        <h4>Deployment manifest</h4>
+        <div class="codewrap"><div class="fname">deployment.yaml</div><pre><code>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: accounts-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels: { app: accounts-service }
+  template:
+    metadata:
+      labels: { app: accounts-service }
+    spec:
+      containers:
+        - name: accounts-service
+          image: mybankregistry.azurecr.io/accounts-service:1.0
+          ports: [{ containerPort: 8000 }]
+          envFrom:
+            - secretRef: { name: accounts-secrets }
+          resources:
+            requests: { cpu: "250m", memory: "256Mi" }
+            limits: { cpu: "500m", memory: "512Mi" }
+          readinessProbe:
+            httpGet: { path: /health, port: 8000 }
+            initialDelaySeconds: 5
+          livenessProbe:
+            httpGet: { path: /health, port: 8000 }
+            initialDelaySeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: accounts-service
+spec:
+  selector: { app: accounts-service }
+  ports: [{ port: 80, targetPort: 8000 }]
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: accounts-service-hpa
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: accounts-service }
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+    - type: Resource
+      resource: { name: cpu, target: { type: Utilization, averageUtilization: 70 } }</code></pre></div>
+        <p><strong>readinessProbe</strong> asks "are you ready for traffic yet?" before sending requests. <strong>livenessProbe</strong> asks "are you still alive?" — Kubernetes restarts a pod that stops answering. The HPA (Horizontal Pod Autoscaler) automatically adds more pods when CPU usage climbs, like opening more registers when the line grows.</p>
+
+        <h4>Ingress with TLS</h4>
+        <div class="codewrap"><div class="fname">ingress.yaml</div><pre><code>apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bank-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  tls:
+    - hosts: [api.mybank.com]
+      secretName: bank-tls
+  rules:
+    - host: api.mybank.com
+      http:
+        paths:
+          - path: /accounts
+            pathType: Prefix
+            backend: { service: { name: accounts-service, port: { number: 80 } } }
+          - path: /transfers
+            pathType: Prefix
+            backend: { service: { name: transfers-service, port: { number: 80 } } }</code></pre></div>
+
+        <h4>Getting onto Azure Kubernetes Service (AKS)</h4>
+        <div class="codewrap"><pre><code># Create a resource group and an AKS cluster
+az group create --name bank-rg --location eastus
+az aks create --resource-group bank-rg --name bank-aks \
+  --node-count 3 --enable-managed-identity --generate-ssh-keys
+
+# Point kubectl at it
+az aks get-credentials --resource-group bank-rg --name bank-aks
+
+# Push your image to Azure Container Registry, then deploy
+az acr build --registry mybankregistry --image accounts-service:1.0 .
+kubectl apply -f deployment.yaml
+kubectl apply -f ingress.yaml
+kubectl get pods -w</code></pre></div>
+        <div class="note"><span class="lbl">AKS-specific niceties</span><p>AKS integrates with Azure Active Directory for cluster login, Azure Container Registry (ACR) for private images, Azure Key Vault (via CSI driver) for secrets, and Azure Monitor for logs/metrics out of the box.</p></div>
+      </section>
+
+      <div class="prevnext"><button data-prevnext="prev">← Back</button><button data-prevnext="next">Next: CI/CD, Logging &amp; Monitoring →</button></div>
+    </section>
+    <section class="panel" id="p-cicd">
+      <div class="eyebrow"><span class="level-pill lv-cloud">Station 11</span></div>
+      <h2>CI/CD, Logging &amp; Monitoring</h2>
+      <p class="dek">Automatically testing and shipping every code change, and watching the running system for trouble.</p>
+
+      <section class="block">
+        <div class="eli7">
+          <span class="lbl">Explain it like I'm in 7th grade</span>
+          <p><strong>CI/CD</strong> is like a school having an automatic homework checker: the moment you submit your assignment, it's instantly checked for mistakes, and if it's good, it's automatically added to the class portfolio — no teacher has to do it by hand each time. <strong>Logging</strong> is a diary the app writes about what it did. <strong>Monitoring</strong> is a dashboard of gauges (like a car's speedometer) telling you if something's wrong right now.</p>
+        </div>
+
+        <h4>CI/CD pipeline (GitHub Actions → AKS)</h4>
+        <div class="codewrap"><div class="fname">.github/workflows/deploy.yml</div><pre><code>name: Build, Test, Deploy
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r requirements.txt
+      - run: pytest --cov=app tests/
+
+  build-and-deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/login@v2
+        with: { creds: ${{ secrets.AZURE_CREDENTIALS }} }
+
+      - name: Build and push image
+        run: |
+          az acr build --registry mybankregistry \
+            --image accounts-service:${{ github.sha }} .
+
+      - name: Deploy to AKS
+        run: |
+          az aks get-credentials --resource-group bank-rg --name bank-aks
+          kubectl set image deployment/accounts-service \
+            accounts-service=mybankregistry.azurecr.io/accounts-service:${{ github.sha }}
+          kubectl rollout status deployment/accounts-service</code></pre></div>
+        <p>CI (Continuous Integration) is the <code>test</code> job — every push is automatically checked. CD (Continuous Delivery/Deployment) is the second job — a passing build is automatically shipped to AKS with zero-downtime rolling updates.</p>
+
+        <h4>Structured logging</h4>
+        <div class="codewrap"><pre><code>import logging, json
+
+logger = logging.getLogger("accounts-service")
+
+def log_event(level, message, **fields):
+    logger.log(level, json.dumps({"message": message, **fields}))
+
+log_event(logging.INFO, "transfer_completed",
+          transfer_id=transfer.id, amount=str(payload.amount), user_id=user_id)
+
+# Output: {"message": "transfer_completed", "transfer_id": "tx_9F2A", ...}</code></pre></div>
+        <div class="note"><span class="lbl">Why JSON logs?</span><p>Plain sentences are for humans; JSON logs are for machines. Tools like Azure Monitor or Grafana Loki can search, filter, and alert on structured fields — like "show me every failed transfer over $10,000 in the last hour" — instantly.</p></div>
+
+        <h4>Metrics with Prometheus</h4>
+        <div class="codewrap"><pre><code>from prometheus_fastapi_instrumentator import Instrumentator
+
+Instrumentator().instrument(app).expose(app)   # adds a /metrics endpoint
+
+# Custom business metric
+from prometheus_client import Counter
+transfers_total = Counter("transfers_total", "Total transfers", ["status"])
+
+@app.post("/transfers")
+def create_transfer(...):
+    result = process_new_transfer(...)
+    transfers_total.labels(status="success").inc()
+    return result</code></pre></div>
+        <p>Grafana then reads Prometheus data to draw dashboards: request rate, error rate, p99 latency, transfers per minute.</p>
+
+        <h4>Azure-native observability</h4>
+        <table>
+          <tr><th>Need</th><th>Azure service</th></tr>
+          <tr><td>Centralized logs from all AKS pods</td><td>Azure Monitor / Container Insights</td></tr>
+          <tr><td>Application traces (which call was slow, and why)</td><td>Application Insights (OpenTelemetry)</td></tr>
+          <tr><td>Metrics dashboards</td><td>Azure Managed Grafana, or Azure Monitor Workbooks</td></tr>
+          <tr><td>Alerts (page someone at 3am)</td><td>Azure Monitor Alerts → email/SMS/Teams</td></tr>
+        </table>
+        <div class="codewrap"><pre><code>from azure.monitor.opentelemetry import configure_azure_monitor
+configure_azure_monitor(connection_string=settings.app_insights_connection_string)
+# now every request, exception, and dependency call is auto-traced</code></pre></div>
+
+        <h4>The four golden signals to watch</h4>
+        <table>
+          <tr><th>Signal</th><th>What it tells you</th></tr>
+          <tr><td>Latency</td><td>How long requests take</td></tr>
+          <tr><td>Traffic</td><td>How many requests/sec are hitting the service</td></tr>
+          <tr><td>Errors</td><td>Rate of failed requests (4xx/5xx)</td></tr>
+          <tr><td>Saturation</td><td>How close to maxed-out CPU/memory/connections you are</td></tr>
+        </table>
+      </section>
+
+      <div class="prevnext"><button data-prevnext="prev">← Back</button><button data-prevnext="next">Next: Terraform &amp; Azure Bicep →</button></div>
+    </section>
+    <section class="panel" id="p-iac">
+      <div class="eyebrow"><span class="level-pill lv-cloud">Station 12</span></div>
+      <h2>Terraform &amp; Azure Bicep</h2>
+      <p class="dek">Describing your cloud infrastructure as text files instead of clicking buttons — Infrastructure as Code.</p>
+
+      <section class="block">
+        <div class="eli7">
+          <span class="lbl">Explain it like I'm in 7th grade</span>
+          <p>Instead of building a LEGO set by randomly picking pieces and hoping you remember what you did, you follow (and save) the instruction booklet. <strong>Infrastructure as Code</strong> is that saved booklet for your cloud servers, databases, and networks — anyone can rebuild the exact same setup by running the same file, and you can see every change in version control, just like code.</p>
+        </div>
+
+        <h4>Terraform vs. Azure Bicep</h4>
+        <table>
+          <tr><th></th><th>Terraform</th><th>Azure Bicep</th></tr>
+          <tr><td>Made by</td><td>HashiCorp</td><td>Microsoft</td></tr>
+          <tr><td>Cloud support</td><td>Any cloud (AWS, Azure, GCP...)</td><td>Azure only</td></tr>
+          <tr><td>Language</td><td>HCL (its own syntax)</td><td>Bicep (compiles to ARM JSON)</td></tr>
+          <tr><td>State tracking</td><td>You manage a state file (e.g. in Azure Storage)</td><td>Azure tracks deployment state for you</td></tr>
+          <tr><td>Good fit</td><td>Multi-cloud or mixed-tool teams</td><td>Azure-only teams wanting a native, simpler tool</td></tr>
+        </table>
+
+        <h4>Provisioning AKS with Terraform</h4>
+        <div class="codewrap"><div class="fname">main.tf</div><pre><code>terraform {
+  required_providers {
+    azurerm = { source = "hashicorp/azurerm", version = "~> 3.0" }
+  }
+}
+provider "azurerm" { features {} }
+
+resource "azurerm_resource_group" "bank" {
+  name     = "bank-rg"
+  location = "eastus"
+}
+
+resource "azurerm_kubernetes_cluster" "aks" {
+  name                = "bank-aks"
+  location            = azurerm_resource_group.bank.location
+  resource_group_name = azurerm_resource_group.bank.name
+  dns_prefix          = "bankaks"
+
+  default_node_pool {
+    name       = "default"
+    node_count = 3
+    vm_size    = "Standard_D2s_v5"
+  }
+
+  identity { type = "SystemAssigned" }
+}
+
+resource "azurerm_postgresql_flexible_server" "db" {
+  name                   = "bank-pg"
+  resource_group_name    = azurerm_resource_group.bank.name
+  location               = azurerm_resource_group.bank.location
+  version                = "16"
+  administrator_login    = "bankadmin"
+  administrator_password = var.db_password
+  storage_mb             = 32768
+  sku_name               = "GP_Standard_D2s_v3"
+}</code></pre></div>
+        <div class="codewrap"><pre><code>terraform init      # download providers
+terraform plan       # preview what will change
+terraform apply       # actually create the resources</code></pre></div>
+        <div class="note"><span class="lbl">Why "plan" before "apply"?</span><p><code>terraform plan</code> shows you exactly what will be added, changed, or destroyed before it touches anything real — like proofreading before hitting "submit."</p></div>
+
+        <h4>The same AKS cluster in Azure Bicep</h4>
+        <div class="codewrap"><div class="fname">main.bicep</div><pre><code>param location string = resourceGroup().location
+
+resource aks 'Microsoft.ContainerService/managedClusters@2024-01-01' = {
+  name: 'bank-aks'
+  location: location
+  identity: { type: 'SystemAssigned' }
+  properties: {
+    dnsPrefix: 'bankaks'
+    agentPoolProfiles: [
+      {
+        name: 'default'
+        count: 3
+        vmSize: 'Standard_D2s_v5'
+        mode: 'System'
+      }
+    ]
+  }
+}
+
+resource pg 'Microsoft.DBforPostgreSQL/flexibleServers@2023-06-01-preview' = {
+  name: 'bank-pg'
+  location: location
+  sku: { name: 'Standard_D2s_v3', tier: 'GeneralPurpose' }
+  properties: {
+    version: '16'
+    administratorLogin: 'bankadmin'
+    administratorLoginPassword: dbPassword
+    storage: { storageSizeGB: 32 }
+  }
+}
+param dbPassword string</code></pre></div>
+        <div class="codewrap"><pre><code>az deployment group create \
+  --resource-group bank-rg \
+  --template-file main.bicep \
+  --parameters dbPassword=$DB_PASSWORD</code></pre></div>
+
+        <h4>Where this fits with CI/CD</h4>
+        <div class="diagram">Pull Request opened
+   -> CI runs  "terraform plan"  (or "az deployment ... what-if")
+   -> Human reviews the planned infrastructure changes
+Merge to main
+   -> CD runs  "terraform apply"  (or Bicep deployment)
+   -> Cluster/database updated automatically, safely, and repeatably</div>
+        <div class="warn"><span class="lbl">Golden rule</span><p>Never manually click-fix production infrastructure. If you do, your Terraform/Bicep files no longer match reality ("drift"), and the next automated run may undo your fix. Always change infrastructure through the code files.</p></div>
+
+        <h4>You made it — the full map</h4>
+        <p>Python → FastAPI → Design Patterns → SQL/MongoDB sync → JWT/OAuth2/OIDC → a real bank backend → split into microservices → sized with system design → packaged in Docker → run on Kubernetes/AKS → shipped with CI/CD → watched with logging/monitoring → and the whole cluster itself defined as code with Terraform or Bicep. That's the entire path from a beginner's first endpoint to a production-grade banking platform.</p>
+      </section>
+
+      <div class="prevnext"><button data-prevnext="prev">← Back</button><button data-prevnext="next">Next: React + FastAPI + Mongo CRUD →</button></div>
+    </section>
+
+    <section class="panel" id="p-react">
+      <div class="eyebrow"><span class="level-pill lv-advanced">Station 13</span></div>
+      <h2>React + FastAPI + MongoDB: Secured CRUD</h2>
+      <p class="dek">A complete full-stack slice: a React frontend, a FastAPI + MongoDB backend, JWT login, and routes that are locked down by both authentication and role.</p>
+
+      <section class="block">
+        <div class="eli7">
+          <span class="lbl">Explain it like I'm in 7th grade</span>
+          <p>Think of a school clubhouse. <strong>React</strong> is the clubhouse's front room — the part members actually see and click around in. <strong>FastAPI</strong> is the clubhouse manager who checks IDs and fetches things from storage. <strong>MongoDB</strong> is the storage room where the club's stuff (a list of members, notes, whatever) actually lives. A <strong>secured route</strong> means the manager checks your hall pass (JWT) before letting you into certain rooms — and some rooms need more than just "you're a member," they need "you're specifically an officer" (<strong>authorization</strong>, not just <strong>authentication</strong>).</p>
+          <p><strong>Authentication</strong> answers "who are you?" <strong>Authorization</strong> answers "are you allowed to do this specific thing?" You can be authenticated (logged in) and still be refused if you're not authorized (e.g. a regular customer can't approve loans).</p>
+        </div>
+
+        <h4>The shape of the app</h4>
+        <div class="diagram"><span class="h">Full-stack flow</span>
+ React (browser)                 FastAPI (server)              MongoDB
+ ┌──────────────┐   1. login    ┌──────────────────┐        ┌──────────┐
+ │ Login form    │ ────────────▶│ POST /auth/login   │──────▶│  users   │
+ │               │◀──JWT token──│ verify + sign JWT  │◀──────│collection│
+ └──────┬────────┘               └──────────────────┘        └──────────┘
+        │ store token (memory / httpOnly cookie)
+        ▼
+ ┌──────────────┐  2. Authorization: Bearer <token>  ┌──────────────────┐
+ │ Notes page    │ ───────────────────────────────▶ │ GET/POST/PUT/DEL   │
+ │ (protected)   │ ◀─────────────────────────────── │  /notes  (secured) │
+ └──────────────┘                                     └─────────┬────────┘
+                                                                   ▼
+                                                              MongoDB "notes"</div>
+
+        <h4>Backend: MongoDB models &amp; connection (Motor)</h4>
+        <div class="codewrap"><div class="fname">pip install fastapi uvicorn motor python-jose[cryptography] passlib[bcrypt] pydantic-settings</div></div>
+        <div class="codewrap"><div class="fname">database.py</div><pre><code>from motor.motor_asyncio import AsyncIOMotorClient
+
+client = AsyncIOMotorClient("mongodb://localhost:27017")
+db = client.clubhouse
+
+users_collection = db.users
+notes_collection = db.notes</code></pre></div>
+
+        <h4>Backend: schemas</h4>
+        <div class="codewrap"><div class="fname">schemas.py</div><pre><code>from pydantic import BaseModel, Field
+from typing import Literal
+
+class UserCreate(BaseModel):
+    email: str
+    password: str
+
+class UserOut(BaseModel):
+    id: str
+    email: str
+    role: Literal["member", "admin"] = "member"
+
+class NoteCreate(BaseModel):
+    title: str
+    content: str
+
+class NoteOut(BaseModel):
+    id: str
+    title: str
+    content: str
+    owner_id: str</code></pre></div>
+
+        <h4>Backend: password hashing, JWT issue &amp; verify</h4>
+        <div class="codewrap"><div class="fname">auth.py</div><pre><code>from datetime import datetime, timedelta
+from jose import jwt, JWTError
+from passlib.context import CryptContext
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+
+SECRET_KEY = settings.jwt_secret     # loaded from environment, never hard-coded
+ALGORITHM = "HS256"
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
+
+def verify_password(plain: str, hashed: str) -> bool:
+    return pwd_context.verify(plain, hashed)
+
+def create_access_token(user_id: str, role: str, expires_minutes: int = 60):
+    payload = {
+        "sub": user_id,
+        "role": role,
+        "exp": datetime.utcnow() + timedelta(minutes=expires_minutes),
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    return {"id": payload["sub"], "role": payload["role"]}
+
+def require_role(required_role: str):
+    """Authorization: not just logged in, but the RIGHT role."""
+    async def checker(user: dict = Depends(get_current_user)):
+        if user["role"] != required_role and user["role"] != "admin":
+            raise HTTPException(status_code=403, detail="Not authorized for this action")
+        return user
+    return checker</code></pre></div>
+        <div class="note"><span class="lbl">Authentication vs. authorization in this code</span><p><code>get_current_user</code> only checks "is this a valid token" — that's <strong>authentication</strong>. <code>require_role("admin")</code> additionally checks "are you the right kind of user" — that's <strong>authorization</strong>. Secured routes use one or both, depending on what they protect.</p></div>
+
+        <h4>Backend: auth routes (register &amp; login)</h4>
+        <div class="codewrap"><div class="fname">routers/auth.py</div><pre><code>from fastapi import APIRouter, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import Depends
+from bson import ObjectId
+
+router = APIRouter(prefix="/auth", tags=["auth"])
+
+@router.post("/register", response_model=UserOut, status_code=201)
+async def register(payload: UserCreate):
+    existing = await users_collection.find_one({"email": payload.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    doc = {"email": payload.email, "password": hash_password(payload.password), "role": "member"}
+    result = await users_collection.insert_one(doc)
+    return UserOut(id=str(result.inserted_id), email=payload.email, role="member")
+
+@router.post("/login")
+async def login(form: OAuth2PasswordRequestForm = Depends()):
+    user = await users_collection.find_one({"email": form.username})
+    if not user or not verify_password(form.password, user["password"]):
+        raise HTTPException(status_code=401, detail="Incorrect email or password")
+    token = create_access_token(str(user["_id"]), user["role"])
+    return {"access_token": token, "token_type": "bearer"}</code></pre></div>
+
+        <h4>Backend: secured CRUD routes for "notes"</h4>
+        <div class="codewrap"><div class="fname">routers/notes.py</div><pre><code>from fastapi import APIRouter, Depends, HTTPException
+from bson import ObjectId
+from auth import get_current_user, require_role
+from database import notes_collection
+from schemas import NoteCreate, NoteOut
+
+router = APIRouter(prefix="/notes", tags=["notes"])
+
+def serialize(doc) -> NoteOut:
+    return NoteOut(id=str(doc["_id"]), title=doc["title"],
+                   content=doc["content"], owner_id=doc["owner_id"])
+
+# CREATE — any authenticated user
+@router.post("", response_model=NoteOut, status_code=201)
+async def create_note(payload: NoteCreate, user: dict = Depends(get_current_user)):
+    doc = {**payload.dict(), "owner_id": user["id"]}
+    result = await notes_collection.insert_one(doc)
+    doc["_id"] = result.inserted_id
+    return serialize(doc)
+
+# READ (list) — only your own notes
+@router.get("", response_model=list[NoteOut])
+async def list_notes(user: dict = Depends(get_current_user)):
+    cursor = notes_collection.find({"owner_id": user["id"]})
+    return [serialize(doc) async for doc in cursor]
+
+# READ (one) — must be authenticated AND own the note
+@router.get("/{note_id}", response_model=NoteOut)
+async def get_note(note_id: str, user: dict = Depends(get_current_user)):
+    doc = await notes_collection.find_one({"_id": ObjectId(note_id)})
+    if not doc or doc["owner_id"] != user["id"]:
+        raise HTTPException(status_code=404, detail="Note not found")
+    return serialize(doc)
+
+# UPDATE — must own the note
+@router.put("/{note_id}", response_model=NoteOut)
+async def update_note(note_id: str, payload: NoteCreate, user: dict = Depends(get_current_user)):
+    doc = await notes_collection.find_one({"_id": ObjectId(note_id)})
+    if not doc or doc["owner_id"] != user["id"]:
+        raise HTTPException(status_code=404, detail="Note not found")
+    await notes_collection.update_one({"_id": ObjectId(note_id)}, {"$set": payload.dict()})
+    doc.update(payload.dict())
+    return serialize(doc)
+
+# DELETE — admin-only example of role-based authorization
+@router.delete("/{note_id}", status_code=204)
+async def delete_note(note_id: str, user: dict = Depends(require_role("admin"))):
+    await notes_collection.delete_one({"_id": ObjectId(note_id)})</code></pre></div>
+
+        <h4>Backend: wiring it together + CORS for React</h4>
+        <div class="codewrap"><div class="fname">main.py</div><pre><code>from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from routers import auth, notes
+
+app = FastAPI(title="Clubhouse API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],   # your React dev server
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(auth.router)
+app.include_router(notes.router)</code></pre></div>
+        <div class="warn"><span class="lbl">CORS matters here</span><p>Without <code>CORSMiddleware</code>, the browser blocks React (running on one origin, e.g. <code>localhost:5173</code>) from calling FastAPI (running on another, e.g. <code>localhost:8000</code>). This is the browser protecting users from sneaky cross-site requests — you have to explicitly allow your own frontend.</p></div>
+
+        <h4>Frontend: a small API client that attaches the JWT</h4>
+        <div class="codewrap"><div class="fname">src/api.js</div><pre><code>const BASE_URL = "http://localhost:8000";
+
+export async function apiFetch(path, options = {}) {
+  const token = localStorage.getItem("token");
+  const res = await fetch(BASE_URL + path, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options.headers,
+    },
+  });
+  if (res.status === 401) {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+  }
+  if (!res.ok) throw new Error((await res.json()).detail || "Request failed");
+  return res.status === 204 ? null : res.json();
+}</code></pre></div>
+        <div class="eli7"><span class="lbl">Explain it like I'm in 7th grade</span><p>Every time React asks the backend for something, it slips the JWT "hall pass" into the request's <code>Authorization</code> header. If the pass has expired or is missing, the backend says "401, not allowed," and this helper automatically sends the user back to the login page.</p></div>
+
+        <h4>Frontend: a tiny auth context (login state shared across the app)</h4>
+        <div class="codewrap"><div class="fname">src/AuthContext.jsx</div><pre><code>import { createContext, useContext, useState } from "react";
+import { apiFetch } from "./api";
+
+const AuthContext = createContext(null);
+
+export function AuthProvider({ children }) {
+  const [token, setToken] = useState(localStorage.getItem("token"));
+
+  async function login(email, password) {
+    const form = new URLSearchParams();
+    form.append("username", email);
+    form.append("password", password);
+
+    const res = await fetch("http://localhost:8000/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: form,
+    });
+    if (!res.ok) throw new Error("Login failed");
+    const data = await res.json();
+    localStorage.setItem("token", data.access_token);
+    setToken(data.access_token);
+  }
+
+  function logout() {
+    localStorage.removeItem("token");
+    setToken(null);
+  }
+
+  return (
+    &lt;AuthContext.Provider value={{ token, login, logout, isAuthed: !!token }}&gt;
+      {children}
+    &lt;/AuthContext.Provider&gt;
+  );
+}
+
+export const useAuth = () =&gt; useContext(AuthContext);</code></pre></div>
+
+        <h4>Frontend: a secured route wrapper</h4>
+        <div class="codewrap"><div class="fname">src/ProtectedRoute.jsx</div><pre><code>import { Navigate } from "react-router-dom";
+import { useAuth } from "./AuthContext";
+
+export default function ProtectedRoute({ children }) {
+  const { isAuthed } = useAuth();
+  if (!isAuthed) return &lt;Navigate to="/login" replace /&gt;;
+  return children;
+}</code></pre></div>
+        <div class="codewrap"><div class="fname">src/App.jsx</div><pre><code>import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./AuthContext";
+import ProtectedRoute from "./ProtectedRoute";
+import LoginPage from "./LoginPage";
+import NotesPage from "./NotesPage";
+
+export default function App() {
+  return (
+    &lt;AuthProvider&gt;
+      &lt;BrowserRouter&gt;
+        &lt;Routes&gt;
+          &lt;Route path="/login" element={&lt;LoginPage /&gt;} /&gt;
+          &lt;Route
+            path="/notes"
+            element={
+              &lt;ProtectedRoute&gt;
+                &lt;NotesPage /&gt;
+              &lt;/ProtectedRoute&gt;
+            }
+          /&gt;
+        &lt;/Routes&gt;
+      &lt;/BrowserRouter&gt;
+    &lt;/AuthProvider&gt;
+  );
+}</code></pre></div>
+        <p>Anyone without a valid token who tries to visit <code>/notes</code> is bounced straight to <code>/login</code> — this is <strong>frontend</strong> route protection. It's a nice user experience, but it is <em>not</em> real security by itself.</p>
+
+        <h4>Frontend: the CRUD page itself</h4>
+        <div class="codewrap"><div class="fname">src/NotesPage.jsx</div><pre><code>import { useEffect, useState } from "react";
+import { apiFetch } from "./api";
+
+export default function NotesPage() {
+  const [notes, setNotes] = useState([]);
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+
+  async function loadNotes() {
+    setNotes(await apiFetch("/notes"));
+  }
+
+  useEffect(() =&gt; { loadNotes(); }, []);
+
+  async function createNote(e) {
+    e.preventDefault();
+    await apiFetch("/notes", {
+      method: "POST",
+      body: JSON.stringify({ title, content }),
+    });
+    setTitle(""); setContent("");
+    loadNotes();
+  }
+
+  async function deleteNote(id) {
+    await apiFetch(`/notes/${id}`, { method: "DELETE" });
+    loadNotes();
+  }
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;My Notes&lt;/h1&gt;
+      &lt;form onSubmit={createNote}&gt;
+        &lt;input value={title} onChange={e =&gt; setTitle(e.target.value)} placeholder="Title" /&gt;
+        &lt;input value={content} onChange={e =&gt; setContent(e.target.value)} placeholder="Content" /&gt;
+        &lt;button type="submit"&gt;Add Note&lt;/button&gt;
+      &lt;/form&gt;
+      &lt;ul&gt;
+        {notes.map(n =&gt; (
+          &lt;li key={n.id}&gt;
+            &lt;strong&gt;{n.title}&lt;/strong&gt;: {n.content}
+            &lt;button onClick={() =&gt; deleteNote(n.id)}&gt;Delete&lt;/button&gt;
+          &lt;/li&gt;
+        ))}
+      &lt;/ul&gt;
+    &lt;/div&gt;
+  );
+}</code></pre></div>
+
+        <h4>Why the backend check still matters (defense in depth)</h4>
+        <div class="warn"><span class="lbl">Never trust the frontend alone</span><p>A curious user can open dev tools, delete the JWT check in React's memory, or call the API directly with a tool like curl — completely bypassing your React app. That's why every single FastAPI route above independently re-checks <code>get_current_user</code> or <code>require_role</code>. The frontend route guard is for a smooth experience; the backend check is the actual lock on the door.</p></div>
+
+        <table>
+          <tr><th>Layer</th><th>What it protects against</th></tr>
+          <tr><td>React <code>ProtectedRoute</code></td><td>Showing a page to a user who obviously isn't logged in (UX only)</td></tr>
+          <tr><td>FastAPI <code>get_current_user</code></td><td>Anyone without a valid, unexpired JWT calling the API directly</td></tr>
+          <tr><td>FastAPI <code>require_role("admin")</code></td><td>A logged-in but under-privileged user performing an admin-only action</td></tr>
+          <tr><td>Per-document <code>owner_id</code> check</td><td>One member reading or editing another member's private notes</td></tr>
+        </table>
+
+        <div class="note"><span class="lbl">Recap</span><p>This station connects every earlier one: FastAPI (Station 02–04), MongoDB (Station 05), and JWT/OAuth2 (Station 06) now power a real React frontend — with authentication (are you logged in?), authorization (are you allowed to do this?), and ownership checks (is this actually yours?) all enforced on the server, where it actually counts.</p></div>
+      </section>
+
+      <div class="prevnext"><button data-prevnext="prev">← Back</button><button data-prevnext="next">Next: Kafka Basics + FastAPI →</button></div>
+    </section>
+
+    <section class="panel" id="p-kafka">
+      <div class="eyebrow"><span class="level-pill lv-advanced">Station 14</span></div>
+      <h2>Kafka Basics + FastAPI</h2>
+      <p class="dek">The messaging backbone that lets bank microservices tell each other "this just happened" without calling one another directly.</p>
+
+      <section class="block">
+        <div class="eli7">
+          <span class="lbl">Explain it like I'm in 7th grade</span>
+          <p>Imagine a school announcement system instead of one kid running to every classroom to deliver news by hand. Someone speaks into the microphone once — "assembly moved to 2pm" — and every classroom that's listening hears it, whenever they're ready to listen. <strong>Kafka</strong> is that announcement system for computers. A service doesn't call every other service one by one; it just announces an event once, and any service that cares can tune in.</p>
+        </div>
+
+        <h4>Core vocabulary</h4>
+        <table>
+          <tr><th>Term</th><th>7th-grade version</th><th>Technical version</th></tr>
+          <tr><td>Broker</td><td>One announcement speaker/server</td><td>A Kafka server that stores and serves messages</td></tr>
+          <tr><td>Topic</td><td>A named channel, like "Sports News"</td><td>A named stream of related events, e.g. <code>transfers.completed</code></td></tr>
+          <tr><td>Partition</td><td>Separate lines within one channel, so many people can listen at once without crowding</td><td>A topic is split into partitions for parallelism; order is guaranteed only within a partition</td></tr>
+          <tr><td>Producer</td><td>Whoever speaks into the microphone</td><td>Any service that publishes (writes) events to a topic</td></tr>
+          <tr><td>Consumer</td><td>Whoever is listening</td><td>Any service that reads events from a topic</td></tr>
+          <tr><td>Consumer Group</td><td>A study group sharing the listening job so no one hears the same announcement twice</td><td>Consumers in the same group split partitions between them — each message is processed once per group</td></tr>
+          <tr><td>Offset</td><td>A bookmark in the announcement recording</td><td>The position of a consumer's "last read" message in a partition, so it can resume after a restart</td></tr>
+          <tr><td>Retention</td><td>How long the recording stays available to replay</td><td>How long Kafka keeps messages on disk (e.g. 7 days) before deleting them, regardless of whether they were read</td></tr>
+        </table>
+
+        <h4>Architecture</h4>
+        <div class="diagram"><span class="h">Kafka in the bank system</span>
+ Transfers Service (producer)
+        │
+        │ publish "transfer.completed" event
+        ▼
+ ┌────────────────────────────────────────────┐
+ │  Kafka Topic: transfers.completed            │
+ │  ┌───────────┐ ┌───────────┐ ┌───────────┐   │
+ │  │Partition 0│ │Partition 1│ │Partition 2│   │
+ │  └───────────┘ └───────────┘ └───────────┘   │
+ └────────────────────────────────────────────┘
+        │                    │
+        ▼                    ▼
+ Notification Service   Fraud Service
+ (consumer group "notif") (consumer group "fraud")
+   → writes to MongoDB      → runs a risk check
+   (each group reads every message independently)</div>
+        <p>Two different consumer groups (Notification, Fraud) each get their own full copy of every event. Within one consumer group, work is split across partitions so multiple pod replicas can process messages in parallel without duplicating effort.</p>
+
+        <h4>Why not just call the other service directly (REST)?</h4>
+        <table>
+          <tr><th></th><th>Direct REST call</th><th>Kafka event</th></tr>
+          <tr><td>Coupling</td><td>Caller must know every listener and call each one</td><td>Producer knows nothing about who's listening</td></tr>
+          <tr><td>If a listener is down</td><td>Request fails or must be retried by the caller</td><td>Message waits safely on the topic until the consumer comes back</td></tr>
+          <tr><td>Adding a new listener</td><td>Must modify the caller's code</td><td>New service just subscribes — zero changes to the producer</td></tr>
+          <tr><td>Best for</td><td>"I need an answer right now" (check balance)</td><td>"FYI, this happened" (transfer completed, fan-out to many services)</td></tr>
+        </table>
+
+        <h4>Local Kafka with Docker Compose</h4>
+        <div class="codewrap"><div class="fname">docker-compose.yml</div><pre><code>services:
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    ports: ["9092:9092"]
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      CLUSTER_ID: bank-cluster-1
+  # KRaft mode: no separate Zookeeper needed on modern Kafka</code></pre></div>
+        <div class="codewrap"><pre><code>pip install aiokafka</code></pre></div>
+
+        <h4>FastAPI producer — publish an event when a transfer completes</h4>
+        <div class="codewrap"><div class="fname">kafka_client.py</div><pre><code>import json
+from aiokafka import AIOKafkaProducer
+
+producer: AIOKafkaProducer | None = None
+
+async def start_producer():
+    global producer
+    producer = AIOKafkaProducer(
+        bootstrap_servers="kafka:9092",
+        value_serializer=lambda v: json.dumps(v).encode("utf-8"),
+    )
+    await producer.start()
+
+async def stop_producer():
+    await producer.stop()
+
+async def publish_event(topic: str, key: str, event: dict):
+    await producer.send_and_wait(topic, value=event, key=key.encode("utf-8"))</code></pre></div>
+        <div class="codewrap"><div class="fname">main.py</div><pre><code>from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from kafka_client import start_producer, stop_producer, publish_event
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await start_producer()   # runs once, when the app starts
+    yield
+    await stop_producer()     # runs once, when the app shuts down
+
+app = FastAPI(lifespan=lifespan)
+
+@app.post("/transfers")
+async def create_transfer(payload: TransferRequest):
+    transfer = process_new_transfer(payload)
+    await publish_event(
+        topic="transfers.completed",
+        key=transfer.id,                 # same key = same partition = kept in order
+        event={"transfer_id": transfer.id, "amount": str(payload.amount),
+               "from_account": payload.from_account, "to_account": payload.to_account},
+    )
+    return transfer</code></pre></div>
+        <div class="note"><span class="lbl">Connecting back to the Outbox Pattern (Station 05)</span><p>In production, don't publish to Kafka directly inside the request like above — publish from the Outbox worker instead, <em>after</em> the database transaction has safely committed. That way, a Kafka hiccup can never cause the transfer to succeed in the database but never get announced (or vice versa).</p></div>
+
+        <h4>FastAPI consumer — a background listener in the Notification service</h4>
+        <div class="codewrap"><div class="fname">consumer.py</div><pre><code>import json, asyncio
+from aiokafka import AIOKafkaConsumer
+
+async def consume_transfers():
+    consumer = AIOKafkaConsumer(
+        "transfers.completed",
+        bootstrap_servers="kafka:9092",
+        group_id="notification-service",     # consumer group: shares work, avoids duplicates
+        value_deserializer=lambda v: json.loads(v.decode("utf-8")),
+        auto_offset_reset="earliest",
+        enable_auto_commit=False,             # commit manually, only after success
+    )
+    await consumer.start()
+    try:
+        async for message in consumer:
+            event = message.value
+            try:
+                await handle_transfer_completed(event)
+                await consumer.commit()        # only "bookmark" this message once it's handled
+            except Exception:
+                logger.exception("Failed to process event, will retry")
+                await asyncio.sleep(2)          # simple backoff before the next poll retries it
+    finally:
+        await consumer.stop()
+
+async def handle_transfer_completed(event: dict):
+    await mongo_db.notifications.insert_one({
+        "user_id": event["from_account"],
+        "message": f"Transfer of {event['amount']} completed",
+    })</code></pre></div>
+        <div class="codewrap"><div class="fname">main.py (Notification service)</div><pre><code>@asynccontextmanager
+async def lifespan(app: FastAPI):
+    task = asyncio.create_task(consume_transfers())   # runs alongside the API
+    yield
+    task.cancel()
+
+app = FastAPI(lifespan=lifespan)</code></pre></div>
+
+        <h4>Handling failures: retries and a dead-letter topic</h4>
+        <div class="eli7"><span class="lbl">Explain it like I'm in 7th grade</span><p>If a listener keeps mishearing the same announcement and it's clearly broken (not just noisy static), you don't want it stuck repeating that one announcement forever and never hearing new ones. Instead, you set the broken one aside in a "come back to this later" pile — a <strong>dead-letter topic</strong> — and move on to the next announcement.</p></div>
+        <div class="codewrap"><pre><code>MAX_RETRIES = 3
+
+async def handle_with_retry(event: dict):
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            return await handle_transfer_completed(event)
+        except Exception:
+            if attempt == MAX_RETRIES:
+                await publish_event("transfers.completed.dlq", event.get("transfer_id", ""), event)
+                return   # give up on this message, move on, don't block the whole partition
+            await asyncio.sleep(2 ** attempt)   # exponential backoff: 2s, 4s, 8s</code></pre></div>
+
+        <h4>Ordering &amp; idempotency, again</h4>
+        <div class="warn"><span class="lbl">Two things to always assume with Kafka</span><p><strong>Order</strong> is only guaranteed within a single partition, so always send events that must stay in order (like all events for one account) with the same partition key. <strong>At-least-once delivery</strong> means a consumer might see the same event twice after a retry or restart — so consumers should be idempotent, exactly like the transfer <code>idempotency_key</code> from the Bank Capstone station.</p></div>
+
+        <table>
+          <tr><th>Setting</th><th>What it controls</th></tr>
+          <tr><td><code>group_id</code></td><td>Which "team" this consumer belongs to — same group shares the work, different groups each get every message</td></tr>
+          <tr><td><code>auto_offset_reset</code></td><td>Where a brand-new consumer group starts reading: <code>earliest</code> (from the start) or <code>latest</code> (only new messages)</td></tr>
+          <tr><td><code>enable_auto_commit</code></td><td>Whether offsets commit automatically (simpler, riskier) or manually after real success (safer)</td></tr>
+          <tr><td>Partition key</td><td>Guarantees all events with the same key land in the same partition, preserving their order</td></tr>
+        </table>
+
+        <h4>On Azure / AKS</h4>
+        <p>In production you'd typically run Kafka as a managed service — Azure Event Hubs offers a Kafka-compatible endpoint, so the same <code>aiokafka</code> code above can point at Event Hubs instead of self-hosting Kafka brokers on your AKS cluster. If you do run Kafka yourself on AKS, the Strimzi Operator is the standard way to manage Kafka clusters as Kubernetes resources.</p>
+      </section>
+
+      <div class="prevnext"><button data-prevnext="prev">← Back</button><button disabled>Mission Complete 🚀</button></div>
+    </section>
+  </main>
+</div>
+
+<script>
+  const buttons = document.querySelectorAll('.navbtn');
+  const panels = document.querySelectorAll('.panel');
+  const order = Array.from(buttons).map(b=>b.dataset.target);
+
+  function show(id){
+    panels.forEach(p=>p.classList.toggle('active', p.id===id));
+    buttons.forEach(b=>b.classList.toggle('active', b.dataset.target===id));
+    document.getElementById('main').scrollTo(0,0);
+    window.scrollTo(0,0);
+    sidebar.classList.remove('open');
+    localStorage.setItem('mc_last', id);
+  }
+  buttons.forEach(b=>b.addEventListener('click', ()=> show(b.dataset.target)));
+
+  const sidebar = document.getElementById('sidebar');
+  document.getElementById('menuToggle').addEventListener('click', ()=> sidebar.classList.toggle('open'));
+
+  document.addEventListener('click', function(e){
+    if(e.target && e.target.matches('[data-nav]')){
+      show(e.target.getAttribute('data-nav'));
+    }
+    if(e.target && e.target.matches('[data-prevnext]')){
+      const dir = e.target.getAttribute('data-prevnext');
+      const cur = order.indexOf(document.querySelector('.navbtn.active').dataset.target);
+      const next = dir==='next' ? Math.min(cur+1, order.length-1) : Math.max(cur-1,0);
+      show(order[next]);
+    }
+  });
+
+  show(order[0]);
+</script>
+</body>
+</html>
