@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanalitix Senior Architect & CTO Interview Master Guide</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                            950: '#1e1b4b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts: Inter & Fira Code -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        code, pre { font-family: 'Fira Code', monospace; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.4); border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.7); }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 transition-all">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <button id="mobile-menu-btn" class="lg:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <div class="flex items-center space-x-2">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                        <i data-lucide="shield-alert" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <div>
+                        <span class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-indigo-400 via-sky-300 to-cyan-400 bg-clip-text text-transparent">SCANALITIX</span>
+                        <span class="block text-[10px] uppercase tracking-widest text-indigo-400 font-semibold">CTO / Architect Interview Master</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Bar in Header -->
+            <div class="hidden md:flex items-center relative w-72">
+                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3"></i>
+                <input type="text" id="global-search" placeholder="Search architecture, Kafka, CV, CNN..." class="w-full bg-slate-950/60 border border-slate-800 rounded-lg pl-9 pr-4 py-1.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <span class="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-1.5"></span>
+                    Senior / Director / CTO Level
+                </span>
+                <button onclick="toggleTheme()" class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition" title="Toggle Theme">
+                    <i data-lucide="sun" id="theme-icon" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main App Container -->
+    <div class="flex-1 max-w-7xl w-full mx-auto flex flex-col lg:flex-row px-4 sm:px-6 lg:px-8 py-6 gap-6">
+
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-72 bg-slate-900 border-r border-slate-800 p-6 flex flex-col transform -translate-x-full lg:translate-x-0 lg:static lg:w-72 lg:rounded-2xl lg:border lg:h-[calc(100vh-7rem)] lg:sticky lg:top-24 transition-transform duration-200 ease-in-out custom-scrollbar overflow-y-auto">
+            <div class="flex items-center justify-between lg:hidden mb-6">
+                <span class="font-bold text-slate-200">Navigation Menu</span>
+                <button id="close-sidebar" class="p-1 rounded-lg text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <div class="space-y-6">
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 px-3">Company & Role Context</p>
+                    <nav class="space-y-1">
+                        <button onclick="switchTab('overview')" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition text-slate-300 hover:bg-slate-800/80 hover:text-white active-tab" data-tab="overview">
+                            <i data-lucide="building-2" class="w-4 h-4 text-indigo-400"></i>
+                            <span>1. Scanalitix Overview</span>
+                        </button>
+                    </nav>
+                </div>
+
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 px-3">System Architecture</p>
+                    <nav class="space-y-1">
+                        <button onclick="switchTab('blueprint')" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition text-slate-300 hover:bg-slate-800/80 hover:text-white" data-tab="blueprint">
+                            <i data-lucide="cpu" class="w-4 h-4 text-cyan-400"></i>
+                            <span>2. E-Surveillance Blueprint</span>
+                        </button>
+                        <button onclick="switchTab('patterns')" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition text-slate-300 hover:bg-slate-800/80 hover:text-white" data-tab="patterns">
+                            <i data-lucide="git-merge" class="w-4 h-4 text-emerald-400"></i>
+                            <span>3. Patterns & Diagrams</span>
+                        </button>
+                    </nav>
+                </div>
+
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 px-3">Technical Pillars</p>
+                    <nav class="space-y-1">
+                        <button onclick="switchTab('pillars')" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition text-slate-300 hover:bg-slate-800/80 hover:text-white" data-tab="pillars">
+                            <i data-lucide="layers" class="w-4 h-4 text-amber-400"></i>
+                            <span>4. Deep-Dive Pillars</span>
+                        </button>
+                        <button onclick="switchTab('code-examples')" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition text-slate-300 hover:bg-slate-800/80 hover:text-white" data-tab="code-examples">
+                            <i data-lucide="code" class="w-4 h-4 text-purple-400"></i>
+                            <span>5. Code & Snippets</span>
+                        </button>
+                    </nav>
+                </div>
+
+                <div>
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 px-3">Simple Corner & Leadership</p>
+                    <nav class="space-y-1">
+                        <button onclick="switchTab('simple-corner')" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition text-slate-300 hover:bg-slate-800/80 hover:text-white" data-tab="simple-corner">
+                            <i data-lucide="smile" class="w-4 h-4 text-pink-400"></i>
+                            <span>6. 8th-Grade Corner</span>
+                        </button>
+                        <button onclick="switchTab('leadership')" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition text-slate-300 hover:bg-slate-800/80 hover:text-white" data-tab="leadership">
+                            <i data-lucide="award" class="w-4 h-4 text-rose-400"></i>
+                            <span>7. CTO & Director Q&A</span>
+                        </button>
+                    </nav>
+                </div>
+            </div>
+
+            <div class="mt-auto pt-6 border-t border-slate-800/80">
+                <div class="bg-gradient-to-br from-indigo-950/60 to-purple-950/40 p-3.5 rounded-xl border border-indigo-500/20">
+                    <p class="text-xs font-medium text-indigo-300">Ready for Interview?</p>
+                    <p class="text-[11px] text-slate-400 mt-1">Master VMS, Kafka event streams, and MLOps pipelines.</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Workspace -->
+        <main class="flex-1 min-w-0">
+            
+            <!-- TAB 1: OVERVIEW -->
+            <div id="tab-overview" class="tab-content space-y-6">
+                <div class="bg-gradient-to-r from-indigo-900/40 via-slate-900 to-slate-900 p-8 rounded-2xl border border-indigo-500/30 relative overflow-hidden shadow-xl">
+                    <div class="absolute right-0 top-0 translate-x-12 -translate-y-12 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                    <div class="relative z-10">
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Target Role: Senior Technical Architect / AI Solutions Architect</span>
+                        <h1 class="text-3xl sm:text-4xl font-extrabold text-white mt-4 tracking-tight">Scanalitix Master Interview Guide</h1>
+                        <p class="text-slate-300 mt-3 text-base sm:text-lg max-w-3xl leading-relaxed">
+                            Scanalitix is an AI-powered Unified E-Surveillance Platform converging Video Management System (VMS), Comprehensive Monitoring System (CMS), Video Analytics, and Field Service Management (FSM) at enterprise scale.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg">
+                        <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-4">
+                            <i data-lucide="video" class="w-5 h-5"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white">VMS & Video Analytics</h3>
+                        <p class="text-sm text-slate-400 mt-2">Processes millions of live RTSP/WebRTC streams, edge AI inference, ANPR, crowd density, and PPE compliance with ultra-low latency.</p>
+                    </div>
+                    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-4">
+                            <i data-lucide="cpu" class="w-5 h-5"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white">Unified Platform & FSM</h3>
+                        <p class="text-sm text-slate-400 mt-2">Integrates automated SLA escalation workflows, field technician dispatching, and multi-tenant cloud/hybrid deployments.</p>
+                    </div>
+                    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 shadow-lg">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 mb-4">
+                            <i data-lucide="shield-check" class="w-5 h-5"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white">Enterprise Scale</h3>
+                        <p class="text-sm text-slate-400 mt-2">Deployed across BFSI, smart cities, airports, and defence perimeters handling thousands of active sites concurrently.</p>
+                    </div>
+                </div>
+
+                <!-- Key Responsibilities Breakdown -->
+                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-lg">
+                    <h2 class="text-xl font-bold text-white mb-6 flex items-center">
+                        <i data-lucide="target" class="w-5 h-5 text-indigo-400 mr-2"></i>
+                        Core Expectations for the Role (10+ Years Experience)
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <div class="flex items-start space-x-3">
+                                <div class="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">1</div>
+                                <div>
+                                    <h4 class="font-semibold text-slate-200 text-sm">Enterprise Java & Microservices</h4>
+                                    <p class="text-xs text-slate-400 mt-1">Designing ultra-resilient distributed systems using Spring Boot, Reactive streams, and event-driven architectures.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <div class="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">2</div>
+                                <div>
+                                    <h4 class="font-semibold text-slate-200 text-sm">AI/ML & Computer Vision Pipeline</h4>
+                                    <p class="text-xs text-slate-400 mt-1">Training and deploying CNNs (YOLOv8/ResNet), OpenCV inference, and LLM integrations for intelligent document automation.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex items-start space-x-3">
+                                <div class="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">3</div>
+                                <div>
+                                    <h4 class="font-semibold text-slate-200 text-sm">MLOps & Cloud Infrastructure</h4>
+                                    <p class="text-xs text-slate-400 mt-1">Kubernetes, Terraform infrastructure-as-code, CI/CD pipelines, model monitoring, and automated model retraining loops.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-3">
+                                <div class="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">4</div>
+                                <div>
+                                    <h4 class="font-semibold text-slate-200 text-sm">Technical Leadership & Mentorship</h4>
+                                    <p class="text-xs text-slate-400 mt-1">Conducting architecture reviews, ensuring security best practices, and guiding cross-functional engineering squads.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: ARCHITECTURAL BLUEPRINT -->
+            <div id="tab-blueprint" class="tab-content space-y-6 hidden">
+                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-lg">
+                    <h2 class="text-2xl font-bold text-white flex items-center">
+                        <i data-lucide="cpu" class="w-6 h-6 text-cyan-400 mr-3"></i>
+                        End-to-End E-Surveillance System Architecture
+                    </h2>
+                    <p class="text-slate-400 text-sm mt-2">
+                        How Scanalitix ingests, processes, and acts upon millions of daily video feeds and alerts across thousands of remote sites.
+                    </p>
+
+                    <div class="mt-8 space-y-6">
+                        <!-- Layer 1: Edge & Ingestion -->
+                        <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-5">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs font-bold px-2.5 py-1 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Layer 1</span>
+                                <h3 class="text-base font-semibold text-white">Edge & Ingestion Layer</h3>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                IP Cameras, Drones, IoT Sensors, and Edge Gateway devices stream RTSP/WebRTC feeds. Local Edge compute boxes perform lightweight object detection (YOLO tiny) to reduce bandwidth before transmitting compressed event payloads to the central cloud.
+                            </p>
+                        </div>
+
+                        <!-- Layer 2: Streaming & Messaging -->
+                        <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-5">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs font-bold px-2.5 py-1 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">Layer 2</span>
+                                <h3 class="text-base font-semibold text-white">Event Streaming & Ingestion Backbone (Apache Kafka)</h3>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                High-throughput Kafka clusters ingest millions of telemetry data points, frame metadata, and alert events. Topics are partitioned by site ID and camera ID to guarantee strict ordering and horizontal scalability.
+                            </p>
+                        </div>
+
+                        <!-- Layer 3: Microservices & Video Analytics -->
+                        <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-5">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs font-bold px-2.5 py-1 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">Layer 3</span>
+                                <h3 class="text-base font-semibold text-white">Microservices Processing & AI Inference Engine</h3>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                Spring Boot reactive microservices handle VMS control, CMS monitoring, and FSM dispatch. Deep learning worker pods (TensorFlow/PyTorch with TensorRT on GPU nodes) consume Kafka streams for real-time anomaly detection, facial recognition, and ANPR.
+                            </p>
+                        </div>
+
+                        <!-- Layer 4: Storage & Command Center -->
+                        <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-5">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs font-bold px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Layer 4</span>
+                                <h3 class="text-base font-semibold text-white">Storage, SLA Escalation & Operator Command Center</h3>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                Time-series databases (TimescaleDB/InfluxDB) store metrics, object storage (S3/MinIO) holds video snippets, and Redis handles fast alert caching. SLA engines automatically trigger escalation workflows and dispatch field engineers via FSM mobile apps.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: ARCHITECTURE PATTERNS & DIAGRAMS -->
+            <div id="tab-patterns" class="tab-content space-y-6 hidden">
+                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-lg">
+                    <h2 class="text-2xl font-bold text-white flex items-center">
+                        <i data-lucide="git-merge" class="w-6 h-6 text-emerald-400 mr-3"></i>
+                        Interactive Architecture Patterns & Diagrams
+                    </h2>
+                    <p class="text-slate-400 text-sm mt-2">
+                        Explore enterprise-grade design patterns required for high-availability surveillance platforms.
+                    </p>
+
+                    <!-- Pattern Selector Buttons -->
+                    <div class="flex flex-wrap gap-3 mt-6">
+                        <button onclick="showDiagram('kafka')" class="diagram-tab-btn px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-600 text-white shadow-md transition" data-diagram="kafka">Kafka Event-Driven Microservices</button>
+                        <button onclick="showDiagram('saga')" class="diagram-tab-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition" data-diagram="saga">Orchestration-Based SAGA Pattern</button>
+                        <button onclick="showDiagram('edge')" class="diagram-tab-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition" data-diagram="edge">Edge-Cloud Hybrid AI Pipeline</button>
+                    </div>
+
+                    <!-- Diagram Container -->
+                    <div id="diagram-view" class="mt-6 bg-slate-950 border border-slate-800 rounded-2xl p-6 overflow-x-auto">
+                        <!-- Default: Kafka Event-Driven -->
+                        <div id="diag-kafka" class="diagram-content space-y-6">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-sm font-bold text-indigo-400 uppercase tracking-wider">Pattern 1: Kafka-Based Event-Driven Microservices for Millions of Alerts</h3>
+                                <span class="text-xs text-slate-500 font-mono">Async Pub-Sub Topology</span>
+                            </div>
+                            
+                            <!-- SVG Diagram -->
+                            <div class="w-full flex justify-center py-4">
+                                <svg viewBox="0 0 800 280" class="w-full max-w-3xl h-auto">
+                                    <!-- Cam Source -->
+                                    <rect x="20" y="100" width="100" height="60" rx="8" fill="#1e293b" stroke="#6366f1" stroke-width="2"/>
+                                    <text x="70" y="135" fill="#e2e8f0" font-size="12" text-anchor="middle" font-weight="600">IP Cameras</text>
+                                    
+                                    <!-- Arrow 1 -->
+                                    <path d="M 120 130 L 180 130" stroke="#6366f1" stroke-width="2" marker-end="url(#arrow)"/>
+
+                                    <!-- Kafka Cluster Box -->
+                                    <rect x="180" y="60" width="180" height="140" rx="12" fill="#0f172a" stroke="#10b981" stroke-width="2" stroke-dasharray="4"/>
+                                    <text x="270" y="85" fill="#34d399" font-size="13" text-anchor="middle" font-weight="bold">Apache Kafka Broker</text>
+                                    <rect x="200" y="105" width="140" height="30" rx="6" fill="#1e293b" stroke="#34d399" stroke-width="1"/>
+                                    <text x="270" y="125" fill="#cbd5e1" font-size="11" text-anchor="middle">Topic: vms-raw-streams</text>
+                                    <rect x="200" y="145" width="140" height="30" rx="6" fill="#1e293b" stroke="#34d399" stroke-width="1"/>
+                                    <text x="270" y="165" fill="#cbd5e1" font-size="11" text-anchor="middle">Topic: ai-alerts-stream</text>
+
+                                    <!-- Arrow 2 -->
+                                    <path d="M 360 130 L 440 80" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+                                    <path d="M 360 130 L 440 180" stroke="#10b981" stroke-width="2" marker-end="url(#arrow)"/>
+
+                                    <!-- Consumer Services -->
+                                    <rect x="440" y="50" width="140" height="60" rx="8" fill="#1e293b" stroke="#a855f7" stroke-width="2"/>
+                                    <text x="510" y="77" fill="#e2e8f0" font-size="11" text-anchor="middle" font-weight="600">AI Inference Service</text>
+                                    <text x="510" y="93" fill="#a855f7" font-size="9" text-anchor="middle">GPU Pods / CNN</text>
+
+                                    <rect x="440" y="150" width="140" height="60" rx="8" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+                                    <text x="510" y="177" fill="#e2e8f0" font-size="11" text-anchor="middle" font-weight="600">SLA & FSM Service</text>
+                                    <text x="510" y="193" fill="#3b82f6" font-size="9" text-anchor="middle">Spring Boot Reactive</text>
+
+                                    <!-- Arrow 3 -->
+                                    <path d="M 580 80 L 650 130" stroke="#a855f7" stroke-width="2" marker-end="url(#arrow)"/>
+                                    <path d="M 580 180 L 650 130" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow)"/>
+
+                                    <!-- Database / Dashboard -->
+                                    <rect x="650" y="100" width="110" height="60" rx="8" fill="#1e293b" stroke="#f59e0b" stroke-width="2"/>
+                                    <text x="705" y="127" fill="#e2e8f0" font-size="11" text-anchor="middle" font-weight="600">Command Center</text>
+                                    <text x="705" y="143" fill="#f59e0b" font-size="9" text-anchor="middle">TimescaleDB + UI</text>
+
+                                    <!-- Marker Def -->
+                                    <defs>
+                                        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+                                        </marker>
+                                    </defs>
+                                </svg>
+                            </div>
+
+                            <div class="bg-slate-900 p-4 rounded-xl text-xs text-slate-300 space-y-2">
+                                <p><strong class="text-indigo-400">Why Kafka?</strong> Decouples high-volume camera ingestion from heavy AI inference and database persistence. If GPU pods lag behind during spike traffic, Kafka buffers events cleanly without crashing the camera stream ingestors.</p>
+                            </div>
+                        </div>
+
+                        <!-- SAGA Diagram (Hidden initially) -->
+                        <div id="diag-saga" class="diagram-content space-y-6 hidden">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-sm font-bold text-emerald-400 uppercase tracking-wider">Pattern 2: Orchestration-Based SAGA Pattern (Incident & FSM Dispatch)</h3>
+                                <span class="text-xs text-slate-500 font-mono">Distributed Transactional Flow</span>
+                            </div>
+                            
+                            <div class="w-full flex justify-center py-4">
+                                <svg viewBox="0 0 800 240" class="w-full max-w-3xl h-auto">
+                                    <!-- Orchestrator -->
+                                    <rect x="320" y="90" width="160" height="60" rx="10" fill="#1e293b" stroke="#10b981" stroke-width="2"/>
+                                    <text x="400" y="117" fill="#e2e8f0" font-size="12" text-anchor="middle" font-weight="bold">FSM SAGA Orchestrator</text>
+                                    <text x="400" y="133" fill="#34d399" font-size="9" text-anchor="middle">State Machine / Temporal</text>
+
+                                    <!-- Step 1: Alert Created -->
+                                    <rect x="40" y="20" width="130" height="50" rx="8" fill="#1e293b" stroke="#6366f1" stroke-width="2"/>
+                                    <text x="105" y="42" fill="#e2e8f0" font-size="11" text-anchor="middle" font-weight="600">1. Alert Verified</text>
+                                    <path d="M 170 45 L 320 105" stroke="#6366f1" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+                                    <!-- Step 2: Reserve Tech -->
+                                    <rect x="40" y="160" width="130" height="50" rx="8" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+                                    <text x="105" y="182" fill="#e2e8f0" font-size="11" text-anchor="middle" font-weight="600">2. Assign Engineer</text>
+                                    <path d="M 320 135 L 170 185" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+                                    <!-- Step 3: Notify & SLA -->
+                                    <rect x="630" y="90" width="130" height="60" rx="8" fill="#1e293b" stroke="#f59e0b" stroke-width="2"/>
+                                    <text x="695" y="117" fill="#e2e8f0" font-size="11" text-anchor="middle" font-weight="600">3. Push Dispatch</text>
+                                    <text x="695" y="133" fill="#f59e0b" font-size="9" text-anchor="middle">SLA Timer Started</text>
+                                    <path d="M 480 120 L 630 120" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#arrow)"/>
+                                </svg>
+                            </div>
+                            <div class="bg-slate-900 p-4 rounded-xl text-xs text-slate-300">
+                                <p><strong class="text-emerald-400">Compensating Transactions:</strong> If an engineer fails to accept the dispatch within the SLA window, the orchestrator triggers a compensating rollback transaction to re-assign the ticket to the next available team.</p>
+                            </div>
+                        </div>
+
+                        <!-- Edge Hybrid Diagram (Hidden initially) -->
+                        <div id="diag-edge" class="diagram-content space-y-6 hidden">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-sm font-bold text-cyan-400 uppercase tracking-wider">Pattern 3: Edge-Cloud Hybrid AI Pipeline</h3>
+                                <span class="text-xs text-slate-500 font-mono">Distributed Inference</span>
+                            </div>
+                            <div class="bg-slate-900 p-6 rounded-xl text-xs text-slate-300 space-y-3">
+                                <p><strong>Edge Node (Local Box):</strong> Runs YOLOv8 tiny model directly on camera RTSP feed to detect PPE violations or unauthorized intruders locally with &lt;15ms latency.</p>
+                                <p><strong>Cloud Center:</strong> Heavy models (Facial recognition databases, LLM incident report generation, quarterly model retraining) run in centralized AWS/Azure Kubernetes clusters fed by compressed JSON event metadata and video clips.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: DEEP DIVE PILLARS -->
+            <div id="tab-pillars" class="tab-content space-y-6 hidden">
+                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-lg space-y-8">
+                    <h2 class="text-2xl font-bold text-white flex items-center">
+                        <i data-lucide="layers" class="w-6 h-6 text-amber-400 mr-3"></i>
+                        Deep-Dive Technical Pillars for Senior Architects
+                    </h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Pillar 1: Java Enterprise -->
+                        <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-5 space-y-3">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                                    <i data-lucide="coffee" class="w-4 h-4"></i>
+                                </div>
+                                <h3 class="text-base font-semibold text-white">Core Java & Spring Reactive</h3>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                Use Spring WebFlux and Project Reactor for non-blocking I/O handling high concurrency streams. Essential for VMS signaling servers managing thousands of concurrent WebSocket/WebRTC connections without thread exhaustion.
+                            </p>
+                        </div>
+
+                        <!-- Pillar 2: Computer Vision -->
+                        <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-5 space-y-3">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
+                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                </div>
+                                <h3 class="text-base font-semibold text-white">Computer Vision & CNNs</h3>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                OpenCV, YOLOv8, and DeepSORT for object tracking. Convolutional Neural Networks for PPE compliance, ANPR (Automatic Number Plate Recognition), and crowd density heatmap generation.
+                            </p>
+                        </div>
+
+                        <!-- Pillar 3: MLOps -->
+                        <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-5 space-y-3">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                                    <i data-lucide="git-branch" class="w-4 h-4"></i>
+                                </div>
+                                <h3 class="text-base font-semibold text-white">MLOps & Model Lifecycle</h3>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                MLflow for experiment tracking, Kubeflow for pipeline orchestration, model quantization (TensorRT/ONNX) for edge acceleration, and automated drift detection loops in production.
+                            </p>
+                        </div>
+
+                        <!-- Pillar 4: DevOps & Cloud -->
+                        <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-5 space-y-3">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center">
+                                    <i data-lucide="cloud" class="w-4 h-4"></i>
+                                </div>
+                                <h3 class="text-base font-semibold text-white">Kubernetes, Terraform & AWS/Azure</h3>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                Helm charts for microservice deployments, Terraform for modular multi-region cloud infrastructure, and GPU-accelerated Kubernetes nodes (NVIDIA device plugins) for AI worker pods.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: CODE EXAMPLES -->
+            <div id="tab-code-examples" class="tab-content space-y-6 hidden">
+                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-lg space-y-6">
+                    <h2 class="text-2xl font-bold text-white flex items-center">
+                        <i data-lucide="code" class="w-6 h-6 text-purple-400 mr-3"></i>
+                        Real-World Production Code Snippets
+                    </h2>
+                    <p class="text-slate-400 text-sm">
+                        Enterprise snippets demonstrating Java Kafka Producer, OpenCV CNN inference wrapper, and Terraform infrastructure setup.
+                    </p>
+
+                    <!-- Snippet 1: Java Kafka Producer -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between bg-slate-950 px-4 py-2.5 rounded-t-xl border border-slate-800">
+                            <span class="text-xs font-mono text-indigo-400 font-semibold">SurveillanceAlertProducer.java (Spring Boot Kafka)</span>
+                            <button onclick="copyCode(this)" class="text-xs text-slate-400 hover:text-white flex items-center space-x-1">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                <span>Copy</span>
+                            </button>
+                        </div>
+                        <pre class="bg-slate-950 border-x border-b border-slate-800 rounded-b-xl p-4 overflow-x-auto text-xs text-slate-300 leading-relaxed font-mono"><code>@Service
+public class SurveillanceAlertProducer {
+
+    private final KafkaTemplate&lt;String, SurveillanceAlertEvent&gt; kafkaTemplate;
+    private static final String TOPIC = "scanalitix-ai-alerts-v1";
+
+    public SurveillanceAlertProducer(KafkaTemplate&lt;String, SurveillanceAlertEvent&gt; kafkaTemplate) {
+        this.kafkaTemplate = kafkaTemplate;
+    }
+
+    public void publishAlert(String siteId, String cameraId, String anomalyType, double confidence) {
+        SurveillanceAlertEvent event = new SurveillanceAlertEvent(
+            UUID.randomUUID().toString(),
+            siteId,
+            cameraId,
+            anomalyType,
+            confidence,
+            Instant.now()
+        );
+
+        // Partition by siteId to ensure sequential ordering per camera site
+        CompletableFuture&lt;SendResult&lt;String, SurveillanceAlertEvent&gt;&gt; future = 
+            kafkaTemplate.send(TOPIC, siteId, event);
+
+        future.whenComplete((result, ex) -> {
+            if (ex == null) {
+                log.info("Alert published successfully for site: {} offset: {}", siteId, result.getRecordMetadata().offset());
+            } else {
+                log.error("Failed to publish alert for site: {}", siteId, ex);
+            }
+        });
+    }
+}</code></pre>
+                    </div>
+
+                    <!-- Snippet 2: Python OpenCV / YOLO inference -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between bg-slate-950 px-4 py-2.5 rounded-t-xl border border-slate-800">
+                            <span class="text-xs font-mono text-cyan-400 font-semibold">edge_inference_worker.py (OpenCV & YOLOv8)</span>
+                            <button onclick="copyCode(this)" class="text-xs text-slate-400 hover:text-white flex items-center space-x-1">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                <span>Copy</span>
+                            </button>
+                        </div>
+                        <pre class="bg-slate-950 border-x border-b border-slate-800 rounded-b-xl p-4 overflow-x-auto text-xs text-slate-300 leading-relaxed font-mono"><code>import cv2
+from ultralytics import YOLO
+
+class EdgeSurveillanceInference:
+    def __init__(self, model_path="yolov8n.pt", stream_url="rtsp://camera-feed"):
+        self.model = YOLO(model_path)
+        self.cap = cv2.VideoCapture(stream_url)
+
+    def process_stream(self):
+        while self.cap.isOpened():
+            ret, frame = self.cap.read()
+            if not ret:
+                break
+            
+            # Run inference on edge GPU/CPU
+            results = self.model(frame, stream=True, conf=0.75)
+            for r in results:
+                boxes = r.boxes
+                for box in boxes:
+                    cls_id = int(box.cls[0])
+                    class_name = self.model.names[cls_id]
+                    if class_name in ["person_without_helmet", "unauthorized_vehicle"]:
+                        # Trigger local alert packet
+                        self.emit_alert(class_name, float(box.conf[0]))
+
+    def emit_alert(self, anomaly_type, confidence):
+        print(f"[EDGE AI ALERT] Detected {anomaly_type} with confidence {confidence:.2f}")
+
+if __name__ == "__main__":
+    worker = EdgeSurveillanceInference()
+    # worker.process_stream()</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 6: 8TH GRADE CORNER -->
+            <div id="tab-simple-corner" class="tab-content space-y-6 hidden">
+                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-lg space-y-6">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-400">
+                            <i data-lucide="smile" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">The "8th-Grade Simple Explanation" Corner</h2>
+                            <p class="text-xs text-slate-400">Complex enterprise architectures explained with fun, relatable real-world analogies!</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Analogy 1: Kafka -->
+                        <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-6 space-y-3">
+                            <span class="text-xs font-bold px-2.5 py-1 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">Apache Kafka</span>
+                            <h3 class="text-base font-semibold text-white">Analogy: The Magical Conveyor Belt at a Pizza Factory 🍕</h3>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                Imagine 10,000 security cameras are like chefs shouting pizza orders all at once. If the delivery drivers had to listen to everyone directly, total chaos! Instead, all orders are placed onto a <strong>magic conveyor belt (Kafka)</strong>. The conveyor belt keeps them in exact order. Workers (Microservices) can grab orders off the belt whenever they are ready, so nothing gets lost even if the oven temporarily slows down!
+                            </p>
+                        </div>
+
+                        <!-- Analogy 2: Microservices & SAGA -->
+                        <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-6 space-y-3">
+                            <span class="text-xs font-bold px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Microservices & SAGA</span>
+                            <h3 class="text-base font-semibold text-white">Analogy: Specialized Restaurant Stations 🍣</h3>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                Instead of one overworked chef cooking, cleaning, and delivering, you have separate specialists: Sushi Chef, Drink Master, and Delivery Rider. If the delivery rider gets stuck in traffic, a manager (SAGA Orchestrator) steps in to cancel the dispatch and hand the food to someone else. Everyone does one job really well!
+                            </p>
+                        </div>
+
+                        <!-- Analogy 3: CNN / Computer Vision -->
+                        <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-6 space-y-3">
+                            <span class="text-xs font-bold px-2.5 py-1 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Convolutional Neural Networks (CNN)</span>
+                            <h3 class="text-base font-semibold text-white">Analogy: Playing "Where's Waldo?" with X-Ray Glasses 👀</h3>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                A CNN is like a trained guard who scans camera frames through magical filters. One filter looks for hard hats, another looks for license plates, and another looks for faces. When all filters light up together, the guard shouts: "A-ha! Unauthorized person without PPE detected!"
+                            </p>
+                        </div>
+
+                        <!-- Analogy 4: MLOps -->
+                        <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-6 space-y-3">
+                            <span class="text-xs font-bold px-2.5 py-1 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">MLOps Pipeline</span>
+                            <h3 class="text-base font-semibold text-white">Analogy: An Automated Gym Coach for AI 🏋️‍♂️</h3>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                AI models get lazy or confused over time when things change (like new winter uniforms or new car models). MLOps is an automatic gym coach that constantly tests the AI's grades, feeds it new practice photos every night, and upgrades its brain automatically without human downtime!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 7: LEADERSHIP Q&A -->
+            <div id="tab-leadership" class="tab-content space-y-6 hidden">
+                <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-lg space-y-6">
+                    <h2 class="text-2xl font-bold text-white flex items-center">
+                        <i data-lucide="award" class="w-6 h-6 text-rose-400 mr-3"></i>
+                        Director & CTO Level Interview Questions & Master Answers
+                    </h2>
+                    <p class="text-slate-400 text-sm">
+                        High-stakes strategic questions covering scaling millions of alerts, failure handling, ROI, and AI governance.
+                    </p>
+
+                    <div class="space-y-4">
+                        <!-- Q1 -->
+                        <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-6 space-y-3">
+                            <h3 class="text-sm font-bold text-white flex items-center">
+                                <span class="w-6 h-6 rounded bg-indigo-500/20 text-indigo-400 flex items-center justify-center mr-2 text-xs">Q1</span>
+                                How would you architect Scanalitix to handle 10 million daily alerts across 5,000 active remote enterprise sites without dropping critical security incidents?
+                            </h3>
+                            <div class="text-xs text-slate-300 space-y-2 leading-relaxed pl-8">
+                                <p><strong class="text-emerald-400">Architectural Answer:</strong> "At this scale, synchronous HTTP REST calls fail. I implement a decoupled edge-to-cloud architecture:</p>
+                                <ul class="list-disc pl-5 space-y-1 text-slate-400">
+                                    <li><strong>Edge Filtering:</strong> Edge boxes perform local YOLOv8 inference so 90% of normal video frames are discarded locally, transmitting only compressed event JSON payloads upstream.</li>
+                                    <li><strong>Kafka Partitioning:</strong> Ingest through Kafka clusters partitioned by Site ID and Camera ID, guaranteeing ordered ingestion and horizontal consumer scaling.</li>
+                                    <li><strong>Backpressure & Priority Queues:</strong> High-priority intrusion alerts bypass standard batch analytics queues using dedicated high-priority Kafka topics and dedicated worker pods."</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Q2 -->
+                        <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-6 space-y-3">
+                            <h3 class="text-sm font-bold text-white flex items-center">
+                                <span class="w-6 h-6 rounded bg-indigo-500/20 text-indigo-400 flex items-center justify-center mr-2 text-xs">Q2</span>
+                                How do you address AI model drift and guarantee compliance/governance in production video analytics?
+                            </h3>
+                            <div class="text-xs text-slate-300 space-y-2 leading-relaxed pl-8">
+                                <p><strong class="text-emerald-400">CTO Level Answer:</strong> "Model drift is mitigated via continuous MLOps pipelines:</p>
+                                <ul class="list-disc pl-5 space-y-1 text-slate-400">
+                                    <li><strong>Shadow Deployments & Drift Metrics:</strong> We log inference confidence scores and operator overrides in TimescaleDB. If false-positive rates spike by >5%, an automated alert triggers.</li>
+                                    <li><strong>Data Privacy & AI Governance:</strong> Implement automated face-blurring and anonymization pipelines on edge devices before storing snippets in S3, complying with GDPR and enterprise data privacy policies."</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Q3 -->
+                        <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-6 space-y-3">
+                            <h3 class="text-sm font-bold text-white flex items-center">
+                                <span class="w-6 h-6 rounded bg-indigo-500/20 text-indigo-400 flex items-center justify-center mr-2 text-xs">Q3</span>
+                                How do you handle stakeholder management when transitioning monolithic legacy surveillance systems to Scanalitix's modern microservices platform?
+                            </h3>
+                            <div class="text-xs text-slate-300 space-y-2 leading-relaxed pl-8">
+                                <p><strong class="text-emerald-400">Director Level Answer:</strong> "I use the Strangler Fig pattern:</p>
+                                <ul class="list-disc pl-5 space-y-1 text-slate-400">
+                                    <li><strong>Incremental Migration:</strong> Wrap legacy RTSP streams with an API gateway, migrating non-critical sites (e.g., retail branches) to the new microservices platform first while keeping high-risk sites (e.g., defence perimeters) stable until validation.</li>
+                                    <li><strong>Cross-Functional Alignment:</strong> Regular syncs with product managers, infrastructure leads, and security officers to define clear SLAs and risk mitigation matrices."</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Mobile Sidebar Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const closeSidebar = document.getElementById('close-sidebar');
+        const sidebar = document.getElementById('sidebar');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('-translate-x-full');
+        });
+
+        closeSidebar.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+        });
+
+        // Tab Switching Functionality
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.add('hidden');
+            });
+            // Show selected tab
+            const targetTab = document.getElementById('tab-' + tabId);
+            if (targetTab) {
+                targetTab.classList.remove('hidden');
+            }
+
+            // Update active state in nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-500/20');
+                btn.classList.add('text-slate-300', 'hover:bg-slate-800/80', 'hover:text-white');
+                if (btn.getAttribute('data-tab') === tabId) {
+                    btn.classList.add('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-500/20');
+                    btn.classList.remove('text-slate-300', 'hover:bg-slate-800/80');
+                }
+            });
+
+            // Close mobile sidebar on selection
+            if (window.innerWidth < 1024) {
+                sidebar.classList.add('-translate-x-full');
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Set initial active tab button styling
+        document.querySelector('[data-tab="overview"]').classList.add('bg-indigo-600', 'text-white', 'shadow-md', 'shadow-indigo-500/20');
+        document.querySelector('[data-tab="overview"]').classList.remove('text-slate-300');
+
+        // Architecture Diagram Switcher
+        function showDiagram(diagType) {
+            document.querySelectorAll('.diagram-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('diag-' + diagType).classList.remove('hidden');
+
+            document.querySelectorAll('.diagram-tab-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md');
+                btn.classList.add('bg-slate-800', 'text-slate-300');
+                if (btn.getAttribute('data-diagram') === diagType) {
+                    btn.classList.add('bg-indigo-600', 'text-white', 'shadow-md');
+                    btn.classList.remove('bg-slate-800', 'text-slate-300');
+                }
+            });
+        }
+
+        // Copy Code Snippet Function
+        function copyCode(btn) {
+            const pre = btn.parentElement.nextElementSibling;
+            const code = pre.innerText;
+            const textarea = document.createElement('textarea');
+            textarea.value = code;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i><span class="text-emerald-400">Copied!</span>';
+                lucide.createIcons();
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    lucide.createIcons();
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy text', err);
+            }
+            document.body.removeChild(textarea);
+        }
+
+        // Theme Toggle (Dark / Light)
+        let isDarkMode = true;
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (isDarkMode) {
+                html.classList.add('dark');
+                icon.setAttribute('data-lucide', 'sun');
+            } else {
+                html.classList.remove('dark');
+                icon.setAttribute('data-lucide', 'moon');
+            }
+            lucide.createIcons();
+        }
+
+        // Global Search Filter
+        const globalSearch = document.getElementById('global-search');
+        globalSearch.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            if (query.length < 2) return;
+
+            // Simple search routing
+            if (query.includes('kafka') || query.includes('stream')) {
+                switchTab('patterns');
+                showDiagram('kafka');
+            } else if (query.includes('cnn') || query.includes('vision') || query.includes('ai')) {
+                switchTab('pillars');
+            } else if (query.includes('saga') || query.includes('orchestration')) {
+                switchTab('patterns');
+                showDiagram('saga');
+            } else if (query.includes('java') || query.includes('code')) {
+                switchTab('code-examples');
+            }
+        });
+    </script>
+</body>
+</html>
