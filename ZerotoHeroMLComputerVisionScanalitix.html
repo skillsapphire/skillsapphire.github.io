@@ -1,0 +1,1913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Zero to Hero: Machine Learning, Computer Vision and Scanalitix</title>
+<meta name="description" content="A menu-based, beginner-friendly course: machine learning, deep learning, deployment, MLOps, OpenCV, CNN, transfer learning, TensorFlow, PyTorch, Keras and the Scanalitix e-surveillance platform.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script>
+try{var t=localStorage.getItem('zth-theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}
+</script>
+<style>
+:root{
+  --bg:#EDF2F8; --surface:#FFFFFF; --surface-2:#F3F7FC; --ink:#0F2137; --muted:#4F6278; --line:#D3DCE8;
+  --box:#2B59FF; --box-ink:#FFFFFF; --hi:#FFD84D; --hi-soft:#FFF1B3;
+  --ok:#0B7F62; --ok-soft:#D9F5EB; --bad:#C92A38; --bad-soft:#FDE3E5;
+  --code-bg:#0E1A2C; --code-bar:#15263D; --code-line:#22385A;
+  --pad-off:#0B1424; --pad-on:#F4F7FB;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0A1322; --surface:#111F35; --surface-2:#172842; --ink:#E8EFF9; --muted:#9AAABF; --line:#26374F;
+    --box:#7F9CFF; --box-ink:#0A1322; --hi:#FFD84D; --hi-soft:#3B3514;
+    --ok:#43D9AB; --ok-soft:#0F3A30; --bad:#FF7480; --bad-soft:#421A21;
+    --code-bg:#08111F; --code-bar:#0F1D31; --code-line:#1F324F;
+    --pad-off:#0B1424; --pad-on:#F4F7FB;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0A1322; --surface:#111F35; --surface-2:#172842; --ink:#E8EFF9; --muted:#9AAABF; --line:#26374F;
+  --box:#7F9CFF; --box-ink:#0A1322; --hi:#FFD84D; --hi-soft:#3B3514;
+  --ok:#43D9AB; --ok-soft:#0F3A30; --bad:#FF7480; --bad-soft:#421A21;
+  --code-bg:#08111F; --code-bar:#0F1D31; --code-line:#1F324F;
+  --pad-off:#0B1424; --pad-on:#F4F7FB;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 72px);-webkit-text-size-adjust:100%}
+[hidden]{display:none !important}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font:400 1.0625rem/1.65 "Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+h1,h2,h3,.brand,.grp,.btn,th,.nout{font-family:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif}
+h1,h2,h3{margin:0;line-height:1.12;letter-spacing:-.015em;font-weight:800}
+h1{font-size:clamp(2.2rem,5.4vw,3.6rem)}
+h2{font-size:clamp(1.5rem,3.2vw,1.9rem);margin-bottom:12px}
+h3{font-size:1.2rem;margin:26px 0 8px}
+p,ul,ol{max-width:42rem}
+p{margin:0 0 14px}
+a{color:var(--box)}
+a:hover{text-decoration-thickness:2px}
+:focus-visible{outline:3px solid var(--box);outline-offset:2px;border-radius:4px}
+code{font:500 .88em "JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;background:var(--surface-2);border:1px solid var(--line);border-radius:5px;padding:.08em .35em;overflow-wrap:anywhere}
+mark{background:linear-gradient(transparent 58%,var(--hi) 58%);color:inherit;padding:0 .1em}
+.skip{position:absolute;left:-999px;top:8px;background:var(--box);color:var(--box-ink);padding:8px 12px;border-radius:6px;z-index:100}
+.skip:focus{left:8px}
+
+/* ---------- shell ---------- */
+.shell{display:grid;grid-template-columns:19.5rem minmax(0,1fr);min-height:100vh}
+.side{
+  grid-column:1;grid-row:1;position:sticky;top:0;align-self:start;max-height:100vh;overflow-y:auto;
+  background:var(--surface);border-right:1px solid var(--line);padding:22px 14px 28px;
+}
+.wrap{grid-column:2;grid-row:1;width:100%;max-width:58rem;margin:0 auto;container-type:inline-size;padding:clamp(20px,4vw,52px) clamp(16px,4vw,40px) 72px}
+.top{display:none}
+.scrim{display:none}
+.brand{font-weight:800;font-size:1.3rem;line-height:1.1;margin:0 8px 4px;letter-spacing:-.01em}
+.brand small{display:block;font:400 .85rem/1.35 "Atkinson Hyperlegible",system-ui,sans-serif;color:var(--muted);margin-top:6px;letter-spacing:0}
+.prog{margin:16px 8px 6px}
+.prog-txt{font-size:.88rem;color:var(--muted);margin-bottom:6px}
+.prog-bar{height:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+.prog-bar i{display:block;height:100%;width:0;background:var(--box);transition:width .35s ease}
+.grp{font-weight:800;font-size:.95rem;color:var(--muted);margin:20px 10px 6px;max-width:none}
+.menu a{
+  display:flex;gap:10px;align-items:flex-start;padding:9px 10px;margin:2px 0;border-radius:8px;
+  color:var(--ink);text-decoration:none;font-size:.98rem;line-height:1.3;border:2px solid transparent;min-height:44px;
+}
+.menu a:hover{background:var(--surface-2)}
+.menu a[aria-current="page"]{border-color:var(--box);background:var(--surface-2);font-weight:700}
+.menu .n{font:600 .82rem "JetBrains Mono",ui-monospace,monospace;min-width:1.7em;color:var(--muted);padding-top:2px}
+.menu .t{flex:1}
+.menu .tick{opacity:0;color:var(--ok);font-weight:700}
+.menu a.done .tick{opacity:1}
+.menu a.done .n{color:var(--ok)}
+.side-tools{display:flex;flex-wrap:wrap;gap:8px;margin:22px 8px 0}
+.ghost-sm{font:inherit;font-size:.86rem;background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:8px;padding:8px 12px;cursor:pointer;min-height:40px}
+.ghost-sm:hover{color:var(--ink);border-color:var(--muted)}
+
+@media (max-width:900px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  .top{
+    display:flex;align-items:center;gap:10px;position:sticky;top:env(safe-area-inset-top,0px);z-index:30;
+    grid-column:1;grid-row:1;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--line);
+  }
+  .top-title{flex:1;font:800 1.05rem "Bricolage Grotesque",system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .icon-btn{width:44px;height:44px;display:grid;place-items:center;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;color:var(--ink);cursor:pointer;font-size:1.2rem}
+  .wrap{grid-column:1;grid-row:2}
+  .side{
+    position:fixed;top:0;left:0;bottom:0;width:min(88vw,21rem);max-height:none;z-index:50;
+    padding-top:calc(22px + env(safe-area-inset-top,0px));padding-bottom:calc(28px + env(safe-area-inset-bottom,0px));
+    transform:translateX(-102%);visibility:hidden;transition:transform .25s ease,visibility .25s;
+    box-shadow:0 0 0 100vmax transparent;
+  }
+  .side.open{transform:none;visibility:visible}
+  .scrim{position:fixed;inset:0;z-index:40;background:rgba(6,12,24,.55)}
+  .scrim.show{display:block}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important;scroll-behavior:auto !important}}
+
+/* ---------- lesson pieces ---------- */
+.where{font-size:.92rem;color:var(--muted);margin-bottom:8px}
+.lead{font-size:1.2rem;line-height:1.55;color:var(--ink);max-width:40rem}
+.levels{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 4px}
+.levels button{font:700 .95rem "Bricolage Grotesque",system-ui,sans-serif;background:var(--surface);color:var(--ink);border:2px solid var(--line);border-radius:99px;padding:8px 16px;min-height:42px;cursor:pointer}
+.levels button:hover{border-color:var(--box)}
+.lvl{margin-top:46px;scroll-margin-top:calc(env(safe-area-inset-top,0px) + 72px)}
+.lvl>h2{padding-bottom:10px;border-bottom:2px solid var(--line);margin-bottom:18px}
+.lvl>h2 small{display:block;font:400 1rem/1.4 "Atkinson Hyperlegible",system-ui,sans-serif;color:var(--muted);letter-spacing:0;margin-top:6px}
+
+/* detection-box callout: the "explain simply" box */
+.simple{
+  --b:var(--box);--w:3px;--l:20px;
+  position:relative;margin:30px 0 20px;padding:24px 24px 18px;background-color:var(--hi-soft);
+  background-image:
+    linear-gradient(var(--b),var(--b)),linear-gradient(var(--b),var(--b)),
+    linear-gradient(var(--b),var(--b)),linear-gradient(var(--b),var(--b)),
+    linear-gradient(var(--b),var(--b)),linear-gradient(var(--b),var(--b)),
+    linear-gradient(var(--b),var(--b)),linear-gradient(var(--b),var(--b));
+  background-repeat:no-repeat;
+  background-size:var(--l) var(--w),var(--w) var(--l),var(--l) var(--w),var(--w) var(--l),var(--l) var(--w),var(--w) var(--l),var(--l) var(--w),var(--w) var(--l);
+  background-position:left top,left top,right top,right top,left bottom,left bottom,right bottom,right bottom;
+}
+.simple .tag{position:absolute;left:-3px;top:-27px;background:var(--box);color:var(--box-ink);font:700 .82rem "JetBrains Mono",ui-monospace,monospace;padding:3px 9px;border-radius:2px 2px 0 0}
+.simple p:last-child{margin-bottom:0}
+.note,.warn{margin:18px 0;padding:12px 16px;border-left:5px solid var(--hi);background:var(--surface);border-radius:0 10px 10px 0;max-width:42rem}
+.warn{border-left-color:var(--bad)}
+.note>strong:first-child,.warn>strong:first-child{font-family:"Bricolage Grotesque",system-ui,sans-serif}
+.note p:last-child,.warn p:last-child{margin-bottom:0}
+
+.steps{counter-reset:s;list-style:none;padding:0;margin:14px 0;max-width:44rem}
+.steps li{counter-increment:s;position:relative;padding:12px 14px 12px 56px;border:1px solid var(--line);background:var(--surface);border-radius:10px;margin:8px 0}
+.steps li::before{content:counter(s);position:absolute;left:14px;top:12px;width:30px;height:30px;border-radius:50%;background:var(--box);color:var(--box-ink);display:grid;place-items:center;font:700 .9rem "JetBrains Mono",ui-monospace,monospace}
+.steps li b{font-family:"Bricolage Grotesque",system-ui,sans-serif}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15.5rem),1fr));gap:12px;margin:14px 0}
+.card{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:14px 16px}
+.card h3{font-size:1.08rem;margin:0 0 4px}
+.card p{margin:0;font-size:.98rem}
+a.card{display:block;text-decoration:none;color:var(--ink);transition:border-color .15s}
+a.card:hover{border-color:var(--box)}
+a.card .k{font:600 .8rem "JetBrains Mono",ui-monospace,monospace;color:var(--muted)}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface);margin:14px 0}
+table{border-collapse:collapse;width:100%;min-width:34rem;font-size:.96rem}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:var(--surface-2);font-weight:800}
+tr:last-child td{border-bottom:0}
+.list{padding-left:1.2rem}
+.list li{margin:6px 0}
+.explain{margin:0 0 22px;padding-left:1.2rem;font-size:.98rem}
+.explain li{margin:6px 0}
+.cap{font-size:.92rem;color:var(--muted);margin:-6px 0 18px}
+
+/* code */
+.code{margin:16px 0 12px;border-radius:10px;overflow:hidden;background:var(--code-bg);border:1px solid var(--code-line)}
+.code-bar{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 8px 6px 14px;background:var(--code-bar);color:#9FB2CC;font:500 .8rem "JetBrains Mono",ui-monospace,monospace}
+.code-bar button{font:600 .8rem "JetBrains Mono",ui-monospace,monospace;color:#DCE6F5;background:transparent;border:1px solid #3A5378;border-radius:6px;padding:6px 12px;min-height:34px;cursor:pointer}
+.code-bar button:hover{background:#22385A}
+.code pre{margin:0;padding:14px 16px;overflow-x:auto;font:400 .86rem/1.65 "JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;color:#DCE6F5;tab-size:4}
+.code pre code{font:inherit;background:none;border:0;padding:0;color:inherit;overflow-wrap:normal}
+.code .c{color:#7F92AD;font-style:italic}.code .k{color:#8AB4FF}.code .s{color:#7EE0B5}.code .m{color:#FFC97A}.code .f{color:#C9A7FF}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:10px 20px;border-radius:8px;background:var(--box);color:var(--box-ink);font-weight:800;font-size:1rem;text-decoration:none;border:2px solid var(--box);cursor:pointer}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--box)}
+.btn.is-done{background:var(--ok-soft);color:var(--ok);border-color:var(--ok)}
+.btnrow{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+.pager{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;margin-top:52px;padding-top:22px;border-top:1px solid var(--line)}
+.foot{margin-top:40px;font-size:.88rem;color:var(--muted);max-width:42rem}
+
+/* quiz */
+.q{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:16px;margin:14px 0;max-width:42rem}
+.q .qt{font-weight:700;margin-bottom:6px}
+.opts{display:grid;gap:8px;margin-top:8px}
+.opts button{text-align:left;font:inherit;color:var(--ink);background:var(--surface-2);border:2px solid var(--line);border-radius:8px;padding:10px 12px;min-height:44px;cursor:pointer}
+.opts button:hover:not(:disabled){border-color:var(--box)}
+.opts button.ok{border-color:var(--ok);background:var(--ok-soft)}
+.opts button.bad{border-color:var(--bad);background:var(--bad-soft)}
+.fb{margin:10px 0 0;font-size:.96rem;min-height:1.2em}
+.fb.ok{color:var(--ok)}.fb.bad{color:var(--bad)}
+
+/* labs */
+.lab{border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:18px;margin:18px 0}
+.lab>h3{margin-top:0}
+.lab p{font-size:.98rem}
+.lab-tools{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.lab-tools .btn{min-height:40px;padding:6px 14px;font-size:.92rem}
+.lab-tools label{display:inline-flex;align-items:center;gap:6px;font-size:.95rem;min-height:40px}
+.hero{display:grid;grid-template-columns:minmax(0,1fr);gap:30px;align-items:center;margin-bottom:10px}
+@container (min-width:46rem){.hero{grid-template-columns:minmax(0,1fr) 22.5rem}}
+.hero .lead{margin:18px 0 0}
+.pad-wrap{padding-top:28px}
+.pad{position:relative;display:grid;grid-template-columns:repeat(10,1fr);width:100%;aspect-ratio:1;border:2px solid var(--ink);touch-action:none;user-select:none;-webkit-user-select:none;background:var(--pad-off);cursor:crosshair}
+.pad .cell{display:grid;place-items:center;font:500 .6rem/1 "JetBrains Mono",ui-monospace,monospace;background:var(--pad-off);color:#6E829E;box-shadow:inset 0 0 0 .5px rgba(127,140,160,.35)}
+.pad .cell.on{background:var(--pad-on);color:#0F2137}
+.bbox{position:absolute;border:3px solid var(--box);pointer-events:none;transition:left .12s,top .12s,width .12s,height .12s;display:none}
+.bbox span{position:absolute;left:-3px;bottom:100%;white-space:nowrap;background:var(--box);color:var(--box-ink);font:700 .78rem "JetBrains Mono",ui-monospace,monospace;padding:2px 8px}
+.stat{font:500 .84rem/1.5 "JetBrains Mono",ui-monospace,monospace;color:var(--muted);margin:10px 0 0;max-width:none}
+
+.nrow{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px dashed var(--line)}
+.nrow label{display:inline-flex;align-items:center;gap:8px;min-height:36px}
+.nrow input[type=range]{width:min(11rem,45vw);accent-color:var(--box)}
+.nrow output{font:600 .9rem "JetBrains Mono",ui-monospace,monospace;min-width:2.4em;text-align:right}
+.nout{font-size:1.25rem;font-weight:800;margin:14px 0 4px;max-width:none}
+.eq{font:500 .86rem/1.5 "JetBrains Mono",ui-monospace,monospace;color:var(--muted);max-width:none}
+input[type=checkbox]{width:20px;height:20px;accent-color:var(--box)}
+
+.conv{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;margin-top:10px}
+@container (min-width:44rem){.conv{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}}
+.conv h4{margin:0 0 8px;font:800 1rem "Bricolage Grotesque",system-ui,sans-serif}
+.g{display:grid;gap:2px;max-width:24rem}
+.g div{aspect-ratio:1;display:grid;place-items:center;font:500 .68rem "JetBrains Mono",ui-monospace,monospace;border-radius:3px;color:var(--ink)}
+.g.out div{cursor:pointer}
+.g div.hl{box-shadow:inset 0 0 0 3px var(--hi),0 0 0 1px var(--hi)}
+.kern{display:grid;grid-template-columns:repeat(3,3.2rem);gap:3px;margin:8px 0 0}
+.kern div{height:2.4rem;display:grid;place-items:center;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;font:600 .8rem "JetBrains Mono",ui-monospace,monospace}
+.pill-row{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.pill-row button{font:inherit;font-size:.92rem;background:var(--surface-2);color:var(--ink);border:2px solid var(--line);border-radius:99px;padding:6px 14px;min-height:40px;cursor:pointer}
+.pill-row button[aria-pressed="true"]{border-color:var(--box);background:var(--surface);font-weight:700}
+
+.flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:24px;margin:18px 0}
+.fstep{position:relative;border:2px solid var(--box);background:var(--surface);border-radius:4px;padding:12px}
+.fstep h3{font-size:1rem;margin:0 0 4px}
+.fstep p{font-size:.88rem;line-height:1.4;margin:0}
+.fstep:not(:last-child)::after{content:"";position:absolute;right:-17px;top:50%;margin-top:-7px;border:7px solid transparent;border-left:10px solid var(--box)}
+@container (max-width:52rem){
+  .flow{grid-template-columns:minmax(0,1fr);gap:26px}
+  .fstep:not(:last-child)::after{right:auto;left:50%;top:auto;bottom:-19px;margin:0 0 0 -7px;transform:rotate(90deg)}
+}
+.ladder{list-style:none;margin:12px 0;padding:0;max-width:34rem}
+.ladder li{display:flex;justify-content:space-between;gap:10px;padding:10px 14px;border:2px solid var(--line);border-radius:8px;margin:6px 0;background:var(--surface-2);color:var(--muted)}
+.ladder li.past{opacity:.75}
+.ladder li.now{border-color:var(--bad);background:var(--bad-soft);color:var(--ink);font-weight:700}
+.ladder li.calm{border-color:var(--ok);background:var(--ok-soft);color:var(--ink);font-weight:700}
+.range-full{width:100%;max-width:34rem;accent-color:var(--box)}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to lesson</a>
+<div class="shell">
+  <header class="top">
+    <button class="icon-btn" id="menuBtn" aria-controls="side" aria-expanded="false" aria-label="Open lesson menu">&#9776;</button>
+    <div class="top-title" id="topTitle">Start here</div>
+    <button class="icon-btn" data-theme-toggle aria-label="Switch between light and dark theme">&#9680;</button>
+  </header>
+
+  <aside class="side" id="side" aria-label="Lessons">
+    <p class="brand">Zero to Hero<small>Machine learning, computer vision and the Scanalitix platform</small></p>
+    <div class="prog">
+      <div class="prog-txt" id="progTxt">0 of 13 lessons done</div>
+      <div class="prog-bar" role="progressbar" aria-label="Course progress" aria-valuemin="0" aria-valuemax="13" aria-valuenow="0" id="progWrap"><i id="progBar"></i></div>
+    </div>
+    <nav id="menu" class="menu" aria-label="Lesson menu"></nav>
+    <div class="side-tools">
+      <button class="ghost-sm" data-theme-toggle>Switch theme</button>
+      <button class="ghost-sm" id="resetProg">Reset progress</button>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <main class="wrap" id="main">
+<section class="lvl" id="home" data-title="Start here" tabindex="-1">
+  <p class="where">Lesson 1 of 14</p>
+  <h1>Zero to Hero: how machines learn to see and think</h1>
+  <p class="lead">This page is a menu of 13 short lessons. Click any lesson on the left (or below) — there is no fixed order. Each lesson explains one idea the way you'd explain it to a curious 13-year-old, then shows the real code professionals actually write.</p>
+
+  <div class="simple"><span class="tag">in one sentence</span>
+    <p>Artificial Intelligence (AI) is a computer trying to act smart. Machine Learning (ML) is <em>how</em> it gets smart — by looking at lots of examples instead of being told exact rules. Deep Learning is ML using a brain-like structure called a neural network. Computer Vision is teaching that brain to understand pictures and video.</p>
+  </div>
+
+  <h3>How the lessons are grouped</h3>
+  <div class="cards">
+    <a class="card" href="#ml-dev"><span class="k">01</span><h3>Foundations</h3><p>How an ML model is actually built, trained, shrunk, and deployed — and kept alive with MLOps.</p></a>
+    <a class="card" href="#opencv"><span class="k">02</span><h3>Computer vision</h3><p>OpenCV, CNNs, and transfer learning — how a computer turns pixels into understanding.</p></a>
+    <a class="card" href="#tensorflow"><span class="k">03</span><h3>Frameworks</h3><p>TensorFlow, PyTorch, and Keras — the toolkits engineers use to build all of the above.</p></a>
+    <a class="card" href="#scanalitix"><span class="k">04</span><h3>Real product</h3><p>Scanalitix — a real surveillance platform that uses everything from lessons 1–3, live, at thousands of sites.</p></a>
+  </div>
+
+  <h3>A promise about the code</h3>
+  <p>Every lesson has runnable-looking code, exactly the way a real engineer would write it — but before the code, there's always a plain-English version first. If you only read the plain-English boxes, you'll still understand the whole page.</p>
+
+  <div class="note"><strong>Tip for teachers or parents reading along</strong>
+    <p>Your progress is saved on this device only (nothing is sent anywhere). Tick a lesson complete with the button at the bottom of each section, or reset anytime from the menu.</p>
+  </div>
+
+  <div class="btnrow">
+    <a class="btn" href="#ml-dev">Start Lesson 1: ML model development &rarr;</a>
+  </div>
+</section>
+<section class="lvl" id="ml-dev" data-title="ML model development" tabindex="-1">
+  <p class="where">Foundations &rsaquo; Lesson 2 of 14</p>
+  <h1>Machine learning model development</h1>
+  <p class="lead">A "model" is just a math formula with knobs (called <strong>parameters</strong>) that the computer turns by itself until its guesses stop being wrong.</p>
+
+  <div class="simple"><span class="tag">imagine this</span>
+    <p>You're guessing how much a pizza costs from its size. At first you guess wildly. Each time you're wrong, you nudge your guess a little closer to the real price. Do that thousands of times with thousands of pizzas, and you get shockingly good at guessing. That nudging process <em>is</em> machine learning.</p>
+  </div>
+
+  <div class="levels">
+    <button data-jump="#md-life">The 6 steps</button>
+    <button data-jump="#md-lab">Try it: tune a line</button>
+    <button data-jump="#md-code">See the code</button>
+    <button data-jump="#md-quiz">Quiz</button>
+  </div>
+
+  <h2 id="md-life">The 6 steps every model goes through</h2>
+  <ol class="steps">
+    <li><b>Collect data.</b> Gather real examples — photos, prices, sensor readings. Bad or too little data means a model that guesses badly no matter how clever the math is.</li>
+    <li><b>Clean it.</b> Fix missing values, remove duplicates, and put everything in the same format. Real-world data is messy — this step often takes longer than any other.</li>
+    <li><b>Split it.</b> Divide data into a <em>training</em> pile (to learn from) and a <em>test</em> pile (to honestly check itself against, like a pop quiz on questions it hasn't seen).</li>
+    <li><b>Train.</b> The model makes a guess, measures how wrong it was (the <em>loss</em>), and adjusts its knobs slightly to be less wrong next time. Repeat thousands of times.</li>
+    <li><b>Evaluate.</b> Test on the unseen pile. If it did great on training but poorly on the test, it <em>memorized</em> instead of <em>learning</em> — this is called <strong>overfitting</strong>.</li>
+    <li><b>Deploy &amp; monitor.</b> Ship it into a real app, then keep watching it — the real world changes, and yesterday's good model can quietly get worse (see MLOps).</li>
+  </ol>
+
+  <div class="lab" id="md-lab">
+    <h3>Try it yourself: teach a line to fit the dots</h3>
+    <p>A model predicts <code>price = weight &times; size + bias</code>. Drag the two sliders — you're doing manually what training does automatically: nudging knobs to shrink the error.</p>
+    <div class="nrow">
+      <label for="mdW">weight (slope)<input type="range" id="mdW" min="-2" max="6" step="0.1" value="1"><output id="mdWv">1.0</output></label>
+    </div>
+    <div class="nrow">
+      <label for="mdB">bias (starting price)<input type="range" id="mdB" min="-5" max="15" step="0.5" value="2"><output id="mdBv">2.0</output></label>
+    </div>
+    <svg id="mdSvg" viewBox="0 0 300 200" style="width:100%;max-width:26rem;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;margin-top:10px" role="img" aria-label="Scatter plot of size versus price with a line you control">
+      <g id="mdDots"></g>
+      <line id="mdLine" x1="0" y1="0" x2="300" y2="0" stroke="var(--box)" stroke-width="3"/>
+    </svg>
+    <p class="nout">Total error: <span id="mdErr">-</span> <span id="mdBadge" style="font-size:.6em;font-weight:700;padding:2px 8px;border-radius:99px;vertical-align:middle"></span></p>
+    <p class="eq">error = sum of (real price &minus; predicted price)&sup2; for every dot &mdash; lower is better. Real training finds the lowest point automatically using an algorithm called <b>gradient descent</b>; you're doing it by hand.</p>
+  </div>
+
+  <h2 id="md-code">What this looks like as real code</h2>
+  <p>Here's the same idea — a line learning to fit data — written with a popular ML library called <code>scikit-learn</code>. It does the slider-nudging for you.</p>
+  <div class="code">
+    <div class="code-bar"><span>train_price_model.py</span><button data-copy>Copy</button></div>
+    <pre><code><span class="c"># 1. Get the data ready: size (sq. ft) and price ($1000s)</span>
+<span class="k">import</span> numpy <span class="k">as</span> np
+<span class="k">from</span> sklearn.model_selection <span class="k">import</span> train_test_split
+<span class="k">from</span> sklearn.linear_model <span class="k">import</span> LinearRegression
+
+sizes  = np.array([[650],[800],[1200],[1500],[2100]])
+prices = np.array([70, 90, 145, 180, 250])
+
+<span class="c"># 2. Split: 80% to learn from, 20% to honestly test on</span>
+X_train, X_test, y_train, y_test = train_test_split(
+    sizes, prices, test_size=<span class="m">0.2</span>, random_state=<span class="m">42</span>
+)
+
+<span class="c"># 3. Train: the model tunes its own weight and bias</span>
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+<span class="c"># 4. Evaluate on data it has never seen</span>
+score = model.score(X_test, y_test)
+<span class="f">print</span>(<span class="s">f"How well it explains prices: {score:.2f}"</span>)
+
+<span class="c"># 5. Use it to predict a brand-new house</span>
+guess = model.predict([[<span class="m">1000</span>]])
+<span class="f">print</span>(<span class="s">f"A 1000 sq.ft house should cost about ${guess[0]:.0f}k"</span>)</code></pre>
+  </div>
+
+  <div class="note"><strong>Why split the data at all?</strong>
+    <p>If you tested a model on the same questions it studied, it could just memorize the answer sheet. Testing on unseen data proves it actually <em>learned the pattern</em>, not the specific answers.</p>
+  </div>
+
+  <h2 id="md-quiz">Quick check</h2>
+  <div class="q" data-quiz data-answer="1">
+    <p class="qt">A model scores 99% on training data but only 55% on test data. What's happening?</p>
+    <div class="opts">
+      <button>It needs a faster computer</button>
+      <button>It's overfitting — it memorized instead of learning</button>
+      <button>The test data is broken</button>
+    </div>
+    <p class="fb" role="status"></p>
+  </div>
+
+  <p class="cap">Explanation: high training score + low test score is the classic sign of memorizing answers instead of learning the underlying pattern.</p>
+
+  <div class="pager">
+    <a class="btn ghost" href="#home">&larr; Start here</a>
+    <button class="btn is-done" data-done-btn data-lesson="ml-dev">Mark lesson complete</button>
+    <a class="btn" href="#ml-algo">Next: ML Algorithms &rarr;</a>
+  </div>
+</section>
+<section class="lvl" id="ml-algo" data-title="ML Algorithms" tabindex="-1">
+  <p class="where">Foundations &rsaquo; Lesson 3 of 14</p>
+  <h1>Machine learning algorithms</h1>
+  <p class="lead">A "model" needs a recipe for how it learns — that recipe is the <strong>algorithm</strong>. Different algorithms are just different strategies for finding patterns, each suited to different kinds of problems.</p>
+
+  <div class="simple"><span class="tag">imagine this</span>
+    <p>If "machine learning" is the goal of getting good at a task through practice, an algorithm is the specific study method: flashcards, drawing diagrams, asking a friend, grouping similar notes together. Different methods work better for different subjects — same with ML algorithms and different problems.</p>
+  </div>
+
+  <div class="levels">
+    <button data-jump="#ma-types">3 kinds of learning</button>
+    <button data-jump="#ma-family">Common algorithms</button>
+    <button data-jump="#ma-lab">Try it: KNN classifier</button>
+    <button data-jump="#ma-quiz">Quiz</button>
+  </div>
+
+  <h2 id="ma-types">The 3 kinds of learning</h2>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Type</th><th>What it gets</th><th>What it learns</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td><b>Supervised</b></td><td>Examples with the correct answer attached</td><td>To predict the answer for new, unlabeled examples</td><td>Given house sizes and prices, predict a new house's price</td></tr>
+        <tr><td><b>Unsupervised</b></td><td>Examples with no answers at all</td><td>To find hidden structure or groupings on its own</td><td>Group customers into segments by shopping behavior</td></tr>
+        <tr><td><b>Reinforcement</b></td><td>A score (reward) after taking actions</td><td>To choose actions that earn the most reward over time</td><td>An agent learning to play a game by trial and error</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="ma-family">Common algorithms, in plain words</h2>
+  <div class="cards">
+    <div class="card"><h3>Linear &amp; logistic regression</h3><p>Draws the best straight line (or curve) through data. Linear predicts a number; logistic predicts a yes/no probability.</p></div>
+    <div class="card"><h3>Decision trees</h3><p>Asks a series of yes/no questions, like a flowchart, until it reaches an answer.</p></div>
+    <div class="card"><h3>Random forest</h3><p>Grows many different decision trees and lets them vote — a "wisdom of the crowd" for predictions.</p></div>
+    <div class="card"><h3>K-Nearest Neighbors (KNN)</h3><p>Classifies a new point by looking at whichever labeled points are closest to it.</p></div>
+    <div class="card"><h3>Support Vector Machine (SVM)</h3><p>Finds the widest possible gap between two groups and draws the boundary right down the middle.</p></div>
+    <div class="card"><h3>Naive Bayes</h3><p>Uses probability — "given these clues, which answer was historically most likely?" Fast and great for text/spam filtering.</p></div>
+    <div class="card"><h3>K-Means clustering</h3><p>Unsupervised — automatically groups similar points into K clusters with no labels needed.</p></div>
+    <div class="card"><h3>Gradient boosting (XGBoost)</h3><p>Builds trees one at a time, each one fixing the mistakes of the last — a favorite for tabular data competitions.</p></div>
+  </div>
+
+  <h3>How a decision tree actually decides</h3>
+  <div class="flow">
+    <div class="fstep"><h3>Question 1</h3><p>Is the sky cloudy?</p></div>
+    <div class="fstep"><h3>Question 2</h3><p>Is humidity above 70%?</p></div>
+    <div class="fstep"><h3>Question 3</h3><p>Is there wind &gt; 20km/h?</p></div>
+    <div class="fstep"><h3>Leaf</h3><p>Reaches a final split of yes/no branches.</p></div>
+    <div class="fstep"><h3>Answer</h3><p>"70% chance of rain today"</p></div>
+  </div>
+
+  <div class="lab" id="ma-lab">
+    <h3>Try it yourself: classify a point with K-Nearest Neighbors</h3>
+    <p>Click anywhere on the chart to drop a new gray point. The algorithm finds its <strong>3 nearest neighbors</strong> among the colored dots and votes — majority color wins.</p>
+    <svg id="knnSvg" viewBox="0 0 300 200" style="width:100%;max-width:26rem;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;cursor:crosshair" role="img" aria-label="Scatter plot you can click to classify a new point using nearest neighbors">
+      <g id="knnLines"></g>
+      <g id="knnDots"></g>
+      <g id="knnNew"></g>
+    </svg>
+    <p class="nout" id="knnResult">Click the chart to classify a new point.</p>
+    <div class="lab-tools"><button class="btn ghost" id="knnClear">Clear my point</button></div>
+  </div>
+
+  <h2>The code: three algorithms, three lines each</h2>
+  <p>Thanks to <code>scikit-learn</code>, swapping algorithms is often just swapping one line — the surrounding fit/predict pattern stays the same.</p>
+  <div class="code">
+    <div class="code-bar"><span>try_algorithms.py</span><button data-copy>Copy</button></div>
+    <pre><code><span class="k">from</span> sklearn.neighbors <span class="k">import</span> KNeighborsClassifier
+<span class="k">from</span> sklearn.tree <span class="k">import</span> DecisionTreeClassifier
+<span class="k">from</span> sklearn.ensemble <span class="k">import</span> RandomForestClassifier
+
+<span class="c"># Same data, same fit/predict pattern — only the algorithm changes</span>
+models = {
+    <span class="s">"KNN"</span>:           KNeighborsClassifier(n_neighbors=<span class="m">3</span>),
+    <span class="s">"Decision Tree"</span>:  DecisionTreeClassifier(max_depth=<span class="m">4</span>),
+    <span class="s">"Random Forest"</span>: RandomForestClassifier(n_estimators=<span class="m">100</span>),
+}
+
+<span class="k">for</span> name, model <span class="k">in</span> models.items():
+    model.fit(X_train, y_train)
+    accuracy = model.score(X_test, y_test)
+    <span class="f">print</span>(<span class="s">f"{name}: {accuracy:.1%} accurate"</span>)
+
+<span class="c"># Unsupervised example: group customers with no labels at all</span>
+<span class="k">from</span> sklearn.cluster <span class="k">import</span> KMeans
+groups = KMeans(n_clusters=<span class="m">3</span>).fit_predict(customer_data)</code></pre>
+  </div>
+
+  <div class="note"><strong>So which one do I pick?</strong>
+    <p>There's no single best algorithm for every problem — this is called the "no free lunch" idea. Engineers usually try a few fast, simple algorithms first (like logistic regression or a decision tree) as a baseline, before reaching for slower, more powerful ones like deep neural networks (see the <a href="#deep-learning">Deep Learning lesson</a>).</p>
+  </div>
+
+  <div class="warn"><strong>Not all data needs deep learning</strong>
+    <p>For structured, spreadsheet-style data (rows and columns of numbers), tree-based methods like random forest or gradient boosting often beat neural networks — and train in seconds, not hours. Deep learning tends to shine specifically on images, audio, and text.</p>
+  </div>
+
+  <h2 id="ma-quiz">Quick check</h2>
+  <div class="q" data-quiz data-answer="2">
+    <p class="qt">A retailer wants to group customers into segments, but has no pre-existing labels for who belongs where. Which type of learning is this?</p>
+    <div class="opts">
+      <button>Supervised learning</button>
+      <button>Reinforcement learning</button>
+      <button>Unsupervised learning</button>
+    </div>
+    <p class="fb" role="status"></p>
+  </div>
+
+  <div class="pager">
+    <a class="btn ghost" href="#ml-dev">&larr; ML model development</a>
+    <button class="btn is-done" data-done-btn data-lesson="ml-algo">Mark lesson complete</button>
+    <a class="btn" href="#deep-learning">Next: Deep Learning &rarr;</a>
+  </div>
+</section>
+<section class="lvl" id="deep-learning" data-title="Deep Learning" tabindex="-1">
+  <p class="where">Foundations &rsaquo; Lesson 4 of 14</p>
+  <h1>Deep learning</h1>
+  <p class="lead">Deep learning is machine learning built from layers of tiny decision-makers called <strong>neurons</strong>, stacked deep — hence the name.</p>
+
+  <div class="simple"><span class="tag">imagine this</span>
+    <p>Think of an office where a question passes through several desks. Desk 1 does a small calculation and passes its answer to Desk 2. Desk 2 tweaks it and passes it to Desk 3. By the last desk, a simple question ("is this a cat?") has been refined through hundreds of small decisions into one confident answer. Each "desk" is a layer of neurons.</p>
+  </div>
+
+  <h2>What one neuron actually does</h2>
+  <p>A neuron takes numbers in, multiplies each by a learned <strong>weight</strong> (how important that input is), adds a <strong>bias</strong>, and passes the result through a squashing function called an <strong>activation</strong> that decides how strongly to "fire".</p>
+
+  <div class="lab">
+    <h3>Try it yourself: fire a neuron</h3>
+    <p>This neuron looks at two clues about an email — <em>how spammy the words sound</em> and <em>how many links it has</em> — and decides "spam" or "not spam".</p>
+    <div class="nrow"><label for="dlX1">"spammy words" score (0&ndash;10)<input type="range" id="dlX1" min="0" max="10" step="1" value="4"><output id="dlX1v">4</output></label></div>
+    <div class="nrow"><label for="dlX2">number of links<input type="range" id="dlX2" min="0" max="10" step="1" value="1"><output id="dlX2v">1</output></label></div>
+    <p class="nout" id="dlOut">Neuron says: &mdash;</p>
+    <p class="eq" id="dlEq">score = (words &times; 0.7) + (links &times; 1.1) &minus; 4 &rarr; activation turns it into a 0&ndash;1 "confidence"</p>
+  </div>
+
+  <h2>Why "deep"? Stacking layers</h2>
+  <p>One neuron can only draw a simple boundary. Stack thousands of them into layers, and the network builds up understanding step by step — this is exactly what happens inside a Convolutional Neural Network (see the <a href="#cnn">CNN lesson</a>) when it looks at a photo.</p>
+  <div class="flow">
+    <div class="fstep"><h3>Input layer</h3><p>Raw numbers go in — pixel brightness, word scores, sensor readings.</p></div>
+    <div class="fstep"><h3>Hidden layer 1</h3><p>Learns tiny patterns — edges, simple combinations.</p></div>
+    <div class="fstep"><h3>Hidden layer 2</h3><p>Combines those into bigger patterns — shapes, phrases.</p></div>
+    <div class="fstep"><h3>Hidden layer 3</h3><p>Combines further — objects, meaning, intent.</p></div>
+    <div class="fstep"><h3>Output layer</h3><p>Turns everything into a final answer — "cat", "spam", "0.92".</p></div>
+  </div>
+
+  <h2>The code: a tiny neural network</h2>
+  <p>Here's a real, working 3-layer network built with Keras (you'll meet it properly in the <a href="#keras">Keras lesson</a>) that learns the classic XOR pattern — a problem too curved for a single straight line to solve, which is exactly why we need layers.</p>
+  <div class="code">
+    <div class="code-bar"><span>tiny_network.py</span><button data-copy>Copy</button></div>
+    <pre><code><span class="k">import</span> numpy <span class="k">as</span> np
+<span class="k">from</span> tensorflow <span class="k">import</span> keras
+<span class="k">from</span> tensorflow.keras <span class="k">import</span> layers
+
+<span class="c"># Inputs (two switches) and the correct answers (XOR: "exactly one is on")</span>
+X = np.array([[<span class="m">0</span>,<span class="m">0</span>], [<span class="m">0</span>,<span class="m">1</span>], [<span class="m">1</span>,<span class="m">0</span>], [<span class="m">1</span>,<span class="m">1</span>]])
+y = np.array([<span class="m">0</span>, <span class="m">1</span>, <span class="m">1</span>, <span class="m">0</span>])
+
+model = keras.Sequential([
+    layers.Dense(<span class="m">8</span>, activation=<span class="s">"relu"</span>,    input_shape=(<span class="m">2</span>,)),  <span class="c"># hidden layer</span>
+    layers.Dense(<span class="m">1</span>, activation=<span class="s">"sigmoid"</span>),                     <span class="c"># output: 0 to 1</span>
+])
+
+model.<span class="f">compile</span>(optimizer=<span class="s">"adam"</span>, loss=<span class="s">"binary_crossentropy"</span>, metrics=[<span class="s">"accuracy"</span>])
+model.fit(X, y, epochs=<span class="m">300</span>, verbose=<span class="m">0</span>)
+
+<span class="f">print</span>(model.predict(X).round(<span class="m">2</span>))  <span class="c"># close to [0, 1, 1, 0]</span></code></pre>
+  </div>
+
+  <div class="note"><strong>Word check</strong>
+    <p><b>Epoch</b> = one full pass through all the training data. <b>Loss</b> = a number that measures how wrong the network is; training's whole job is shrinking it.</p>
+  </div>
+
+  <h2>Quick check</h2>
+  <div class="q" data-quiz data-answer="2">
+    <p class="qt">Why does deep learning use many stacked layers instead of just one?</p>
+    <div class="opts">
+      <button>Layers make the code shorter</button>
+      <button>One layer runs faster on a GPU</button>
+      <button>Each layer builds on the last, turning simple patterns into complex understanding</button>
+    </div>
+    <p class="fb" role="status"></p>
+  </div>
+
+  <div class="pager">
+    <a class="btn ghost" href="#ml-algo">&larr; ML Algorithms</a>
+    <button class="btn is-done" data-done-btn data-lesson="deep-learning">Mark lesson complete</button>
+    <a class="btn" href="#deploy">Next: Training &amp; Deployment &rarr;</a>
+  </div>
+</section>
+<section class="lvl" id="deploy" data-title="Model Training & Production Deployment" tabindex="-1">
+  <p class="where">Foundations &rsaquo; Lesson 5 of 14</p>
+  <h1>Model training &amp; production deployment</h1>
+  <p class="lead">Training happens in a lab, on powerful machines, with time to spare. Deployment means putting the finished model where real people actually use it — and real users don't wait.</p>
+
+  <div class="simple"><span class="tag">imagine this</span>
+    <p>Training is a chef perfecting a recipe in a test kitchen, tasting and adjusting for weeks. Deployment is opening the restaurant: the recipe is locked in, and now it has to come out fast, correctly, and for hundreds of customers a minute — every single night.</p>
+  </div>
+
+  <h2>Training loop, in plain steps</h2>
+  <ol class="steps">
+    <li><b>Forward pass.</b> Feed a batch of examples in and get predictions out.</li>
+    <li><b>Measure loss.</b> Compare predictions to the real answers with a loss function.</li>
+    <li><b>Backward pass (backpropagation).</b> Work out which knob, turned which way, would have reduced the loss.</li>
+    <li><b>Update weights.</b> An <em>optimizer</em> (like Adam or SGD) nudges every knob a tiny step in that direction.</li>
+    <li><b>Repeat</b> for every batch, for many epochs, until loss stops improving.</li>
+  </ol>
+
+  <div class="lab">
+    <h3>Try it yourself: watch loss fall during training</h3>
+    <p>This is what an engineer stares at for hours. Press play — loss should trend down and accuracy up as fake "epochs" pass.</p>
+    <div class="lab-tools">
+      <button class="btn" id="trPlay">Train model &#9654;</button>
+      <button class="btn ghost" id="trReset">Reset</button>
+    </div>
+    <svg id="trSvg" viewBox="0 0 300 140" style="width:100%;max-width:30rem;background:var(--surface-2);border:1px solid var(--line);border-radius:10px" role="img" aria-label="Loss curve dropping over training epochs">
+      <polyline id="trLine" points="" fill="none" stroke="var(--box)" stroke-width="3"/>
+    </svg>
+    <p class="nout">Epoch <span id="trEpoch">0</span>/40 &middot; loss <span id="trLoss">1.00</span> &middot; accuracy <span id="trAcc">50%</span></p>
+  </div>
+
+  <h2>Getting a trained model into production</h2>
+  <div class="cards">
+    <div class="card"><h3>1. Save it</h3><p>Export the trained weights to a portable file — Keras uses <code>.keras</code>/<code>.h5</code>, PyTorch uses <code>.pt</code>, others use the open <code>ONNX</code> format.</p></div>
+    <div class="card"><h3>2. Wrap it</h3><p>Put the model behind an API, usually with a small web server, so any app can send data and get a prediction back.</p></div>
+    <div class="card"><h3>3. Containerize</h3><p>Package the model, server, and dependencies into a Docker container so it runs identically everywhere.</p></div>
+    <div class="card"><h3>4. Serve at scale</h3><p>Run many containers behind a load balancer so thousands of requests a second get fast answers.</p></div>
+  </div>
+
+  <h2>The code: a minimal serving API</h2>
+  <p>This tiny web server loads a saved model once, then answers prediction requests — the actual bridge between "trained model" and "real product".</p>
+  <div class="code">
+    <div class="code-bar"><span>serve_model.py</span><button data-copy>Copy</button></div>
+    <pre><code><span class="k">from</span> fastapi <span class="k">import</span> FastAPI
+<span class="k">import</span> tensorflow <span class="k">as</span> tf
+<span class="k">import</span> numpy <span class="k">as</span> np
+
+app = FastAPI()
+model = tf.keras.models.load_model(<span class="s">"models/spam_detector.keras"</span>)  <span class="c"># load once, at startup</span>
+
+<span class="k">@app</span>.post(<span class="s">"/predict"</span>)
+<span class="k">def</span> <span class="f">predict</span>(spammy_words: <span class="f">float</span>, links: <span class="f">float</span>):
+    features = np.array([[spammy_words, links]])
+    score = <span class="f">float</span>(model.predict(features)[<span class="m">0</span>][<span class="m">0</span>])
+    <span class="k">return</span> {<span class="s">"is_spam"</span>: score &gt; <span class="m">0.5</span>, <span class="s">"confidence"</span>: round(score, <span class="m">3</span>)}
+
+<span class="c"># Run with: uvicorn serve_model:app --host 0.0.0.0 --port 8000</span>
+<span class="c"># Now any app on Earth can POST to /predict and get an answer in milliseconds</span></code></pre>
+  </div>
+
+  <div class="warn"><strong>The gap engineers fear most</strong>
+    <p>A model that's 99% accurate in the lab can fail in production if live data looks different from training data — blurrier photos, a new slang word, a camera angle nobody trained on. This is why deployment always comes with monitoring (see the <a href="#mlops">MLOps lesson</a>).</p>
+  </div>
+
+  <h2>Quick check</h2>
+  <div class="q" data-quiz data-answer="0">
+    <p class="qt">What is "backpropagation" mainly used for?</p>
+    <div class="opts">
+      <button>Figuring out which direction to nudge each weight to reduce error</button>
+      <button>Compressing the model to make it smaller</button>
+      <button>Sending predictions back to the user's app</button>
+    </div>
+    <p class="fb" role="status"></p>
+  </div>
+
+  <div class="pager">
+    <a class="btn ghost" href="#deep-learning">&larr; Deep Learning</a>
+    <button class="btn is-done" data-done-btn data-lesson="deploy">Mark lesson complete</button>
+    <a class="btn" href="#optimization">Next: Model Optimization &rarr;</a>
+  </div>
+</section>
+<section class="lvl" id="optimization" data-title="Model Optimization" tabindex="-1">
+  <p class="where">Foundations &rsaquo; Lesson 6 of 14</p>
+  <h1>Model optimization</h1>
+  <p class="lead">A model trained on a huge lab computer can be too big, slow, or power-hungry for a phone, a doorbell camera, or a tiny sensor. Optimization shrinks and speeds up a model without losing much of its smartness.</p>
+
+  <div class="simple"><span class="tag">imagine this</span>
+    <p>Imagine a 500-page textbook. A skilled student can turn it into a 20-page revision guide that still covers 95% of what matters, in a fraction of the reading time. Model optimization is writing that revision guide — for a neural network.</p>
+  </div>
+
+  <h2>The main techniques</h2>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Technique</th><th>What it does</th><th>In plain words</th></tr></thead>
+      <tbody>
+        <tr><td><b>Quantization</b></td><td>Stores numbers using fewer bits (e.g. 8-bit instead of 32-bit)</td><td>Rounding every measurement to the nearest inch instead of the nearest millimeter — still useful, way lighter</td></tr>
+        <tr><td><b>Pruning</b></td><td>Removes weights that barely affect the output</td><td>Cutting the dead branches off a tree — the tree still stands, just leaner</td></tr>
+        <tr><td><b>Knowledge distillation</b></td><td>Trains a small "student" model to mimic a big "teacher" model</td><td>A senior expert teaches a quick summary to a junior, who then performs almost as well</td></tr>
+        <tr><td><b>Compilation / graph optimization</b></td><td>Fuses and reorders operations for the target hardware</td><td>Rewriting a recipe's steps so the kitchen never sits idle between tasks</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="lab">
+    <h3>Try it yourself: trade accuracy for speed</h3>
+    <p>Move the compression slider — like a real optimizer, more compression means a smaller, faster model, at some accuracy cost.</p>
+    <div class="nrow"><label for="opC">compression level<input type="range" id="opC" min="0" max="100" step="5" value="0"><output id="opCv">0%</output></label></div>
+    <div class="cards">
+      <div class="card"><h3>Size</h3><p class="nout" id="opSize">96 MB</p></div>
+      <div class="card"><h3>Speed</h3><p class="nout" id="opSpeed">40 ms</p></div>
+      <div class="card"><h3>Accuracy</h3><p class="nout" id="opAcc">97.4%</p></div>
+    </div>
+  </div>
+
+  <h2>The code: quantizing a model</h2>
+  <p>This converts a full-size trained model into a compressed <code>TFLite</code> version ready for a phone or a small edge device — the same technique that keeps a camera's on-device AI fast.</p>
+  <div class="code">
+    <div class="code-bar"><span>optimize_model.py</span><button data-copy>Copy</button></div>
+    <pre><code><span class="k">import</span> tensorflow <span class="k">as</span> tf
+
+model = tf.keras.models.load_model(<span class="s">"models/detector.keras"</span>)
+
+converter = tf.lite.TFLiteConverter.from_keras_model(model)
+converter.optimizations = [tf.lite.Optimize.DEFAULT]   <span class="c"># turns on quantization</span>
+
+tiny_model = converter.convert()
+
+<span class="k">with</span> <span class="f">open</span>(<span class="s">"detector_quantized.tflite"</span>, <span class="s">"wb"</span>) <span class="k">as</span> f:
+    f.write(tiny_model)
+
+<span class="c"># Result: often 4x smaller and 2-3x faster, for roughly 1-2% less accuracy</span></code></pre>
+  </div>
+
+  <div class="note"><strong>Why this matters for cameras and drones</strong>
+    <p>An edge AI camera can't send every video frame to a giant cloud server — that's slow and expensive. A optimized model running directly on the camera can spot a person or a vehicle in milliseconds, which is exactly what platforms like <a href="#scanalitix">Scanalitix</a> rely on at the edge.</p>
+  </div>
+
+  <h2>Quick check</h2>
+  <div class="q" data-quiz data-answer="1">
+    <p class="qt">What is the usual trade-off when you optimize a model heavily?</p>
+    <div class="opts">
+      <button>It becomes impossible to update later</button>
+      <button>You gain size and speed but may lose a little accuracy</button>
+      <button>It stops working on new data entirely</button>
+    </div>
+    <p class="fb" role="status"></p>
+  </div>
+
+  <div class="pager">
+    <a class="btn ghost" href="#deploy">&larr; Training &amp; Deployment</a>
+    <button class="btn is-done" data-done-btn data-lesson="optimization">Mark lesson complete</button>
+    <a class="btn" href="#mlops">Next: MLOps &rarr;</a>
+  </div>
+</section>
+<section class="lvl" id="mlops" data-title="MLOps" tabindex="-1">
+  <p class="where">Foundations &rsaquo; Lesson 7 of 14</p>
+  <h1>MLOps</h1>
+  <p class="lead">MLOps ("Machine Learning Operations") is the set of habits and tools that keep a model working well <em>after</em> it launches — not just on launch day.</p>
+
+  <div class="simple"><span class="tag">imagine this</span>
+    <p>Getting a car through its driving test is training. MLOps is everything after: regular services, checking the tires, noticing when the engine sounds different, and knowing when it's time for a new car. Without this, even a great model quietly gets worse as the real world changes around it — a problem called <strong>drift</strong>.</p>
+  </div>
+
+  <h2>The MLOps loop</h2>
+  <div class="flow">
+    <div class="fstep"><h3>Version</h3><p>Track exactly which data and code produced which model, so results are reproducible.</p></div>
+    <div class="fstep"><h3>Deploy</h3><p>Roll the model out safely, often to a small slice of traffic first.</p></div>
+    <div class="fstep"><h3>Monitor</h3><p>Watch accuracy, latency, and incoming data for warning signs, 24/7.</p></div>
+    <div class="fstep"><h3>Detect drift</h3><p>Notice when live data starts looking different from training data.</p></div>
+    <div class="fstep"><h3>Retrain</h3><p>Feed fresh, labeled examples back in and ship an improved model — then repeat.</p></div>
+  </div>
+
+  <div class="lab">
+    <h3>Try it yourself: spot the drift</h3>
+    <p>A model was trained on daytime traffic footage. Toggle "night mode" and watch what happens to live accuracy — this is exactly the kind of silent drop MLOps monitoring is built to catch.</p>
+    <label style="display:flex;align-items:center;gap:10px;margin:10px 0;min-height:44px"><input type="checkbox" id="opsNight"> Switch camera feed to night-time footage</label>
+    <p class="nout">Live accuracy: <span id="opsAcc">96%</span> <span id="opsFlag"></span></p>
+    <p class="eq">A monitoring system would fire an alert once accuracy drops below its threshold, triggering a retraining job automatically.</p>
+  </div>
+
+  <h2>The code: a simple drift check</h2>
+  <p>A real MLOps pipeline runs a check like this automatically, every day, on a schedule.</p>
+  <div class="code">
+    <div class="code-bar"><span>check_drift.py</span><button data-copy>Copy</button></div>
+    <pre><code><span class="k">import</span> numpy <span class="k">as</span> np
+
+<span class="k">def</span> <span class="f">accuracy_dropped</span>(recent_accuracy, baseline_accuracy, threshold=<span class="m">0.03</span>):
+    <span class="s">"""Return True if live accuracy has fallen too far below the launch baseline."""</span>
+    drop = baseline_accuracy - recent_accuracy
+    <span class="k">return</span> drop &gt; threshold
+
+<span class="c"># pulled from yesterday's monitoring logs</span>
+baseline = <span class="m">0.97</span>       <span class="c"># accuracy on launch day</span>
+today     = <span class="m">0.91</span>      <span class="c"># accuracy measured on today's live traffic</span>
+
+<span class="k">if</span> accuracy_dropped(today, baseline):
+    <span class="f">print</span>(<span class="s">"⚠️  Drift detected — queuing a retraining job and alerting the ML team"</span>)
+<span class="k">else</span>:
+    <span class="f">print</span>(<span class="s">"✅ Model healthy"</span>)</code></pre>
+  </div>
+
+  <div class="note"><strong>Word check</strong>
+    <p><b>Drift</b> = the world changing so live data no longer matches training data. <b>CI/CD for ML</b> = automatically testing and deploying new model versions the same way software teams automatically test and deploy code.</p>
+  </div>
+
+  <h2>Quick check</h2>
+  <div class="q" data-quiz data-answer="2">
+    <p class="qt">A traffic camera's model was trained only on sunny daytime footage. What is most likely to happen at night?</p>
+    <div class="opts">
+      <button>Nothing — a model performs the same in any condition</button>
+      <button>The model automatically retrains itself instantly</button>
+      <button>Accuracy silently drops — this is drift, and monitoring is needed to catch it</button>
+    </div>
+    <p class="fb" role="status"></p>
+  </div>
+
+  <div class="pager">
+    <a class="btn ghost" href="#optimization">&larr; Model Optimization</a>
+    <button class="btn is-done" data-done-btn data-lesson="mlops">Mark lesson complete</button>
+    <a class="btn" href="#opencv">Next: OpenCV &rarr;</a>
+  </div>
+</section>
+<section class="lvl" id="opencv" data-title="OpenCV" tabindex="-1">
+  <p class="where">Computer Vision &rsaquo; Lesson 8 of 14</p>
+  <h1>OpenCV</h1>
+  <p class="lead">To a computer, a photo is just a giant grid of numbers. OpenCV is a free toolbox full of ready-made functions for working with those numbers — blurring, finding edges, detecting faces, reading video frames.</p>
+
+  <div class="simple"><span class="tag">imagine this</span>
+    <p>A color photo is really three grids stacked together — one each for red, green, and blue brightness — like three transparent sheets laid on top of each other. OpenCV gives you tools to slice, combine, and search through those grids without writing the math yourself.</p>
+  </div>
+
+  <div class="lab">
+    <h3>Try it yourself: a picture is just numbers</h3>
+    <p>Click cells to "paint" a tiny 10&times;10 black-and-white image. Below, see the actual numbers OpenCV would see — 0 for black, 255 for white.</p>
+    <div class="pad" id="cvPad" role="img" aria-label="10 by 10 pixel drawing grid, click cells to toggle them"></div>
+    <p class="stat" id="cvNums">Reading pixel values&hellip;</p>
+    <div class="lab-tools"><button class="btn ghost" id="cvClear">Clear grid</button></div>
+  </div>
+
+  <h2>Common OpenCV operations</h2>
+  <div class="cards">
+    <div class="card"><h3>Read &amp; resize</h3><p>Load an image or video frame and scale it to the size the model expects.</p></div>
+    <div class="card"><h3>Blur &amp; denoise</h3><p>Smooth out camera grain so shapes stand out more clearly.</p></div>
+    <div class="card"><h3>Edge detection</h3><p>Find sharp brightness changes — the outlines of objects.</p></div>
+    <div class="card"><h3>Face/object detectors</h3><p>Ready-made classical detectors (like Haar cascades) for quick, lightweight detection.</p></div>
+  </div>
+
+  <h2>The code: face detection in a few lines</h2>
+  <div class="code">
+    <div class="code-bar"><span>detect_faces.py</span><button data-copy>Copy</button></div>
+    <pre><code><span class="k">import</span> cv2
+
+<span class="c"># Load a ready-made face detector that ships with OpenCV</span>
+face_finder = cv2.CascadeClassifier(cv2.data.haarcascades + <span class="s">"haarcascade_frontalface_default.xml"</span>)
+
+frame = cv2.imread(<span class="s">"entrance_camera.jpg"</span>)
+gray  = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)     <span class="c"># color isn't needed for this step</span>
+
+faces = face_finder.detectMultiScale(gray, scaleFactor=<span class="m">1.1</span>, minNeighbors=<span class="m">5</span>)
+<span class="f">print</span>(<span class="s">f"Found {len(faces)} face(s)"</span>)
+
+<span class="k">for</span> (x, y, w, h) <span class="k">in</span> faces:
+    cv2.rectangle(frame, (x, y), (x + w, y + h), (<span class="m">0</span>, <span class="m">255</span>, <span class="m">0</span>), <span class="m">2</span>)   <span class="c"># draw a green box</span>
+
+cv2.imwrite(<span class="s">"entrance_camera_marked.jpg"</span>, frame)</code></pre>
+  </div>
+
+  <div class="note"><strong>OpenCV vs. deep learning</strong>
+    <p>OpenCV's classic tools are fast and need no training — great for simple, controlled scenes. For harder problems (spotting a PPE violation in a crowded warehouse), you pair OpenCV's frame-handling with a trained deep learning model like a <a href="#cnn">CNN</a>.</p>
+  </div>
+
+  <h2>Quick check</h2>
+  <div class="q" data-quiz data-answer="0">
+    <p class="qt">What does converting an image to grayscale before edge detection actually do?</p>
+    <div class="opts">
+      <button>Removes color info so the computer only has to compare one brightness value per pixel</button>
+      <button>Makes the image file larger</button>
+      <button>Trains a neural network on the image</button>
+    </div>
+    <p class="fb" role="status"></p>
+  </div>
+
+  <div class="pager">
+    <a class="btn ghost" href="#mlops">&larr; MLOps</a>
+    <button class="btn is-done" data-done-btn data-lesson="opencv">Mark lesson complete</button>
+    <a class="btn" href="#cnn">Next: CNN &rarr;</a>
+  </div>
+</section>
+<section class="lvl" id="cnn" data-title="Convolutional Neural Networks (CNN)" tabindex="-1">
+  <p class="where">Computer Vision &rsaquo; Lesson 9 of 14</p>
+  <h1>Convolutional Neural Networks (CNN)</h1>
+  <p class="lead">A CNN is a neural network specially built for images. Instead of looking at the whole picture at once, it slides a small window across it, hunting for simple patterns everywhere.</p>
+
+  <div class="simple"><span class="tag">imagine this</span>
+    <p>Imagine checking a huge wall for cracks using a small flashlight, sweeping it across every inch in a grid pattern. That sweeping flashlight is a <strong>filter</strong> (or <em>kernel</em>) — a tiny grid of numbers that lights up when it finds a pattern it recognizes, like a vertical edge.</p>
+  </div>
+
+  <div class="lab">
+    <h3>Try it yourself: slide a filter across an image</h3>
+    <p>Click a cell in the output grid to see exactly which 3&times;3 patch of the input it was computed from, and the sum that produced it.</p>
+    <div class="conv">
+      <div>
+        <h4>Input (5&times;5 image)</h4>
+        <div class="g" id="cnnIn" style="grid-template-columns:repeat(5,1fr)"></div>
+        <h4 style="margin-top:16px">Filter (3&times;3 kernel)</h4>
+        <div class="kern" id="cnnKernel"></div>
+        <div class="pill-row" id="cnnPresets">
+          <button data-k="edge" aria-pressed="true">Vertical edge filter</button>
+          <button data-k="blur">Blur filter</button>
+        </div>
+      </div>
+      <div>
+        <h4>Output (feature map)</h4>
+        <div class="g out" id="cnnOut" style="grid-template-columns:repeat(3,1fr)"></div>
+        <p class="eq" id="cnnMath">Click an output cell to see the math &uarr;</p>
+      </div>
+    </div>
+  </div>
+
+  <h2>A CNN's layers, top to bottom</h2>
+  <ol class="steps">
+    <li><b>Convolution layer.</b> Slide filters across the image to produce "feature maps" — highlighting edges, textures, colors.</li>
+    <li><b>Activation (ReLU).</b> Keep only the positive signals; this lets the network learn non-straight-line patterns.</li>
+    <li><b>Pooling layer.</b> Shrink the feature map by keeping only the strongest signal in each small region — this saves computation and adds tolerance to small shifts.</li>
+    <li><b>Repeat.</b> Stack many convolution + pooling pairs so early layers see edges, middle layers see shapes, and deep layers see whole objects.</li>
+    <li><b>Fully connected layer.</b> Flatten everything and make the final decision — "cat", "dog", "person", "vehicle".</li>
+  </ol>
+
+  <h2>The code: a small CNN with Keras</h2>
+  <div class="code">
+    <div class="code-bar"><span>build_cnn.py</span><button data-copy>Copy</button></div>
+    <pre><code><span class="k">from</span> tensorflow.keras <span class="k">import</span> layers, Sequential
+
+model = Sequential([
+    layers.Conv2D(<span class="m">32</span>, (<span class="m">3</span>,<span class="m">3</span>), activation=<span class="s">"relu"</span>, input_shape=(<span class="m">128</span>,<span class="m">128</span>,<span class="m">3</span>)),  <span class="c"># find simple patterns</span>
+    layers.MaxPooling2D((<span class="m">2</span>,<span class="m">2</span>)),                                                  <span class="c"># shrink by keeping strongest signal</span>
+
+    layers.Conv2D(<span class="m">64</span>, (<span class="m">3</span>,<span class="m">3</span>), activation=<span class="s">"relu"</span>),                              <span class="c"># find bigger patterns</span>
+    layers.MaxPooling2D((<span class="m">2</span>,<span class="m">2</span>)),
+
+    layers.Flatten(),                                                          <span class="c"># turn the grid into one long list</span>
+    layers.Dense(<span class="m">64</span>, activation=<span class="s">"relu"</span>),
+    layers.Dense(<span class="m">1</span>, activation=<span class="s">"sigmoid"</span>),                                            <span class="c"># helmet vs. no helmet</span>
+])
+
+model.<span class="f">compile</span>(optimizer=<span class="s">"adam"</span>, loss=<span class="s">"binary_crossentropy"</span>, metrics=[<span class="s">"accuracy"</span>])
+model.summary()</code></pre>
+  </div>
+
+  <div class="note"><strong>Why this matters for surveillance</strong>
+    <p>Spotting a hard hat, an unattended bag, or an unauthorized vehicle in a busy camera feed is exactly this kind of pattern-in-an-image problem — CNNs are the core engine behind most video analytics, including <a href="#scanalitix">Scanalitix's</a> PPE compliance and ANPR features.</p>
+  </div>
+
+  <h2>Quick check</h2>
+  <div class="q" data-quiz data-answer="1">
+    <p class="qt">What does a pooling layer mainly do?</p>
+    <div class="opts">
+      <button>Adds color back into a grayscale image</button>
+      <button>Shrinks the feature map by keeping only the strongest nearby signal</button>
+      <button>Deletes the image after training</button>
+    </div>
+    <p class="fb" role="status"></p>
+  </div>
+
+  <div class="pager">
+    <a class="btn ghost" href="#opencv">&larr; OpenCV</a>
+    <button class="btn is-done" data-done-btn data-lesson="cnn">Mark lesson complete</button>
+    <a class="btn" href="#transfer">Next: Transfer Learning &rarr;</a>
+  </div>
+</section>
+<section class="lvl" id="transfer" data-title="Transfer Learning" tabindex="-1">
+  <p class="where">Computer Vision &rsaquo; Lesson 10 of 14</p>
+  <h1>Transfer learning</h1>
+  <p class="lead">Instead of teaching a network to see from zero, transfer learning starts with a network that already learned to see from millions of photos — and just teaches it your specific task.</p>
+
+  <div class="simple"><span class="tag">imagine this</span>
+    <p>You wouldn't teach a fluent English speaker the alphabet before teaching them Spanish — you'd build on what they already know: letters, grammar, how language works. Transfer learning does the same thing: it reuses a network's existing knowledge of edges, shapes, and textures, and only retrains the final part for your new task.</p>
+  </div>
+
+  <h2>Why not just train from scratch every time?</h2>
+  <div class="scroll">
+    <table>
+      <thead><tr><th></th><th>Training from scratch</th><th>Transfer learning</th></tr></thead>
+      <tbody>
+        <tr><td><b>Data needed</b></td><td>Often 100,000+ labeled images</td><td>Can work with a few hundred to a few thousand</td></tr>
+        <tr><td><b>Training time</b></td><td>Days to weeks on powerful GPUs</td><td>Often hours, sometimes minutes</td></tr>
+        <tr><td><b>Starting knowledge</b></td><td>None — learns edges and shapes from zero</td><td>Already knows edges, shapes, textures</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="lab">
+    <h3>Try it yourself: freeze vs. retrain</h3>
+    <p>A pretrained network has early layers (general shapes) and late layers (task-specific decisions). Choose which layers stay "frozen" (locked, reused as-is) and which get retrained on your new, small dataset of warehouse forklifts.</p>
+    <div class="ladder" id="tlLadder">
+      <li data-layer="1">Layer 1 &mdash; edges &amp; colors</li>
+      <li data-layer="2">Layer 2 &mdash; textures &amp; corners</li>
+      <li data-layer="3">Layer 3 &mdash; shapes &amp; parts</li>
+      <li data-layer="4">Layer 4 &mdash; object-specific features</li>
+      <li data-layer="5">Output layer &mdash; final decision</li>
+    </div>
+    <div class="nrow"><label for="tlSlider">freeze up to layer<input type="range" id="tlSlider" min="0" max="5" step="1" value="3"><output id="tlSliderV">3</output></label></div>
+    <p class="nout" id="tlSummary">Layers 1&ndash;3 frozen (reused as-is), layers 4&ndash;5 retrained on your forklift photos.</p>
+  </div>
+
+  <h2>The code: fine-tuning a pretrained model</h2>
+  <div class="code">
+    <div class="code-bar"><span>transfer_learning.py</span><button data-copy>Copy</button></div>
+    <pre><code><span class="k">from</span> tensorflow.keras.applications <span class="k">import</span> MobileNetV2
+<span class="k">from</span> tensorflow.keras <span class="k">import</span> layers, Model
+
+<span class="c"># Load a model already trained on 1.4 million general images</span>
+base = MobileNetV2(weights=<span class="s">"imagenet"</span>, include_top=<span class="k">False</span>, input_shape=(<span class="m">224</span>,<span class="m">224</span>,<span class="m">3</span>))
+
+base.trainable = <span class="k">False</span>   <span class="c"># freeze it — keep its existing knowledge untouched</span>
+
+<span class="c"># Add our own small "head" for the new task: forklift vs. no forklift</span>
+x = layers.GlobalAveragePooling2D()(base.output)
+x = layers.Dense(<span class="m">64</span>, activation=<span class="s">"relu"</span>)(x)
+output = layers.Dense(<span class="m">1</span>, activation=<span class="s">"sigmoid"</span>)(x)
+
+model = Model(inputs=base.input, outputs=output)
+model.<span class="f">compile</span>(optimizer=<span class="s">"adam"</span>, loss=<span class="s">"binary_crossentropy"</span>, metrics=[<span class="s">"accuracy"</span>])
+
+<span class="c"># Only the new head trains — on just a few hundred warehouse photos</span>
+model.fit(warehouse_images, warehouse_labels, epochs=<span class="m">10</span>)</code></pre>
+  </div>
+
+  <div class="note"><strong>Why this matters for new deployment sites</strong>
+    <p>When a surveillance platform expands into a new industry — say, from retail into e-courts — transfer learning lets the vision models adapt to new camera angles and objects fast, without needing millions of fresh labeled images first.</p>
+  </div>
+
+  <h2>Quick check</h2>
+  <div class="q" data-quiz data-answer="0">
+    <p class="qt">Why does transfer learning usually need far less data than training from scratch?</p>
+    <div class="opts">
+      <button>It reuses general visual knowledge already learned from a huge dataset</button>
+      <button>It skips the training step entirely</button>
+      <button>It only works on black-and-white images</button>
+    </div>
+    <p class="fb" role="status"></p>
+  </div>
+
+  <div class="pager">
+    <a class="btn ghost" href="#cnn">&larr; CNN</a>
+    <button class="btn is-done" data-done-btn data-lesson="transfer">Mark lesson complete</button>
+    <a class="btn" href="#tensorflow">Next: TensorFlow &rarr;</a>
+  </div>
+</section>
+<section class="lvl" id="tensorflow" data-title="TensorFlow" tabindex="-1">
+  <p class="where">Frameworks &rsaquo; Lesson 11 of 14</p>
+  <h1>TensorFlow</h1>
+  <p class="lead">TensorFlow is a free library from Google for building and running neural networks — from a research laptop all the way to a phone or a warehouse camera.</p>
+
+  <div class="simple"><span class="tag">imagine this</span>
+    <p>A "tensor" is just a fancy word for a grid of numbers — a single number is a tensor, a list is a tensor, an image (a grid of pixel grids) is a tensor. TensorFlow's whole job is moving and transforming these grids of numbers, fast, on whatever hardware you give it — laptop, server, or phone.</p>
+  </div>
+
+  <h2>What TensorFlow is good at</h2>
+  <div class="cards">
+    <div class="card"><h3>Production &amp; scale</h3><p>Strong tools for serving models to millions of users reliably (TensorFlow Serving).</p></div>
+    <div class="card"><h3>Mobile &amp; edge</h3><p>TensorFlow Lite runs optimized models directly on phones and small edge devices.</p></div>
+    <div class="card"><h3>Visualization</h3><p>TensorBoard lets you watch training progress live with graphs and charts.</p></div>
+    <div class="card"><h3>End-to-end pipelines</h3><p>TFX handles the whole journey from raw data to a monitored production model.</p></div>
+  </div>
+
+  <h2>The code: tensors, the basic building block</h2>
+  <div class="code">
+    <div class="code-bar"><span>tensors_101.py</span><button data-copy>Copy</button></div>
+    <pre><code><span class="k">import</span> tensorflow <span class="k">as</span> tf
+
+<span class="c"># A tensor is just a grid of numbers of any size</span>
+scalar = tf.constant(<span class="m">7</span>)                          <span class="c"># a single number</span>
+vector = tf.constant([<span class="m">1</span>, <span class="m">2</span>, <span class="m">3</span>])                <span class="c"># a list</span>
+image  = tf.zeros([<span class="m">128</span>, <span class="m">128</span>, <span class="m">3</span>])              <span class="c"># height x width x color-channels</span>
+
+<span class="f">print</span>(<span class="s">"shape:"</span>, image.shape)                 <span class="c"># (128, 128, 3)</span>
+
+<span class="c"># TensorFlow automatically tracks operations so it can compute gradients</span>
+x = tf.Variable(<span class="m">3.0</span>)
+<span class="k">with</span> tf.GradientTape() <span class="k">as</span> tape:
+    y = x ** <span class="m">2</span>                                   <span class="c"># y = x^2</span>
+slope = tape.gradient(y, x)
+<span class="f">print</span>(<span class="s">"dy/dx at x=3:"</span>, slope.numpy())          <span class="c"># 6.0 — the exact slope of x^2 at x=3</span></code></pre>
+  </div>
+
+  <h2>The code: training with TensorFlow directly</h2>
+  <div class="code">
+    <div class="code-bar"><span>train_tf.py</span><button data-copy>Copy</button></div>
+    <pre><code><span class="k">import</span> tensorflow <span class="k">as</span> tf
+
+(train_images, train_labels), (test_images, test_labels) = tf.keras.datasets.mnist.load_data()
+train_images = train_images / <span class="m">255.0</span>   <span class="c"># scale pixel values from 0-255 down to 0-1</span>
+
+model = tf.keras.Sequential([
+    tf.keras.layers.Flatten(input_shape=(<span class="m">28</span>, <span class="m">28</span>)),
+    tf.keras.layers.Dense(<span class="m">128</span>, activation=<span class="s">"relu"</span>),
+    tf.keras.layers.Dense(<span class="m">10</span>, activation=<span class="s">"softmax"</span>),   <span class="c"># 10 digits: 0-9</span>
+])
+
+model.<span class="f">compile</span>(optimizer=<span class="s">"adam"</span>, loss=<span class="s">"sparse_categorical_crossentropy"</span>, metrics=[<span class="s">"accuracy"</span>])
+model.fit(train_images, train_labels, epochs=<span class="m">5</span>)
+model.evaluate(test_images, test_labels)</code></pre>
+  </div>
+
+  <div class="note"><strong>TensorFlow and Keras</strong>
+    <p>Keras (see the <a href="#keras">Keras lesson</a>) is now built directly into TensorFlow as its official easy-mode interface — most engineers write <code>tf.keras...</code> exactly like the code above.</p>
+  </div>
+
+  <h2>Quick check</h2>
+  <div class="q" data-quiz data-answer="1">
+    <p class="qt">What is a "tensor" in TensorFlow?</p>
+    <div class="opts">
+      <button>A type of neural network layer</button>
+      <button>A grid of numbers of any size — a scalar, list, image, or video are all tensors</button>
+      <button>A file format for saving models</button>
+    </div>
+    <p class="fb" role="status"></p>
+  </div>
+
+  <div class="pager">
+    <a class="btn ghost" href="#transfer">&larr; Transfer Learning</a>
+    <button class="btn is-done" data-done-btn data-lesson="tensorflow">Mark lesson complete</button>
+    <a class="btn" href="#pytorch">Next: PyTorch &rarr;</a>
+  </div>
+</section>
+<section class="lvl" id="pytorch" data-title="PyTorch" tabindex="-1">
+  <p class="where">Frameworks &rsaquo; Lesson 12 of 14</p>
+  <h1>PyTorch</h1>
+  <p class="lead">PyTorch is Meta's (Facebook's) free deep learning library. It's the favorite of most researchers because it feels like writing regular Python — you build the network step by step, and can inspect any value at any point.</p>
+
+  <div class="simple"><span class="tag">imagine this</span>
+    <p>TensorFlow's older style was like writing a recipe entirely in advance, then handing it to a chef who cooks it all at once. PyTorch is more like cooking live — you taste and adjust each step as it happens. This "define-as-you-go" style is called a <strong>dynamic computation graph</strong>, and it makes debugging much easier.</p>
+  </div>
+
+  <h2>TensorFlow vs. PyTorch, honestly</h2>
+  <div class="scroll">
+    <table>
+      <thead><tr><th></th><th>TensorFlow</th><th>PyTorch</th></tr></thead>
+      <tbody>
+        <tr><td><b>Feels like</b></td><td>An industrial production system</td><td>Regular, flexible Python</td></tr>
+        <tr><td><b>Most popular in</b></td><td>Large-scale production, mobile/edge</td><td>Research, rapid experimentation</td></tr>
+        <tr><td><b>Debugging</b></td><td>Improved a lot with eager mode</td><td>Very easy — step through like normal code</td></tr>
+        <tr><td><b>Today</b></td><td>Both are strong, production-ready choices — many teams use either, or both</td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>The code: a network in PyTorch</h2>
+  <div class="code">
+    <div class="code-bar"><span>train_pytorch.py</span><button data-copy>Copy</button></div>
+    <pre><code><span class="k">import</span> torch
+<span class="k">import</span> torch.nn <span class="k">as</span> nn
+
+<span class="c"># Define the network as a Python class — very explicit, very flexible</span>
+<span class="k">class</span> <span class="f">SpamDetector</span>(nn.Module):
+    <span class="k">def</span> <span class="f">__init__</span>(self):
+        <span class="f">super</span>().__init__()
+        self.layer1 = nn.Linear(<span class="m">2</span>, <span class="m">8</span>)     <span class="c"># 2 inputs -> 8 hidden neurons</span>
+        self.layer2 = nn.Linear(<span class="m">8</span>, <span class="m">1</span>)     <span class="c"># 8 hidden neurons -> 1 output</span>
+        self.relu   = nn.ReLU()
+        self.sig    = nn.Sigmoid()
+
+    <span class="k">def</span> <span class="f">forward</span>(self, x):
+        x = self.relu(self.layer1(x))
+        <span class="k">return</span> self.sig(self.layer2(x))
+
+model     = SpamDetector()
+loss_fn   = nn.BCELoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=<span class="m">0.01</span>)
+
+<span class="c"># The training loop — you can see and control every single step</span>
+<span class="k">for</span> epoch <span class="k">in</span> <span class="f">range</span>(<span class="m">100</span>):
+    predictions = model(training_inputs)
+    loss = loss_fn(predictions, training_labels)
+
+    optimizer.zero_grad()   <span class="c"># clear old gradients</span>
+    loss.backward()         <span class="c"># compute new gradients (backpropagation)</span>
+    optimizer.step()        <span class="c"># nudge the weights</span></code></pre>
+  </div>
+
+  <div class="note"><strong>Word check</strong>
+    <p><b>Gradient</b> = the direction and size of the nudge that would reduce loss. PyTorch calculates this automatically with a feature literally called <code>autograd</code>.</p>
+  </div>
+
+  <h2>Quick check</h2>
+  <div class="q" data-quiz data-answer="2">
+    <p class="qt">What makes PyTorch especially popular with researchers?</p>
+    <div class="opts">
+      <button>It cannot be used in production</button>
+      <button>It only runs on Google's servers</button>
+      <button>Its step-by-step style makes experimenting and debugging easy</button>
+    </div>
+    <p class="fb" role="status"></p>
+  </div>
+
+  <div class="pager">
+    <a class="btn ghost" href="#tensorflow">&larr; TensorFlow</a>
+    <button class="btn is-done" data-done-btn data-lesson="pytorch">Mark lesson complete</button>
+    <a class="btn" href="#keras">Next: Keras &rarr;</a>
+  </div>
+</section>
+<section class="lvl" id="keras" data-title="Keras" tabindex="-1">
+  <p class="where">Frameworks &rsaquo; Lesson 13 of 14</p>
+  <h1>Keras</h1>
+  <p class="lead">Keras is the friendly front door to deep learning. It sits on top of TensorFlow and lets you describe a whole neural network in a handful of readable lines.</p>
+
+  <div class="simple"><span class="tag">imagine this</span>
+    <p>If TensorFlow is a fully equipped professional kitchen, Keras is the labeled, pre-measured recipe kit: "add this layer, then this layer, then bake." You get the same powerful oven underneath, but with far less setup to write yourself.</p>
+  </div>
+
+  <h2>Two ways to build a model in Keras</h2>
+  <div class="cards">
+    <div class="card"><h3>Sequential</h3><p>A simple stack of layers, one after another — perfect for most straightforward models.</p></div>
+    <div class="card"><h3>Functional</h3><p>Layers connected however you like — needed for models with multiple inputs, outputs, or branching paths.</p></div>
+  </div>
+
+  <h2>The code: Sequential API</h2>
+  <div class="code">
+    <div class="code-bar"><span>keras_sequential.py</span><button data-copy>Copy</button></div>
+    <pre><code><span class="k">from</span> tensorflow <span class="k">import</span> keras
+<span class="k">from</span> tensorflow.keras <span class="k">import</span> layers
+
+model = keras.Sequential([
+    layers.Dense(<span class="m">16</span>, activation=<span class="s">"relu"</span>, input_shape=(<span class="m">4</span>,)),
+    layers.Dense(<span class="m">16</span>, activation=<span class="s">"relu"</span>),
+    layers.Dense(<span class="m">3</span>,  activation=<span class="s">"softmax"</span>),   <span class="c"># 3 possible categories</span>
+])
+
+model.<span class="f">compile</span>(
+    optimizer=<span class="s">"adam"</span>,
+    loss=<span class="s">"sparse_categorical_crossentropy"</span>,
+    metrics=[<span class="s">"accuracy"</span>],
+)
+
+history = model.fit(X_train, y_train, epochs=<span class="m">20</span>, validation_split=<span class="m">0.2</span>)
+model.save(<span class="s">"my_first_model.keras"</span>)   <span class="c"># one line to save the whole trained model</span></code></pre>
+  </div>
+
+  <h2>The code: Functional API for a branching model</h2>
+  <p>Useful when a model needs two inputs — for example, combining a camera image with a sensor reading.</p>
+  <div class="code">
+    <div class="code-bar"><span>keras_functional.py</span><button data-copy>Copy</button></div>
+    <pre><code><span class="k">from</span> tensorflow.keras <span class="k">import</span> layers, Model, Input
+
+image_in  = Input(shape=(<span class="m">64</span>,<span class="m">64</span>,<span class="m">3</span>), name=<span class="s">"camera_frame"</span>)
+sensor_in = Input(shape=(<span class="m">5</span>,),      name=<span class="s">"sensor_readings"</span>)
+
+x = layers.Conv2D(<span class="m">16</span>, <span class="m">3</span>, activation=<span class="s">"relu"</span>)(image_in)
+x = layers.GlobalAveragePooling2D()(x)
+
+combined = layers.concatenate([x, sensor_in])   <span class="c"># merge the two branches</span>
+output = layers.Dense(<span class="m">1</span>, activation=<span class="s">"sigmoid"</span>)(combined)
+
+model = Model(inputs=[image_in, sensor_in], outputs=output)</code></pre>
+  </div>
+
+  <div class="note"><strong>Which library should a beginner pick?</strong>
+    <p>Start with Keras — it teaches the concepts fastest. Once ideas like layers, loss, and epochs feel natural, PyTorch and raw TensorFlow become much easier to read.</p>
+  </div>
+
+  <h2>Quick check</h2>
+  <div class="q" data-quiz data-answer="1">
+    <p class="qt">When would you reach for Keras's Functional API instead of Sequential?</p>
+    <div class="opts">
+      <button>When the model has exactly one layer</button>
+      <button>When the model needs multiple inputs, outputs, or branching connections</button>
+      <button>When you don't want to save the model</button>
+    </div>
+    <p class="fb" role="status"></p>
+  </div>
+
+  <div class="pager">
+    <a class="btn ghost" href="#pytorch">&larr; PyTorch</a>
+    <button class="btn is-done" data-done-btn data-lesson="keras">Mark lesson complete</button>
+    <a class="btn" href="#scanalitix">Next: Scanalitix Platform &rarr;</a>
+  </div>
+</section>
+<section class="lvl" id="scanalitix" data-title="Scanalitix Platform" tabindex="-1">
+  <p class="where">Real World &rsaquo; Lesson 14 of 14</p>
+  <h1>Scanalitix: everything you just learned, at work</h1>
+  <p class="lead">Scanalitix is an AI-powered, unified e-surveillance platform. It takes video management, monitoring, video analytics, and field service — four things usually sold as separate products — and merges them into one modular, scalable system.</p>
+
+  <div class="simple"><span class="tag">imagine this</span>
+    <p>Most sites run four disconnected tools: one to record video, one to watch it live, one (maybe) with some AI, and a separate paper trail for fixing broken cameras. Scanalitix is what happens when all four live in one system — so a camera catching something unusual can, in the same platform, raise an alert, notify the right person, and even open a repair ticket if the camera itself needs attention.</p>
+  </div>
+
+  <h2>The four modules</h2>
+  <div class="cards">
+    <div class="card"><h3>VMS — Video Management System</h3><p>Records, stores, and streams video from every connected camera, reliably, at scale.</p></div>
+    <div class="card"><h3>CMS — Comprehensive Monitoring System</h3><p>The live control-room view: dashboards, health checks, and real-time status across every site.</p></div>
+    <div class="card"><h3>Video Analytics</h3><p>The AI layer — the CNNs, transfer learning, and optimized edge models from earlier lessons, watching every frame for what matters.</p></div>
+    <div class="card"><h3>FSM — Field Service Management</h3><p>When hardware needs a technician, tickets, schedules, and SLAs are tracked in the same platform — not a separate spreadsheet.</p></div>
+  </div>
+
+  <h2>Where the AI actually shows up</h2>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Capability</th><th>What it's watching for</th><th>Built from</th></tr></thead>
+      <tbody>
+        <tr><td><b>Edge AI</b></td><td>Runs detection directly on the camera or a nearby box, so alerts happen in milliseconds</td><td><a href="#optimization">Model optimization</a> — quantized, pruned models small enough for edge hardware</td></tr>
+        <tr><td><b>ANPR</b></td><td>Reads vehicle number plates at gates and checkpoints automatically</td><td><a href="#cnn">CNNs</a> for character recognition, <a href="#opencv">OpenCV</a> for frame handling</td></tr>
+        <tr><td><b>PPE compliance</b></td><td>Checks whether workers are wearing helmets, vests, or other required gear</td><td><a href="#transfer">Transfer learning</a> fine-tuned per site</td></tr>
+        <tr><td><b>Crowd analytics</b></td><td>Counts people and flags unusual density or movement patterns</td><td><a href="#deep-learning">Deep learning</a> models tracking motion across frames</td></tr>
+        <tr><td><b>Drone feeds</b></td><td>Extends the same analytics to aerial footage for large outdoor perimeters</td><td>The same <a href="#cnn">CNN</a> pipelines, applied to a moving camera</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Deployed everywhere, three ways</h2>
+  <p>Scanalitix supports <strong>cloud</strong>, <strong>on-premise</strong>, and <strong>hybrid</strong> deployment — because a defence perimeter and a retail chain have very different rules about where data is allowed to live. The same platform adapts to each, currently serving thousands of active sites and processing millions of daily alerts.</p>
+
+  <div class="cards">
+    <div class="card"><h3>BFSI</h3><p>Banks, insurance, and financial sites — vault monitoring, ATM security, compliance recording.</p></div>
+    <div class="card"><h3>Retail</h3><p>Loss prevention, footfall and queue analytics, store safety.</p></div>
+    <div class="card"><h3>Smart cities</h3><p>Traffic monitoring, public safety, city-wide incident response.</p></div>
+    <div class="card"><h3>Airports</h3><p>Perimeter security, crowd flow, restricted-zone monitoring.</p></div>
+    <div class="card"><h3>Warehouses</h3><p>PPE compliance, forklift safety, unauthorized access detection.</p></div>
+    <div class="card"><h3>Educational campuses</h3><p>Access control, safety monitoring across large, open campuses.</p></div>
+    <div class="card"><h3>Defence perimeters</h3><p>High-security perimeter breach detection, often fully on-premise.</p></div>
+    <div class="card"><h3>E-courts</h3><p>Proceeding recording, access logging, and compliance-grade video retention.</p></div>
+  </div>
+
+  <div class="lab">
+    <h3>Try it yourself: an SLA-driven escalation workflow</h3>
+    <p>An alert doesn't just sit there — it climbs an escalation ladder until someone responds, exactly like a real SLA (Service Level Agreement) policy. Drag the slider forward to watch time pass after a perimeter alert fires.</p>
+    <input type="range" class="range-full" id="scTime" min="0" max="4" step="1" value="0">
+    <ul class="ladder" id="scLadder">
+      <li data-t="0">0:00 &mdash; Video analytics flags a perimeter breach, alert created</li>
+      <li data-t="1">0:30 &mdash; Alert pushed to the on-duty guard's dashboard</li>
+      <li data-t="2">2:00 &mdash; No acknowledgment yet &mdash; escalates to shift supervisor</li>
+      <li data-t="3">5:00 &mdash; Still unresolved &mdash; escalates to site manager, SLA breach logged</li>
+      <li data-t="4">5:45 &mdash; Acknowledged and resolved &mdash; incident report auto-generated</li>
+    </ul>
+  </div>
+
+  <h2>The code: what an alert looks like inside the platform</h2>
+  <p>When any analytics model — PPE, ANPR, crowd density — fires, it produces a structured event like this, which the CMS and FSM modules both react to.</p>
+  <div class="code">
+    <div class="code-bar"><span>alert_event.json</span><button data-copy>Copy</button></div>
+    <pre><code>{
+  <span class="s">"site"</span>: <span class="s">"Warehouse-14"</span>,
+  <span class="s">"camera_id"</span>: <span class="s">"CAM-207"</span>,
+  <span class="s">"module"</span>: <span class="s">"video_analytics"</span>,
+  <span class="s">"detection"</span>: <span class="s">"ppe_violation"</span>,
+  <span class="s">"confidence"</span>: <span class="m">0.94</span>,
+  <span class="s">"deployment"</span>: <span class="s">"edge"</span>,
+  <span class="s">"sla_policy"</span>: <span class="s">"warehouse_safety_tier1"</span>,
+  <span class="s">"escalation"</span>: [
+    {<span class="s">"after_seconds"</span>: <span class="m">0</span>,   <span class="s">"notify"</span>: <span class="s">"on_duty_guard"</span>},
+    {<span class="s">"after_seconds"</span>: <span class="m">120</span>, <span class="s">"notify"</span>: <span class="s">"shift_supervisor"</span>},
+    {<span class="s">"after_seconds"</span>: <span class="m">300</span>, <span class="s">"notify"</span>: <span class="s">"site_manager"</span>, <span class="s">"log_breach"</span>: <span class="k">true</span>}
+  ]
+}</code></pre>
+  </div>
+
+  <div class="note"><strong>How it all connects back</strong>
+    <p>A single alert like the one above touched almost every lesson on this page: a <a href="#cnn">CNN</a> detected the violation, using a <a href="#transfer">transfer-learned</a> and <a href="#optimization">optimized</a> model running at the <a href="#opencv">edge</a>, trained and monitored through an <a href="#mlops">MLOps</a> pipeline, deployed through the process in <a href="#deploy">Training &amp; Deployment</a> — all resting on the <a href="#ml-dev">fundamentals</a> from Lesson 2.</p>
+  </div>
+
+  <h2>Quick check</h2>
+  <div class="q" data-quiz data-answer="2">
+    <p class="qt">Why does Scanalitix combine VMS, CMS, Video Analytics, and FSM into one platform instead of four separate tools?</p>
+    <div class="opts">
+      <button>Because separate tools are cheaper to run</button>
+      <button>Because AI models can only work inside a single combined tool</button>
+      <button>Because a detected incident can flow straight from alert to notification to a service ticket, without gaps between disconnected systems</button>
+    </div>
+    <p class="fb" role="status"></p>
+  </div>
+
+  <div class="note" style="margin-top:34px"><strong>You've finished all 13 lessons</strong>
+    <p>From a single line learning to fit a few dots, to a full platform triaging real-world incidents — that's the whole path. Revisit any lesson from the menu any time.</p>
+  </div>
+
+  <div class="pager">
+    <a class="btn ghost" href="#keras">&larr; Keras</a>
+    <button class="btn is-done" data-done-btn data-lesson="scanalitix">Mark lesson complete</button>
+    <a class="btn" href="#home">Back to start &rarr;</a>
+  </div>
+  <p class="foot">Zero to Hero &middot; a self-contained learning page &middot; progress is stored only in this browser.</p>
+</section>
+</main>
+</div>
+<script>
+(function(){
+"use strict";
+
+/* ---------------- lesson map ---------------- */
+var LESSONS = [
+  {id:"home", title:"Start here", group:"Foundations", gradable:false},
+  {id:"ml-dev", title:"ML model development", group:"Foundations", gradable:true},
+  {id:"ml-algo", title:"ML Algorithms", group:"Foundations", gradable:true},
+  {id:"deep-learning", title:"Deep Learning", group:"Foundations", gradable:true},
+  {id:"deploy", title:"Training & Deployment", group:"Build &amp; Ship", gradable:true},
+  {id:"optimization", title:"Model Optimization", group:"Build &amp; Ship", gradable:true},
+  {id:"mlops", title:"MLOps", group:"Build &amp; Ship", gradable:true},
+  {id:"opencv", title:"OpenCV", group:"Computer Vision", gradable:true},
+  {id:"cnn", title:"CNN", group:"Computer Vision", gradable:true},
+  {id:"transfer", title:"Transfer Learning", group:"Computer Vision", gradable:true},
+  {id:"tensorflow", title:"TensorFlow", group:"Frameworks", gradable:true},
+  {id:"pytorch", title:"PyTorch", group:"Frameworks", gradable:true},
+  {id:"keras", title:"Keras", group:"Frameworks", gradable:true},
+  {id:"scanalitix", title:"Scanalitix Platform", group:"Real World", gradable:true}
+];
+var TOTAL = LESSONS.filter(function(l){return l.gradable;}).length;
+
+function safeGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function safeSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+
+function getDone(){
+  try{ return JSON.parse(safeGet("zth-done") || "[]"); }catch(e){ return []; }
+}
+function setDone(arr){ safeSet("zth-done", JSON.stringify(arr)); }
+
+/* ---------------- sidebar build ---------------- */
+var menu = document.getElementById("menu");
+var groups = [];
+LESSONS.forEach(function(l){
+  if(l.id==="home") return; // home isn't grouped in the list, has its own top link
+  if(groups.indexOf(l.group)===-1) groups.push(l.group);
+});
+
+var html = '<a href="#home" class="menu-link" data-id="home"><span class="n">&#9679;</span><span class="t">Start here</span><span class="tick">&#10003;</span></a>';
+groups.forEach(function(g){
+  html += '<p class="grp">'+g+'</p>';
+  LESSONS.filter(function(l){return l.group===g;}).forEach(function(l){
+    var num = LESSONS.indexOf(l);
+    html += '<a href="#'+l.id+'" class="menu-link" data-id="'+l.id+'"><span class="n">'+num+'</span><span class="t">'+l.title+'</span><span class="tick">&#10003;</span></a>';
+  });
+});
+menu.innerHTML = html;
+
+var menuLinks = Array.prototype.slice.call(menu.querySelectorAll(".menu-link"));
+
+/* ---------------- progress ---------------- */
+var progTxt = document.getElementById("progTxt");
+var progBar = document.getElementById("progBar");
+var progWrap = document.getElementById("progWrap");
+progWrap.setAttribute("aria-valuemax", TOTAL);
+
+function refreshProgress(){
+  var done = getDone();
+  var count = done.length;
+  progTxt.textContent = count+" of "+TOTAL+" lessons done";
+  progBar.style.width = (TOTAL? (count/TOTAL*100):0)+"%";
+  progWrap.setAttribute("aria-valuenow", count);
+  menuLinks.forEach(function(a){
+    var id = a.dataset.id;
+    a.classList.toggle("done", done.indexOf(id)!==-1);
+  });
+  document.querySelectorAll("[data-done-btn]").forEach(function(btn){
+    var id = btn.dataset.lesson;
+    var isDone = done.indexOf(id)!==-1;
+    btn.textContent = isDone ? "Lesson complete \u2713" : "Mark lesson complete";
+    btn.classList.toggle("is-done", isDone);
+  });
+}
+
+document.addEventListener("click", function(e){
+  var btn = e.target.closest("[data-done-btn]");
+  if(!btn) return;
+  var id = btn.dataset.lesson;
+  var done = getDone();
+  var idx = done.indexOf(id);
+  if(idx===-1) done.push(id); else done.splice(idx,1);
+  setDone(done);
+  refreshProgress();
+});
+
+document.getElementById("resetProg").addEventListener("click", function(){
+  setDone([]);
+  refreshProgress();
+});
+
+/* ---------------- routing: one lesson visible at a time ---------------- */
+var sections = Array.prototype.slice.call(document.querySelectorAll(".lvl"));
+var topTitle = document.getElementById("topTitle");
+var validIds = LESSONS.map(function(l){return l.id;});
+
+function showLesson(id){
+  if(validIds.indexOf(id)===-1) id = "home";
+  sections.forEach(function(s){ s.hidden = (s.id!==id); });
+  menuLinks.forEach(function(a){
+    if(a.dataset.id===id) a.setAttribute("aria-current","page");
+    else a.removeAttribute("aria-current");
+  });
+  var found = LESSONS.filter(function(l){return l.id===id;})[0];
+  topTitle.textContent = found ? found.title.replace(/&amp;/g,"&") : "Start here";
+  document.title = (found? found.title.replace(/&amp;/g,"&")+" — " : "") + "Zero to Hero";
+  var active = document.getElementById(id);
+  if(active){ active.focus({preventScroll:true}); }
+  window.scrollTo({top:0, behavior:"auto"});
+  closeMobileMenu();
+}
+
+window.addEventListener("hashchange", function(){
+  showLesson(location.hash.replace("#","") || "home");
+});
+showLesson(location.hash.replace("#","") || "home");
+
+/* in-page smooth jump buttons (used within a lesson, not hash routing) */
+document.addEventListener("click", function(e){
+  var jb = e.target.closest("[data-jump]");
+  if(!jb) return;
+  var target = document.querySelector(jb.dataset.jump);
+  if(target) target.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block:"start"});
+});
+
+/* ---------------- mobile menu ---------------- */
+var side = document.getElementById("side");
+var scrim = document.getElementById("scrim");
+var menuBtn = document.getElementById("menuBtn");
+function openMobileMenu(){ side.classList.add("open"); scrim.classList.add("show"); menuBtn.setAttribute("aria-expanded","true"); }
+function closeMobileMenu(){ side.classList.remove("open"); scrim.classList.remove("show"); menuBtn.setAttribute("aria-expanded","false"); }
+menuBtn.addEventListener("click", function(){ side.classList.contains("open") ? closeMobileMenu() : openMobileMenu(); });
+scrim.addEventListener("click", closeMobileMenu);
+document.addEventListener("keydown", function(e){ if(e.key==="Escape") closeMobileMenu(); });
+
+/* ---------------- theme toggle ---------------- */
+function currentTheme(){
+  var attr = document.documentElement.getAttribute("data-theme");
+  if(attr) return attr;
+  return matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+document.querySelectorAll("[data-theme-toggle]").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    var next = currentTheme()==="dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    safeSet("zth-theme", next);
+  });
+});
+
+/* ---------------- copy code buttons ---------------- */
+document.addEventListener("click", function(e){
+  var cb = e.target.closest("[data-copy]");
+  if(!cb) return;
+  var pre = cb.closest(".code").querySelector("pre");
+  var text = pre.innerText;
+  var done = function(){ var old=cb.textContent; cb.textContent="Copied!"; setTimeout(function(){cb.textContent=old;},1400); };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(done);
+  } else {
+    var ta=document.createElement("textarea"); ta.value=text; document.body.appendChild(ta); ta.select();
+    try{document.execCommand("copy");}catch(e){}
+    document.body.removeChild(ta); done();
+  }
+});
+
+/* ---------------- quizzes ---------------- */
+document.querySelectorAll("[data-quiz]").forEach(function(q){
+  var answer = +q.dataset.answer;
+  var fb = q.querySelector(".fb");
+  var buttons = Array.prototype.slice.call(q.querySelectorAll(".opts button"));
+  buttons.forEach(function(b, i){
+    b.addEventListener("click", function(){
+      if(q.dataset.answered) return;
+      q.dataset.answered = "1";
+      buttons.forEach(function(x,j){ x.disabled=true; if(j===answer) x.classList.add("ok"); });
+      if(i===answer){
+        fb.textContent = "Correct! " + (b.textContent.length<3?"":"");
+        fb.textContent = "\u2713 Correct!";
+        fb.className = "fb ok";
+      } else {
+        b.classList.add("bad");
+        fb.textContent = "\u2717 Not quite — the highlighted answer is correct.";
+        fb.className = "fb bad";
+      }
+    });
+  });
+});
+
+/* ================= LAB: ml-dev fit-a-line ================= */
+(function(){
+  var wEl=document.getElementById("mdW"), bEl=document.getElementById("mdB");
+  if(!wEl) return;
+  var wOut=document.getElementById("mdWv"), bOut=document.getElementById("mdBv");
+  var dotsG=document.getElementById("mdDots"), line=document.getElementById("mdLine");
+  var errEl=document.getElementById("mdErr"), badge=document.getElementById("mdBadge");
+  var pts = [[6.5,7],[8,9],[12,14.5],[15,18],[21,25]]; // size(x100 sqft), price
+  function sx(x){ return 20 + (x/25)*260; }
+  function sy(y){ return 180 - (y/28)*160; }
+  dotsG.innerHTML = pts.map(function(p){ return '<circle cx="'+sx(p[0])+'" cy="'+sy(p[1])+'" r="5" fill="var(--ink)"></circle>'; }).join("");
+  function render(){
+    var w=+wEl.value, b=+bEl.value;
+    wOut.textContent=w.toFixed(1); bOut.textContent=b.toFixed(1);
+    var x1=0, x2=25;
+    line.setAttribute("x1", sx(x1)); line.setAttribute("y1", sy(w*x1+b));
+    line.setAttribute("x2", sx(x2)); line.setAttribute("y2", sy(w*x2+b));
+    var err=0;
+    pts.forEach(function(p){ var pred=w*p[0]+b; err += (p[1]-pred)*(p[1]-pred); });
+    errEl.textContent = err.toFixed(1);
+    if(err<15){ badge.textContent="great fit"; badge.style.background="var(--ok-soft)"; badge.style.color="var(--ok)"; }
+    else if(err<60){ badge.textContent="getting there"; badge.style.background="var(--hi-soft)"; badge.style.color="#8a6d00"; }
+    else { badge.textContent="way off"; badge.style.background="var(--bad-soft)"; badge.style.color="var(--bad)"; }
+  }
+  wEl.addEventListener("input", render); bEl.addEventListener("input", render); render();
+})();
+
+/* ================= LAB: deep-learning neuron ================= */
+(function(){
+  var x1=document.getElementById("dlX1"), x2=document.getElementById("dlX2");
+  if(!x1) return;
+  var x1v=document.getElementById("dlX1v"), x2v=document.getElementById("dlX2v");
+  var out=document.getElementById("dlOut"), eq=document.getElementById("dlEq");
+  function render(){
+    var a=+x1.value, b=+x2.value;
+    x1v.textContent=a; x2v.textContent=b;
+    var z = a*0.7 + b*1.1 - 4;
+    var conf = 1/(1+Math.exp(-z));
+    var pct = Math.round(conf*100);
+    out.innerHTML = "Neuron says: <strong>"+(conf>0.5?"SPAM":"NOT SPAM")+"</strong> ("+pct+"% confidence)";
+    eq.textContent = "score = ("+a+" \u00d7 0.7) + ("+b+" \u00d7 1.1) \u2212 4 = "+z.toFixed(2)+" \u2192 squashed to "+conf.toFixed(2);
+  }
+  x1.addEventListener("input", render); x2.addEventListener("input", render); render();
+})();
+
+/* ================= LAB: training loss curve ================= */
+(function(){
+  var playBtn=document.getElementById("trPlay");
+  if(!playBtn) return;
+  var resetBtn=document.getElementById("trReset");
+  var line=document.getElementById("trLine");
+  var epochEl=document.getElementById("trEpoch"), lossEl=document.getElementById("trLoss"), accEl=document.getElementById("trAcc");
+  var N=40, pts=[], timer=null, epoch=0;
+  function lossAt(e){ var base=1.0*Math.exp(-e/12)+0.04; var noise=(Math.sin(e*7)*0.015); return Math.max(0.03, base+noise); }
+  function reset(){
+    clearInterval(timer); timer=null; epoch=0; pts=[];
+    line.setAttribute("points","");
+    epochEl.textContent="0"; lossEl.textContent="1.00"; accEl.textContent="50%";
+    playBtn.textContent="Train model \u25b6"; playBtn.disabled=false;
+  }
+  function step(){
+    epoch++;
+    var l=lossAt(epoch);
+    var acc = Math.min(99, 50 + (1-l)*50 + Math.random()*2);
+    var x = 10 + (epoch/N)*280;
+    var y = 130 - Math.min(120, (1-l)*120);
+    pts.push(x+","+y);
+    line.setAttribute("points", pts.join(" "));
+    epochEl.textContent=epoch; lossEl.textContent=l.toFixed(3); accEl.textContent=Math.round(acc)+"%";
+    if(epoch>=N){ clearInterval(timer); timer=null; playBtn.textContent="Train again \u25b6"; playBtn.disabled=false; }
+  }
+  playBtn.addEventListener("click", function(){
+    if(timer) return;
+    if(epoch>=N) reset();
+    playBtn.disabled=true;
+    timer=setInterval(step, 90);
+    playBtn.disabled=false;
+  });
+  resetBtn.addEventListener("click", reset);
+  reset();
+})();
+
+/* ================= LAB: optimization slider ================= */
+(function(){
+  var c=document.getElementById("opC");
+  if(!c) return;
+  var cv=document.getElementById("opCv"), size=document.getElementById("opSize"), speed=document.getElementById("opSpeed"), acc=document.getElementById("opAcc");
+  function render(){
+    var p=+c.value; cv.textContent=p+"%";
+    var f=p/100;
+    size.textContent = (96*(1-f*0.85)).toFixed(1)+" MB";
+    speed.textContent = Math.round(40*(1-f*0.7))+" ms";
+    acc.textContent = (97.4 - f*f*9).toFixed(1)+"%";
+  }
+  c.addEventListener("input", render); render();
+})();
+
+/* ================= LAB: MLOps drift toggle ================= */
+(function(){
+  var chk=document.getElementById("opsNight");
+  if(!chk) return;
+  var acc=document.getElementById("opsAcc"), flag=document.getElementById("opsFlag");
+  function render(){
+    if(chk.checked){
+      acc.textContent="61%"; acc.style.color="var(--bad)";
+      flag.innerHTML='<strong style="color:var(--bad)">\u26a0 drift alert fired</strong>';
+    } else {
+      acc.textContent="96%"; acc.style.color="var(--ok)";
+      flag.innerHTML="";
+    }
+  }
+  chk.addEventListener("change", render); render();
+})();
+
+/* ================= LAB: OpenCV pixel pad ================= */
+(function(){
+  var pad=document.getElementById("cvPad");
+  if(!pad) return;
+  var nums=document.getElementById("cvNums");
+  var clearBtn=document.getElementById("cvClear");
+  var SIZE=10, grid=new Array(SIZE*SIZE).fill(0);
+  for(var i=0;i<SIZE*SIZE;i++){
+    var cell=document.createElement("div");
+    cell.className="cell"; cell.dataset.i=i;
+    pad.appendChild(cell);
+  }
+  var cells = Array.prototype.slice.call(pad.children);
+  function renderNums(){
+    var rows=[];
+    for(var r=0;r<SIZE;r++){
+      var row=[];
+      for(var cIdx=0;cIdx<SIZE;cIdx++){ row.push(grid[r*SIZE+cIdx]?"255":"  0"); }
+      rows.push(row.join(" "));
+    }
+    nums.textContent = rows.join("\n");
+    nums.style.whiteSpace="pre";
+  }
+  function toggle(i){
+    grid[i] = grid[i]?0:1;
+    cells[i].classList.toggle("on", !!grid[i]);
+    renderNums();
+  }
+  var painting=false;
+  pad.addEventListener("pointerdown", function(e){
+    var t=e.target.closest(".cell"); if(!t) return;
+    painting=true; toggle(+t.dataset.i); e.preventDefault();
+  });
+  pad.addEventListener("pointerover", function(e){
+    if(!painting) return;
+    var t=e.target.closest(".cell"); if(!t) return;
+    var i=+t.dataset.i;
+    if(!grid[i]){ grid[i]=1; cells[i].classList.add("on"); renderNums(); }
+  });
+  window.addEventListener("pointerup", function(){ painting=false; });
+  clearBtn.addEventListener("click", function(){
+    grid.fill(0); cells.forEach(function(c){c.classList.remove("on");}); renderNums();
+  });
+  renderNums();
+})();
+
+/* ================= LAB: CNN convolution ================= */
+(function(){
+  var inG=document.getElementById("cnnIn");
+  if(!inG) return;
+  var kernEl=document.getElementById("cnnKernel"), outG=document.getElementById("cnnOut"), mathEl=document.getElementById("cnnMath");
+  var input = [
+    [10,10,200,200,200],
+    [10,10,200,200,200],
+    [10,10,200,200,200],
+    [10,10,200,200,200],
+    [10,10,200,200,200]
+  ];
+  var kernels = {
+    edge: [[-1,0,1],[-1,0,1],[-1,0,1]],
+    blur: [[1/9,1/9,1/9],[1/9,1/9,1/9],[1/9,1/9,1/9]]
+  };
+  var current = "edge";
+  function shade(v, max){
+    var t = Math.max(0, Math.min(1, v/max));
+    var g = Math.round(t*255);
+    return "rgb("+g+","+g+","+g+")";
+  }
+  function textColor(v,max){ return (v/max)>0.55 ? "#111" : "#eee"; }
+  function drawInput(){
+    inG.innerHTML="";
+    input.forEach(function(row,r){
+      row.forEach(function(v,c){
+        var d=document.createElement("div");
+        d.style.background=shade(v,200); d.style.color=textColor(v,200);
+        d.textContent=v; d.dataset.r=r; d.dataset.c=c;
+        inG.appendChild(d);
+      });
+    });
+  }
+  function drawKernel(){
+    kernEl.innerHTML="";
+    kernels[current].forEach(function(row){
+      row.forEach(function(v){
+        var d=document.createElement("div");
+        d.textContent = (Math.round(v*100)/100);
+        kernEl.appendChild(d);
+      });
+    });
+  }
+  function convAt(oy,ox){
+    var k=kernels[current], sum=0, terms=[];
+    for(var ky=0;ky<3;ky++){
+      for(var kx=0;kx<3;kx++){
+        var iv=input[oy+ky][ox+kx];
+        var kv=k[ky][kx];
+        sum += iv*kv;
+        if(kv!==0) terms.push("("+iv+"\u00d7"+(Math.round(kv*100)/100)+")");
+      }
+    }
+    return {sum:sum, terms:terms};
+  }
+  function drawOutput(){
+    outG.innerHTML="";
+    var vals=[];
+    for(var oy=0;oy<3;oy++) for(var ox=0;ox<3;ox++) vals.push(convAt(oy,ox).sum);
+    var maxAbs = Math.max(1, Math.max.apply(null, vals.map(Math.abs)));
+    var idx=0;
+    for(var y=0;y<3;y++){
+      for(var x=0;x<3;x++){
+        var r=convAt(y,x);
+        var d=document.createElement("div");
+        var norm = (r.sum/maxAbs+1)/2*200;
+        d.style.background=shade(norm,200); d.style.color=textColor(norm,200);
+        d.textContent = Math.round(r.sum);
+        d.dataset.y=y; d.dataset.x=x;
+        d.title="Click to see the math";
+        outG.appendChild(d);
+        idx++;
+      }
+    }
+  }
+  function highlightPatch(oy,ox){
+    Array.prototype.forEach.call(inG.children, function(cell){
+      var r=+cell.dataset.r, c=+cell.dataset.c;
+      cell.classList.toggle("hl", r>=oy&&r<oy+3&&c>=ox&&c<ox+3);
+    });
+  }
+  outG.addEventListener("click", function(e){
+    var t=e.target.closest("div"); if(!t || t.dataset.y===undefined) return;
+    var oy=+t.dataset.y, ox=+t.dataset.x;
+    highlightPatch(oy,ox);
+    var r=convAt(oy,ox);
+    mathEl.textContent = r.terms.join(" + ") + " = " + Math.round(r.sum);
+  });
+  document.getElementById("cnnPresets").addEventListener("click", function(e){
+    var b=e.target.closest("button"); if(!b) return;
+    current=b.dataset.k;
+    Array.prototype.forEach.call(e.currentTarget.children,function(x){x.setAttribute("aria-pressed", x===b?"true":"false");});
+    drawKernel(); drawOutput();
+    mathEl.textContent="Click an output cell to see the math \u2191";
+    highlightPatch(-1,-1);
+  });
+  drawInput(); drawKernel(); drawOutput();
+})();
+
+/* ================= LAB: ML Algorithms — KNN classifier ================= */
+(function(){
+  var svg=document.getElementById("knnSvg");
+  if(!svg) return;
+  var dotsG=document.getElementById("knnDots"), linesG=document.getElementById("knnLines"), newG=document.getElementById("knnNew");
+  var resultEl=document.getElementById("knnResult"), clearBtn=document.getElementById("knnClear");
+  var K=3;
+  var pts = [
+    {x:60,y:60,c:"A"},{x:80,y:40,c:"A"},{x:50,y:90,c:"A"},{x:95,y:75,c:"A"},{x:70,y:110,c:"A"},{x:110,y:55,c:"A"},
+    {x:220,y:130,c:"B"},{x:240,y:150,c:"B"},{x:200,y:160,c:"B"},{x:250,y:110,c:"B"},{x:210,y:100,c:"B"},{x:260,y:170,c:"B"}
+  ];
+  var colorA="#2B59FF", colorB="#C92A38";
+  function colorFor(c){ return c==="A" ? colorA : colorB; }
+  function drawDots(){
+    dotsG.innerHTML = pts.map(function(p){
+      return '<circle cx="'+p.x+'" cy="'+p.y+'" r="6" fill="'+colorFor(p.c)+'" stroke="var(--surface)" stroke-width="1.5"></circle>';
+    }).join("");
+  }
+  drawDots();
+  function classify(nx, ny){
+    var withDist = pts.map(function(p){
+      var d = Math.hypot(p.x-nx, p.y-ny);
+      return {p:p, d:d};
+    }).sort(function(a,b){ return a.d-b.d; });
+    var nearest = withDist.slice(0, K);
+    var votesA = nearest.filter(function(n){ return n.p.c==="A"; }).length;
+    var votesB = K - votesA;
+    var winner = votesA >= votesB ? "A" : "B";
+    linesG.innerHTML = nearest.map(function(n){
+      return '<line x1="'+nx+'" y1="'+ny+'" x2="'+n.p.x+'" y2="'+n.p.y+'" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="3,3"></line>';
+    }).join("");
+    newG.innerHTML = '<circle cx="'+nx+'" cy="'+ny+'" r="7" fill="'+colorFor(winner)+'" stroke="var(--ink)" stroke-width="2"></circle>';
+    resultEl.innerHTML = "New point classified as <strong>Class "+winner+"</strong> &mdash; "+votesA+" of its "+K+" nearest neighbors are Class A, "+votesB+" are Class B.";
+  }
+  svg.addEventListener("click", function(e){
+    var rect = svg.getBoundingClientRect();
+    var vb = svg.viewBox.baseVal;
+    var nx = (e.clientX-rect.left)/rect.width*vb.width;
+    var ny = (e.clientY-rect.top)/rect.height*vb.height;
+    classify(nx, ny);
+  });
+  clearBtn.addEventListener("click", function(){
+    linesG.innerHTML=""; newG.innerHTML="";
+    resultEl.textContent="Click the chart to classify a new point.";
+  });
+})();
+
+/* ================= LAB: transfer learning freeze ladder ================= */
+(function(){
+  var slider=document.getElementById("tlSlider");
+  if(!slider) return;
+  var out=document.getElementById("tlSliderV"), summary=document.getElementById("tlSummary");
+  var items = Array.prototype.slice.call(document.querySelectorAll("#tlLadder li"));
+  function render(){
+    var v=+slider.value; out.textContent=v;
+    items.forEach(function(li){
+      var n=+li.dataset.layer;
+      li.classList.remove("calm","now");
+      li.classList.add(n<=v ? "calm" : "now");
+    });
+    if(v===0) summary.textContent="Nothing frozen — training the entire network from these features onward (slow, needs lots of data).";
+    else if(v>=5) summary.textContent="Everything frozen — no retraining happens, the pretrained model is used exactly as-is.";
+    else summary.textContent = "Layers 1\u2013"+v+" frozen (reused as-is), layers "+(v+1)+"\u20135 retrained on your forklift photos.";
+  }
+  slider.addEventListener("input", render); render();
+})();
+
+/* ================= LAB: Scanalitix escalation ladder ================= */
+(function(){
+  var slider=document.getElementById("scTime");
+  if(!slider) return;
+  var items = Array.prototype.slice.call(document.querySelectorAll("#scLadder li"));
+  function render(){
+    var v=+slider.value;
+    items.forEach(function(li){
+      var t=+li.dataset.t;
+      li.classList.remove("past","now","calm");
+      if(v===4 && t<=4) li.classList.add(t===4?"calm":"past");
+      else if(t<v) li.classList.add("past");
+      else if(t===v) li.classList.add("now");
+    });
+  }
+  slider.addEventListener("input", render); render();
+})();
+
+/* ---------------- restore theme + saved hash validity ---------------- */
+refreshProgress();
+
+})();
+</script>
+</body>
+</html>
