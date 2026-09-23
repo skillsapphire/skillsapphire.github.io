@@ -278,7 +278,7 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--box)}
 
   <main class="wrap" id="main">
 <section class="lvl" id="home" data-title="Start here" tabindex="-1">
-  <p class="where">Lesson 1 of 14</p>
+  <p class="where">Lesson 1 of 15</p>
   <h1>Zero to Hero: how machines learn to see and think</h1>
   <p class="lead">This page is a menu of 13 short lessons. Click any lesson on the left (or below) — there is no fixed order. Each lesson explains one idea the way you'd explain it to a curious 13-year-old, then shows the real code professionals actually write.</p>
 
@@ -306,7 +306,7 @@ input[type=checkbox]{width:20px;height:20px;accent-color:var(--box)}
   </div>
 </section>
 <section class="lvl" id="ml-dev" data-title="ML model development" tabindex="-1">
-  <p class="where">Foundations &rsaquo; Lesson 2 of 14</p>
+  <p class="where">Foundations &rsaquo; Lesson 2 of 15</p>
   <h1>Machine learning model development</h1>
   <p class="lead">A "model" is just a math formula with knobs (called <strong>parameters</strong>) that the computer turns by itself until its guesses stop being wrong.</p>
 
@@ -402,7 +402,7 @@ guess = model.predict([[<span class="m">1000</span>]])
   </div>
 </section>
 <section class="lvl" id="ml-algo" data-title="ML Algorithms" tabindex="-1">
-  <p class="where">Foundations &rsaquo; Lesson 3 of 14</p>
+  <p class="where">Foundations &rsaquo; Lesson 3 of 15</p>
   <h1>Machine learning algorithms</h1>
   <p class="lead">A "model" needs a recipe for how it learns — that recipe is the <strong>algorithm</strong>. Different algorithms are just different strategies for finding patterns, each suited to different kinds of problems.</p>
 
@@ -513,7 +513,7 @@ groups = KMeans(n_clusters=<span class="m">3</span>).fit_predict(customer_data)<
   </div>
 </section>
 <section class="lvl" id="deep-learning" data-title="Deep Learning" tabindex="-1">
-  <p class="where">Foundations &rsaquo; Lesson 4 of 14</p>
+  <p class="where">Foundations &rsaquo; Lesson 4 of 15</p>
   <h1>Deep learning</h1>
   <p class="lead">Deep learning is machine learning built from layers of tiny decision-makers called <strong>neurons</strong>, stacked deep — hence the name.</p>
 
@@ -588,7 +588,7 @@ model.fit(X, y, epochs=<span class="m">300</span>, verbose=<span class="m">0</sp
   </div>
 </section>
 <section class="lvl" id="deploy" data-title="Model Training & Production Deployment" tabindex="-1">
-  <p class="where">Foundations &rsaquo; Lesson 5 of 14</p>
+  <p class="where">Foundations &rsaquo; Lesson 5 of 15</p>
   <h1>Model training &amp; production deployment</h1>
   <p class="lead">Training happens in a lab, on powerful machines, with time to spare. Deployment means putting the finished model where real people actually use it — and real users don't wait.</p>
 
@@ -669,7 +669,7 @@ model = tf.keras.models.load_model(<span class="s">"models/spam_detector.keras"<
   </div>
 </section>
 <section class="lvl" id="optimization" data-title="Model Optimization" tabindex="-1">
-  <p class="where">Foundations &rsaquo; Lesson 6 of 14</p>
+  <p class="where">Foundations &rsaquo; Lesson 6 of 15</p>
   <h1>Model optimization</h1>
   <p class="lead">A model trained on a huge lab computer can be too big, slow, or power-hungry for a phone, a doorbell camera, or a tiny sensor. Optimization shrinks and speeds up a model without losing much of its smartness.</p>
 
@@ -742,7 +742,7 @@ tiny_model = converter.convert()
   </div>
 </section>
 <section class="lvl" id="mlops" data-title="MLOps" tabindex="-1">
-  <p class="where">Foundations &rsaquo; Lesson 7 of 14</p>
+  <p class="where">Foundations &rsaquo; Lesson 7 of 15</p>
   <h1>MLOps</h1>
   <p class="lead">MLOps ("Machine Learning Operations") is the set of habits and tools that keep a model working well <em>after</em> it launches — not just on launch day.</p>
 
@@ -810,7 +810,7 @@ today     = <span class="m">0.91</span>      <span class="c"># accuracy measured
   </div>
 </section>
 <section class="lvl" id="opencv" data-title="OpenCV" tabindex="-1">
-  <p class="where">Computer Vision &rsaquo; Lesson 8 of 14</p>
+  <p class="where">Computer Vision &rsaquo; Lesson 8 of 15</p>
   <h1>OpenCV</h1>
   <p class="lead">To a computer, a photo is just a giant grid of numbers. OpenCV is a free toolbox full of ready-made functions for working with those numbers — blurring, finding edges, detecting faces, reading video frames.</p>
 
@@ -876,7 +876,7 @@ cv2.imwrite(<span class="s">"entrance_camera_marked.jpg"</span>, frame)</code></
   </div>
 </section>
 <section class="lvl" id="cnn" data-title="Convolutional Neural Networks (CNN)" tabindex="-1">
-  <p class="where">Computer Vision &rsaquo; Lesson 9 of 14</p>
+  <p class="where">Computer Vision &rsaquo; Lesson 9 of 15</p>
   <h1>Convolutional Neural Networks (CNN)</h1>
   <p class="lead">A CNN is a neural network specially built for images. Instead of looking at the whole picture at once, it slides a small window across it, hunting for simple patterns everywhere.</p>
 
@@ -958,7 +958,7 @@ model.summary()</code></pre>
   </div>
 </section>
 <section class="lvl" id="transfer" data-title="Transfer Learning" tabindex="-1">
-  <p class="where">Computer Vision &rsaquo; Lesson 10 of 14</p>
+  <p class="where">Computer Vision &rsaquo; Lesson 10 of 15</p>
   <h1>Transfer learning</h1>
   <p class="lead">Instead of teaching a network to see from zero, transfer learning starts with a network that already learned to see from millions of photos — and just teaches it your specific task.</p>
 
@@ -1033,11 +1033,167 @@ model.fit(warehouse_images, warehouse_labels, epochs=<span class="m">10</span>)<
   <div class="pager">
     <a class="btn ghost" href="#cnn">&larr; CNN</a>
     <button class="btn is-done" data-done-btn data-lesson="transfer">Mark lesson complete</button>
+    <a class="btn" href="#yolo-edge">Next: YOLO &amp; Edge AI &rarr;</a>
+  </div>
+</section>
+<section class="lvl" id="yolo-edge" data-title="YOLO & Edge AI" tabindex="-1">
+  <p class="where">Computer Vision &rsaquo; Lesson 11 of 15</p>
+  <h1>YOLO &amp; edge device AI</h1>
+  <p class="lead">YOLO is the algorithm that made real-time object detection possible. Edge AI is running that detection directly on the camera or a nearby box — not in a distant data center — so the answer comes back in milliseconds.</p>
+
+  <div class="simple"><span class="tag">imagine this</span>
+    <p>Older detectors worked like a security guard who first circles the whole room marking "something might be here" spots, then walks back to examine each one closely — slow, two trips. YOLO is a guard who glances at the entire room <em>once</em> and immediately calls out everything they saw and where — "person, front door; car, driveway" — in one look. That's why it's named <strong>Y</strong>ou <strong>O</strong>nly <strong>L</strong>ook <strong>O</strong>nce.</p>
+  </div>
+
+  <div class="levels">
+    <button data-jump="#yl-how">How YOLO sees a scene</button>
+    <button data-jump="#yl-lab">Try it: run a detector</button>
+    <button data-jump="#yl-edge">Edge AI &amp; nano models</button>
+    <button data-jump="#yl-quiz">Quiz</button>
+  </div>
+
+  <h2 id="yl-how">How YOLO sees a scene</h2>
+  <ol class="steps">
+    <li><b>Split the image into a grid.</b> Say, 13&times;13 cells laid over the whole frame.</li>
+    <li><b>Each cell makes a guess.</b> "Is the center of an object sitting inside me? If so, what box would contain it, and how confident am I?"</li>
+    <li><b>Every cell predicts several boxes at once.</b> All cells do this in parallel, in a single pass through the network — not one-by-one.</li>
+    <li><b>Classify each box.</b> The network also outputs class probabilities — person, car, helmet, bag — for every candidate box.</li>
+    <li><b>Clean up overlaps.</b> A step called Non-Max Suppression throws away duplicate boxes around the same object, keeping only the most confident one.</li>
+  </ol>
+
+  <h2>Two-stage detectors vs. YOLO</h2>
+  <div class="scroll">
+    <table>
+      <thead><tr><th></th><th>Two-stage (e.g. Faster R-CNN)</th><th>YOLO (single-stage)</th></tr></thead>
+      <tbody>
+        <tr><td><b>Passes through the network</b></td><td>Two — propose regions, then classify them</td><td>One — boxes and classes together</td></tr>
+        <tr><td><b>Speed</b></td><td>Slower — a few frames per second</td><td>Fast — real-time video, 30-100+ FPS</td></tr>
+        <tr><td><b>Best for</b></td><td>Cases needing the highest possible precision</td><td>Live video: cameras, drones, vehicles</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="lab" id="yl-lab">
+    <h3>Try it yourself: run a YOLO-style detector on a frame</h3>
+    <p>This is a still camera frame. Press "Run detection" — a single pass finds every object and confidence score at once, exactly like a real YOLO model would.</p>
+    <div class="hero">
+      <div class="pad-wrap" style="position:relative">
+        <svg viewBox="0 0 300 180" style="width:100%;background:#12233b;border-radius:10px;display:block" role="img" aria-label="A simple illustrated camera frame showing a person, a car, and a forklift">
+          <rect width="300" height="180" fill="#0d1c30"/>
+          <rect x="0" y="140" width="300" height="40" fill="#1c3253"/>
+          <circle cx="55" cy="95" r="10" fill="#8AB4FF"/>
+          <rect x="45" y="105" width="20" height="38" rx="4" fill="#8AB4FF"/>
+          <rect x="150" y="110" width="70" height="28" rx="6" fill="#FFC97A"/>
+          <circle cx="165" cy="140" r="8" fill="#0d1c30" stroke="#DCE6F5" stroke-width="2"/>
+          <circle cx="205" cy="140" r="8" fill="#0d1c30" stroke="#DCE6F5" stroke-width="2"/>
+          <rect x="235" y="70" width="14" height="70" fill="#7EE0B5"/>
+          <rect x="245" y="60" width="30" height="14" fill="#7EE0B5"/>
+        </svg>
+        <div class="bbox" id="ylBox1" style="left:36px;top:52px;width:40px;height:96px"><span>person 0.94</span></div>
+        <div class="bbox" id="ylBox2" style="left:143px;top:98px;width:84px;height:48px"><span>car 0.88</span></div>
+        <div class="bbox" id="ylBox3" style="left:228px;top:53px;width:55px;height:90px"><span>forklift 0.79</span></div>
+      </div>
+      <div>
+        <p class="lead" style="font-size:1.02rem">One forward pass through the network. No cropping, no second look — every box and label appears together.</p>
+        <div class="lab-tools">
+          <button class="btn" id="ylRun">Run detection &#9654;</button>
+          <button class="btn ghost" id="ylReset">Reset</button>
+        </div>
+        <p class="stat" id="ylStat">Waiting to run&hellip;</p>
+      </div>
+    </div>
+  </div>
+
+  <h2>The code: running YOLO in a few lines</h2>
+  <div class="code">
+    <div class="code-bar"><span>run_yolo.py</span><button data-copy>Copy</button></div>
+    <pre><code><span class="k">from</span> ultralytics <span class="k">import</span> YOLO
+
+<span class="c"># "n" = nano — the smallest, fastest version, built for edge devices</span>
+model = YOLO(<span class="s">"yolov8n.pt"</span>)
+
+results = model(<span class="s">"warehouse_camera.jpg"</span>)
+
+<span class="k">for</span> box <span class="k">in</span> results[<span class="m">0</span>].boxes:
+    label = model.names[<span class="f">int</span>(box.cls)]
+    confidence = <span class="f">float</span>(box.conf)
+    <span class="f">print</span>(<span class="s">f"{label}: {confidence:.0%} confident"</span>)
+
+<span class="c"># Exporting the same model to run fast on edge hardware:</span>
+model.export(format=<span class="s">"tflite"</span>, int8=<span class="k">True</span>)   <span class="c"># for phones / small edge boards</span>
+model.export(format=<span class="s">"engine"</span>)              <span class="c"># TensorRT, for an NVIDIA Jetson</span></code></pre>
+  </div>
+
+  <h2 id="yl-edge">Edge AI: why run models on-device at all?</h2>
+  <div class="scroll">
+    <table>
+      <thead><tr><th></th><th>Cloud inference</th><th>Edge inference</th></tr></thead>
+      <tbody>
+        <tr><td><b>Latency</b></td><td>100&ndash;500ms+ round trip over the network</td><td>Single-digit milliseconds, right on the device</td></tr>
+        <tr><td><b>Works offline</b></td><td>No &mdash; needs a live connection</td><td>Yes &mdash; keeps working if the network drops</td></tr>
+        <tr><td><b>Bandwidth</b></td><td>Every camera streams full video upstream, constantly</td><td>Only alerts/clips need to be sent, not raw video</td></tr>
+        <tr><td><b>Privacy</b></td><td>Raw footage leaves the site</td><td>Sensitive video can stay on-site entirely</td></tr>
+        <tr><td><b>Compute available</b></td><td>Practically unlimited</td><td>Limited &mdash; small chip, limited power/heat budget</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note"><strong>The catch: edge hardware is small</strong>
+    <p>A camera or a drone can't fit a server-room GPU. So the model has to be shrunk first — this is exactly the <a href="#optimization">model optimization</a> lesson (quantization, pruning, distillation) applied specifically so a detector can run on a chip the size of a coin.</p>
+  </div>
+
+  <h2>Nano &amp; edge-friendly models</h2>
+  <div class="cards">
+    <div class="card"><h3>YOLO-Nano / YOLOv8n / YOLO11n</h3><p>The smallest official YOLO variants — a fraction of the parameters of the full-size model, tuned to run in real time on small chips.</p></div>
+    <div class="card"><h3>MobileNet / MobileNetV3</h3><p>Built from the ground up for phones, using "depthwise separable" convolutions that need far less computation than normal ones.</p></div>
+    <div class="card"><h3>EfficientNet-Lite / SqueezeNet</h3><p>Squeeze strong accuracy out of very few parameters — designed to fit in tight memory budgets.</p></div>
+    <div class="card"><h3>NanoDet / TFLite Micro models</h3><p>Detection models small enough (often under 5MB) to run on microcontrollers with no operating system at all.</p></div>
+  </div>
+
+  <h3>Where these nano models actually run</h3>
+  <div class="cards">
+    <div class="card"><h3>NVIDIA Jetson Nano / Orin Nano</h3><p>A credit-card-sized computer with its own small GPU, built specifically to run vision models at the edge.</p></div>
+    <div class="card"><h3>Google Coral Edge TPU</h3><p>A tiny dedicated chip that only does one thing — run quantized neural networks — extremely fast and low-power.</p></div>
+    <div class="card"><h3>Smartphone NPUs</h3><p>Most modern phones have a built-in Neural Processing Unit just for running models like these without draining the battery.</p></div>
+    <div class="card"><h3>Camera-embedded chips</h3><p>Some IP cameras now ship with a small AI chip built right into the camera body itself.</p></div>
+  </div>
+
+  <h2>Processing tricks that make edge AI work</h2>
+  <ul class="explain">
+    <li><b>INT8 quantization</b> — store weights as small 8-bit numbers instead of 32-bit, often a 4&times; size cut for barely any accuracy loss.</li>
+    <li><b>Lower input resolution</b> — feeding the model a smaller frame (say 320&times;320 instead of 1280&times;1280) trades a little accuracy for a lot of speed.</li>
+    <li><b>Frame skipping</b> — not every single video frame needs full detection; skipping frames intelligently saves power without missing events.</li>
+    <li><b>Hardware-specific compilation</b> — converting a model to the exact format its chip prefers (TensorRT for Jetson, Core ML for iPhone, Edge TPU format for Coral).</li>
+    <li><b>Edge-cloud hybrid</b> — the edge device makes the fast first call ("something moved"), then optionally sends just that clip to the cloud for a deeper, slower check.</li>
+  </ul>
+
+  <div class="warn"><strong>Real-time isn't automatic</strong>
+    <p>A model that hits 99% accuracy in a lab can still fail a real deployment if it can't process frames fast enough to keep up with live video — a slow model effectively "misses" fast-moving objects between the frames it manages to process.</p>
+  </div>
+
+  <div class="note"><strong>Straight back to Scanalitix</strong>
+    <p>This is exactly what powers <a href="#scanalitix">Scanalitix's</a> edge AI: nano detection models, quantized and compiled for the hardware sitting on-site, running ANPR, PPE compliance, and crowd analytics directly on the camera or a local box — so an alert fires in real time, even if the internet link to a central office briefly drops.</p>
+  </div>
+
+  <h2 id="yl-quiz">Quick check</h2>
+  <div class="q" data-quiz data-answer="1">
+    <p class="qt">Why would a warehouse camera run a nano YOLO model on-device instead of streaming everything to the cloud for detection?</p>
+    <div class="opts">
+      <button>Nano models are more accurate than any cloud model</button>
+      <button>On-device detection responds in milliseconds, keeps working offline, and avoids streaming raw video off-site</button>
+      <button>Cloud servers cannot run YOLO at all</button>
+    </div>
+    <p class="fb" role="status"></p>
+  </div>
+
+  <div class="pager">
+    <a class="btn ghost" href="#transfer">&larr; Transfer Learning</a>
+    <button class="btn is-done" data-done-btn data-lesson="yolo-edge">Mark lesson complete</button>
     <a class="btn" href="#tensorflow">Next: TensorFlow &rarr;</a>
   </div>
 </section>
 <section class="lvl" id="tensorflow" data-title="TensorFlow" tabindex="-1">
-  <p class="where">Frameworks &rsaquo; Lesson 11 of 14</p>
+  <p class="where">Frameworks &rsaquo; Lesson 12 of 15</p>
   <h1>TensorFlow</h1>
   <p class="lead">TensorFlow is a free library from Google for building and running neural networks — from a research laptop all the way to a phone or a warehouse camera.</p>
 
@@ -1108,13 +1264,13 @@ model.evaluate(test_images, test_labels)</code></pre>
   </div>
 
   <div class="pager">
-    <a class="btn ghost" href="#transfer">&larr; Transfer Learning</a>
+    <a class="btn ghost" href="#yolo-edge">&larr; YOLO &amp; Edge AI</a>
     <button class="btn is-done" data-done-btn data-lesson="tensorflow">Mark lesson complete</button>
     <a class="btn" href="#pytorch">Next: PyTorch &rarr;</a>
   </div>
 </section>
 <section class="lvl" id="pytorch" data-title="PyTorch" tabindex="-1">
-  <p class="where">Frameworks &rsaquo; Lesson 12 of 14</p>
+  <p class="where">Frameworks &rsaquo; Lesson 13 of 15</p>
   <h1>PyTorch</h1>
   <p class="lead">PyTorch is Meta's (Facebook's) free deep learning library. It's the favorite of most researchers because it feels like writing regular Python — you build the network step by step, and can inspect any value at any point.</p>
 
@@ -1190,7 +1346,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=<span class="m">0.01</span>)
   </div>
 </section>
 <section class="lvl" id="keras" data-title="Keras" tabindex="-1">
-  <p class="where">Frameworks &rsaquo; Lesson 13 of 14</p>
+  <p class="where">Frameworks &rsaquo; Lesson 14 of 15</p>
   <h1>Keras</h1>
   <p class="lead">Keras is the friendly front door to deep learning. It sits on top of TensorFlow and lets you describe a whole neural network in a handful of readable lines.</p>
 
@@ -1266,7 +1422,7 @@ model = Model(inputs=[image_in, sensor_in], outputs=output)</code></pre>
   </div>
 </section>
 <section class="lvl" id="scanalitix" data-title="Scanalitix Platform" tabindex="-1">
-  <p class="where">Real World &rsaquo; Lesson 14 of 14</p>
+  <p class="where">Real World &rsaquo; Lesson 15 of 15</p>
   <h1>Scanalitix: everything you just learned, at work</h1>
   <p class="lead">Scanalitix is an AI-powered, unified e-surveillance platform. It takes video management, monitoring, video analytics, and field service — four things usually sold as separate products — and merges them into one modular, scalable system.</p>
 
@@ -1387,6 +1543,7 @@ var LESSONS = [
   {id:"opencv", title:"OpenCV", group:"Computer Vision", gradable:true},
   {id:"cnn", title:"CNN", group:"Computer Vision", gradable:true},
   {id:"transfer", title:"Transfer Learning", group:"Computer Vision", gradable:true},
+  {id:"yolo-edge", title:"YOLO & Edge AI", group:"Computer Vision", gradable:true},
   {id:"tensorflow", title:"TensorFlow", group:"Frameworks", gradable:true},
   {id:"pytorch", title:"PyTorch", group:"Frameworks", gradable:true},
   {id:"keras", title:"Keras", group:"Frameworks", gradable:true},
@@ -1817,6 +1974,39 @@ document.querySelectorAll("[data-quiz]").forEach(function(q){
     highlightPatch(-1,-1);
   });
   drawInput(); drawKernel(); drawOutput();
+})();
+
+/* ================= LAB: YOLO detection boxes ================= */
+(function(){
+  var runBtn=document.getElementById("ylRun");
+  if(!runBtn) return;
+  var resetBtn=document.getElementById("ylReset"), statEl=document.getElementById("ylStat");
+  var boxes=[document.getElementById("ylBox1"),document.getElementById("ylBox2"),document.getElementById("ylBox3")];
+  var timers=[];
+  function clearTimers(){ timers.forEach(clearTimeout); timers=[]; }
+  function reset(){
+    clearTimers();
+    boxes.forEach(function(b){ b.style.display="none"; });
+    statEl.textContent="Waiting to run\u2026";
+    runBtn.disabled=false;
+  }
+  runBtn.addEventListener("click", function(){
+    reset();
+    statEl.textContent="Running one forward pass\u2026";
+    runBtn.disabled=true;
+    // Real YOLO finds every box in one pass — the stagger here is just so you can see each one appear
+    boxes.forEach(function(b,i){
+      timers.push(setTimeout(function(){
+        b.style.display="block";
+        if(i===boxes.length-1){
+          statEl.textContent="Done \u2014 "+boxes.length+" objects found in a single pass (~11ms on a nano edge model).";
+          runBtn.disabled=false;
+        }
+      }, 140*(i+1)));
+    });
+  });
+  resetBtn.addEventListener("click", reset);
+  reset();
 })();
 
 /* ================= LAB: ML Algorithms — KNN classifier ================= */
