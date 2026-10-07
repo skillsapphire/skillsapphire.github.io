@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<!-- saved from url=(0089)file:///C:/Users/ReMarkt/AppData/Local/Temp/crossnote-f-0eb5c6b2351d6854043218b7ab08.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <title>README</title>
+      
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      
+      
+      <link rel="stylesheet" href="./katex.min.css">
+      
+      
+      
+      <script type="text/javascript" src="./mermaid.min.js" charset="UTF-8"></script>
+      
+      
+      
+      <style>
+      code[class*=language-],pre[class*=language-]{color:#000;background:0 0;text-shadow:0 1px #fff;font-family:Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace;text-align:left;white-space:pre;word-spacing:normal;word-break:normal;word-wrap:normal;line-height:1.5;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-hyphens:none;-moz-hyphens:none;-ms-hyphens:none;hyphens:none}code[class*=language-] ::-moz-selection,code[class*=language-]::-moz-selection,pre[class*=language-] ::-moz-selection,pre[class*=language-]::-moz-selection{text-shadow:none;background:#b3d4fc}code[class*=language-] ::selection,code[class*=language-]::selection,pre[class*=language-] ::selection,pre[class*=language-]::selection{text-shadow:none;background:#b3d4fc}@media print{code[class*=language-],pre[class*=language-]{text-shadow:none}}pre[class*=language-]{padding:1em;margin:.5em 0;overflow:auto}:not(pre)>code[class*=language-],pre[class*=language-]{background:#f5f2f0}:not(pre)>code[class*=language-]{padding:.1em;border-radius:.3em;white-space:normal}.token.cdata,.token.comment,.token.doctype,.token.prolog{color:#708090}.token.punctuation{color:#999}.namespace{opacity:.7}.token.boolean,.token.constant,.token.deleted,.token.number,.token.property,.token.symbol,.token.tag{color:#905}.token.attr-name,.token.builtin,.token.char,.token.inserted,.token.selector,.token.string{color:#690}.language-css .token.string,.style .token.string,.token.entity,.token.operator,.token.url{color:#a67f59;background:hsla(0,0%,100%,.5)}.token.atrule,.token.attr-value,.token.keyword{color:#07a}.token.function{color:#dd4a68}.token.important,.token.regex,.token.variable{color:#e90}.token.bold,.token.important{font-weight:700}.token.italic{font-style:italic}.token.entity{cursor:help}pre[data-line]{position:relative;padding:1em 0 1em 3em}pre[data-line] .line-highlight-wrapper{position:absolute;top:0;left:0;background-color:transparent;display:block;width:100%}pre[data-line] .line-highlight{position:absolute;left:0;right:0;padding:inherit 0;margin-top:1em;background:hsla(24,20%,50%,.08);background:linear-gradient(to right,hsla(24,20%,50%,.1) 70%,hsla(24,20%,50%,0));pointer-events:none;line-height:inherit;white-space:pre}pre[data-line] .line-highlight:before,pre[data-line] .line-highlight[data-end]:after{content:attr(data-start);position:absolute;top:.4em;left:.6em;min-width:1em;padding:0 .5em;background-color:hsla(24,20%,50%,.4);color:#f4f1ef;font:bold 65%/1.5 sans-serif;text-align:center;vertical-align:.3em;border-radius:999px;text-shadow:none;box-shadow:0 1px #fff}pre[data-line] .line-highlight[data-end]:after{content:attr(data-end);top:auto;bottom:.4em}html body{font-family:'Helvetica Neue',Helvetica,'Segoe UI',Arial,freesans,sans-serif;font-size:16px;line-height:1.6;color:#333;background-color:#fff;overflow:initial;box-sizing:border-box;word-wrap:break-word}html body>:first-child{margin-top:0}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{line-height:1.2;margin-top:1em;margin-bottom:16px;color:#000}html body h1{font-size:2.25em;font-weight:300;padding-bottom:.3em}html body h2{font-size:1.75em;font-weight:400;padding-bottom:.3em}html body h3{font-size:1.5em;font-weight:500}html body h4{font-size:1.25em;font-weight:600}html body h5{font-size:1.1em;font-weight:600}html body h6{font-size:1em;font-weight:600}html body h1,html body h2,html body h3,html body h4,html body h5{font-weight:600}html body h5{font-size:1em}html body h6{color:#5c5c5c}html body strong{color:#000}html body del{color:#5c5c5c}html body a:not([href]){color:inherit;text-decoration:none}html body a{color:#08c;text-decoration:none}html body a:hover{color:#00a3f5;text-decoration:none}html body img{max-width:100%}html body>p{margin-top:0;margin-bottom:16px;word-wrap:break-word}html body>ol,html body>ul{margin-bottom:16px}html body ol,html body ul{padding-left:2em}html body ol.no-list,html body ul.no-list{padding:0;list-style-type:none}html body ol ol,html body ol ul,html body ul ol,html body ul ul{margin-top:0;margin-bottom:0}html body li{margin-bottom:0}html body li.task-list-item{list-style:none}html body li>p{margin-top:0;margin-bottom:0}html body .task-list-item-checkbox{margin:0 .2em .25em -1.8em;vertical-align:middle}html body .task-list-item-checkbox:hover{cursor:pointer}html body blockquote{margin:16px 0;font-size:inherit;padding:0 15px;color:#5c5c5c;background-color:#f0f0f0;border-left:4px solid #d6d6d6}html body blockquote>:first-child{margin-top:0}html body blockquote>:last-child{margin-bottom:0}html body hr{height:4px;margin:32px 0;background-color:#d6d6d6;border:0 none}html body table{margin:10px 0 15px 0;border-collapse:collapse;border-spacing:0;display:block;width:100%;overflow:auto;word-break:normal;word-break:keep-all}html body table th{font-weight:700;color:#000}html body table td,html body table th{border:1px solid #d6d6d6;padding:6px 13px}html body dl{padding:0}html body dl dt{padding:0;margin-top:16px;font-size:1em;font-style:italic;font-weight:700}html body dl dd{padding:0 16px;margin-bottom:16px}html body code{font-family:Menlo,Monaco,Consolas,'Courier New',monospace;font-size:.85em;color:#000;background-color:#f0f0f0;border-radius:3px;padding:.2em 0}html body code::after,html body code::before{letter-spacing:-.2em;content:'\00a0'}html body pre>code{padding:0;margin:0;word-break:normal;white-space:pre;background:0 0;border:0}html body .highlight{margin-bottom:16px}html body .highlight pre,html body pre{padding:1em;overflow:auto;line-height:1.45;border:#d6d6d6;border-radius:3px}html body .highlight pre{margin-bottom:0;word-break:normal}html body pre code,html body pre tt{display:inline;max-width:initial;padding:0;margin:0;overflow:initial;line-height:inherit;word-wrap:normal;background-color:transparent;border:0}html body pre code:after,html body pre code:before,html body pre tt:after,html body pre tt:before{content:normal}html body blockquote,html body dl,html body ol,html body p,html body pre,html body ul{margin-top:0;margin-bottom:16px}html body kbd{color:#000;border:1px solid #d6d6d6;border-bottom:2px solid #c7c7c7;padding:2px 4px;background-color:#f0f0f0;border-radius:3px}@media print{html body{background-color:#fff}html body h1,html body h2,html body h3,html body h4,html body h5,html body h6{color:#000;page-break-after:avoid}html body blockquote{color:#5c5c5c}html body pre{page-break-inside:avoid}html body table{display:table}html body img{display:block;max-width:100%;max-height:100%}html body code,html body pre{word-wrap:break-word;white-space:pre}}.markdown-preview{width:100%;height:100%;box-sizing:border-box}.markdown-preview ul{list-style:disc}.markdown-preview ul ul{list-style:circle}.markdown-preview ul ul ul{list-style:square}.markdown-preview ol{list-style:decimal}.markdown-preview ol ol,.markdown-preview ul ol{list-style-type:lower-roman}.markdown-preview ol ol ol,.markdown-preview ol ul ol,.markdown-preview ul ol ol,.markdown-preview ul ul ol{list-style-type:lower-alpha}.markdown-preview .newpage,.markdown-preview .pagebreak{page-break-before:always}.markdown-preview pre.line-numbers{position:relative;padding-left:3.8em;counter-reset:linenumber}.markdown-preview pre.line-numbers>code{position:relative}.markdown-preview pre.line-numbers .line-numbers-rows{position:absolute;pointer-events:none;top:1em;font-size:100%;left:0;width:3em;letter-spacing:-1px;border-right:1px solid #999;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}.markdown-preview pre.line-numbers .line-numbers-rows>span{pointer-events:none;display:block;counter-increment:linenumber}.markdown-preview pre.line-numbers .line-numbers-rows>span:before{content:counter(linenumber);color:#999;display:block;padding-right:.8em;text-align:right}.markdown-preview pre[data-line]{position:relative;padding:1em 0 1em 3em!important}.markdown-preview pre[data-line]>code{position:relative;z-index:1}.markdown-preview pre[data-line] .line-numbers-rows{z-index:1}.markdown-preview pre[data-line] .line-highlight-wrapper{position:absolute;top:0;left:0;background-color:transparent;pointer-events:none;display:block;width:100%}.markdown-preview pre[data-line] .line-highlight{position:absolute;left:0;right:0;padding:inherit 0;margin-top:1em;background:hsla(24,20%,50%,.08);background:var(--line-highlight-background,linear-gradient(to right,hsla(24,20%,50%,.1) 70%,hsla(24,20%,50%,0)));line-height:inherit;white-space:pre}.markdown-preview pre[data-line] .line-highlight:before,.markdown-preview pre[data-line] .line-highlight[data-end]:after{content:attr(data-start);position:absolute;top:.4em;left:.6em;min-width:1em;padding:0 .5em;background-color:hsla(24,20%,50%,.4);color:#f4f1ef;font:bold 65%/1.5 sans-serif;text-align:center;vertical-align:.3em;border-radius:999px;text-shadow:none}.markdown-preview pre[data-line] .line-highlight[data-end]:after{content:attr(data-end);top:auto;bottom:.4em}.markdown-preview .mathjax-exps .MathJax_Display{text-align:center!important}.markdown-preview:not([data-for=preview]) .code-chunk .code-chunk-btn-group{display:none}.markdown-preview:not([data-for=preview]) .code-chunk .status{display:none}.markdown-preview:not([data-for=preview]) .code-chunk .output-div{margin-bottom:16px}.markdown-preview .md-toc{padding:0}.markdown-preview .md-toc .md-toc-details{margin:0;padding:0;border:none}.markdown-preview .md-toc ol.md-toc-ol{margin:0;padding-left:1.6em}.markdown-preview .md-toc summary.md-toc-link-wrapper{cursor:pointer;list-style-position:outside}.markdown-preview .md-toc summary.md-toc-link-wrapper::marker{font-size:.85em}.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link{display:inline;padding:.25rem 0}.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link div,.markdown-preview .md-toc .md-toc-link-wrapper .md-toc-link p{display:inline}.markdown-preview .md-toc .md-toc-link-wrapper.highlighted .md-toc-link{font-weight:800}.markdown-preview .md-toc .md-toc-link-wrapper[data-level='0']{margin-left:12px}.markdown-preview .md-toc .md-toc-link-wrapper[data-level='1']{margin-left:28px}.markdown-preview .md-toc .md-toc-link-wrapper[data-level='2']{margin-left:44px}.markdown-preview .md-toc .md-toc-link-wrapper[data-level='3']{margin-left:60px}.markdown-preview .md-toc .md-toc-link-wrapper[data-level='4']{margin-left:76px}.markdown-preview .md-toc .md-toc-link-wrapper[data-level='5']{margin-left:80px}.markdown-preview a.tag,.markdown-preview a.tag:active,.markdown-preview a.tag:link,.markdown-preview a.tag:visited,.markdown-preview span.tag:not(.token){display:inline-block;background-color:var(--vscode-badge-background,rgba(127,127,127,.18));color:var(--vscode-badge-foreground,currentColor);border-radius:2em;font-size:.85em;font-weight:500;padding:.05em .55em;line-height:1.5;white-space:nowrap;text-decoration:none;text-shadow:none;box-shadow:none;transition:background-color .12s ease,opacity .12s ease}.markdown-preview a.tag{cursor:pointer}.markdown-preview a.tag:focus,.markdown-preview a.tag:hover{background-color:var(--vscode-badge-background,rgba(127,127,127,.32));color:var(--vscode-badge-foreground,currentColor);opacity:.85;text-decoration:none;outline:0}.markdown-preview .wikilink-embed-content{border-left:3px solid var(--vscode-textBlockQuote-border,rgba(128,128,128,.3));background:var(--vscode-textBlockQuote-background,rgba(128,128,128,.05));margin:.5em 0;padding:.5em .75em;border-radius:0 3px 3px 0}.markdown-preview .wikilink-embed-content.wikilink-embed-error{border-left-color:var(--vscode-errorForeground,#cf222e);color:var(--vscode-errorForeground,#cf222e);font-style:italic;opacity:.8}.markdown-preview .wikilink-embed-content h1:first-child,.markdown-preview .wikilink-embed-content h2:first-child,.markdown-preview .wikilink-embed-content h3:first-child,.markdown-preview .wikilink-embed-content h4:first-child,.markdown-preview .wikilink-embed-content h5:first-child,.markdown-preview .wikilink-embed-content h6:first-child{margin-top:.25em}.markdown-preview .wikilink-embed-content .wikilink-embed-content{margin:.25em 0;padding:.25em .5em}.markdown-preview .block-id{display:none}.scrollbar-style::-webkit-scrollbar{width:8px}.scrollbar-style::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}.scrollbar-style::-webkit-scrollbar-thumb{border-radius:5px;background-color:var(--vscode-scrollbarSlider-background,rgba(150,150,150,.66));border:4px solid var(--vscode-scrollbarSlider-background,rgba(150,150,150,.66));background-clip:content-box}.scrollbar-style::-webkit-scrollbar-thumb:hover{background-color:var(--vscode-scrollbarSlider-hoverBackground,rgba(120,120,120,.66))}html body[for=html-export]:not([data-presentation-mode]){position:relative;width:100%;height:100%;top:0;left:0;margin:0;padding:0;overflow:auto}html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{position:relative;top:0;min-height:100vh}@media screen and (min-width:914px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{padding:2em calc(50% - 457px + 2em)}}@media screen and (max-width:914px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for=html-export]:not([data-presentation-mode]) .markdown-preview{font-size:14px!important;padding:1em}}@media print{html body[for=html-export]:not([data-presentation-mode]) #sidebar-toc-btn{display:none}}html body[for=html-export]:not([data-presentation-mode]) #sidebar-toc-btn{position:fixed;bottom:8px;left:8px;font-size:28px;cursor:pointer;color:inherit;z-index:99;width:32px;text-align:center;opacity:.4}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] #sidebar-toc-btn{opacity:1}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc{position:fixed;top:0;left:0;width:300px;height:100%;padding:32px 0 48px 0;font-size:14px;box-shadow:0 0 4px rgba(150,150,150,.33);box-sizing:border-box;overflow:auto;background-color:inherit}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar{width:8px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-track{border-radius:10px;background-color:transparent}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-thumb{border-radius:5px;background-color:var(--vscode-scrollbarSlider-background,rgba(150,150,150,.66));border:4px solid var(--vscode-scrollbarSlider-background,rgba(150,150,150,.66));background-clip:content-box}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc::-webkit-scrollbar-thumb:hover{background-color:var(--vscode-scrollbarSlider-hoverBackground,rgba(120,120,120,.66))}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc a{text-decoration:none}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc{padding:0 16px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-details{margin:0;padding:0;border:none}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc ol.md-toc-ol{margin:0;padding-left:1.6em}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link{display:inline;padding:.25rem 0}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link div,html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper .md-toc-link p{display:inline}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper.highlighted .md-toc-link{font-weight:800}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper[data-level='0']{padding-left:0}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper[data-level='1']{padding-left:16px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper[data-level='2']{padding-left:32px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper[data-level='3']{padding-left:48px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper[data-level='4']{padding-left:64px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .md-sidebar-toc .md-toc .md-toc-link-wrapper[data-level='5']{padding-left:80px}html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{left:300px;width:calc(100% - 300px);padding:2em calc(50% - 457px - 300px / 2);margin:0;box-sizing:border-box}@media screen and (max-width:1274px){html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{padding:2em}}@media screen and (max-width:450px){html body[for=html-export]:not([data-presentation-mode])[html-show-sidebar-toc] .markdown-preview{width:100%}}html body[for=html-export]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .markdown-preview{left:50%;transform:translateX(-50%)}html body[for=html-export]:not([data-presentation-mode]):not([html-show-sidebar-toc]) .md-sidebar-toc{display:none}
+/* Please visit the URL below for more information: */
+/*   https://shd101wyy.github.io/markdown-preview-enhanced/#/customize-css */
+
+      </style>
+      
+    </head>
+    <body for="html-export">
+      <div class="crossnote markdown-preview  ">
+      
+<h1 id="novaretail-it-support-copilot-agentic-rag-on-azure">NovaRetail IT Support Copilot (Agentic RAG on Azure) </h1>
+<p>An enterprise IT support assistant for 3,000 employees. It answers from the company's <strong>private</strong> IT knowledge base first, <strong>checks whether the evidence is good enough</strong> before answering, falls back to <strong>public web search</strong> only when needed, and <strong>hands the problem to a human</strong> instead of guessing.</p>
+<p>Everything runs on Azure services. Nobody stores passwords: services authenticate to each other with managed identities.</p>
+<blockquote>
+<p><strong>Status, stated plainly.</strong> This is a complete, reviewed implementation, but it has <strong>not been run against live Azure resources</strong>. What <em>was</em> verified: 24 unit and workflow tests pass (chunking, hashing, incremental diff, and the full LangGraph routing with every Azure call faked); every module imports against current SDK releases; the Bicep template compiles with Bicep CLI 0.48. Section 17 lists what you should verify first on a real subscription.</p>
+</blockquote>
+<hr>
+<h2 id="1-the-idea-in-plain-words-for-a-10th-class-student">1. The idea in plain words (for a 10th-class student) </h2>
+<p>Imagine a very careful school librarian.</p>
+<ol>
+<li>A student asks a question.</li>
+<li>The librarian first checks <strong>the school's own books</strong>.</li>
+<li>She asks herself: <em>"Do these pages really answer the question?"</em> (this is the <strong>judge</strong>).</li>
+<li>If yes, she answers and shows which book she used.</li>
+<li>If no, she checks a <strong>trusted newspaper</strong> (the web), and asks herself the same question again.</li>
+<li>If she is still not sure, she <strong>rewrites the question</strong> and tries again (at most twice).</li>
+<li>If she still can't find a good answer, she says <em>"I'm not sure"</em> and <strong>asks a teacher (a human) to help</strong>. She never guesses.</li>
+</ol>
+<p>When new books arrive, she does not rebuild the whole library. She gives every page a <strong>fingerprint</strong>, compares it with her logbook, replaces only the pages that changed, and puts an <strong>"Old" sticker</strong> on pages that were removed (they are shredded 30 days later).</p>
+<table>
+<thead>
+<tr>
+<th>Library idea</th>
+<th>Azure service that does it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>School gate with ID check</td>
+<td>Microsoft Entra ID</td>
+</tr>
+<tr>
+<td>Security guard and queue manager</td>
+<td>Front Door + WAF, API Management</td>
+</tr>
+<tr>
+<td>The librarian's brain</td>
+<td>Azure OpenAI (small model for quick checks, big model for writing)</td>
+</tr>
+<tr>
+<td>The catalogue that understands meaning</td>
+<td>Azure AI Search (keyword + meaning search)</td>
+</tr>
+<tr>
+<td>Book scanning desk</td>
+<td>Azure AI Document Intelligence</td>
+</tr>
+<tr>
+<td>Logbook of every decision</td>
+<td>Azure Cosmos DB</td>
+</tr>
+<tr>
+<td>Sticky-note shortcuts</td>
+<td>Azure Cache for Redis</td>
+</tr>
+<tr>
+<td>Trusted newspaper</td>
+<td>Grounding with Bing Search (Azure AI Foundry)</td>
+</tr>
+<tr>
+<td>Filter for tricky hidden notes</td>
+<td>Azure AI Content Safety (Prompt Shields)</td>
+</tr>
+<tr>
+<td>Building, locks and CCTV</td>
+<td>Container Apps, Key Vault, Managed Identity, Azure Monitor</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="2-architecture">2. Architecture </h2>
+<h3 id="runtime-path-an-employee-asks-a-question">Runtime path (an employee asks a question) </h3>
+<div class="mermaid" data-processed="true"><svg id="mermaid-1791354888058" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="flowchart" style="max-width: 842.0398559570312px;" viewBox="4 4 842.0398559570312 2051.148681640625" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#mermaid-1791354888058{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mermaid-1791354888058 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-1791354888058 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mermaid-1791354888058 .error-icon{fill:#552222;}#mermaid-1791354888058 .error-text{fill:#552222;stroke:#552222;}#mermaid-1791354888058 .edge-thickness-normal{stroke-width:1px;}#mermaid-1791354888058 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-1791354888058 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-1791354888058 .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-1791354888058 .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-1791354888058 .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-1791354888058 .marker{fill:#333333;stroke:#333333;}#mermaid-1791354888058 .marker.cross{stroke:#333333;}#mermaid-1791354888058 svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#mermaid-1791354888058 p{margin:0;}#mermaid-1791354888058 .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#333;}#mermaid-1791354888058 .cluster-label text{fill:#333;}#mermaid-1791354888058 .cluster-label span{color:#333;}#mermaid-1791354888058 .cluster-label span p{background-color:transparent;}#mermaid-1791354888058 .label text,#mermaid-1791354888058 span{fill:#333;color:#333;}#mermaid-1791354888058 .node rect,#mermaid-1791354888058 .node circle,#mermaid-1791354888058 .node ellipse,#mermaid-1791354888058 .node polygon,#mermaid-1791354888058 .node path{fill:#ECECFF;stroke:#9370DB;stroke-width:1px;}#mermaid-1791354888058 .rough-node .label text,#mermaid-1791354888058 .node .label text,#mermaid-1791354888058 .image-shape .label,#mermaid-1791354888058 .icon-shape .label{text-anchor:middle;}#mermaid-1791354888058 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#mermaid-1791354888058 .rough-node .label,#mermaid-1791354888058 .node .label,#mermaid-1791354888058 .image-shape .label,#mermaid-1791354888058 .icon-shape .label{text-align:center;}#mermaid-1791354888058 .node.clickable{cursor:pointer;}#mermaid-1791354888058 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#mermaid-1791354888058 .arrowheadPath{fill:#333333;}#mermaid-1791354888058 .edgePaths .path{stroke:#333333;stroke-width:1px;}#mermaid-1791354888058 .flowchart-link{stroke:#333333;fill:none;}#mermaid-1791354888058 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#mermaid-1791354888058 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#mermaid-1791354888058 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#mermaid-1791354888058 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#mermaid-1791354888058 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#mermaid-1791354888058 .cluster text{fill:#333;}#mermaid-1791354888058 .cluster span{color:#333;}#mermaid-1791354888058 .node .collapsed-indicator{fill:#aaaa33;stroke:none;opacity:0.6;}#mermaid-1791354888058 .node .collapsed-separator{stroke:#aaaa33;stroke-width:0.75px;}#mermaid-1791354888058 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#mermaid-1791354888058 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#mermaid-1791354888058 rect.text{fill:none;stroke-width:0;}#mermaid-1791354888058 .icon-shape,#mermaid-1791354888058 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#mermaid-1791354888058 .icon-shape p,#mermaid-1791354888058 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#mermaid-1791354888058 .icon-shape .label rect,#mermaid-1791354888058 .image-shape .label rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#mermaid-1791354888058 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#mermaid-1791354888058 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#mermaid-1791354888058 .node .neo-node{stroke:#9370DB;}#mermaid-1791354888058 [data-look="neo"].node rect,#mermaid-1791354888058 [data-look="neo"].cluster rect,#mermaid-1791354888058 [data-look="neo"].node polygon{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#mermaid-1791354888058 [data-look="neo"].swimlane.cluster rect{filter:none;}#mermaid-1791354888058 [data-look="neo"].node path{stroke:#9370DB;stroke-width:1px;}#mermaid-1791354888058 [data-look="neo"].node .outer-path{filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#mermaid-1791354888058 [data-look="neo"].node .neo-line path{stroke:#9370DB;filter:none;}#mermaid-1791354888058 [data-look="neo"].node circle{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#mermaid-1791354888058 [data-look="neo"].node circle .state-start{fill:#000000;}#mermaid-1791354888058 [data-look="neo"].icon-shape .icon{fill:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#mermaid-1791354888058 [data-look="neo"].icon-shape .icon-neo path{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#mermaid-1791354888058 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><marker id="mermaid-1791354888058_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="mermaid-1791354888058_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="mermaid-1791354888058_flowchart-v2-pointEnd-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="11.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="10.5" markerHeight="14" orient="auto"><path d="M 0 0 L 11.5 7 L 0 14 z" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></path></marker><marker id="mermaid-1791354888058_flowchart-v2-pointStart-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="1" refY="7" markerUnits="userSpaceOnUse" markerWidth="11.5" markerHeight="14" orient="auto"><polygon points="0,7 11.5,14 11.5,0" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></polygon></marker><marker id="mermaid-1791354888058_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="mermaid-1791354888058_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="mermaid-1791354888058_flowchart-v2-circleEnd-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refY="5" refX="12.25" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></circle></marker><marker id="mermaid-1791354888058_flowchart-v2-circleStart-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-2" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></circle></marker><marker id="mermaid-1791354888058_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><marker id="mermaid-1791354888058_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><marker id="mermaid-1791354888058_flowchart-v2-crossEnd-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="17.7" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5;"></path></marker><marker id="mermaid-1791354888058_flowchart-v2-crossStart-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="-3.5" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5; stroke-dasharray: 1, 0;"></path></marker><g class="root"><g class="clusters"><g class="cluster" id="mermaid-1791354888058-G" data-look="neo"><rect style="" x="61.12578124999999" y="572" width="532.4453125" height="1323"></rect><g class="cluster-label" transform="translate(231.2546875, 572)"><foreignobject width="192.1875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5;"><span class="nodeLabel"><p>LangGraph agent workflow</p></span></div></foreignobject></g></g></g><g class="edges edgePaths"><path d="M572.228515625,84L572.228515625,184" id="mermaid-1791354888058-L_U_FD_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 96 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_U_FD_0" data-points="W3sieCI6NTcyLjIyODUxNTYyNSwieSI6ODR9LHsieCI6NTcyLjIyODUxNTYyNSwieSI6MTg4fV0=" data-look="neo" marker-end="url(#mermaid-1791354888058_flowchart-v2-pointEnd-margin)"></path><path d="M572.228515625,260L572.228515625,296" id="mermaid-1791354888058-L_FD_APIM_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 32 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_FD_APIM_0" data-points="W3sieCI6NTcyLjIyODUxNTYyNSwieSI6MjYwfSx7IngiOjU3Mi4yMjg1MTU2MjUsInkiOjMwMH1d" data-look="neo" marker-end="url(#mermaid-1791354888058_flowchart-v2-pointEnd-margin)"></path><path d="M572.228515625,420L572.228515625,456" id="mermaid-1791354888058-L_APIM_API_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 32 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_APIM_API_0" data-points="W3sieCI6NTcyLjIyODUxNTYyNSwieSI6NDIwfSx7IngiOjU3Mi4yMjg1MTU2MjUsInkiOjQ2MH1d" data-look="neo" marker-end="url(#mermaid-1791354888058_flowchart-v2-pointEnd-margin)"></path><path d="M550.228515625,532L550.228515625,544.9289321881345Q550.228515625,552 543.1574478131345,552L364.65388031186546,552Q357.5828125,552 357.5828125,559.0710678118655L357.5828125,568" id="mermaid-1791354888058-L_API_G_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 219.31739807128906 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_API_G_0" data-points="W3sieCI6NTUwLjIyODUxNTYyNSwieSI6NTMyfSx7IngiOjU1MC4yMjg1MTU2MjUsInkiOjU1Mn0seyJ4IjozNTcuNTgyODEyNSwieSI6NTUyfSx7IngiOjM1Ny41ODI4MTI1LCJ5Ijo1NzJ9XQ==" data-look="neo" marker-end="url(#mermaid-1791354888058_flowchart-v2-pointEnd-margin)"></path><path d="M300.29765625,695L300.29765625,715" id="mermaid-1791354888058-L_S0_R_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 16 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_S0_R_0" data-points="W3sieCI6MzAwLjI5NzY1NjI1LCJ5Ijo2OTV9LHsieCI6MzAwLjI5NzY1NjI1LCJ5Ijo3MTl9XQ==" data-look="neo" marker-end="url(#mermaid-1791354888058_flowchart-v2-pointEnd-margin)"></path><path d="M278.56432291666664,791L278.56432291666664,813.9289321881345Q278.56432291666664,821 271.49325510480116,821L206.36872406186546,821Q199.29765625,821 199.29765625,828.0710678118655L199.29765625,895" id="mermaid-1791354888058-L_R_RT_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 173.93838500976562 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_R_RT_0" data-points="W3sieCI6Mjc4LjU2NDMyMjkxNjY2NjY0LCJ5Ijo3OTF9LHsieCI6Mjc4LjU2NDMyMjkxNjY2NjY0LCJ5Ijo4MjF9LHsieCI6MTk5LjI5NzY1NjI1LCJ5Ijo4MjF9LHsieCI6MTk5LjI5NzY1NjI1LCJ5Ijo4OTl9XQ==" data-look="neo" marker-end="url(#mermaid-1791354888058_flowchart-v2-pointEnd-margin)"></path><path d="M322.0309895833333,791L322.0309895833333,813.9289321881345Q322.0309895833333,821 329.10205739519876,821L394.2265884381345,821Q401.29765625,821 401.29765625,828.0710678118655L401.29765625,895" id="mermaid-1791354888058-L_R_ST_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 173.93841552734375 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_R_ST_0" data-points="W3sieCI6MzIyLjAzMDk4OTU4MzMzMzMsInkiOjc5MX0seyJ4IjozMjIuMDMwOTg5NTgzMzMzMywieSI6ODIxfSx7IngiOjQwMS4yOTc2NTYyNSwieSI6ODIxfSx7IngiOjQwMS4yOTc2NTYyNSwieSI6ODk5fV0=" data-look="neo" marker-end="url(#mermaid-1791354888058_flowchart-v2-pointEnd-margin)"></path><path d="M221.0309895833333,971L221.03098958333328,993.9289321881346Q221.03098958333328,1001 228.10205739519876,1001L302.64846343813446,1001Q309.71953124999993,1001 309.71953124999993,1008.0710678118655L309.71953124999993,1027" id="mermaid-1791354888058-L_RT_GP_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 135.36029052734375 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_RT_GP_0" data-points="W3sieCI6MjIxLjAzMDk4OTU4MzMzMzMsInkiOjk3MX0seyJ4IjoyMjEuMDMwOTg5NTgzMzMzMjgsInkiOjEwMDF9LHsieCI6MzA5LjcxOTUzMTI0OTk5OTkzLCJ5IjoxMDAxfSx7IngiOjMwOS43MTk1MzEyNDk5OTk5MywieSI6MTAzMX1d" data-look="neo" marker-end="url(#mermaid-1791354888058_flowchart-v2-pointEnd-margin)"></path><path d="M309.71953124999993,1103L309.71953124999993,1485.9289321881345Q309.71953124999993,1493 316.7905990618654,1493L354.26669260480116,1493Q361.33776041666664,1493 361.33776041666664,1500.0710678118655L361.33776041666664,1519" id="mermaid-1791354888058-L_GP_GEN_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 458.28997802734375 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_GP_GEN_0" data-points="W3sieCI6MzA5LjcxOTUzMTI0OTk5OTkzLCJ5IjoxMTAzfSx7IngiOjMwOS43MTk1MzEyNDk5OTk5MywieSI6MTQ5M30seyJ4IjozNjEuMzM3NzYwNDE2NjY2NjQsInkiOjE0OTN9LHsieCI6MzYxLjMzNzc2MDQxNjY2NjY0LCJ5IjoxNTIzfV0=" data-look="neo" marker-end="url(#mermaid-1791354888058_flowchart-v2-pointEnd-margin)"></path><path d="M342.31953124999995,1103L342.31953124999995,1125.9289321881345Q342.31953124999995,1133 349.39059906186543,1133L450.13596343813447,1133Q457.20703124999994,1133 457.20703124999994,1140.0710678118655L457.20703124999994,1207" id="mermaid-1791354888058-L_GP_WS_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 209.55918884277344 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_GP_WS_0" data-points="W3sieCI6MzQyLjMxOTUzMTI0OTk5OTk1LCJ5IjoxMTAzfSx7IngiOjM0Mi4zMTk1MzEyNDk5OTk5NSwieSI6MTEzM30seyJ4Ijo0NTcuMjA3MDMxMjQ5OTk5OTQsInkiOjExMzN9LHsieCI6NDU3LjIwNzAzMTI0OTk5OTk0LCJ5IjoxMjExfV0=" data-look="neo" marker-end="url(#mermaid-1791354888058_flowchart-v2-pointEnd-margin)"></path><path d="M457.20703124999994,1283L457.20703124999994,1303" id="mermaid-1791354888058-L_WS_GW_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 16 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_WS_GW_0" data-points="W3sieCI6NDU3LjIwNzAzMTI0OTk5OTk0LCJ5IjoxMjgzfSx7IngiOjQ1Ny4yMDcwMzEyNDk5OTk5NCwieSI6MTMwN31d" data-look="neo" marker-end="url(#mermaid-1791354888058_flowchart-v2-pointEnd-margin)"></path><path d="M457.20703124999994,1379L457.20703124999994,1485.9289321881345Q457.20703124999994,1493 450.13596343813447,1493L411.87549489519876,1493Q404.8044270833333,1493 404.8044270833333,1500.0710678118655L404.8044270833333,1519" id="mermaid-1791354888058-L_GW_GEN_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 183.07435607910156 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_GW_GEN_0" data-points="W3sieCI6NDU3LjIwNzAzMTI0OTk5OTk0LCJ5IjoxMzc5fSx7IngiOjQ1Ny4yMDcwMzEyNDk5OTk5NCwieSI6MTQ5M30seyJ4Ijo0MDQuODA0NDI3MDgzMzMzMywieSI6MTQ5M30seyJ4Ijo0MDQuODA0NDI3MDgzMzMzMywieSI6MTUyM31d" data-look="neo" marker-end="url(#mermaid-1791354888058_flowchart-v2-pointEnd-margin)"></path><path d="M424.607,1379 L424.607,1401.929 Q424.607,1409 417.536,1409 L315.72,1409 A6,6 0 0 0 303.72,1409 L240.447,1409 Q233.376,1409 233.376,1416.071 L233.376,1485.929 Q233.376,1493 226.305,1493 L200.797,1493 Q193.726,1493 193.726,1500.071 L193.726,1519" id="mermaid-1791354888058-L_GW_RW_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 363.07696533203125 4; stroke-dashoffset: 0;" data-edge="true" data-et="edge" data-id="L_GW_RW_0" data-points="W3sieCI6NDI0LjYwNzAzMTI0OTk5OTksInkiOjEzNzl9LHsieCI6NDI0LjYwNzAzMTI0OTk5OTksInkiOjE0MDl9LHsieCI6MjMzLjM3NTc4MTI0OTk5OTk2LCJ5IjoxNDA5fSx7IngiOjIzMy4zNzU3ODEyNDk5OTk5NiwieSI6MTQ5M30seyJ4IjoxOTMuNzI1NzgxMjQ5OTk5OTUsInkiOjE0OTN9LHsieCI6MTkzLjcyNTc4MTI0OTk5OTk1LCJ5IjoxNTIzfV0=" data-look="neo" marker-end="url(#mermaid-1791354888058_flowchart-v2-pointEnd-margin)"></path><path d="M277.11953124999997,1103L277.11953124999997,1125.9289321881345Q277.11953124999997,1133 270.0484634381345,1133L168.19684906186546,1133Q161.12578125,1133 161.12578125,1140.0710678118655L161.12578125,1519" id="mermaid-1791354888058-L_GP_RW_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 522.6654663085938 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_GP_RW_0" data-points="W3sieCI6Mjc3LjExOTUzMTI0OTk5OTk3LCJ5IjoxMTAzfSx7IngiOjI3Ny4xMTk1MzEyNDk5OTk5NywieSI6MTEzM30seyJ4IjoxNjEuMTI1NzgxMjUsInkiOjExMzN9LHsieCI6MTYxLjEyNTc4MTI1LCJ5IjoxNTIzfV0=" data-look="neo" marker-end="url(#mermaid-1791354888058_flowchart-v2-pointEnd-margin)"></path><path d="M128.52578124999997,1523L128.52578124999997,1500.0710678118655Q128.52578124999997,1493 121.45471343813449,1493L95.94684906186544,1493Q88.87578124999996,1493 88.87578124999996,1485.9289321881345L88.87578124999996,1008.0710678118655Q88.87578124999996,1001 95.94684906186544,1001L170.49325510480116,1001Q177.56432291666664,1001 177.56432291666664,993.9289321881345L177.56432291666664,975" id="mermaid-1791354888058-L_RW_RT_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 661.6820068359375 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_RW_RT_0" data-points="W3sieCI6MTI4LjUyNTc4MTI0OTk5OTk3LCJ5IjoxNTIzfSx7IngiOjEyOC41MjU3ODEyNDk5OTk5NywieSI6MTQ5M30seyJ4Ijo4OC44NzU3ODEyNDk5OTk5NiwieSI6MTQ5M30seyJ4Ijo4OC44NzU3ODEyNDk5OTk5NiwieSI6MTAwMX0seyJ4IjoxNzcuNTY0MzIyOTE2NjY2NjQsInkiOjEwMDF9LHsieCI6MTc3LjU2NDMyMjkxNjY2NjY0LCJ5Ijo5NzF9XQ==" data-look="neo" marker-end="url(#mermaid-1791354888058_flowchart-v2-pointEnd-margin)"></path><path d="M489.8070312499999,1379L489.8070312499999,1401.9289321881345Q489.8070312499999,1409 496.8780990618654,1409L562.5000259381345,1409Q569.57109375,1409 569.57109375,1416.0710678118655L569.57109375,1761.9289321881345Q569.57109375,1769 562.5000259381345,1769L452.7879948951987,1769Q445.71692708333325,1769 445.71692708333325,1776.0710678118655L445.71692708333325,1795" id="mermaid-1791354888058-L_GW_ESC_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 604.9618530273438 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_GW_ESC_0" data-points="W3sieCI6NDg5LjgwNzAzMTI0OTk5OTksInkiOjEzNzl9LHsieCI6NDg5LjgwNzAzMTI0OTk5OTksInkiOjE0MDl9LHsieCI6NTY5LjU3MTA5Mzc1LCJ5IjoxNDA5fSx7IngiOjU2OS41NzEwOTM3NSwieSI6MTc2OX0seyJ4Ijo0NDUuNzE2OTI3MDgzMzMzMjUsInkiOjE3Njl9LHsieCI6NDQ1LjcxNjkyNzA4MzMzMzI1LCJ5IjoxNzk5fV0=" data-look="neo" marker-end="url(#mermaid-1791354888058_flowchart-v2-pointEnd-margin)"></path><path d="M383.07109375,1595L383.07109375,1615" id="mermaid-1791354888058-L_GEN_CK_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 16 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_GEN_CK_0" data-points="W3sieCI6MzgzLjA3MTA5Mzc1LCJ5IjoxNTk1fSx7IngiOjM4My4wNzEwOTM3NSwieSI6MTYxOX1d" data-look="neo" marker-end="url(#mermaid-1791354888058_flowchart-v2-pointEnd-margin)"></path><path d="M383.07109375,1691L383.07109375,1761.9289321881345Q383.07109375,1769 390.14216156186546,1769L395.17919260480113,1769Q402.2502604166666,1769 402.2502604166666,1776.0710678118655L402.2502604166666,1795" id="mermaid-1791354888058-L_CK_ESC_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 113.8509750366211 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_CK_ESC_0" data-points="W3sieCI6MzgzLjA3MTA5Mzc1LCJ5IjoxNjkxfSx7IngiOjM4My4wNzEwOTM3NSwieSI6MTc2OX0seyJ4Ijo0MDIuMjUwMjYwNDE2NjY2NiwieSI6MTc2OX0seyJ4Ijo0MDIuMjUwMjYwNDE2NjY2NiwieSI6MTc5OX1d" data-look="neo" marker-end="url(#mermaid-1791354888058_flowchart-v2-pointEnd-margin)"></path><path d="M185.70859374999998,1895L185.70859374999998,1907.9289321881345Q185.70859374999998,1915 178.6375259381345,1915L91.07106781186548,1915Q84,1915 84,1922.0710678118655L84,1935" id="mermaid-1791354888058-L_G_AIS_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 136.38040161132812 0; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_G_AIS_0" data-points="W3sieCI6MTg1LjcwODU5Mzc0OTk5OTk4LCJ5IjoxODk1fSx7IngiOjE4NS43MDg1OTM3NDk5OTk5OCwieSI6MTkxNX0seyJ4Ijo4NCwieSI6MTkxNX0seyJ4Ijo4NCwieSI6MTkzNX1d" data-look="neo"></path><path d="M300.29140625,1895L300.29140625,1907.9289321881345Q300.29140625,1915 293.22033843813455,1915L279.0710678118655,1915Q272,1915 272,1922.0710678118655L272,1935" id="mermaid-1791354888058-L_G_AOAI_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 62.96324157714844 0; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_G_AOAI_0" data-points="W3sieCI6MzAwLjI5MTQwNjI1LCJ5IjoxODk1fSx7IngiOjMwMC4yOTE0MDYyNSwieSI6MTkxNX0seyJ4IjoyNzIsInkiOjE5MTV9LHsieCI6MjcyLCJ5IjoxOTM1fV0=" data-look="neo"></path><path d="M414.87421875,1895L414.87421875,1907.9289321881345Q414.87421875,1915 421.9452865618655,1915L456.9289321881345,1915Q464,1915 464,1922.0710678118655L464,1935" id="mermaid-1791354888058-L_G_CS_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 83.797607421875 0; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_G_CS_0" data-points="W3sieCI6NDE0Ljg3NDIxODc1LCJ5IjoxODk1fSx7IngiOjQxNC44NzQyMTg3NSwieSI6MTkxNX0seyJ4Ijo0NjQsInkiOjE5MTV9LHsieCI6NDY0LCJ5IjoxOTM1fV0=" data-look="neo"></path><path d="M529.45703125,1895L529.45703125,1907.9289321881345Q529.45703125,1915 536.5280990618655,1915L644.9289321881345,1915Q652,1915 652,1922.0710678118655L652,1935" id="mermaid-1791354888058-L_G_COS_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 157.21478271484375 0; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_G_COS_0" data-points="W3sieCI6NTI5LjQ1NzAzMTI1LCJ5IjoxODk1fSx7IngiOjUyOS40NTcwMzEyNSwieSI6MTkxNX0seyJ4Ijo2NTIsInkiOjE5MTV9LHsieCI6NjUyLCJ5IjoxOTM1fV0=" data-look="neo"></path><path d="M594.228515625,532L594.228515625,544.9289321881345Q594.228515625,552 601.2995834368655,552L758.9687759381345,552Q766.03984375,552 766.03984375,559.0710678118655L766.03984375,572" id="mermaid-1791354888058-L_API_RED_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 206.4830322265625 0; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_API_RED_0" data-points="W3sieCI6NTk0LjIyODUxNTYyNSwieSI6NTMyfSx7IngiOjU5NC4yMjg1MTU2MjUsInkiOjU1Mn0seyJ4Ijo3NjYuMDM5ODQzNzUsInkiOjU1Mn0seyJ4Ijo3NjYuMDM5ODQzNzUsInkiOjU3Mn1d" data-look="neo"></path></g><g class="edgeLabels"><g class="edgeLabel" transform="translate(571.822265625, 136)"><g class="label" data-id="L_U_FD_0" transform="translate(-54.59375, -12)"><foreignobject width="109.1875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>Entra ID sign-in</p></span></div></foreignobject></g></g><g class="edgeLabel" transform="translate(199.04765625, 863)"><g class="label" data-id="L_R_RT_0" transform="translate(-36.75, -12)"><foreignobject width="73.5" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>it_support</p></span></div></foreignobject></g></g><g class="edgeLabel" transform="translate(400.81328125, 863)"><g class="label" data-id="L_R_ST_0" transform="translate(-70.015625, -12)"><foreignobject width="140.03125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>greeting / off-topic</p></span></div></foreignobject></g></g><g class="edgeLabel" transform="translate(309.32109374999993, 1247)"><g class="label" data-id="L_GP_GEN_0" transform="translate(-21.1015625, -12)"><foreignobject width="42.203125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>GOOD</p></span></div></foreignobject></g></g><g class="edgeLabel" transform="translate(457.13671874999994, 1175)"><g class="label" data-id="L_GP_WS_0" transform="translate(-20.4296875, -12)"><foreignobject width="40.859375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>WEAK</p></span></div></foreignobject></g></g><g class="edgeLabel" transform="translate(456.02421875, 1451)"><g class="label" data-id="L_GW_GEN_0" transform="translate(-21.1015625, -12)"><foreignobject width="42.203125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>GOOD</p></span></div></foreignobject></g></g><g class="edgeLabel" transform="translate(233.04765624999996, 1451)"><g class="label" data-id="L_GW_RW_0" transform="translate(-64.671875, -12)"><foreignobject width="129.34375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>WEAK, retries left</p></span></div></foreignobject></g></g><g class="edgeLabel" transform="translate(155.03984374999996, 1247)"><g class="label" data-id="L_GP_RW_0" transform="translate(-53.1640625, -12)"><foreignobject width="106.328125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>WEAK, web off</p></span></div></foreignobject></g></g><g class="edgeLabel" transform="translate(569.55546875, 1559)"><g class="label" data-id="L_GW_ESC_0" transform="translate(-60.484375, -12)"><foreignobject width="120.96875" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>WEAK, no retries</p></span></div></foreignobject></g></g><g class="edgeLabel" transform="translate(382.75078125, 1727)"><g class="label" data-id="L_CK_ESC_0" transform="translate(-42.1796875, -12)"><foreignobject width="84.359375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>ungrounded</p></span></div></foreignobject></g></g></g><g class="nodes"><g class="node default" id="mermaid-1791354888058-flowchart-U-0" data-look="neo" transform="translate(572.228515625, 48)"><rect class="basic label-container" style="" x="-76" y="-36" width="152" height="72"></rect><g class="label" style="" transform="translate(-60, -24)"><rect></rect><foreignobject width="120" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>Employee (web or Teams)</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354888058-flowchart-FD-1" data-look="neo" transform="translate(572.228515625, 224)"><rect class="basic label-container" style="" x="-76" y="-36" width="152" height="72"></rect><g class="label" style="" transform="translate(-60, -24)"><rect></rect><foreignobject width="120" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>Front Door + WAF</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354888058-flowchart-APIM-3" data-look="neo" transform="translate(572.228515625, 360)"><rect class="basic label-container" style="" x="-76" y="-60" width="152" height="120"></rect><g class="label" style="" transform="translate(-60, -48)"><rect></rect><foreignobject width="120" height="96"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>API Management (auth, rate limit)</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354888058-flowchart-API-5" data-look="neo" transform="translate(572.228515625, 496)"><rect class="basic label-container" style="" x="-76" y="-36" width="152" height="72"></rect><g class="label" style="" transform="translate(-60, -24)"><rect></rect><foreignobject width="120" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>FastAPI on Container Apps</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354888058-flowchart-S0-8" data-look="neo" transform="translate(300.29765625, 659)"><rect class="basic label-container" style="" x="-76" y="-36" width="152" height="72"></rect><g class="label" style="" transform="translate(-60, -24)"><rect></rect><foreignobject width="120" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>guard_input (Prompt Shields)</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354888058-flowchart-R-9" data-look="neo" transform="translate(300.29765625, 755)"><rect class="basic label-container" style="" x="-76" y="-36" width="152" height="72"></rect><g class="label" style="" transform="translate(-60, -24)"><rect></rect><foreignobject width="120" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>route (small model)</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354888058-flowchart-RT-11" data-look="neo" transform="translate(199.29765625, 935)"><rect class="basic label-container" style="" x="-76" y="-36" width="152" height="72"></rect><g class="label" style="" transform="translate(-60, -24)"><rect></rect><foreignobject width="120" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>retrieve (hybrid search)</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354888058-flowchart-ST-13" data-look="neo" transform="translate(401.29765625, 923)"><rect class="basic label-container" style="" x="-76" y="-24" width="152" height="48"></rect><g class="label" style="" transform="translate(-60, -12)"><rect></rect><foreignobject width="120" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: nowrap; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>smalltalk</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354888058-flowchart-GP-15" data-look="neo" transform="translate(309.71953124999993, 1067)"><rect class="basic label-container" style="" x="-76" y="-36" width="152" height="72"></rect><g class="label" style="" transform="translate(-60, -24)"><rect></rect><foreignobject width="120" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>grade_private (judge)</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354888058-flowchart-GEN-17" data-look="neo" transform="translate(383.07109375, 1559)"><rect class="basic label-container" style="" x="-76" y="-36" width="152" height="72"></rect><g class="label" style="" transform="translate(-60, -24)"><rect></rect><foreignobject width="120" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>generate (large model)</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354888058-flowchart-WS-19" data-look="neo" transform="translate(457.20703124999994, 1247)"><rect class="basic label-container" style="" x="-76" y="-36" width="152" height="72"></rect><g class="label" style="" transform="translate(-60, -24)"><rect></rect><foreignobject width="120" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>web_search (Bing grounding)</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354888058-flowchart-GW-21" data-look="neo" transform="translate(457.20703124999994, 1343)"><rect class="basic label-container" style="" x="-76" y="-36" width="152" height="72"></rect><g class="label" style="" transform="translate(-60, -24)"><rect></rect><foreignobject width="120" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>grade_web (judge)</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354888058-flowchart-RW-25" data-look="neo" transform="translate(161.12578125, 1547)"><rect class="basic label-container" style="" x="-76" y="-24" width="152" height="48"></rect><g class="label" style="" transform="translate(-60, -12)"><rect></rect><foreignobject width="120" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: nowrap; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>rewrite query</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354888058-flowchart-ESC-31" data-look="neo" transform="translate(423.98359374999995, 1835)"><rect class="basic label-container" style="" x="-76" y="-36" width="152" height="72"></rect><g class="label" style="" transform="translate(-60, -24)"><rect></rect><foreignobject width="120" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>escalate (create ticket)</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354888058-flowchart-CK-33" data-look="neo" transform="translate(383.07109375, 1655)"><rect class="basic label-container" style="" x="-76" y="-36" width="152" height="72"></rect><g class="label" style="" transform="translate(-60, -24)"><rect></rect><foreignobject width="120" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>check_answer (groundedness)</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354888058-flowchart-AIS-37" data-look="neo" transform="translate(84, 1979.074348449707)"><path d="M0,13.382899628252789 a72,13.382899628252789 0,0,0 144,0 a72,13.382899628252789 0,0,0 -144,0 l0,61.38289962825279 a72,13.382899628252789 0,0,0 144,0 l0,-61.38289962825279" class="basic label-container outer-path" style="" transform="translate(-72, -44.07434944237918)"></path><g class="label" style="" transform="translate(-60, -2)"><rect></rect><foreignobject width="120" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: nowrap; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>Azure AI Search</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354888058-flowchart-AOAI-39" data-look="neo" transform="translate(272, 1959)"><rect class="basic label-container" style="" x="-76" y="-24" width="152" height="48"></rect><g class="label" style="" transform="translate(-60, -12)"><rect></rect><foreignobject width="120" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: nowrap; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>Azure OpenAI</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354888058-flowchart-CS-41" data-look="neo" transform="translate(464, 1959)"><rect class="basic label-container" style="" x="-76" y="-24" width="152" height="48"></rect><g class="label" style="" transform="translate(-60, -12)"><rect></rect><foreignobject width="120" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: nowrap; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>Content Safety</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354888058-flowchart-COS-43" data-look="neo" transform="translate(652, 1991.0743408203125)"><path d="M0,13.382899628252789 a72,13.382899628252789 0,0,0 144,0 a72,13.382899628252789 0,0,0 -144,0 l0,85.38289962825279 a72,13.382899628252789 0,0,0 144,0 l0,-85.38289962825279" class="basic label-container outer-path" style="" transform="translate(-72, -56.07434944237918)"></path><g class="label" style="" transform="translate(-60, -14)"><rect></rect><foreignobject width="120" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>Cosmos DB: traces</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354888058-flowchart-RED-45" data-look="neo" transform="translate(766.03984375, 628.0743408203125)"><path d="M0,13.382899628252789 a72,13.382899628252789 0,0,0 144,0 a72,13.382899628252789 0,0,0 -144,0 l0,85.38289962825279 a72,13.382899628252789 0,0,0 144,0 l0,-85.38289962825279" class="basic label-container outer-path" style="" transform="translate(-72, -56.07434944237918)"></path><g class="label" style="" transform="translate(-60, -14)"><rect></rect><foreignobject width="120" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>Redis: sessions, cache</p></span></div></foreignobject></g></g></g></g></g><defs><filter id="mermaid-1791354888058-drop-shadow" height="130%" width="130%"><fedropshadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"></fedropshadow></filter></defs><defs><filter id="mermaid-1791354888058-drop-shadow-small" height="150%" width="150%"><fedropshadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"></fedropshadow></filter></defs></svg></div><h3 id="knowledge-ingestion-path-staff-add-or-update-documents">Knowledge ingestion path (staff add or update documents) </h3>
+<div class="mermaid" data-processed="true"><svg id="mermaid-1791354889228" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="flowchart" style="max-width: 2854.640625px;" viewBox="4 3.9999923706054688 2854.640625 332.148681640625" role="graphics-document document" aria-roledescription="flowchart-v2"><style>#mermaid-1791354889228{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#mermaid-1791354889228 .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-1791354889228 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#mermaid-1791354889228 .error-icon{fill:#552222;}#mermaid-1791354889228 .error-text{fill:#552222;stroke:#552222;}#mermaid-1791354889228 .edge-thickness-normal{stroke-width:1px;}#mermaid-1791354889228 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-1791354889228 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-1791354889228 .edge-thickness-invisible{stroke-width:0;fill:none;}#mermaid-1791354889228 .edge-pattern-dashed{stroke-dasharray:3;}#mermaid-1791354889228 .edge-pattern-dotted{stroke-dasharray:2;}#mermaid-1791354889228 .marker{fill:#333333;stroke:#333333;}#mermaid-1791354889228 .marker.cross{stroke:#333333;}#mermaid-1791354889228 svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#mermaid-1791354889228 p{margin:0;}#mermaid-1791354889228 .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#333;}#mermaid-1791354889228 .cluster-label text{fill:#333;}#mermaid-1791354889228 .cluster-label span{color:#333;}#mermaid-1791354889228 .cluster-label span p{background-color:transparent;}#mermaid-1791354889228 .label text,#mermaid-1791354889228 span{fill:#333;color:#333;}#mermaid-1791354889228 .node rect,#mermaid-1791354889228 .node circle,#mermaid-1791354889228 .node ellipse,#mermaid-1791354889228 .node polygon,#mermaid-1791354889228 .node path{fill:#ECECFF;stroke:#9370DB;stroke-width:1px;}#mermaid-1791354889228 .rough-node .label text,#mermaid-1791354889228 .node .label text,#mermaid-1791354889228 .image-shape .label,#mermaid-1791354889228 .icon-shape .label{text-anchor:middle;}#mermaid-1791354889228 .node .katex path{fill:#000;stroke:#000;stroke-width:1px;}#mermaid-1791354889228 .rough-node .label,#mermaid-1791354889228 .node .label,#mermaid-1791354889228 .image-shape .label,#mermaid-1791354889228 .icon-shape .label{text-align:center;}#mermaid-1791354889228 .node.clickable{cursor:pointer;}#mermaid-1791354889228 .root .anchor path{fill:#333333!important;stroke-width:0;stroke:#333333;}#mermaid-1791354889228 .arrowheadPath{fill:#333333;}#mermaid-1791354889228 .edgePaths .path{stroke:#333333;stroke-width:1px;}#mermaid-1791354889228 .flowchart-link{stroke:#333333;fill:none;}#mermaid-1791354889228 .edgeLabel{background-color:rgba(232,232,232, 0.8);text-align:center;}#mermaid-1791354889228 .edgeLabel p{background-color:rgba(232,232,232, 0.8);}#mermaid-1791354889228 .edgeLabel rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#mermaid-1791354889228 .labelBkg{background-color:rgba(232, 232, 232, 0.5);}#mermaid-1791354889228 .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#mermaid-1791354889228 .cluster text{fill:#333;}#mermaid-1791354889228 .cluster span{color:#333;}#mermaid-1791354889228 .node .collapsed-indicator{fill:#aaaa33;stroke:none;opacity:0.6;}#mermaid-1791354889228 .node .collapsed-separator{stroke:#aaaa33;stroke-width:0.75px;}#mermaid-1791354889228 div.mermaidTooltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:12px;background:hsl(80, 100%, 96.2745098039%);border:1px solid #aaaa33;border-radius:2px;pointer-events:none;z-index:100;}#mermaid-1791354889228 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#333;}#mermaid-1791354889228 rect.text{fill:none;stroke-width:0;}#mermaid-1791354889228 .icon-shape,#mermaid-1791354889228 .image-shape{background-color:rgba(232,232,232, 0.8);text-align:center;}#mermaid-1791354889228 .icon-shape p,#mermaid-1791354889228 .image-shape p{background-color:rgba(232,232,232, 0.8);padding:2px;}#mermaid-1791354889228 .icon-shape .label rect,#mermaid-1791354889228 .image-shape .label rect{opacity:0.5;background-color:rgba(232,232,232, 0.8);fill:rgba(232,232,232, 0.8);}#mermaid-1791354889228 .label-icon{display:inline-block;height:1em;overflow:visible;vertical-align:-0.125em;}#mermaid-1791354889228 .node .label-icon path{fill:currentColor;stroke:revert;stroke-width:revert;}#mermaid-1791354889228 .node .neo-node{stroke:#9370DB;}#mermaid-1791354889228 [data-look="neo"].node rect,#mermaid-1791354889228 [data-look="neo"].cluster rect,#mermaid-1791354889228 [data-look="neo"].node polygon{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#mermaid-1791354889228 [data-look="neo"].swimlane.cluster rect{filter:none;}#mermaid-1791354889228 [data-look="neo"].node path{stroke:#9370DB;stroke-width:1px;}#mermaid-1791354889228 [data-look="neo"].node .outer-path{filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#mermaid-1791354889228 [data-look="neo"].node .neo-line path{stroke:#9370DB;filter:none;}#mermaid-1791354889228 [data-look="neo"].node circle{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#mermaid-1791354889228 [data-look="neo"].node circle .state-start{fill:#000000;}#mermaid-1791354889228 [data-look="neo"].icon-shape .icon{fill:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#mermaid-1791354889228 [data-look="neo"].icon-shape .icon-neo path{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#mermaid-1791354889228 :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><marker id="mermaid-1791354889228_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="mermaid-1791354889228_flowchart-v2-pointStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="4.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto"><path d="M 0 5 L 10 10 L 10 0 z" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></path></marker><marker id="mermaid-1791354889228_flowchart-v2-pointEnd-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="11.5" refY="7" markerUnits="userSpaceOnUse" markerWidth="10.5" markerHeight="14" orient="auto"><path d="M 0 0 L 11.5 7 L 0 14 z" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></path></marker><marker id="mermaid-1791354889228_flowchart-v2-pointStart-margin" class="marker flowchart-v2" viewBox="0 0 11.5 14" refX="1" refY="7" markerUnits="userSpaceOnUse" markerWidth="11.5" markerHeight="14" orient="auto"><polygon points="0,7 11.5,14 11.5,0" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></polygon></marker><marker id="mermaid-1791354889228_flowchart-v2-circleEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="11" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="mermaid-1791354889228_flowchart-v2-circleStart" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-1" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 1; stroke-dasharray: 1, 0;"></circle></marker><marker id="mermaid-1791354889228_flowchart-v2-circleEnd-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refY="5" refX="12.25" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></circle></marker><marker id="mermaid-1791354889228_flowchart-v2-circleStart-margin" class="marker flowchart-v2" viewBox="0 0 10 10" refX="-2" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto"><circle cx="5" cy="5" r="5" class="arrowMarkerPath" style="stroke-width: 0; stroke-dasharray: 1, 0;"></circle></marker><marker id="mermaid-1791354889228_flowchart-v2-crossEnd" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="12" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><marker id="mermaid-1791354889228_flowchart-v2-crossStart" class="marker cross flowchart-v2" viewBox="0 0 11 11" refX="-1" refY="5.2" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M 1,1 l 9,9 M 10,1 l -9,9" class="arrowMarkerPath" style="stroke-width: 2; stroke-dasharray: 1, 0;"></path></marker><marker id="mermaid-1791354889228_flowchart-v2-crossEnd-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="17.7" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5;"></path></marker><marker id="mermaid-1791354889228_flowchart-v2-crossStart-margin" class="marker cross flowchart-v2" viewBox="0 0 15 15" refX="-3.5" refY="7.5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path d="M 1,1 L 14,14 M 1,14 L 14,1" class="arrowMarkerPath" style="stroke-width: 2.5; stroke-dasharray: 1, 0;"></path></marker><g class="root"><g class="clusters"></g><g class="edges edgePaths"><path d="M164,136.0743408203125L204,136.0743408203125" id="mermaid-1791354889228-L_A_B_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 36 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_A_B_0" data-points="W3sieCI6MTY0LCJ5IjoxMzYuMDc0MzQwODIwMzEyNX0seyJ4IjoyMDgsInkiOjEzNi4wNzQzNDA4MjAzMTI1fV0=" data-look="neo" marker-end="url(#mermaid-1791354889228_flowchart-v2-pointEnd-margin)"></path><path d="M352,136.0743408203125L625.453125,136.0743408203125" id="mermaid-1791354889228-L_B_C_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 269.453125 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_B_C_0" data-points="W3sieCI6MzUyLCJ5IjoxMzYuMDc0MzQwODIwMzEyNX0seyJ4Ijo2MjkuNDUzMTI1LCJ5IjoxMzYuMDc0MzQwODIwMzEyNX1d" data-look="neo" marker-end="url(#mermaid-1791354889228_flowchart-v2-pointEnd-margin)"></path><path d="M781.453125,136.0743408203125L817.453125,136.0743408203125" id="mermaid-1791354889228-L_C_D_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 32 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_C_D_0" data-points="W3sieCI6NzgxLjQ1MzEyNSwieSI6MTM2LjA3NDM0MDgyMDMxMjV9LHsieCI6ODIxLjQ1MzEyNSwieSI6MTM2LjA3NDM0MDgyMDMxMjV9XQ==" data-look="neo" marker-end="url(#mermaid-1791354889228_flowchart-v2-pointEnd-margin)"></path><path d="M973.453125,136.0743408203125L1164.828125,136.0743408203125" id="mermaid-1791354889228-L_D_E_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 187.375 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_D_E_0" data-points="W3sieCI6OTczLjQ1MzEyNSwieSI6MTM2LjA3NDM0MDgyMDMxMjV9LHsieCI6MTE2OC44MjgxMjUsInkiOjEzNi4wNzQzNDA4MjAzMTI1fV0=" data-look="neo" marker-end="url(#mermaid-1791354889228_flowchart-v2-pointEnd-margin)"></path><path d="M1312.828125,136.0743408203125L1348.828125,136.0743408203125" id="mermaid-1791354889228-L_E_F_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 32 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_E_F_0" data-points="W3sieCI6MTMxMi44MjgxMjUsInkiOjEzNi4wNzQzNDA4MjAzMTI1fSx7IngiOjEzNTIuODI4MTI1LCJ5IjoxMzYuMDc0MzQwODIwMzEyNX1d" data-look="neo" marker-end="url(#mermaid-1791354889228_flowchart-v2-pointEnd-margin)"></path><path d="M1504.828125,136.0743408203125L1540.828125,136.0743408203125" id="mermaid-1791354889228-L_F_P1_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 32 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_F_P1_0" data-points="W3sieCI6MTUwNC44MjgxMjUsInkiOjEzNi4wNzQzNDA4MjAzMTI1fSx7IngiOjE1NDQuODI4MTI1LCJ5IjoxMzYuMDc0MzQwODIwMzEyNX1d" data-look="neo" marker-end="url(#mermaid-1791354889228_flowchart-v2-pointEnd-margin)"></path><path d="M1696.828125,136.0743408203125L1732.828125,136.0743408203125" id="mermaid-1791354889228-L_P1_P2_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 32 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_P1_P2_0" data-points="W3sieCI6MTY5Ni44MjgxMjUsInkiOjEzNi4wNzQzNDA4MjAzMTI1fSx7IngiOjE3MzYuODI4MTI1LCJ5IjoxMzYuMDc0MzQwODIwMzEyNX1d" data-look="neo" marker-end="url(#mermaid-1791354889228_flowchart-v2-pointEnd-margin)"></path><path d="M1888.828125,136.0743408203125L1924.828125,136.0743408203125" id="mermaid-1791354889228-L_P2_P3_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 32 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_P2_P3_0" data-points="W3sieCI6MTg4OC44MjgxMjUsInkiOjEzNi4wNzQzNDA4MjAzMTI1fSx7IngiOjE5MjguODI4MTI1LCJ5IjoxMzYuMDc0MzQwODIwMzEyNX1d" data-look="neo" marker-end="url(#mermaid-1791354889228_flowchart-v2-pointEnd-margin)"></path><path d="M2097.161434173584,106.40767415364583L2126.828125,106.40767415364583L2139.7570571881347,106.40767415364583Q2146.828125,106.40767415364583 2146.828125,99.33660634178035L2146.828125,75.14540863217798Q2146.828125,68.0743408203125 2153.8991928118653,68.0743408203125L2318.640625,68.0743408203125" id="mermaid-1791354889228-L_P3_P4_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 250.48440551757812 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_P3_P4_0" data-points="W3sieCI6MjA5Ny4xNjE0MzQxNzM1ODQsInkiOjEwNi40MDc2NzQxNTM2NDU4M30seyJ4IjoyMTI2LjgyODEyNSwieSI6MTA2LjQwNzY3NDE1MzY0NTgzfSx7IngiOjIxNDYuODI4MTI1LCJ5IjoxMDYuNDA3Njc0MTUzNjQ1ODN9LHsieCI6MjE0Ni44MjgxMjUsInkiOjY4LjA3NDM0MDgyMDMxMjV9LHsieCI6MjMyMi42NDA2MjUsInkiOjY4LjA3NDM0MDgyMDMxMjV9XQ==" data-look="neo" marker-end="url(#mermaid-1791354889228_flowchart-v2-pointEnd-margin)"></path><path d="M2474.640625,68.0743408203125L2510.640625,68.0743408203125" id="mermaid-1791354889228-L_P4_P5_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 32 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_P4_P5_0" data-points="W3sieCI6MjQ3NC42NDA2MjUsInkiOjY4LjA3NDM0MDgyMDMxMjV9LHsieCI6MjUxNC42NDA2MjUsInkiOjY4LjA3NDM0MDgyMDMxMjV9XQ==" data-look="neo" marker-end="url(#mermaid-1791354889228_flowchart-v2-pointEnd-margin)"></path><path d="M2097.161434173584,165.74100748697919L2126.828125,165.74100748697919L2139.7570571881347,165.74100748697919Q2146.828125,165.74100748697919 2146.828125,172.81207529884466L2146.828125,197.00327300844702Q2146.828125,204.0743408203125 2153.8991928118653,204.0743408203125L2318.640625,204.0743408203125" id="mermaid-1791354889228-L_P3_P6_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 250.48439025878906 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_P3_P6_0" data-points="W3sieCI6MjA5Ny4xNjE0MzQxNzM1ODQsInkiOjE2NS43NDEwMDc0ODY5NzkxOX0seyJ4IjoyMTI2LjgyODEyNSwieSI6MTY1Ljc0MTAwNzQ4Njk3OTE5fSx7IngiOjIxNDYuODI4MTI1LCJ5IjoxNjUuNzQxMDA3NDg2OTc5MTl9LHsieCI6MjE0Ni44MjgxMjUsInkiOjIwNC4wNzQzNDA4MjAzMTI1fSx7IngiOjIzMjIuNjQwNjI1LCJ5IjoyMDQuMDc0MzQwODIwMzEyNX1d" data-look="neo" marker-end="url(#mermaid-1791354889228_flowchart-v2-pointEnd-margin)"></path><path d="M2658.640625,68.0743408203125L2694.640625,68.0743408203125" id="mermaid-1791354889228-L_P5_P7_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 32 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_P5_P7_0" data-points="W3sieCI6MjY1OC42NDA2MjUsInkiOjY4LjA3NDM0MDgyMDMxMjV9LHsieCI6MjY5OC42NDA2MjUsInkiOjY4LjA3NDM0MDgyMDMxMjV9XQ==" data-look="neo" marker-end="url(#mermaid-1791354889228_flowchart-v2-pointEnd-margin)"></path><path d="M164,280.148681640625L200,280.148681640625" id="mermaid-1791354889228-L_T_M_0" class="edge-thickness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flowchart-link" style="stroke-dasharray: 0 0 32 4; stroke-dashoffset: 0;;" data-edge="true" data-et="edge" data-id="L_T_M_0" data-points="W3sieCI6MTY0LCJ5IjoyODAuMTQ4NjgxNjQwNjI1fSx7IngiOjIwNCwieSI6MjgwLjE0ODY4MTY0MDYyNX1d" data-look="neo" marker-end="url(#mermaid-1791354889228_flowchart-v2-pointEnd-margin)"></path></g><g class="edgeLabels"><g class="edgeLabel" transform="translate(492.7265625, 135.5743408203125)"><g class="label" data-id="L_B_C_0" transform="translate(-96.7265625, -12)"><foreignobject width="193.453125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>BlobCreated / BlobDeleted</p></span></div></foreignobject></g></g><g class="edgeLabel" transform="translate(1071.140625, 135.5743408203125)"><g class="label" data-id="L_D_E_0" transform="translate(-57.6875, -12)"><foreignobject width="115.375" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>session = doc_id</p></span></div></foreignobject></g></g><g class="edgeLabel" transform="translate(2224.734375, 67.5743408203125)"><g class="label" data-id="L_P3_P4_0" transform="translate(-41.4453125, -12)"><foreignobject width="82.890625" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>new chunks</p></span></div></foreignobject></g></g><g class="edgeLabel" transform="translate(2224.734375, 203.5743408203125)"><g class="label" data-id="L_P3_P6_0" transform="translate(-57.90625, -12)"><foreignobject width="115.8125" height="24"><div xmlns="http://www.w3.org/1999/xhtml" class="labelBkg" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel"><p>removed chunks</p></span></div></foreignobject></g></g></g><g class="nodes"><g class="node default" id="mermaid-1791354889228-flowchart-A-0" data-look="neo" transform="translate(88, 136.0743408203125)"><rect class="basic label-container" style="" x="-76" y="-36" width="152" height="72"></rect><g class="label" style="" transform="translate(-60, -24)"><rect></rect><foreignobject width="120" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>Staff upload (API or portal)</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354889228-flowchart-B-1" data-look="neo" transform="translate(280, 136.0743408203125)"><path d="M0,13.382899628252789 a72,13.382899628252789 0,0,0 144,0 a72,13.382899628252789 0,0,0 -144,0 l0,85.38289962825279 a72,13.382899628252789 0,0,0 144,0 l0,-85.38289962825279" class="basic label-container outer-path" style="" transform="translate(-72, -56.07434944237918)"></path><g class="label" style="" transform="translate(-60, -14)"><rect></rect><foreignobject width="120" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>Blob Storage, versioned</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354889228-flowchart-C-3" data-look="neo" transform="translate(705.453125, 136.0743408203125)"><rect class="basic label-container" style="" x="-76" y="-24" width="152" height="48"></rect><g class="label" style="" transform="translate(-60, -12)"><rect></rect><foreignobject width="120" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: nowrap; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>Event Grid</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354889228-flowchart-D-5" data-look="neo" transform="translate(897.453125, 136.0743408203125)"><rect class="basic label-container" style="" x="-76" y="-36" width="152" height="72"></rect><g class="label" style="" transform="translate(-60, -24)"><rect></rect><foreignobject width="120" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>Function: enqueue_upload</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354889228-flowchart-E-7" data-look="neo" transform="translate(1240.828125, 136.0743408203125)"><path d="M0,13.382899628252789 a72,13.382899628252789 0,0,0 144,0 a72,13.382899628252789 0,0,0 -144,0 l0,85.38289962825279 a72,13.382899628252789 0,0,0 144,0 l0,-85.38289962825279" class="basic label-container outer-path" style="" transform="translate(-72, -56.07434944237918)"></path><g class="label" style="" transform="translate(-60, -14)"><rect></rect><foreignobject width="120" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>Service Bus queue + DLQ</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354889228-flowchart-F-9" data-look="neo" transform="translate(1428.828125, 136.0743408203125)"><rect class="basic label-container" style="" x="-76" y="-36" width="152" height="72"></rect><g class="label" style="" transform="translate(-60, -24)"><rect></rect><foreignobject width="120" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>Function: ingest_worker</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354889228-flowchart-P1-11" data-look="neo" transform="translate(1620.828125, 136.0743408203125)"><rect class="basic label-container" style="" x="-76" y="-60" width="152" height="120"></rect><g class="label" style="" transform="translate(-60, -48)"><rect></rect><foreignobject width="120" height="96"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>Document Intelligence (layout to Markdown)</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354889228-flowchart-P2-13" data-look="neo" transform="translate(1812.828125, 136.0743408203125)"><rect class="basic label-container" style="" x="-76" y="-36" width="152" height="72"></rect><g class="label" style="" transform="translate(-60, -24)"><rect></rect><foreignobject width="120" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>Chunk + fingerprint</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354889228-flowchart-P3-15" data-look="neo" transform="translate(2027.828125, 136.0743408203125)"><polygon points="99,0 198,-99 99,-198 0,-99" class="label-container" transform="translate(-98.5, 99)"></polygon><g class="label" style="" transform="translate(-60, -24)"><rect></rect><foreignobject width="120" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>Diff vs ledger (Cosmos)</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354889228-flowchart-P4-17" data-look="neo" transform="translate(2398.640625, 68.0743408203125)"><rect class="basic label-container" style="" x="-76" y="-48" width="152" height="96"></rect><g class="label" style="" transform="translate(-60, -36)"><rect></rect><foreignobject width="120" height="72"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>Embed (cache first) via Azure OpenAI</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354889228-flowchart-P5-19" data-look="neo" transform="translate(2586.640625, 68.0743408203125)"><path d="M0,13.382899628252789 a72,13.382899628252789 0,0,0 144,0 a72,13.382899628252789 0,0,0 -144,0 l0,85.38289962825279 a72,13.382899628252789 0,0,0 144,0 l0,-85.38289962825279" class="basic label-container outer-path" style="" transform="translate(-72, -56.07434944237918)"></path><g class="label" style="" transform="translate(-60, -14)"><rect></rect><foreignobject width="120" height="48"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>AI Search: add first</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354889228-flowchart-P6-21" data-look="neo" transform="translate(2398.640625, 204.0743408203125)"><rect class="basic label-container" style="" x="-76" y="-48" width="152" height="96"></rect><g class="label" style="" transform="translate(-60, -36)"><rect></rect><foreignobject width="120" height="72"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>Soft delete: status = superseded</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354889228-flowchart-P7-23" data-look="neo" transform="translate(2774.640625, 68.0743408203125)"><rect class="basic label-container" style="" x="-76" y="-24" width="152" height="48"></rect><g class="label" style="" transform="translate(-60, -12)"><rect></rect><foreignobject width="120" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: nowrap; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>Update ledger</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354889228-flowchart-T-24" data-look="neo" transform="translate(88, 280.148681640625)"><rect class="basic label-container" style="" x="-76" y="-24" width="152" height="48"></rect><g class="label" style="" transform="translate(-60, -12)"><rect></rect><foreignobject width="120" height="24"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: nowrap; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>Nightly timer</p></span></div></foreignobject></g></g><g class="node default" id="mermaid-1791354889228-flowchart-M-25" data-look="neo" transform="translate(280, 280.148681640625)"><rect class="basic label-container" style="" x="-76" y="-48" width="152" height="96"></rect><g class="label" style="" transform="translate(-60, -36)"><rect></rect><foreignobject width="120" height="72"><div xmlns="http://www.w3.org/1999/xhtml" style="display: table; white-space: break-spaces; line-height: 1.5; max-width: 120px; text-align: center; width: 120px;"><span class="nodeLabel"><p>Expire, hard-delete, orphan check</p></span></div></foreignobject></g></g></g></g></g><defs><filter id="mermaid-1791354889228-drop-shadow" height="130%" width="130%"><fedropshadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"></fedropshadow></filter></defs><defs><filter id="mermaid-1791354889228-drop-shadow-small" height="150%" width="150%"><fedropshadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"></fedropshadow></filter></defs></svg></div><h3 id="why-each-service-was-chosen">Why each service was chosen </h3>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Job</th>
+<th>Why this one</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Entra ID</strong></td>
+<td>Sign-in, group claims</td>
+<td>Single sign-on; groups drive per-document security</td>
+</tr>
+<tr>
+<td><strong>Front Door + WAF, API Management</strong></td>
+<td>Edge protection, throttling</td>
+<td>Blocks attacks; rate limits protect the LLM bill</td>
+</tr>
+<tr>
+<td><strong>Container Apps</strong></td>
+<td>Runs FastAPI + LangGraph</td>
+<td>Auto-scales for Monday-9am spikes, far simpler than AKS</td>
+</tr>
+<tr>
+<td><strong>Azure OpenAI</strong></td>
+<td>Routing, judging, rewriting, answering, embeddings</td>
+<td>Data stays in your tenant, content filters, structured outputs</td>
+</tr>
+<tr>
+<td><strong>Azure AI Search</strong></td>
+<td>Private knowledge store</td>
+<td>Hybrid (keyword + vector) + semantic reranker + security filters in one service</td>
+</tr>
+<tr>
+<td><strong>Document Intelligence</strong></td>
+<td>PDF/DOCX parsing</td>
+<td>Keeps headings, lists and tables that plain text extraction destroys</td>
+</tr>
+<tr>
+<td><strong>Cosmos DB</strong></td>
+<td>Audit traces, ingestion ledger, embedding cache, review queue</td>
+<td>Many writers at once (SQLite cannot do this); TTL for retention</td>
+</tr>
+<tr>
+<td><strong>Redis</strong></td>
+<td>Chat memory, answer cache</td>
+<td>Cuts latency and cost for repeated questions</td>
+</tr>
+<tr>
+<td><strong>Content Safety</strong></td>
+<td>Prompt Shields, groundedness check</td>
+<td>Catches hidden instructions in documents and web pages</td>
+</tr>
+<tr>
+<td><strong>Foundry Agent Service + Bing</strong></td>
+<td>Web fallback</td>
+<td>Azure's own supported web-search route, returns citations</td>
+</tr>
+<tr>
+<td><strong>Blob, Event Grid, Service Bus, Functions</strong></td>
+<td>Ingestion</td>
+<td>Serverless, pay only when files arrive; per-document ordering and dead-letter queue</td>
+</tr>
+<tr>
+<td><strong>Key Vault, Managed Identity</strong></td>
+<td>Secrets and identity</td>
+<td>No stored passwords; only the Redis key is in Key Vault</td>
+</tr>
+<tr>
+<td><strong>Azure Monitor, App Insights</strong></td>
+<td>Observability</td>
+<td>Latency, errors, cost per question, alerts</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="3-repository-layout">3. Repository layout </h2>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>app/                       FastAPI backend (runs in Container Apps)
+  main.py                  /api/chat, /api/feedback, /api/admin/documents, /health
+  auth.py                  Entra ID JWT validation + group claims
+  config.py                all settings (environment variables)
+  clients.py               Azure SDK clients (managed identity)
+  llm.py                   structured judgments, chat, embeddings
+  safety.py                Prompt Shields + groundedness detection
+  cache.py                 Redis session memory + group-aware answer cache
+  audit.py                 Cosmos decision traces (PII masked)
+  tickets.py               human-fallback ticket webhook
+  agent/                   LangGraph: state, schemas, prompts, nodes, graph
+  retrieval/               search.py (hybrid + security trimming), web.py (Bing)
+ingestion/                 knowledge pipeline
+  chunking.py              structure-aware chunker
+  hashing.py               fingerprints and content-based chunk IDs
+  parse.py                 Document Intelligence wrapper
+  pipeline.py              incremental ingest, duplicates, soft delete
+  maintenance.py           nightly expiry / hard delete / orphan check
+  indexer.py               AI Search index schema, alias, batch helpers
+  ledger.py                Cosmos ingestion ledger
+  bootstrap.py             create index + alias (one time)
+  reindex.py               blue-green rebuild
+function_app.py            Azure Functions: Event Grid -&gt; Service Bus -&gt; worker, nightly timer
+infra/main.bicep           infrastructure as code
+evals/                     golden set + LLM-as-judge evaluation
+ui/index.html              chat UI with source tags and decision trace
+tests/                     24 tests
+.github/workflows/ci.yml   test, validate Bicep, build, deploy
+</code></pre><hr>
+<h2 id="4-how-a-question-is-answered">4. How a question is answered </h2>
+<ol>
+<li><strong>guard_input</strong>: Prompt Shields checks the question for attacks. If the safety service is unreachable the request is blocked (<code>SAFETY_FAIL_CLOSED=true</code>).</li>
+<li><strong>route</strong> (small model, structured output): rewrites the message as a standalone question using chat history, classifies it (<code>it_support</code>, <code>greeting</code>, <code>out_of_scope</code>), and flags <code>time_sensitive</code> ("latest outage").</li>
+<li><strong>retrieve</strong>: hybrid search (BM25 + vector) + semantic reranker, filtered to chunks that are <code>status = active</code>, not expired, and visible to the caller's Entra groups. Identical chunks are removed and at most 3 chunks per document are kept (final top 5). Retrieved text is also screened by Prompt Shields for hidden instructions.</li>
+<li><strong>grade_private</strong> (the judge): see below.</li>
+<li><strong>generate</strong> (large model): answers only from numbered sources, cites <code>[1]</code>, <code>[2]</code>, and labels web answers "from the public web, not NovaRetail policy".</li>
+<li><strong>check_answer</strong> (optional): Content Safety groundedness detection; one regeneration, then escalation.</li>
+<li><strong>escalate</strong>: creates a ticket through a webhook and tells the employee honestly.</li>
+</ol>
+<h3 id="the-llm-judge">The LLM judge </h3>
+<p>The judge scores six factors and returns JSON (Structured Outputs guarantee the format; <code>reason</code> is written before <code>verdict</code> so the model thinks first):</p>
+<table>
+<thead>
+<tr>
+<th>Factor</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>relevance (1-5)</td>
+<td>Is it about the topic?</td>
+</tr>
+<tr>
+<td>sufficiency (1-5)</td>
+<td>Together, do chunks contain everything needed?</td>
+</tr>
+<tr>
+<td>specificity (1-5)</td>
+<td>Right product / OS / version?</td>
+</tr>
+<tr>
+<td>freshness_ok</td>
+<td>Recent enough (matters for "latest ..." questions)?</td>
+</tr>
+<tr>
+<td>authority_ok</td>
+<td>Official source, not a draft or forum?</td>
+</tr>
+<tr>
+<td>conflict_detected</td>
+<td>Do chunks contradict each other?</td>
+</tr>
+</tbody>
+</table>
+<p><code>missing_info</code> becomes the seed for the query rewrite. A <strong>deterministic backstop</strong> downgrades <code>GOOD</code> to <code>WEAK</code> if the model's own scores disagree (needs relevance &gt;= 4, sufficiency &gt;= 4, specificity &gt;= 3, no conflict, authority ok, and freshness ok when time-sensitive). If the judge call fails, the verdict is <code>WEAK</code>, never "answer anyway".</p>
+<p>Combining the judge with the search score:</p>
+<table>
+<thead>
+<tr>
+<th>Reranker score</th>
+<th>Judge</th>
+<th>Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>high</td>
+<td>GOOD</td>
+<td>answer from the private KB</td>
+</tr>
+<tr>
+<td>high</td>
+<td>WEAK</td>
+<td>trust the judge: web or rewrite</td>
+</tr>
+<tr>
+<td>low (&lt; <code>RERANK_MIN</code>)</td>
+<td>GOOD</td>
+<td>answer with a low-confidence caution</td>
+</tr>
+<tr>
+<td>low</td>
+<td>WEAK</td>
+<td>web or rewrite</td>
+</tr>
+</tbody>
+</table>
+<p>Web evidence is judged the same way, plus a rule that at least one citation must come from <code>TRUSTED_WEB_DOMAINS</code>. <strong>Privacy rule:</strong> only a scrubbed, generic query leaves the company boundary (names, emails, IPs, ticket numbers, internal hosts are removed), never raw company text.</p>
+<p>The <strong>offline judge</strong> (<code>evals/run_evals.py</code>) uses the <em>larger</em> model to score groundedness, relevance and completeness on a golden set, and fails CI when thresholds are missed.</p>
+<hr>
+<h2 id="5-chunking-strategy">5. Chunking strategy </h2>
+<p>Implemented in <code>ingestion/chunking.py</code>.</p>
+<ul>
+<li><strong>Layout first.</strong> Document Intelligence <code>prebuilt-layout</code> returns Markdown with headings, lists and tables. Page headers/footers/numbers (HTML comments in that output) are stripped.</li>
+<li><strong>Heading-based sections</strong> with a breadcrumb path (<code>VPN Guide &gt; Remote Access &gt; Windows</code>).</li>
+<li><strong>Size:</strong> target 550 tokens, hard maximum 900, tiny trailing chunks (&lt; 80 tokens) merged into the previous one.</li>
+<li><strong>Overlap (about 12%) only when a long paragraph must be split</strong>, never across heading boundaries.</li>
+<li><strong>Special rules:</strong> numbered/bullet procedures are never split (a procedure keeps its intro sentence); tables stay whole, or split by rows with the <strong>header row repeated</strong>; code blocks are never cut; each FAQ question + answer is its own chunk.</li>
+<li><strong>Breadcrumb in the embedding text</strong> (<code>Document: ... | Section: ...</code>) so "Click Connect" is not ambiguous.</li>
+<li>Tunables: <code>CHUNK_TARGET_TOKENS</code>, <code>CHUNK_MAX_TOKENS</code>, <code>CHUNK_OVERLAP_RATIO</code>. Choose final numbers by testing 300/500/800 against your golden set (hit rate, groundedness, cost).</li>
+</ul>
+<hr>
+<h2 id="6-duplicates-obsolete-chunks-and-incremental-ingestion">6. Duplicates, obsolete chunks and incremental ingestion </h2>
+<p><strong>Three building blocks:</strong> fingerprints (hashes), a ledger (Cosmos DB, one record per document listing its live chunk IDs), and a status on every chunk (<code>active</code>, <code>superseded</code>, <code>expired</code>, <code>deleted</code>). Every search filters <code>status eq 'active'</code>.</p>
+<p><strong>Chunk ID = hash(doc_id + section_path + cleaned text).</strong> It is content-based, not positional, so inserting a paragraph at the top does not make every later chunk look new.</p>
+<h3 id="incremental-flow-ingestionpipelinepy">Incremental flow (<code>ingestion/pipeline.py</code>) </h3>
+<pre data-role="codeBlock" data-info="" class="language-text"><code>file hash same as ledger?  -&gt; stop (metadata-only refresh if tags changed)
+same content, other doc_id? -&gt; reject, notify uploader
+parse -&gt; clean -&gt; chunk -&gt; chunk IDs
+diff against ledger:
+   in both   -&gt; unchanged   (no re-embedding; metadata refreshed)
+   only new  -&gt; add         (embed with cache, upload FIRST)
+   only old  -&gt; retire      (soft delete, AFTER the add succeeded)
+update ledger
+</code></pre><p>Example: a 40-chunk VPN guide where 3 paragraphs changed and 1 was removed costs <strong>3 embeddings</strong>, not 40. The order is make-before-break, so a question asked mid-update never finds the guide missing. Uploads use <code>mergeOrUpload</code> with content-based IDs, so processing the same event twice is harmless (idempotent).</p>
+<h3 id="duplicate-types">Duplicate types </h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Handling</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Same file uploaded twice</td>
+<td>file hash match: stop, no cost</td>
+</tr>
+<tr>
+<td>Same content, different file name</td>
+<td>rejected, logged to <code>review_queue</code></td>
+</tr>
+<tr>
+<td>Repeated headers/footers</td>
+<td>stripped before chunking</td>
+</tr>
+<tr>
+<td>Overlap duplicates</td>
+<td>intentional; one kept at query time (identical-hash and per-document cap)</td>
+</tr>
+<tr>
+<td>Repeated chunk inside one document</td>
+<td>dropped at ingestion</td>
+</tr>
+<tr>
+<td>Near-duplicates (&gt;= 0.95 cosine, other documents)</td>
+<td><strong>flagged for human review, never auto-deleted</strong> ("30 days" vs "90 days" can be 96% similar)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="obsolete-content">Obsolete content </h3>
+<ul>
+<li>New version: old chunks become <code>superseded</code> (soft delete) and vanish from answers immediately.</li>
+<li>Blob deleted: Event Grid <code>BlobDeleted</code> triggers soft delete of the whole document.</li>
+<li><code>valid_until</code> passed: nightly job marks it <code>expired</code>; searches <em>also</em> filter on <code>valid_until</code>, as a second safety net.</li>
+<li><code>review_by</code> approaching: nightly job logs <code>REVIEW DUE</code> warnings (alert on them or wire a Logic App).</li>
+<li><strong>Hard delete</strong> after <code>RETENTION_DAYS</code> (30). Until then a wrong upload is undone by re-uploading the old file; Blob versioning keeps previous files.</li>
+<li>Weekly/nightly <strong>orphan check</strong> removes active chunks the ledger does not know about (with a 60-minute grace period so in-flight ingests are safe).</li>
+</ul>
+<h3 id="when-a-full-rebuild-is-needed-blue-green">When a full rebuild is needed (blue-green) </h3>
+<p>Changing the <strong>embedding model</strong> or <strong>chunking rules</strong> changes every vector or ID. Build a second index beside the live one, evaluate, then switch the alias (<code>kb-live</code>), with zero downtime. See runbook 13.1.</p>
+<h3 id="embedding-cache">Embedding cache </h3>
+<p><code>hash(embedding model + breadcrumb + text) -&gt; vector</code> in Cosmos. Re-uploads, rollbacks and reverted edits reuse vectors instead of paying again. Different models never share cache entries.</p>
+<hr>
+<h2 id="7-prerequisites">7. Prerequisites </h2>
+<ul>
+<li>Azure subscription with quota for your chosen Azure OpenAI models in the target region (also check that the <strong>semantic ranker</strong>, <strong>Content Safety Prompt Shields</strong> and <strong>Grounding with Bing</strong> are available there).</li>
+<li>Azure CLI (<code>az</code>), Azure Functions Core Tools v4, Python 3.11+, Docker optional.</li>
+<li>Permission to create role assignments (Owner or User Access Administrator on the resource group).</li>
+<li>Entra ID rights to create app registrations and groups.</li>
+</ul>
+<hr>
+<h2 id="8-run-locally">8. Run locally </h2>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code>python <span class="token parameter variable">-m</span> venv .venv <span class="token operator">&amp;&amp;</span> <span class="token builtin class-name">source</span> .venv/bin/activate
+pip <span class="token function">install</span> <span class="token parameter variable">-r</span> requirements-dev.txt
+pytest <span class="token parameter variable">-q</span>                                   <span class="token comment"># 24 tests, no Azure needed</span>
+
+<span class="token function">cp</span> .env.example .env                        <span class="token comment"># fill in endpoints; keep AUTH_DISABLED=true</span>
+az login                                    <span class="token comment"># your user needs the same data-plane roles as the managed identities</span>
+uvicorn app.main:app <span class="token parameter variable">--reload</span> <span class="token parameter variable">--port</span> <span class="token number">8000</span>   <span class="token comment"># UI at http://localhost:8000/ui/</span>
+</code></pre><p>For local development without Content Safety set <code>SAFETY_FAIL_CLOSED=false</code>. Local mode uses an in-memory session store when <code>REDIS_HOST</code> is empty (not shared between replicas).</p>
+<hr>
+<h2 id="9-deploy-to-azure">9. Deploy to Azure </h2>
+<h3 id="91-infrastructure">9.1 Infrastructure </h3>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code>az group create <span class="token parameter variable">-n</span> rg-novacopilot <span class="token parameter variable">-l</span> <span class="token operator">&lt;</span>region<span class="token operator">&gt;</span>
+az deployment group create <span class="token parameter variable">-g</span> rg-novacopilot <span class="token parameter variable">-f</span> infra/main.bicep <span class="token punctuation">\</span>
+  <span class="token parameter variable">-p</span> <span class="token assign-left variable">entraTenantId</span><span class="token operator">=</span><span class="token operator">&lt;</span>tenant-id<span class="token operator">&gt;</span> <span class="token assign-left variable">entraApiAudience</span><span class="token operator">=</span><span class="token operator">&lt;</span>api-app-client-id<span class="token operator">&gt;</span> <span class="token assign-left variable">kbEditorGroupId</span><span class="token operator">=</span><span class="token operator">&lt;</span>editors-group-object-id<span class="token operator">&gt;</span>
+az deployment group show <span class="token parameter variable">-g</span> rg-novacopilot <span class="token parameter variable">-n</span> main <span class="token parameter variable">--query</span> properties.outputs   <span class="token comment"># note the outputs</span>
+</code></pre><p>Model names and capacities are parameters (<code>smallModel</code>, <code>largeModel</code>, <code>embeddingModel</code>). <strong>Replace the defaults with models available in your region.</strong> The ingestion and API apps read deployment <em>names</em> from settings, so keep names and settings in sync.</p>
+<h3 id="92-entra-id-app-registration">9.2 Entra ID app registration </h3>
+<ol>
+<li>Register an API app. Expose a scope such as <code>access_as_user</code>; its Application ID URI is your <code>entraApiAudience</code> (v2 tokens carry the client ID GUID as <code>aud</code>; set <code>accessTokenAcceptedVersion</code> to 2 in the manifest).</li>
+<li>Register a SPA app for the UI (redirect URI = your UI origin) and grant it the API scope.</li>
+<li>In the API app manifest set <code>groupMembershipClaims</code> to <code>SecurityGroup</code> so tokens include group IDs. Prefer assigning only relevant groups to the app (users in &gt;200 groups hit the "groups overage" limit, see section 17).</li>
+<li>Create the <strong>KB Editors</strong> group; put its object ID in <code>kbEditorGroupId</code>.</li>
+</ol>
+<h3 id="93-web-fallback-foundry--grounding-with-bing">9.3 Web fallback (Foundry + Grounding with Bing) </h3>
+<p>Create these in the Azure AI Foundry portal (not in the Bicep, because the resource model is still evolving):</p>
+<ol>
+<li>A Foundry resource + project, with a model deployment available to the Agent Service.</li>
+<li>A <strong>Grounding with Bing Search</strong> resource, connected to the project (this gives a connection ID).</li>
+<li>Grant the API's managed identity the <strong>Azure AI User</strong> role on the project.</li>
+<li>Set <code>FOUNDRY_PROJECT_ENDPOINT</code> and <code>BING_CONNECTION_ID</code> on the Container App:</li>
+</ol>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code>az containerapp update <span class="token parameter variable">-g</span> rg-novacopilot <span class="token parameter variable">-n</span> <span class="token operator">&lt;</span>api-app<span class="token operator">&gt;</span> <span class="token punctuation">\</span>
+  --set-env-vars <span class="token assign-left variable">FOUNDRY_PROJECT_ENDPOINT</span><span class="token operator">=</span><span class="token operator">&lt;</span>endpoint<span class="token operator">&gt;</span> <span class="token assign-left variable">BING_CONNECTION_ID</span><span class="token operator">=</span><span class="token operator">&lt;</span>connection-resource-id<span class="token operator">&gt;</span>
+</code></pre><p>Review Microsoft's terms for Bing grounding with your compliance team: web queries leave your tenant boundary. To switch the fallback off, set <code>WEB_SEARCH_ENABLED=false</code> (the copilot then rewrites and escalates).</p>
+<h3 id="94-build-and-roll-out-the-api">9.4 Build and roll out the API </h3>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code>az acr build <span class="token parameter variable">-r</span> <span class="token operator">&lt;</span>acr-name<span class="token operator">&gt;</span> <span class="token parameter variable">-t</span> novacopilot-api:1 <span class="token builtin class-name">.</span>
+az deployment group create <span class="token parameter variable">-g</span> rg-novacopilot <span class="token parameter variable">-f</span> infra/main.bicep <span class="token punctuation">\</span>
+  <span class="token parameter variable">-p</span> <span class="token assign-left variable">entraTenantId</span><span class="token operator">=</span><span class="token operator">&lt;</span>tenant-id<span class="token operator">&gt;</span> <span class="token assign-left variable">entraApiAudience</span><span class="token operator">=</span><span class="token operator">&lt;</span>client-id<span class="token operator">&gt;</span> <span class="token assign-left variable">kbEditorGroupId</span><span class="token operator">=</span><span class="token operator">&lt;</span>group-id<span class="token operator">&gt;</span> <span class="token punctuation">\</span>
+     <span class="token assign-left variable">apiImage</span><span class="token operator">=</span><span class="token operator">&lt;</span>acr<span class="token operator">&gt;</span>.azurecr.io/novacopilot-api:1 <span class="token assign-left variable">apiTargetPort</span><span class="token operator">=</span><span class="token number">8000</span> <span class="token punctuation">\</span>
+     <span class="token assign-left variable">foundryProjectEndpoint</span><span class="token operator">=</span><span class="token operator">&lt;</span>endpoint<span class="token operator">&gt;</span> <span class="token assign-left variable">bingConnectionId</span><span class="token operator">=</span><span class="token operator">&lt;</span>connection-id<span class="token operator">&gt;</span>
+</code></pre><p>(Re-running the template is idempotent and keeps probes and ingress port consistent.)</p>
+<h3 id="95-ingestion-functions-and-event-grid">9.5 Ingestion functions and Event Grid </h3>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code>func azure functionapp publish <span class="token operator">&lt;</span>function-app-name<span class="token operator">&gt;</span> <span class="token parameter variable">--python</span>        <span class="token comment"># run from the repo root</span>
+
+<span class="token assign-left variable">FN_ID</span><span class="token operator">=</span><span class="token variable"><span class="token variable">$(</span>az functionapp show <span class="token parameter variable">-g</span> rg-novacopilot <span class="token parameter variable">-n</span> <span class="token operator">&lt;</span>function-app-name<span class="token operator">&gt;</span> <span class="token parameter variable">--query</span> <span class="token function">id</span> <span class="token parameter variable">-o</span> tsv<span class="token variable">)</span></span>
+az eventgrid system-topic event-subscription create <span class="token parameter variable">-g</span> rg-novacopilot <span class="token punctuation">\</span>
+  --system-topic-name <span class="token operator">&lt;</span>event-topic-name<span class="token operator">&gt;</span> <span class="token parameter variable">-n</span> kb-to-queue <span class="token punctuation">\</span>
+  --endpoint-type azurefunction <span class="token parameter variable">--endpoint</span> <span class="token variable">$FN_ID</span>/functions/enqueue_upload <span class="token punctuation">\</span>
+  --included-event-types Microsoft.Storage.BlobCreated Microsoft.Storage.BlobDeleted <span class="token punctuation">\</span>
+  --subject-begins-with /blobServices/default/containers/kb-uploads/
+</code></pre><h3 id="96-create-the-index-and-load-the-first-documents">9.6 Create the index and load the first documents </h3>
+<p>Give yourself <strong>Search Service Contributor</strong> and <strong>Search Index Data Contributor</strong> on the search service, then:</p>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code>python <span class="token parameter variable">-m</span> ingestion.bootstrap        <span class="token comment"># creates kb-index-v1 and the kb-live alias</span>
+</code></pre><p>Upload a document (see section 10). Watch the Function logs for <code>ingest result</code>.</p>
+<h3 id="97-production-hardening-not-in-the-bicep">9.7 Production hardening (not in the Bicep) </h3>
+<p>Put <strong>Front Door + WAF</strong> and <strong>API Management</strong> in front of the Container App (JWT validation, per-user rate limits), host the UI on <strong>Static Web Apps</strong>, move services behind <strong>private endpoints</strong> with public network access disabled, enable zone redundancy, and add a secondary region if IT support is business-critical. Narrow the resource-group-scoped role assignments to resource scope.</p>
+<hr>
+<h2 id="10-adding-knowledge">10. Adding knowledge </h2>
+<p><strong>Through the API</strong> (KB Editors only):</p>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code><span class="token function">curl</span> <span class="token parameter variable">-X</span> POST https://<span class="token operator">&lt;</span>api<span class="token operator">&gt;</span>/api/admin/documents <span class="token punctuation">\</span>
+  <span class="token parameter variable">-H</span> <span class="token string">"Authorization: Bearer <span class="token variable">$TOKEN</span>"</span> <span class="token punctuation">\</span>
+  <span class="token parameter variable">-F</span> <span class="token assign-left variable">file</span><span class="token operator">=</span>@VPN_Guide.pdf <span class="token parameter variable">-F</span> <span class="token assign-left variable">version</span><span class="token operator">=</span><span class="token number">3.3</span> <span class="token parameter variable">-F</span> <span class="token assign-left variable">owner_team</span><span class="token operator">=</span>NetworkOps <span class="token punctuation">\</span>
+  <span class="token parameter variable">-F</span> <span class="token assign-left variable">allowed_groups</span><span class="token operator">=</span>all-employees <span class="token parameter variable">-F</span> <span class="token assign-left variable">valid_until</span><span class="token operator">=</span><span class="token number">2027</span>-06-30 <span class="token parameter variable">-F</span> <span class="token assign-left variable">review_by</span><span class="token operator">=</span><span class="token number">2027</span>-03-31
+</code></pre><p><strong>Or directly</strong> to Blob Storage with metadata keys <code>version</code>, <code>owner_team</code>, <code>allowed_groups</code> (comma separated Entra group IDs, or <code>all-employees</code>), <code>valid_until</code>, <code>review_by</code>, <code>title</code>.</p>
+<ul>
+<li>The <strong>document ID is the file name</strong> (<code>VPN_Guide.pdf</code> becomes <code>vpn-guide</code>). To publish a new version, upload a file with the <strong>same name</strong>; Blob versioning keeps the old one.</li>
+<li>Supported: PDF, DOCX, TXT, Markdown.</li>
+<li>Restricted content: set <code>allowed_groups</code> to the group object IDs that may see it. The answer cache is keyed by group so restricted answers never leak.</li>
+</ul>
+<hr>
+<h2 id="11-api-reference">11. API reference </h2>
+<table>
+<thead>
+<tr>
+<th>Method and path</th>
+<th>Who</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /health</code></td>
+<td>anyone</td>
+<td>liveness/readiness</td>
+</tr>
+<tr>
+<td><code>POST /api/chat</code></td>
+<td>signed-in employee</td>
+<td><code>{question, session_id?}</code> returns <code>{answer, sources, trace, trace_id, session_id, escalated, ticket_id, evidence_source, confidence, cached}</code></td>
+</tr>
+<tr>
+<td><code>POST /api/feedback</code></td>
+<td>signed-in employee</td>
+<td><code>{trace_id, session_id, rating: "up"|"down", comment?}</code></td>
+</tr>
+<tr>
+<td><code>POST /api/admin/documents</code></td>
+<td>KB Editors</td>
+<td>multipart upload (see section 10)</td>
+</tr>
+</tbody>
+</table>
+<p>Interactive docs are at <code>/docs</code>. Disable them in production if the API is internet-facing.</p>
+<hr>
+<h2 id="12-configuration-reference">12. Configuration reference </h2>
+<p>All settings are environment variables (<code>.env.example</code> lists every one). The most important:</p>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AOAI_SMALL_DEPLOYMENT</code> / <code>AOAI_LARGE_DEPLOYMENT</code></td>
+<td>gpt-4o-mini / gpt-4o</td>
+<td>route/judge/rewrite vs. answer deployments</td>
+</tr>
+<tr>
+<td><code>AOAI_EMBEDDING_DEPLOYMENT</code>, <code>EMBEDDING_DIMENSIONS</code></td>
+<td>text-embedding-3-large, 1536</td>
+<td>embeddings (index vector size must match)</td>
+</tr>
+<tr>
+<td><code>SEARCH_INDEX_ALIAS</code> / <code>SEARCH_INDEX_NAME</code></td>
+<td>kb-live / kb-index-v1</td>
+<td>API queries the alias; ingestion writes the physical index</td>
+</tr>
+<tr>
+<td><code>RERANK_MIN</code>, <code>RERANK_STRONG</code></td>
+<td>1.5, 3.2</td>
+<td>reranker thresholds (scale 0-4); tune on your data</td>
+</tr>
+<tr>
+<td><code>SKIP_JUDGE_ON_STRONG</code></td>
+<td>false</td>
+<td>skip the LLM judge on very strong, non-time-sensitive hits (measure first)</td>
+</tr>
+<tr>
+<td><code>MAX_RETRIES</code></td>
+<td>2</td>
+<td>rewrite-and-retry limit before a ticket is created</td>
+</tr>
+<tr>
+<td><code>WEB_SEARCH_ENABLED</code>, <code>TRUSTED_WEB_DOMAINS</code></td>
+<td>true, Microsoft domains</td>
+<td>web fallback and domain allow-list</td>
+</tr>
+<tr>
+<td><code>ENABLE_GROUNDEDNESS_CHECK</code></td>
+<td>false</td>
+<td>post-answer check (preview API)</td>
+</tr>
+<tr>
+<td><code>SAFETY_FAIL_CLOSED</code></td>
+<td>true</td>
+<td>block requests when Prompt Shields is unreachable</td>
+</tr>
+<tr>
+<td><code>CACHE_TTL_SECONDS</code></td>
+<td>3600</td>
+<td>answer cache lifetime</td>
+</tr>
+<tr>
+<td><code>RETENTION_DAYS</code></td>
+<td>30</td>
+<td>soft-delete grace period</td>
+</tr>
+<tr>
+<td><code>NEAR_DUP_THRESHOLD</code></td>
+<td>0.95</td>
+<td>cosine similarity that triggers human review</td>
+</tr>
+<tr>
+<td><code>AUTH_DISABLED</code></td>
+<td>false</td>
+<td><strong>local development only</strong></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="13-operations-runbooks">13. Operations runbooks </h2>
+<h3 id="131-change-the-embedding-model-or-chunking-rules-blue-green">13.1 Change the embedding model or chunking rules (blue-green) </h3>
+<pre data-role="codeBlock" data-info="bash" class="language-bash bash"><code><span class="token comment"># set the NEW embedding deployment / CHUNKER_VERSION in the environment of this job first</span>
+python <span class="token parameter variable">-m</span> ingestion.reindex --new-index kb-index-v2           <span class="token comment"># builds beside the live index</span>
+<span class="token assign-left variable">SEARCH_INDEX_ALIAS</span><span class="token operator">=</span>kb-index-v2 python <span class="token parameter variable">-m</span> evals.run_evals       <span class="token comment"># compare with v1</span>
+python <span class="token parameter variable">-m</span> ingestion.reindex --new-index kb-index-v2 <span class="token parameter variable">--swap</span>     <span class="token comment"># switches alias and updates ledger</span>
+<span class="token comment"># then set SEARCH_INDEX_NAME=kb-index-v2 on the Function App; delete kb-index-v1 after a few days</span>
+</code></pre><p>Pause uploads while the rebuild runs, or re-run it afterwards to pick up changes.</p>
+<h3 id="132-a-wrong-file-was-uploaded">13.2 A wrong file was uploaded </h3>
+<p>Soft delete makes this reversible: re-upload the correct file (same name). The previous chunks are re-added from the embedding cache, and the bad ones are retired. After 30 days retired chunks are physically deleted.</p>
+<h3 id="133-failed-ingestion">13.3 Failed ingestion </h3>
+<p>Messages that fail 5 times go to the Service Bus <strong>dead-letter queue</strong> (<code>kb-ingest/$deadletterqueue</code>). Fix the cause (corrupt file, quota), then resubmit from the portal or by re-uploading the file.</p>
+<h3 id="134-near-duplicate-and-duplicate-file-review">13.4 Near-duplicate and duplicate-file review </h3>
+<p>Items are in the Cosmos container <code>review_queue</code> with <code>status = needs_review</code>. A human decides which chunk is canonical and sets the other document's content to <code>superseded</code> (re-upload or delete the blob).</p>
+<h3 id="135-useful-queries">13.5 Useful queries </h3>
+<p>Cosmos DB (Data Explorer, container <code>traces</code>):</p>
+<pre data-role="codeBlock" data-info="sql" class="language-sql sql"><code><span class="token comment">-- escalation rate by day</span>
+<span class="token keyword keyword-SELECT">SELECT</span> SUBSTRING<span class="token punctuation">(</span>c<span class="token punctuation">.</span>ts<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span> <span class="token keyword keyword-AS">AS</span> <span class="token keyword keyword-day">day</span><span class="token punctuation">,</span> <span class="token function">COUNT</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">)</span> <span class="token keyword keyword-AS">AS</span> total<span class="token punctuation">,</span> <span class="token function">SUM</span><span class="token punctuation">(</span>c<span class="token punctuation">.</span>escalated ? <span class="token number">1</span> : <span class="token number">0</span><span class="token punctuation">)</span> <span class="token keyword keyword-AS">AS</span> escalated
+<span class="token keyword keyword-FROM">FROM</span> c <span class="token keyword keyword-WHERE">WHERE</span> c<span class="token punctuation">.</span><span class="token keyword keyword-type">type</span> <span class="token operator">=</span> <span class="token string">'trace'</span> <span class="token keyword keyword-GROUP">GROUP</span> <span class="token keyword keyword-BY">BY</span> SUBSTRING<span class="token punctuation">(</span>c<span class="token punctuation">.</span>ts<span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">10</span><span class="token punctuation">)</span>
+
+<span class="token comment">-- questions that needed the web or a ticket (knowledge gaps to fill)</span>
+<span class="token keyword keyword-SELECT">SELECT</span> c<span class="token punctuation">.</span>standalone_question<span class="token punctuation">,</span> c<span class="token punctuation">.</span>evidence_source<span class="token punctuation">,</span> c<span class="token punctuation">.</span>escalated <span class="token keyword keyword-FROM">FROM</span> c
+<span class="token keyword keyword-WHERE">WHERE</span> c<span class="token punctuation">.</span><span class="token keyword keyword-type">type</span> <span class="token operator">=</span> <span class="token string">'trace'</span> <span class="token operator">AND</span> <span class="token punctuation">(</span>c<span class="token punctuation">.</span>evidence_source <span class="token operator">!=</span> <span class="token string">'private'</span> <span class="token operator">OR</span> c<span class="token punctuation">.</span>escalated <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">)</span>
+
+<span class="token comment">-- thumbs-down feedback</span>
+<span class="token keyword keyword-SELECT">SELECT</span> <span class="token operator">*</span> <span class="token keyword keyword-FROM">FROM</span> c <span class="token keyword keyword-WHERE">WHERE</span> c<span class="token punctuation">.</span><span class="token keyword keyword-type">type</span> <span class="token operator">=</span> <span class="token string">'feedback'</span> <span class="token operator">AND</span> c<span class="token punctuation">.</span>rating <span class="token operator">=</span> <span class="token string">'down'</span>
+</code></pre><p>Log Analytics (ingestion): <code>traces | where message has "ingest result" or message has "nightly maintenance"</code>. Alert on <code>REVIEW DUE</code>, dead-letter queue depth &gt; 0, p95 <code>/api/chat</code> latency, and 5xx rate.</p>
+<hr>
+<h2 id="14-security-model">14. Security model </h2>
+<ul>
+<li><strong>Identity:</strong> managed identities everywhere (OpenAI, Search, Cosmos, Storage, Service Bus, Content Safety, Document Intelligence all have <code>disableLocalAuth</code>/key access off). The API and ingestion app have separate identities.</li>
+<li><strong>Document-level security:</strong> every chunk stores <code>allowed_groups</code>; every search adds a filter built from the validated token's groups (group names are sanitised against OData injection).</li>
+<li><strong>Prompt injection:</strong> Prompt Shields on the question and on retrieved text; the judge and generator prompts treat evidence as data; the bot never reveals secrets; retrieved text cannot trigger actions.</li>
+<li><strong>Privacy:</strong> audit traces mask emails and IPs and hash user IDs; traces expire after 90 days; only generic scrubbed queries go to the web.</li>
+<li><strong>Failure behaviour:</strong> judge failure means WEAK; safety outage means blocked (configurable); web failure means rewrite then ticket.</li>
+</ul>
+<hr>
+<h2 id="15-cost-controls">15. Cost controls </h2>
+<p>Small model for the many cheap judgments, large model only to write the final answer; answer cache for repeated questions; embedding cache and incremental ingestion; rate limits at API Management; Cosmos serverless; Container Apps scale rules. Track cost per question in Application Insights by logging token usage (extend <code>llm.py</code>).</p>
+<hr>
+<h2 id="16-testing-evaluation-cicd">16. Testing, evaluation, CI/CD </h2>
+<ul>
+<li><code>pytest -q</code>: chunking rules, hashing, incremental diff, and the whole agent graph (private answer, web fallback, retries then ticket, rubric downgrade, untrusted web domain, low-confidence caution, greetings, prompt attacks, judge failure).</li>
+<li><code>python -m evals.run_evals</code>: golden-set routing accuracy plus LLM-as-judge scores; exits non-zero below thresholds (<code>routing 0.85</code>, <code>groundedness 0.90</code>, <code>relevance 0.85</code>). Replace <code>evals/golden_set.jsonl</code> with 100-200 real questions, including ones that <strong>should</strong> end in "I don't know". Calibrate the judge against ~100 answers labelled by two IT staff (aim for about 85% agreement).</li>
+<li>GitHub Actions: tests and Bicep validation on every PR; build in ACR and roll out a new Container Apps revision on <code>main</code> (OIDC login, no stored secrets). Use revisions and traffic splitting for canary releases and fast rollback.</li>
+</ul>
+<hr>
+<h2 id="17-known-limitations-and-what-to-verify-first">17. Known limitations and what to verify first </h2>
+<ol>
+<li><strong>Not yet run on live Azure.</strong> Start in a dev subscription. SDKs move quickly: validated here against <code>openai</code> 3.24, <code>azure-search-documents</code> 12.0, <code>azure-ai-projects</code> 2.8, <code>azure-ai-agents</code> 1.1, <code>langgraph</code> 1.2, but <code>requirements.txt</code> uses minimum versions. After your first green run, pin exact versions (<code>pip freeze</code>).</li>
+<li><strong>Web agent code (<code>app/retrieval/web.py</code>)</strong> follows the Foundry Agent Service pattern for Grounding with Bing. Verify method names against the SDK version you pin. No domain restriction is available through this tool, so the code enforces <code>TRUSTED_WEB_DOMAINS</code> on citations after the fact.</li>
+<li><strong>Durable Functions</strong> were not used. The same safety is achieved with Service Bus sessions (ordering), 5 delivery attempts with a dead-letter queue, and an idempotent pipeline. If you later need long multi-step orchestration, wrap the <code>ingest_document</code> steps in activities.</li>
+<li><strong>Groundedness detection</strong> is a preview API with regional limits; it is off by default and fails soft (marks the check unavailable).</li>
+<li><strong>Document Intelligence Markdown:</strong> the code assumes page headers/footers/numbers are emitted as HTML comments and tables as HTML <code>&lt;table&gt;</code>. Run a few real PDFs and inspect the chunks.</li>
+<li><strong>Reranker thresholds</strong> (<code>RERANK_MIN</code>, <code>RERANK_STRONG</code>) are starting points; tune against the golden set.</li>
+<li><strong>Groups overage:</strong> users in more than 200 groups get no <code>groups</code> claim; they only see <code>all-employees</code> content until you use group filtering or app roles (a Graph lookup would be the alternative).</li>
+<li><strong>Service Bus lock:</strong> the maximum lock duration is 5 minutes. Very large PDFs that take longer need lock renewal tuning or a Durable/async design.</li>
+<li><strong>tiktoken</strong> downloads its vocabulary on first use. In a network-restricted Function App, pre-bundle it (<code>TIKTOKEN_CACHE_DIR</code>); otherwise token counts fall back to an approximation (chunk sizes still work).</li>
+<li><strong>Redis</strong> uses an access key held in Key Vault. Move to Entra authentication (Azure Managed Redis) to remove it.</li>
+<li><strong>Cached answers can be up to <code>CACHE_TTL_SECONDS</code> stale</strong> after a document update.</li>
+<li><strong>Search paging:</strong> maintenance jobs read through all chunks; beyond about 100,000 chunks, page by <code>doc_id</code> filter.</li>
+<li><strong>Not in the Bicep:</strong> Front Door/WAF, API Management, Static Web Apps, private endpoints, Foundry project and Bing resource, Event Grid subscription, alerts. Role assignments are resource-group scoped for brevity.</li>
+<li><strong>Model names and regional availability change.</strong> Verify before deploying.</li>
+</ol>
+<hr>
+<h2 id="18-troubleshooting">18. Troubleshooting </h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Likely cause</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>401 on every call</td>
+<td><code>ENTRA_API_AUDIENCE</code> does not match the token's <code>aud</code>, or token version mismatch (set <code>accessTokenAcceptedVersion</code> = 2)</td>
+</tr>
+<tr>
+<td>Always "safety check unavailable"</td>
+<td><code>CONTENT_SAFETY_ENDPOINT</code> empty or identity lacks <em>Cognitive Services User</em>; for local dev set <code>SAFETY_FAIL_CLOSED=false</code></td>
+</tr>
+<tr>
+<td>Search returns nothing</td>
+<td>index not bootstrapped, alias missing, documents not ingested, or caller's groups do not match <code>allowed_groups</code></td>
+</tr>
+<tr>
+<td>Everything escalates</td>
+<td>judge too strict or reranker thresholds wrong: inspect the <code>grade_private</code> trace entries</td>
+</tr>
+<tr>
+<td>Web fallback never succeeds</td>
+<td>Foundry settings missing, identity lacks <em>Azure AI User</em>, or citations are not on <code>TRUSTED_WEB_DOMAINS</code></td>
+</tr>
+<tr>
+<td>Upload accepted but nothing indexed</td>
+<td>Event Grid subscription missing, Function not published, check the dead-letter queue</td>
+</tr>
+<tr>
+<td>Cosmos 403</td>
+<td>the Cosmos <em>data-plane</em> role assignment is missing for the identity (it is separate from Azure RBAC)</td>
+</tr>
+<tr>
+<td>Index create fails on dimensions</td>
+<td><code>EMBEDDING_DIMENSIONS</code> changed after the index was created: use the blue-green re-index</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="19-roadmap">19. Roadmap </h2>
+<p>Pilot with ~100 IT staff for 4 weeks, then one or two departments with feedback buttons and cost dashboards, then all 3,000 employees. Success measures: fewer repeat tickets, share of answers with sources, a healthy non-zero "I don't know" rate, p95 latency, and cost per question. Review unanswered questions monthly and give every document an owner and a review date.</p>
+
+      </div>
+      
+      
+    
+    
+    <script type="module">
+// TODO: If ZenUML gets integrated into mermaid in the future,
+//      we can remove the following lines.
+
+
+var MERMAID_CONFIG = ({"startOnLoad":false});
+if (typeof MERMAID_CONFIG !== 'undefined') {
+  MERMAID_CONFIG.startOnLoad = false
+  MERMAID_CONFIG.cloneCssStyles = false
+  MERMAID_CONFIG.theme = "default"
+}
+
+mermaid.initialize(MERMAID_CONFIG || {})
+if (typeof(window['Reveal']) !== 'undefined') {
+  function mermaidRevealHelper(event) {
+    var currentSlide = event.currentSlide
+    var diagrams = currentSlide.querySelectorAll('div.mermaid')
+    for (var i = 0; i < diagrams.length; i++) {
+      var diagram = diagrams[i]
+      if (!diagram.hasAttribute('data-processed')) {
+        mermaid.init(null, diagram, ()=> {
+          Reveal.slide(event.indexh, event.indexv)
+        })
+      }
+    }
+  }
+  Reveal.addEventListener('slidetransitionend', mermaidRevealHelper)
+  Reveal.addEventListener('ready', mermaidRevealHelper)
+  await mermaid.run({
+    nodes: document.querySelectorAll('div.mermaid')
+  })
+} else {
+  await mermaid.run({
+    nodes: document.querySelectorAll('div.mermaid')
+  })
+}
+</script>
+    
+    
+    
+  <div class="mermaidTooltip" style="opacity: 0; position: absolute; text-align: center; max-width: 200px; padding: 2px; font-size: 12px; background: rgb(255, 255, 222); border: 1px solid rgb(51, 51, 51); border-radius: 2px; pointer-events: none; z-index: 100;"></div></body></html>
