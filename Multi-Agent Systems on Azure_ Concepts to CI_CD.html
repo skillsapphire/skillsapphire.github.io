@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Multi-Agent Systems on Azure: Concepts to CI/CD</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#18202f;--muted:#5a6578;--accent:#0f6cbd;--accent-soft:#e6f1fb;--border:#e1e6ef;--code:#0f1724;--codefg:#e6edf3;--ok:#1a7f4b;--warn:#a15c00;--warn-soft:#fff4e0;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e131c;--card:#161d29;--text:#e8ecf3;--muted:#9aa5b8;--accent:#5aa9ec;--accent-soft:#16283b;--border:#26303f;--code:#0a0f17;--codefg:#dbe4ee;--ok:#4cc58a;--warn:#f0b050;--warn-soft:#2a2112}}
+:root[data-theme="dark"]{--bg:#0e131c;--card:#161d29;--text:#e8ecf3;--muted:#9aa5b8;--accent:#5aa9ec;--accent-soft:#16283b;--border:#26303f;--code:#0a0f17;--codefg:#dbe4ee;--ok:#4cc58a;--warn:#f0b050;--warn-soft:#2a2112}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:980px;margin:0 auto;padding:0 18px 56px}
+header{padding:44px 0 26px}
+.tag{display:inline-block;background:var(--accent-soft);color:var(--accent);font-size:13px;font-weight:600;padding:4px 12px;border-radius:99px}
+h1{font-size:clamp(1.7rem,5vw,2.6rem);line-height:1.2;margin:14px 0 10px}
+.lead{color:var(--muted);max-width:680px;margin:0;font-size:1.05rem}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--border);margin:0 -18px 8px;padding:10px 18px;display:flex;gap:8px;overflow-x:auto;white-space:nowrap}
+nav a{color:var(--muted);text-decoration:none;font-size:14px;padding:5px 12px;border-radius:99px;border:1px solid var(--border);background:var(--card)}
+nav a:hover{color:var(--accent);border-color:var(--accent)}
+section{margin-top:40px}
+h2{font-size:1.45rem;margin:0 0 6px}
+.sub{color:var(--muted);margin:0 0 18px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px}
+.card h3{margin:0 0 4px;font-size:1rem}
+.card p{margin:0;color:var(--muted);font-size:.93rem}
+.card .k{font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.05em}
+pre{background:var(--code);color:var(--codefg);border-radius:12px;padding:16px 18px;overflow-x:auto;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;margin:0;max-width:100%}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.88em;background:var(--accent-soft);padding:1px 6px;border-radius:5px}
+pre code{background:none;padding:0;font-size:inherit}
+.flow{display:grid;gap:12px;grid-template-columns:repeat(4,1fr);counter-reset:s}
+.step{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;position:relative}
+.step::before{counter-increment:s;content:counter(s);position:absolute;top:-12px;left:14px;background:var(--accent);color:#fff;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700}
+.step h3{margin:6px 0 8px;font-size:1rem}
+.step ul{margin:0;padding-left:18px;color:var(--muted);font-size:.9rem}
+.step.gate{border-color:var(--warn);background:var(--warn-soft)}
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:.93rem}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:top}
+th{color:var(--muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.04em}
+tr:last-child td{border-bottom:0}
+ol.check{padding-left:0;list-style:none;counter-reset:c;margin:0;display:grid;gap:10px}
+ol.check li{counter-increment:c;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 16px 12px 52px;position:relative}
+ol.check li::before{content:counter(c);position:absolute;left:14px;top:12px;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-weight:700;font-size:13px;display:grid;place-items:center}
+.note{border-left:4px solid var(--warn);background:var(--warn-soft);padding:12px 16px;border-radius:0 10px 10px 0;margin:8px 0}
+.note b{color:var(--warn)}
+.part{margin-top:44px;padding-top:6px}
+.card ul{margin:8px 0 0;padding-left:18px;color:var(--muted);font-size:.93rem}
+.card ul li{margin:4px 0}
+.layers{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+.layer{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.arrow{text-align:center;color:var(--muted);line-height:1.3}
+.chip{border:1px solid var(--border);background:var(--bg);padding:6px 14px;border-radius:10px;font-size:.88rem}
+.chip.a{background:var(--accent-soft);border-color:var(--accent)}
+.chip.warn{background:var(--warn-soft);border-color:var(--warn)}
+footer{margin-top:48px;color:var(--muted);font-size:.85rem;text-align:center}
+@media (max-width:860px){.flow{grid-template-columns:1fr 1fr}}
+@media (max-width:540px){.flow{grid-template-columns:1fr}header{padding-top:28px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <span class="tag">Azure · LangGraph · CI/CD</span>
+  <h1>Multi-agent systems on Azure: from concepts to CI/CD</h1>
+  <p class="lead">Part 1 explains security, guardrails, responsible AI, RAGAS, circuit breakers, duplicates, deployment, tracing and cost in plain language. Part 2 deploys a LangGraph app on Azure Container Apps with Bicep and an Azure DevOps pipeline.</p>
+</header>
+
+<nav><a href="#security">Security</a><a href="#guardrails">Guardrails</a><a href="#responsible">Responsible AI</a><a href="#ragas">RAGAS</a><a href="#circuit">Circuit breaker</a><a href="#duplicates">Duplicates</a><a href="#single">One agent?</a><a href="#architecture">Deploy</a><a href="#tracing">Tracing</a><a href="#cost">Cost</a><a href="#overview">LangGraph</a><a href="#flow">Pipeline</a><a href="#setup">Setup</a></nav>
+
+<div class="part"><span class="tag">Part 1</span><h2 style="margin-top:10px">Concepts: how to build it safely</h2></div>
+
+<section id="analogy">
+  <div class="card"><span class="k">The analogy</span><h3>Think of a restaurant</h3><p>The <b>orchestrator</b> is the manager who takes your order. The <b>agents</b> are specialists: chef, cashier, delivery person. The manager talks to the customer, and the specialists talk to the manager. Each topic below maps to something that can go wrong in that restaurant.</p></div>
+</section>
+
+<section id="security">
+  <h2>1. Security: locking the doors</h2>
+  <p class="sub">Treat one agent's output as untrusted input to the next, so a tricked agent can't trick all the others.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Risk</th><th>Azure fix</th><th>Restaurant</th></tr></thead>
+    <tbody>
+      <tr><td>Who are you?</td><td>Entra ID + Managed Identity, no passwords in code</td><td>ID badges for staff</td></tr>
+      <tr><td>Secrets leaking</td><td>Azure Key Vault</td><td>Keys in a safe</td></tr>
+      <tr><td>Agents can do too much</td><td>RBAC, least privilege per agent</td><td>Cashier can't enter the kitchen</td></tr>
+      <tr><td>Public access</td><td>Private Endpoints + VNet, API Management in front</td><td>One guarded front door</td></tr>
+      <tr><td>Seeing others' data</td><td>Security trimming in AI Search (filter by user groups)</td><td>You see only your order</td></tr>
+      <tr><td>Prompt injection</td><td>Prompt Shields (AI Content Safety)</td><td>Ignore a note saying "free food for all"</td></tr>
+      <tr><td>Threat monitoring</td><td>Defender for Cloud</td><td>Security cameras</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="guardrails">
+  <h2>2. Guardrails: safety rails on a staircase</h2>
+  <p class="sub">Add checks at four points.</p>
+  <div class="grid">
+    <div class="card"><span class="k">Input</span><h3>Block bad requests</h3><p>Jailbreaks, hate, self-harm and PII, using Content Safety and Prompt Shields.</p></div>
+    <div class="card"><span class="k">Tools</span><h3>Approved tools only</h3><p>Risky actions (refund, delete, send email) need human approval.</p></div>
+    <div class="card"><span class="k">Output</span><h3>Check the answer</h3><p>Harmful content, leaked personal data, and groundedness (is it backed by documents?).</p></div>
+    <div class="card"><span class="k">Budget</span><h3>Set limits</h3><p>Max steps, tokens and time, so an agent can't loop forever and burn money.</p></div>
+  </div>
+</section>
+
+<section id="responsible">
+  <h2>3. Responsible AI</h2>
+  <p class="sub">Microsoft's principles: fairness, reliability and safety, privacy and security, inclusiveness, transparency, accountability.</p>
+  <div class="card"><ul>
+    <li>Tell users they're talking to AI, and show sources or citations.</li>
+    <li>Keep a human in the loop for high-impact decisions.</li>
+    <li>Test for bias with different kinds of users.</li>
+    <li>Mask or avoid personal data (PII).</li>
+    <li>Log decisions so someone can be held accountable.</li>
+    <li>Red-team your own system before others do.</li>
+  </ul></div>
+</section>
+
+<section id="ragas">
+  <h2>4. RAGAS: the exam for your AI</h2>
+  <p class="sub">An automatic grader, like a teacher checking answers.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Score</th><th>Question it answers</th></tr></thead>
+    <tbody>
+      <tr><td>Faithfulness</td><td>Did the answer stick to the retrieved documents, or make things up?</td></tr>
+      <tr><td>Answer relevancy</td><td>Did it actually answer the question?</td></tr>
+      <tr><td>Context precision</td><td>Were the retrieved documents the right ones?</td></tr>
+      <tr><td>Context recall</td><td>Did it find all the needed documents?</td></tr>
+      <tr><td>Agent metrics</td><td>Tool call accuracy, agent goal accuracy, topic adherence</td></tr>
+    </tbody>
+  </table></div>
+  <div class="card" style="margin-top:14px"><ul>
+    <li>Build a <b>golden dataset</b> of 50 to 200 questions with correct answers.</li>
+    <li>Run RAGAS in CI/CD and <b>block deployment</b> if scores drop below a threshold.</li>
+    <li>In production, evaluate a sample (about 5%) of real conversations to save cost.</li>
+    <li>Evaluate each agent separately and the full system end to end. Azure AI Foundry's built-in evaluators can run alongside.</li>
+  </ul></div>
+</section>
+
+<section id="circuit">
+  <h2>5. Circuit breaker: Agent B isn't responding</h2>
+  <p class="sub">Like the fuse in your house: if something keeps failing, cut the connection so the whole house doesn't burn.</p>
+  <div class="flow">
+    <div class="step"><h3>Timeout</h3><ul><li>Don't wait forever (say 10 seconds)</li></ul></div>
+    <div class="step"><h3>Retry with backoff</h3><ul><li>1s, 2s, 4s plus jitter</li><li>Only 2 to 3 times</li></ul></div>
+    <div class="step"><h3>Circuit breaker</h3><ul><li><b>Closed:</b> calls go through</li><li><b>Open:</b> after ~5 failures, fail fast for 30s</li><li><b>Half-open:</b> one test call decides</li></ul></div>
+    <div class="step"><h3>Fallback</h3><ul><li>Cached answer, backup agent, or a clear "temporarily unavailable"</li></ul></div>
+    <div class="step"><h3>Bulkhead</h3><ul><li>Each agent gets limited resources so a slow one can't hog everything</li></ul></div>
+    <div class="step"><h3>Async messaging</h3><ul><li>Service Bus queues hold messages while B is down</li><li>Repeated failures go to the dead-letter queue</li></ul></div>
+  </div>
+  <p class="sub" style="margin-top:14px">Tools: Polly (.NET), <code>tenacity</code> or <code>pybreaker</code> (Python), API Management policies, Dapr resiliency on Container Apps.</p>
+</section>
+
+<section id="duplicates">
+  <h2>6. Avoiding duplicate data to the consumer</h2>
+  <p class="sub">Duplicates come from retries: A times out and retries, but B had already finished. Queues also deliver "at least once". The cure is to make everything <b>idempotent</b>: doing it twice has the same effect as once.</p>
+  <div class="card"><ul>
+    <li>Give every request a unique <b>idempotency key / correlation ID</b> at the start.</li>
+    <li>Turn on <b>Service Bus duplicate detection</b> (uses <code>MessageId</code> within a time window).</li>
+    <li>Each agent records "I already processed ID X" in Cosmos DB or Redis and returns the saved result on a repeat.</li>
+    <li><b>Only the orchestrator</b> talks to the consumer.</li>
+    <li>Use the <b>outbox pattern</b>: save the result and the "to send" message together, so nothing is sent twice or lost.</li>
+    <li>The consumer can also check the ID and ignore repeats.</li>
+  </ul></div>
+<pre style="margin-top:14px"><code>if cache.exists(request_id):
+    return cache.get(request_id)       # already done, don't repeat
+result = agent_b.process(data)
+cache.set(request_id, result, ttl=3600)
+return result</code></pre>
+</section>
+
+<section id="single">
+  <h2>7. What if I combine all agents into one?</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th></th><th>Single agent</th><th>Multi-agent</th></tr></thead>
+    <tbody>
+      <tr><td>Simplicity</td><td>Easy to build and debug</td><td>More complex</td></tr>
+      <tr><td>Cost and speed</td><td>Fewer model calls, less delay</td><td>More hops, more tokens</td></tr>
+      <tr><td>Many tools</td><td>Confused by a huge prompt and 30+ tools</td><td>Each agent has a focused job</td></tr>
+      <tr><td>Security</td><td>One agent holds all permissions</td><td>Least privilege per agent</td></tr>
+      <tr><td>Failure</td><td>Single point of failure</td><td>Failures can be isolated</td></tr>
+      <tr><td>Scaling</td><td>Scale everything together</td><td>Scale only the busy agent</td></tr>
+      <tr><td>Team work</td><td>One codebase everyone edits</td><td>Teams own separate agents</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>Advice:</b> start with one agent plus good tools. Split only when you see real problems: the prompt gets too long, tool selection goes wrong, or you need different permissions or scaling.</div>
+</section>
+
+<section id="architecture">
+  <h2>8. Best way to deploy on Azure</h2>
+  <p class="sub">A request travels top to bottom. Logging and tracing cover every layer.</p>
+  <div class="layers">
+    <div class="layer"><span class="chip">User / consumer</span></div><div class="arrow">↓</div>
+    <div class="layer"><span class="chip">API Management: auth, rate and token limits</span></div><div class="arrow">↓</div>
+    <div class="layer"><span class="chip warn">Guardrails: Content Safety, Prompt Shields</span></div><div class="arrow">↓</div>
+    <div class="layer"><span class="chip a">Orchestrator agent</span></div><div class="arrow">↓</div>
+    <div class="layer"><span class="chip">Service Bus: queues, dedupe, dead-letter</span></div><div class="arrow">↓</div>
+    <div class="layer"><span class="chip a">Agent A</span><span class="chip a">Agent B</span><span class="chip a">Agent C</span></div><div class="arrow">↓</div>
+    <div class="layer"><span class="chip">Azure OpenAI</span><span class="chip">AI Search</span><span class="chip">Cosmos DB</span><span class="chip">Key Vault</span></div><div class="arrow">↕</div>
+    <div class="layer"><span class="chip">Application Insights · Log Analytics · Defender</span></div>
+  </div>
+  <div class="grid" style="margin-top:16px">
+    <div class="card"><span class="k">Default choice</span><h3>Container Apps</h3><p>Serverless containers, scale to zero, revisions and Dapr built in.</p></div>
+    <div class="card"><span class="k">Managed</span><h3>Foundry Agent Service</h3><p>Less infrastructure work if you want it managed.</p></div>
+    <div class="card"><span class="k">Large scale</span><h3>AKS</h3><p>Only if you need deep control and have the team for it.</p></div>
+    <div class="card"><span class="k">Small</span><h3>Azure Functions</h3><p>Good for small, event-driven agents.</p></div>
+  </div>
+  <div class="card" style="margin-top:14px"><ul>
+    <li>Infrastructure as Code (Bicep or Terraform), never click-built.</li>
+    <li>CI/CD that builds, tests, runs evals, then deploys.</li>
+    <li>Separate dev, test and prod, with blue-green or canary releases (10% of traffic first).</li>
+    <li>Multiple regions or availability zones for production. Frameworks: Microsoft Agent Framework, LangGraph and others, so check Microsoft's docs for the current recommendation.</li>
+  </ul></div>
+</section>
+
+<section id="tracing">
+  <h2>9. Traceability: CCTV for your AI</h2>
+  <p class="sub">You must be able to answer "why did the AI say this to this user?"</p>
+  <div class="card"><ul>
+    <li>Create a <b>trace ID</b> per user request and pass it through every agent.</li>
+    <li>Use <b>OpenTelemetry</b> (it has GenAI conventions) and send data to Application Insights. Foundry also has built-in tracing.</li>
+    <li>Record per step: agent, tool, prompt, response, token count, latency, model version, errors.</li>
+    <li>View the whole journey as a timeline in the Application Insights transaction view.</li>
+    <li><b>Redact PII</b> before logging and set retention periods. Keep audit logs of who approved what.</li>
+    <li>Alert on error rate, latency, cost spikes and guardrail triggers.</li>
+  </ul></div>
+</section>
+
+<section id="cost">
+  <h2>10. Best cost approach</h2>
+  <ol class="check">
+    <li><b>Right-size the model.</b> Small cheap models for routing and classification, big ones only for hard reasoning. This is the biggest saving.</li>
+    <li><b>Fewer agent hops.</b> Every extra agent means extra tokens.</li>
+    <li><b>Short prompts.</b> Trim history, summarize old turns, send only relevant chunks.</li>
+    <li><b>Caching.</b> Semantic caching with Redis, plus prompt caching.</li>
+    <li><b>Limits.</b> Max tokens, max steps, and API Management token-rate limits per user or agent.</li>
+    <li><b>Pricing mode.</b> Pay-as-you-go for unpredictable traffic, provisioned throughput (PTU) for steady high traffic, Batch API for non-urgent jobs.</li>
+    <li><b>Scale to zero</b> with Container Apps. Use Spot nodes on AKS for non-critical work.</li>
+    <li><b>Visibility.</b> Tag resources per agent or team, set budgets and alerts, track cost per request.</li>
+    <li><b>Sample your evaluations</b> instead of evaluating everything.</li>
+  </ol>
+</section>
+
+<section id="summary">
+  <h2>Quick summary</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Topic</th><th>One-line answer</th></tr></thead>
+    <tbody>
+      <tr><td>Security</td><td>Managed identity, least privilege, private network, Key Vault, API Management</td></tr>
+      <tr><td>Guardrails</td><td>Check input, tools, output and budgets</td></tr>
+      <tr><td>Responsible AI</td><td>Fair, safe, private, transparent, with human oversight</td></tr>
+      <tr><td>RAGAS</td><td>Automated exam; block deployment if scores fall</td></tr>
+      <tr><td>Circuit breaker</td><td>Timeout, retry, open circuit, fallback, dead-letter queue</td></tr>
+      <tr><td>Duplicates</td><td>Idempotency keys, Service Bus dedupe, only the orchestrator replies</td></tr>
+      <tr><td>One agent?</td><td>Great to start; split only when needed</td></tr>
+      <tr><td>Deploy</td><td>Container Apps, Service Bus, Cosmos, AI Search, IaC, CI/CD</td></tr>
+      <tr><td>Traceability</td><td>Trace ID, OpenTelemetry, Application Insights</td></tr>
+      <tr><td>Cost</td><td>Small models, short prompts, caching, limits, budgets</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<div class="part"><span class="tag">Part 2</span><h2 style="margin-top:10px">Putting it into practice: LangGraph on Azure with CI/CD</h2></div>
+
+<section id="overview">
+  <h2>What gets deployed</h2>
+  <p class="sub">Each piece has one job, and no passwords are stored in code.</p>
+  <div class="grid">
+    <div class="card"><span class="k">Hosting</span><h3>Azure Container Apps</h3><p>Runs the container, scales 1 to 5 replicas on HTTP load, uses health probes before shifting traffic.</p></div>
+    <div class="card"><span class="k">State</span><h3>Postgres checkpointer</h3><p>LangGraph saves each conversation by <code>thread_id</code>, so replicas share state and restarts lose nothing.</p></div>
+    <div class="card"><span class="k">Identity</span><h3>Managed identity</h3><p>Logs in to Azure OpenAI and pulls images from the registry without keys.</p></div>
+    <div class="card"><span class="k">Images</span><h3>Container Registry</h3><p>Each build is tagged with the commit SHA, so every release is traceable and rollback is easy.</p></div>
+    <div class="card"><span class="k">Infra</span><h3>Bicep</h3><p>Logs, App Insights, registry, identity, environment and app are all defined as code.</p></div>
+    <div class="card"><span class="k">Tracing</span><h3>Application Insights</h3><p>OpenTelemetry sends traces of every request and model call. A step limit stops runaway agent loops.</p></div>
+  </div>
+</section>
+
+<section id="structure">
+  <h2>Project structure</h2>
+  <p class="sub">Both pipelines reuse the same app, Dockerfile and Bicep file.</p>
+<pre><code>langgraph-azure/
+├── app/main.py                  # FastAPI + LangGraph (researcher → writer)
+├── Dockerfile
+├── requirements.txt
+├── infra/main.bicep             # all Azure resources
+├── azure-pipelines.yml          # Azure DevOps entry point
+├── templates/deploy-stage.yml   # reusable deploy stage
+└── .github/workflows/           # GitHub Actions alternative
+    ├── ci-cd.yml
+    └── deploy.yml</code></pre>
+</section>
+
+<section id="flow">
+  <h2>Pipeline flow</h2>
+  <p class="sub">Pull requests only run stage 1. Pushes to <code>main</code> run everything.</p>
+  <div class="flow">
+    <div class="step"><h3>Lint and test</h3><ul><li>Install dependencies</li><li><code>ruff</code> lint</li><li><code>pytest</code></li></ul></div>
+    <div class="step"><h3>Deploy staging</h3><ul><li>Bicep infrastructure</li><li>Build and push image</li><li>Roll out new revision</li><li>Smoke test <code>/health</code></li><li>RAGAS quality gate</li></ul></div>
+    <div class="step gate"><h3>Approval</h3><ul><li>A person approves on the <code>production</code> Environment</li></ul></div>
+    <div class="step"><h3>Deploy production</h3><ul><li>Same steps as staging</li><li>No eval gate (already passed)</li></ul></div>
+  </div>
+  <p class="sub" style="margin-top:16px">Container Apps only moves traffic to the new revision after it passes health probes, so deploys cause no downtime. Roll back by pointing traffic at the previous revision.</p>
+</section>
+
+<section id="yaml">
+  <h2>azure-pipelines.yml</h2>
+  <p class="sub">The entry point. The deploy steps live once in <code>templates/deploy-stage.yml</code>.</p>
+<pre><code>trigger:
+  branches:
+    include: [main]
+
+pr:
+  branches:
+    include: [main]
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+  - stage: Test
+    displayName: Lint and test
+    jobs:
+      - job: test
+        steps:
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: "3.12"
+          - script: pip install -r requirements.txt ruff pytest
+          - script: ruff check .
+          - script: pytest -q || [ $? -eq 5 ]   # 5 = no tests yet
+
+  - template: templates/deploy-stage.yml
+    parameters:
+      environment: staging
+      serviceConnection: sc-langgraph-staging
+      dependsOn: [Test]
+
+  - template: templates/deploy-stage.yml
+    parameters:
+      environment: production
+      serviceConnection: sc-langgraph-production
+      dependsOn: [Deploy_staging]</code></pre>
+  <h2 style="margin-top:28px">What the deploy template does</h2>
+  <p class="sub">Each step is an <code>AzureCLI@2</code> task that logs in through the service connection.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Step</th><th>What happens</th></tr></thead>
+    <tbody>
+      <tr><td>Deploy infrastructure</td><td>Runs <code>az deployment group create</code> with <code>infra/main.bicep</code>. Reuses the current image so redeploying infra never resets the app.</td></tr>
+      <tr><td>Build and push image</td><td>Finds the registry, builds with Docker, pushes <code>lg-agents:&lt;commit SHA&gt;</code>.</td></tr>
+      <tr><td>Roll out new revision</td><td><code>az containerapp update --image</code> creates the new revision.</td></tr>
+      <tr><td>Smoke test</td><td>Calls <code>/health</code> up to six times, 10 seconds apart. Fails the stage if it never answers.</td></tr>
+      <tr><td>Quality gate</td><td>Staging only. Runs <code>evals/run_ragas.py</code> against the live URL and fails below the faithfulness threshold.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="setup">
+  <h2>One-time setup in Azure DevOps</h2>
+  <p class="sub">Do these once before the first run.</p>
+  <ol class="check">
+    <li>Create two <b>Azure Resource Manager service connections</b>, <code>sc-langgraph-staging</code> and <code>sc-langgraph-production</code>, using workload identity federation. Give each Contributor on its resource group plus permission to create role assignments.</li>
+    <li>Create variable groups <code>langgraph-staging</code> and <code>langgraph-production</code> with <code>RESOURCE_GROUP</code>, <code>AOAI_ENDPOINT</code>, <code>AOAI_DEPLOYMENT</code> and a secret <code>DATABASE_URL</code> (better: link to Key Vault).</li>
+    <li>Under Pipelines → Environments, create <code>staging</code> and <code>production</code>. Add <b>Approvals and checks</b> on production.</li>
+    <li>Create the pipeline from <code>azure-pipelines.yml</code> and add it as build validation on the <code>main</code> branch policy.</li>
+    <li>Create Azure OpenAI and Postgres Flexible Server. After the first deploy, give the app's managed identity the <b>Cognitive Services OpenAI User</b> role on the OpenAI resource (the Bicep output <code>identityPrincipalId</code> has its ID).</li>
+    <li>Write <code>evals/run_ragas.py</code>: call the staging URL with your golden dataset and exit non-zero if scores fall below the threshold.</li>
+  </ol>
+</section>
+
+<section id="notes">
+  <h2>Things to know</h2>
+  <p class="sub">Honest caveats from building this starter.</p>
+  <div class="note"><b>Untested end to end.</b> The files haven't been run against a real subscription, so expect small fixes on the first run.</div>
+  <div class="grid" style="margin-top:14px">
+    <div class="card"><h3>First deploy may fail once</h3><p>The registry role assignment can take a moment to propagate. Re-run the pipeline.</p></div>
+    <div class="card"><h3>Secrets need mapping</h3><p>Azure DevOps doesn't pass secret variables to scripts automatically, so <code>DATABASE_URL</code> is mapped through <code>env:</code>.</p></div>
+    <div class="card"><h3>Use Key Vault in production</h3><p>The Bicep file stores the database URL as a Container Apps secret. Switch to a Key Vault reference for production.</p></div>
+    <div class="card"><h3>Add API Management</h3><p>Ingress is external for simplicity. For a hardened setup, make it internal and put API Management in front.</p></div>
+    <div class="card"><h3>Pin dependencies</h3><p><code>requirements.txt</code> is unpinned. Pin versions before production.</p></div>
+    <div class="card"><h3>Canary rollout</h3><p>Production uses single-revision mode. For a 10% canary, use multiple-revision mode with traffic weights.</p></div>
+  </div>
+</section>
+
+<footer>Multi-agent concepts · LangGraph on Azure Container Apps · Bicep · Azure DevOps</footer>
+</div>
+</body>
+</html>
