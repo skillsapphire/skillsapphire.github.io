@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Secure RAG and agent systems: a field guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500&family=Newsreader:wght@500;600&display=swap">
+<style>
+:root{--bg:#f2f5f7;--card:#fff;--ink:#14202b;--mute:#566574;--line:#d5dde4;--acc:#0b7a78;--accbg:#dff1ef;--pur:#4d3f8f;--purbg:#e8e4f8;--gray:#e6eaee;--code:#e9eef2}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f161c;--card:#17212a;--ink:#e6edf3;--mute:#9aabb9;--line:#2a3846;--acc:#4fd1c5;--accbg:#143b3a;--pur:#b9aef5;--purbg:#2d2757;--gray:#26323d;--code:#0c1218}}
+:root[data-theme="dark"]{--bg:#0f161c;--card:#17212a;--ink:#e6edf3;--mute:#9aabb9;--line:#2a3846;--acc:#4fd1c5;--accbg:#143b3a;--pur:#b9aef5;--purbg:#2d2757;--gray:#26323d;--code:#0c1218}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-behavior:smooth;scroll-padding-top:calc(env(safe-area-inset-top,0px) + 70px)}
+*,*:before,*:after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 1rem/1.7 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,h2,h3{font-family:Newsreader,Georgia,"Times New Roman",serif;font-weight:600;line-height:1.2;margin:0}
+h1{font-size:clamp(2rem,5vw,3.1rem);max-width:18ch}
+h2{font-size:1.9rem;margin:0 0 .6rem}
+h3{font-size:1.2rem;margin:1.6rem 0 .4rem}
+p{margin:.5rem 0;max-width:68ch}
+a{color:var(--acc)}
+.layout{display:grid;grid-template-columns:220px minmax(0,1fr);gap:48px;max-width:1120px;margin:0 auto;padding:0 20px}
+nav{position:sticky;top:20px;align-self:start;display:flex;flex-direction:column;gap:2px;padding-top:56px;font-size:.92rem}
+nav a{color:var(--mute);text-decoration:none;padding:.35rem .7rem;border-left:2px solid var(--line)}
+nav a:hover,nav a:focus-visible{color:var(--ink);border-color:var(--acc);outline:none}
+header{padding:56px 0 24px;border-bottom:1px solid var(--line);margin-bottom:8px}
+header p{color:var(--mute);font-size:1.1rem;margin-top:1rem}
+section{padding:40px 0;border-bottom:1px solid var(--line)}
+section:last-of-type{border:0}
+ul,ol{padding-left:1.25rem;margin:.5rem 0;max-width:70ch}
+li{margin:.3rem 0}
+code{font:400 .86em "IBM Plex Mono",ui-monospace,Menlo,monospace;background:var(--code);padding:.1em .35em;border-radius:4px}
+pre{background:var(--code);border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow-x:auto;margin:.8rem 0}
+pre code{background:none;padding:0;font-size:.82rem;line-height:1.55}
+.tw{overflow-x:auto;margin:.8rem 0;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:.92rem}
+th,td{text-align:left;padding:.6rem .8rem;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:500;background:var(--gray)}
+tr:last-child td{border-bottom:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin:1rem 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.card h3{margin:0 0 .3rem;font-size:1.08rem}
+.card p,.card ul{font-size:.93rem;margin:.3rem 0}
+.note{border-left:3px solid var(--acc);background:var(--accbg);padding:.7rem 1rem;margin:1rem 0;max-width:70ch;border-radius:0}
+.pat .d{display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--bg);border:1px dashed var(--line);border-radius:8px;padding:14px 8px;margin:.6rem 0;min-height:150px;justify-content:center}
+.row{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:6px}
+.n{padding:.35rem .7rem;border-radius:6px;font-size:.84rem;font-weight:500;border:1px solid transparent}
+.n.c{background:var(--purbg);color:var(--pur);border-color:var(--pur)}
+.n.w{background:var(--accbg);color:var(--acc);border-color:var(--acc)}
+.n.g{background:var(--gray);color:var(--ink);border-color:var(--mute)}
+.ar{color:var(--mute);font-size:.82rem}
+.pat .u{color:var(--mute);font-size:.88rem}
+.leg{display:flex;flex-wrap:wrap;gap:8px;margin:.6rem 0}
+footer{padding:28px 0 56px;color:var(--mute);font-size:.88rem}
+@media(max-width:900px){
+.layout{grid-template-columns:minmax(0,1fr);gap:0;padding:0 16px}
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;flex-direction:row;overflow-x:auto;white-space:nowrap;padding:8px 0;background:var(--bg);border-bottom:1px solid var(--line);margin:0 -16px;padding-left:16px}
+nav a{border:0;border-radius:999px;background:var(--card);border:1px solid var(--line)}
+header{padding-top:28px}
+h2{font-size:1.6rem}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav aria-label="Sections">
+<a href="#mcp">MCP servers</a>
+<a href="#ingest">Incremental ingestion</a>
+<a href="#security">Leaks and attacks</a>
+<a href="#acl">Access control</a>
+<a href="#guardrails">Guardrails</a>
+<a href="#agents">Multi-agent patterns</a>
+<a href="#eval">Evaluating RAG</a>
+</nav>
+<main>
+<header>
+<h1>Building secure, measurable RAG and agent systems</h1>
+<p>A single reference covering MCP servers, keeping documents fresh, protecting sensitive data, per-user access, guardrails, multi-agent designs, and evaluation with RAGAS and LLM judges.</p>
+</header>
+
+<section id="mcp">
+<h2>Why create MCP servers</h2>
+<p>A model on its own can only use its prompt and training data. An MCP (Model Context Protocol) server is the connector to something outside: files, a database, GitHub, Slack, or an internal API.</p>
+<h3>The problem it solves</h3>
+<p>Without a standard, 5 AI apps and 20 tools could mean up to 100 custom integrations. With MCP you wrap each tool once, and any compatible client (Claude, an IDE, your own agent) can use it. Think USB-C instead of a drawer of proprietary cables.</p>
+<div class="grid">
+<div class="card"><h3>Your systems aren't covered</h3><p>Internal databases and company APIs have no ready-made server, so you build one.</p></div>
+<div class="card"><h3>Control and safety</h3><p>Expose read-only queries instead of raw database access, add authentication, validate inputs, log everything.</p></div>
+<div class="card"><h3>Cleaner interfaces</h3><p>A few well-described tools like <code>search_orders</code> work better for a model than a sprawling REST API.</p></div>
+<div class="card"><h3>Reuse</h3><p>Build once, use from many clients. Retrieval and actions live in the server, not in every prompt.</p></div>
+</div>
+<p>A server offers three things: <strong>tools</strong> (actions the model can invoke), <strong>resources</strong> (data it can read), and <strong>prompts</strong> (reusable workflow templates).</p>
+<div class="note">Skip building one if a ready-made server exists, or if a single app with one integration is simpler calling the API directly. MCP pays off with several tools, several clients, or a need for a controlled boundary.</div>
+</section>
+
+<section id="ingest">
+<h2>Re-ingesting a revised document efficiently</h2>
+<p>You ingested 100 docx files and one revision changed three lines. Re-embed only what changed.</p>
+<ol>
+<li><strong>Stable identity.</strong> Store <code>doc_id</code>, <code>chunk_index</code>, <code>chunk_hash</code> (SHA-256 of the text), and a version or timestamp on each chunk. Keep a document-level hash in a small registry.</li>
+<li><strong>Detect change.</strong> Hash the new file. If it matches the registry, skip it. Otherwise parse, chunk, and hash each chunk.</li>
+<li><strong>Diff by chunk hash.</strong> Unchanged hash: keep. New hash: embed and insert. Old hash missing from the new version: delete. Three edited lines usually means one to three chunks re-embedded.</li>
+<li><strong>Update safely.</strong> Upsert and delete by <code>doc_id</code> plus hash, ideally atomically or with a version flag, so queries never see a half-updated document.</li>
+</ol>
+<div class="note"><strong>The catch:</strong> with fixed-size chunking, an edit shifts every later chunk and all their hashes change. Chunk on structure (headings, paragraphs, sections), hash normalized text, and derive chunk IDs from content rather than position.</div>
+<p>Simplest fallback: delete all chunks where <code>doc_id = X</code> and re-ingest that one file. LlamaIndex's hashing document store and LangChain's record manager do the diffing for you.</p>
+</section>
+
+<section id="security">
+<h2>Preventing sensitive data leaks and attacks</h2>
+<p>There is no single fix. Layer controls on what goes in, what comes out, and what the system can do if something goes wrong.</p>
+<div class="grid">
+<div class="card"><h3>Keep data from the model</h3><ul><li>Classify chunks at ingestion</li><li>Detect and redact PII and secrets (Presidio, DLP)</li><li>Mask with tokens like <code>&lt;PERSON_1&gt;</code>, restore after</li><li>Use private or zero-retention deployments for sensitive data</li></ul></div>
+<div class="card"><h3>Enforce access in retrieval</h3><ul><li>Permissions as chunk metadata</li><li>Filter in the query using the user's identity</li><li>Isolate tenants</li><li>Never let the model decide who is authorized</li></ul></div>
+<div class="card"><h3>Defend against injection</h3><ul><li>Treat retrieved text as untrusted data</li><li>Strip hidden text, comments, odd metadata from docx</li><li>Run an injection classifier on input and chunks</li><li>No secrets in the system prompt</li></ul></div>
+<div class="card"><h3>Least privilege</h3><ul><li>Minimal, read-only tool permissions</li><li>Human approval for sensitive actions</li><li>Restrict outbound links and images (data exfiltration)</li><li>Short-lived scoped credentials</li></ul></div>
+<div class="card"><h3>Filter the output</h3><ul><li>Scan for PII, secrets, over-clearance content</li><li>Validate structured output against a schema</li><li>Add citations for audit</li></ul></div>
+<div class="card"><h3>Protect the pipeline</h3><ul><li>Encrypt vector DB (embeddings can leak text)</li><li>Secrets manager for keys</li><li>Rate limits, redacted logs, retention limits</li><li>Vet plugins and MCP servers</li></ul></div>
+</div>
+<div class="note"><strong>Priority order:</strong> per-user filtering in retrieval, then PII redaction, then untrusted-content handling with an injection filter, then tool and output restrictions, then logging and red-team tests (Garak, PyRIT). Assume the model can be tricked, and make sure it has nothing it shouldn't expose.</div>
+</section>
+
+<section id="acl">
+<h2>Documents only some people may access</h2>
+<p>Rule: enforce permissions at retrieval time with the end user's identity, before anything reaches the LLM.</p>
+<h3>Capture permissions at ingestion</h3>
+<pre><code>{
+  "doc_id": "hr-policy-2024",
+  "chunk_id": "hr-policy-2024#12",
+  "allowed_groups": ["hr", "executives"],
+  "allowed_users": ["alice@corp.com"],
+  "tenant_id": "acme"
+}</code></pre>
+<p>Pull ACLs from the source of truth (SharePoint, Drive, Confluence) so they match what employees already have.</p>
+<h3>Query flow</h3>
+<div class="pat"><div class="d"><div class="row"><span class="n g">User query</span><span class="ar">→</span><span class="n g">Authenticate, resolve groups</span><span class="ar">→</span><span class="n w">Vector search with ACL filter</span><span class="ar">→</span><span class="n c">LLM</span></div></div></div>
+<p>Filter <em>inside</em> the vector query (pre-filtering). Retrieving the top 10 and discarding forbidden ones leaves too few results and can leak through counts or scores.</p>
+<div class="tw"><table><tr><th>Pattern</th><th>When it fits</th></tr>
+<tr><td>Metadata filtering, one index</td><td>Most cases; the common default</td></tr>
+<tr><td>Index or namespace per tenant or department</td><td>Strong isolation, few access groups</td></tr>
+<tr><td>Check the source system's permission API at runtime</td><td>Very dynamic permissions; slower but always current</td></tr>
+<tr><td>Hybrid</td><td>Namespace per tenant plus metadata filters for roles</td></tr></table></div>
+<h3>Keep it correct</h3>
+<ul>
+<li>Store group names on chunks and resolve membership at query time, so team changes apply without re-indexing.</li>
+<li>Re-sync ACLs on change (webhooks or scheduled jobs); metadata updates need no re-embedding. Treat revocations as high priority.</li>
+<li>Key caches by user or permission set; don't carry content across users in memory or history; don't show titles or snippets of forbidden documents; protect logs.</li>
+<li>Default deny: missing or malformed permission metadata means inaccessible.</li>
+<li>Test with users of different roles asking questions answerable only from restricted documents, and re-test after grants, revocations, and group moves.</li>
+</ul>
+</section>
+
+<section id="guardrails">
+<h2>Security rules for guardrails</h2>
+<div class="tw"><table><tr><th>Layer</th><th>Rules</th></tr>
+<tr><td>Input</td><td>Prompt-injection and jailbreak detection (including encoded payloads); PII and secret redaction; length and format validation; topic scope limits; authentication and rate limiting</td></tr>
+<tr><td>Retrieval</td><td>ACL filtering inside the query; scan chunks for injected instructions; source allowlists; sensitivity ceiling for external models</td></tr>
+<tr><td>Output</td><td>Scan for PII and secrets; harmful-content filtering; grounding checks with citations and "I don't know"; strip or allowlist links and images; schema validation; sanitize output before it touches HTML, SQL, or a shell</td></tr>
+<tr><td>Actions and tools</td><td>Least privilege; allowlist tools and validate every argument in code; human approval for high-impact actions; egress controls; short-lived credentials; step and cost limits</td></tr>
+<tr><td>System</td><td>System prompt is not a security boundary; defense in depth; fail closed; enforce policy in code outside the LLM; audit logs with retention limits; monitoring and alerts</td></tr>
+<tr><td>Governance</td><td>Regular red-teaming; guardrail policies versioned and tested like code; vetted third parties; documented rules for which data classes may go to which models</td></tr></table></div>
+<p>Common tools: NeMo Guardrails, Guardrails AI, LLM Guard, Llama Guard, Prompt Guard, Azure Content Safety, AWS Bedrock Guardrails, Presidio, Garak, PyRIT.</p>
+<div class="note">Classifier-based filters can be evaded. The strongest protection is the hard controls: access filtering, least privilege, egress limits, and human approval.</div>
+</section>
+
+<section id="agents">
+<h2>Multi-agent design patterns</h2>
+<p>Multi-agent designs split work across several LLM-powered agents. Here are ten patterns with their typical uses.</p>
+<div class="leg"><span class="n c">Coordinator or decider</span><span class="n w">Worker agent</span><span class="n g">Input, output, human, or shared data</span></div>
+<div class="grid pat" id="pats"></div>
+<h3>Choosing a pattern</h3>
+<div class="tw"><table><tr><th>Need</th><th>Pattern</th></tr>
+<tr><td>Complex task, unclear subtasks</td><td>Orchestrator-worker</td></tr>
+<tr><td>Fixed, repeatable steps</td><td>Sequential pipeline</td></tr>
+<tr><td>Independent subtasks, speed matters</td><td>Parallel fan-out</td></tr>
+<tr><td>Different domains, one answer needed</td><td>Router</td></tr>
+<tr><td>Quality or correctness critical</td><td>Reflection and critic</td></tr>
+<tr><td>High stakes, reduce errors</td><td>Debate and consensus</td></tr>
+<tr><td>Risky actions</td><td>Human-in-the-loop</td></tr></table></div>
+<div class="note"><strong>When not to use them:</strong> multi-agent systems cost more calls, add latency, and are harder to debug. If one agent with good tools can do the job, start there. Give each agent least-privilege tools and its own access scope, and treat messages between agents as untrusted input.</div>
+</section>
+
+<section id="eval">
+<h2>Evaluating RAG with RAGAS and LLM-as-judge</h2>
+<p>Retrieval and generation fail independently, so score them separately. Most RAGAS metrics use an LLM as the grader.</p>
+<h3>Evaluation dataset</h3>
+<p>Each row has <code>user_input</code>, <code>retrieved_contexts</code>, <code>response</code>, and optionally <code>reference</code> (needed only for context recall). Start with 50 to 200 rows: real user questions, multi-document questions, unanswerable questions (the bot should say it doesn't know), and past failures.</p>
+<h3>Metrics with a worked example</h3>
+<p>Question: "How many days of annual leave?" Context says 24 days and 5 carry-over days, plus an irrelevant canteen chunk. The answer claims 24 days, 10 carry-over days, and a birthday day off.</p>
+<div class="tw"><table><tr><th>Metric</th><th>Stage</th><th>How it's computed</th><th>Example</th></tr>
+<tr><td>Faithfulness</td><td>Generation</td><td>Split the answer into claims, check each against the context; supported / total</td><td>1 of 3 supported (24 days only), so 0.33</td></tr>
+<tr><td>Context precision</td><td>Retrieval</td><td>Judge marks each chunk relevant or not; rewards relevant chunks ranked early</td><td>Relevant chunks ranked 1 and 2, so 1.0. Canteen chunk first would give about 0.58</td></tr>
+<tr><td>Context recall</td><td>Retrieval</td><td>Share of reference statements found in the contexts</td><td>2 of 2, so 1.0</td></tr>
+<tr><td>Response relevancy</td><td>Generation</td><td>Questions generated from the answer are compared to the original by embeddings</td><td>Measures on-topic, not truth</td></tr></table></div>
+<h3>Running it</h3>
+<pre><code>from ragas import evaluate, EvaluationDataset
+from ragas.metrics import (Faithfulness, ResponseRelevancy,
+    LLMContextPrecisionWithReference, LLMContextRecall)
+
+dataset = EvaluationDataset.from_list(rows)
+result = evaluate(dataset=dataset, metrics=[
+    Faithfulness(llm=judge),
+    ResponseRelevancy(llm=judge, embeddings=emb),
+    LLMContextPrecisionWithReference(llm=judge),
+    LLMContextRecall(llm=judge)])
+df = result.to_pandas()
+print(df.sort_values("faithfulness").head(10))</code></pre>
+<p>RAGAS is changing its API (the 0.4.x line adds a <code>ragas.metrics.collections</code> module and deprecates older class names), so check the docs for your installed version.</p>
+<h3>Diagnosing with the scores together</h3>
+<div class="tw"><table><tr><th>Faithfulness</th><th>Precision</th><th>Recall</th><th>Diagnosis and fix</th></tr>
+<tr><td>Low</td><td>High</td><td>High</td><td>Generator is inventing. Stricter grounding prompt, lower temperature, better model</td></tr>
+<tr><td>High</td><td>Low</td><td>Any</td><td>Noisy retrieval. Reranker, smaller top-k, better chunking, metadata filters</td></tr>
+<tr><td>High</td><td>High</td><td>Low</td><td>Retriever misses facts. Larger top-k, hybrid search, query rewriting, re-chunk</td></tr>
+<tr><td>Low</td><td>Low</td><td>Low</td><td>Retrieval failed and the generator guessed. Fix retrieval first</td></tr></table></div>
+<h3>Custom LLM-as-judge</h3>
+<p>For business rules RAGAS doesn't know (must cite the policy, must refuse out-of-scope questions, must not reveal restricted documents), write a rubric judge that returns JSON.</p>
+<ul>
+<li>Ask for reasoning before the score, use narrow rubrics with anchors, and prefer binary or 1 to 5 scales.</li>
+<li>Run at temperature 0 with structured output; repeat runs if scores are noisy.</li>
+<li>For comparing two versions, use pairwise judging and swap the order to cancel position bias.</li>
+<li>Use a strong judge, ideally from a different model family than the system under test.</li>
+</ul>
+<h3>Validate the judge</h3>
+<p>Hand-label 50 to 100 items, run the judge on them, and measure agreement with a chance-corrected statistic such as Cohen's kappa rather than raw percent agreement. Also check consistency across repeated runs and bias toward longer answers. Re-check after every judge or rubric change.</p>
+<h3>Make it routine</h3>
+<ul>
+<li>Run the eval set in CI on every prompt, chunking, embedding, or model change, and fail on a drop below your threshold.</li>
+<li>Change one thing at a time, and read the ten lowest-scoring rows, not just averages.</li>
+<li>Log retrieved contexts, or a low faithfulness score can't tell you which stage failed.</li>
+<li>Keep the judge model fixed when comparing scores, and include unanswerable and adversarial questions.</li>
+<li>Pair LLM judges with deterministic checks: valid citations, valid JSON, no restricted-document leaks, latency, cost.</li>
+</ul>
+</section>
+<footer>Compiled from a Q&amp;A session. Tool versions and APIs change, so verify against current documentation.</footer>
+</main>
+</div>
+<script>
+var P=[
+["Orchestrator-worker","A lead agent splits the task, delegates, and combines results.","Deep research, feature development, support triage.",[["c:Orchestrator"],["↓"],["w:Specialist A","w:Specialist B","w:Specialist C"]]],
+["Sequential pipeline","Agents work in a fixed order, each passing output on.","Content production, invoice or claims processing, data pipelines.",[["w:Researcher","→","w:Writer","→","w:Editor","→","w:Publisher"]]],
+["Parallel fan-out and fan-in","Independent agents work at the same time, then results merge.","Contract review, market analysis, codebase audits.",[["g:Task"],["↓ fan out"],["w:Legal","w:IP","w:Compliance"],["↓ fan in"],["c:Merger"]]],
+["Router","A light agent classifies the request and sends it to exactly one specialist.","Enterprise assistant with per-team RAG agents, cost-based model routing.",[["g:Query"],["↓"],["c:Router"],["↓ picks one"],["w:HR","w:IT","w:Finance"]]],
+["Reflection and critic","One agent drafts, another critiques, and they loop until quality is met.","Code with review, legal drafting, SQL validation.",[["w:Generator","⇄","c:Critic"],["↓ when approved"],["g:Output"]]],
+["Debate and consensus","Several agents answer independently or argue, then a judge decides.","High-stakes decisions, fact verification, red team vs blue team.",[["w:Agent A","w:Agent B","w:Agent C"],["↓"],["c:Judge"],["↓"],["g:Decision"]]],
+["Hierarchical teams","Managers oversee sub-managers who oversee workers, like an org chart.","Enterprise workflow automation, large software projects.",[["c:Executive"],["↓"],["c:Sales manager","c:IT manager"],["↓"],["w:Worker","w:Worker","w:Worker","w:Worker"]]],
+["Human-in-the-loop","Agents work on their own but pause for approval at checkpoints.","Payments, outbound email, infrastructure changes.",[["w:Agent drafts","→","g:Human review","→","w:Execute"],["↺ reject sends it back to the agent"]]],
+["Blackboard","Agents read and write a shared workspace and contribute when useful.","Incident response, travel or logistics planning.",[["w:Monitor","w:Logs","w:Fixer","w:Planner"],["⇅ read and write"],["g:Shared workspace"]]],
+["Swarm (peer-to-peer)","Agents hand control to each other dynamically with no central boss.","Conversational support, open-ended exploration.",[["w:General","⇄","w:Refund","⇄","w:Shipping"],["↺ any agent can hand off to any other"]]]];
+var h="";
+P.forEach(function(p){
+var d=p[3].map(function(r){
+return '<div class="row">'+r.map(function(x){
+var m=/^([cwg]):(.*)$/.exec(x);
+return m?'<span class="n '+m[1]+'">'+m[2]+'</span>':'<span class="ar">'+x+'</span>';
+}).join("")+'</div>';
+}).join("");
+h+='<div class="card"><h3>'+p[0]+'</h3><p>'+p[1]+'</p><div class="d">'+d+'</div><p class="u">'+p[2]+'</p></div>';
+});
+document.getElementById("pats").innerHTML=h;
+</script>
+</body>
+</html>
