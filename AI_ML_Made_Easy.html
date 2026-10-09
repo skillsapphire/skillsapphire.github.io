@@ -21,7 +21,8 @@ nav{background:var(--side);border-right:1px solid var(--line);padding:20px 14px 
 .brand{font:700 30px/1.1 Caveat,cursive;color:var(--ink);background:none;border:0;padding:4px 8px 14px;text-align:left}
 nav h3{font-size:14px;margin:18px 8px 6px;color:var(--pink);font-weight:700}
 nav a{display:flex;gap:10px;align-items:baseline;padding:7px 10px;border-radius:8px;color:var(--text);text-decoration:none;font-size:15px;line-height:1.35}
-nav a b{min-width:24px;color:var(--muted);font-weight:600}
+nav a b{min-width:32px;color:var(--muted);font-weight:600}
+.card :not(pre)>code{background:var(--soft);padding:1px 6px;border-radius:5px;font-size:.9em}
 nav a:hover{background:var(--soft)}
 nav a[aria-current=page]{background:var(--ink);color:var(--paper)}
 nav a[aria-current=page] b{color:inherit}
@@ -66,6 +67,9 @@ body.open nav{transform:none;box-shadow:0 0 0 100vmax rgba(0,0,0,.45)}
 main{padding:18px 12px 50px}
 .card{padding:20px 16px 24px 20px}
 }
+.code{position:relative;margin:8px 0}
+.code pre{margin:0;background:#0f1530;color:#e6e9ff;padding:16px;border-radius:10px;overflow-x:auto;font:14px/1.6 ui-monospace,Menlo,Consolas,monospace;tab-size:4}
+.cp{position:absolute;top:8px;right:8px;padding:2px 12px;font-size:13px;background:#0f1530;color:#aab4ff;border-color:#aab4ff}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -76,8 +80,8 @@ main{padding:18px 12px 50px}
 <main><article class="card" id="view" aria-live="polite"></article></main>
 </div>
 <script>
-const G=["AI basics","Types of learning & algorithms","Building a good model","Deep learning","Language & generative AI","Algorithms: supervised","Algorithms: unsupervised","Algorithms: reinforcement"];
-const ORD=[[1,2,3,4,5],[6,7,14,23,24],[11,10,12,13,8,9],[15,16,17,18],[19,20,21,22],[25,26,27,28,29,30,31,32,33],[34,35,36,37,38,39],[40,41,42]];
+const G=["Python: the basics","Python: data structures and functions","Python: hero level","Python for data science","AI basics","Types of learning & algorithms","Building a good model","Deep learning","Language & generative AI","Algorithms: supervised","Algorithms: unsupervised","Algorithms: reinforcement"];
+const ORD=[[101,102,103,104,105,106],[107,108,109,110,111,112],[113,114,115,116],[117,118,119,120],[1,2,3,4,5],[6,7,14,23,24],[11,10,12,13,8,9],[15,16,17,18],[19,20,21,22],[25,26,27,28,29,30,31,32,33],[34,35,36,37,38,39],[40,41,42]];
 const flow=a=>'<div class="flow">'+a.map((x,i)=>(i?'<i>→</i>':'')+'<span>'+x+'</span>').join('')+'</div>';
 const tb=r=>'<div class="tw"><table><tr>'+r[0].map(c=>'<th>'+c+'</th>').join('')+'</tr>'+r.slice(1).map(x=>'<tr>'+x.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</table></div>';
 const T={
@@ -124,22 +128,426 @@ const T={
 40:{t:"Q-Learning (Reinforcement Learning)",s:"In Q-Learning an agent learns the best action in every situation by trial and error, and stores the scores in a table called the Q-table.",e:"A mouse in a maze. Turning toward the cheese gives +10, hitting a wall gives -1. After many tries, it learns which turn is best at each junction.",f:["See the state","Choose an action","Get a reward","Update the Q-table","Repeat"],x:'<h2>Words to know</h2><ul><li><b>Agent:</b> the learner. <b>Environment:</b> the world it acts in.</li><li><b>State:</b> where it is now. <b>Action:</b> what it can do. <b>Reward:</b> points for the result.</li><li><b>Explore vs exploit:</b> sometimes try new moves (explore), sometimes use the best known move (exploit).</li></ul><p class="say">New Q = old Q + learning rate × (reward + discount × best future Q − old Q)</p>',k:["<b>Q-table:</b> rows are states, columns are actions, and each cell is the score of that action.","<b>Best for:</b> small problems with few states, like grid games.","<b>Watch out:</b> the table becomes too huge when states are many. That's why DQN exists."],q:"What does the Q-table store?",a:"A score for each action in each state, showing how good that action is."},
 41:{t:"Deep Q-Network (DQN)",s:"DQN is Q-Learning where a neural network replaces the Q-table, so it can handle huge numbers of states.",e:"A chess or video game has millions of positions, too many for a table. A neural network instead guesses the score of each move, even for positions it has never seen.",f:["Game screen goes in","Neural network estimates Q for each action","Pick action and get reward","Learn from replayed memories"],k:["<b>Experience replay:</b> it stores past moves and learns from random samples of them, which makes learning stable.","<b>Famous use:</b> AI agents that learned to play Atari video games from pixels.","<b>Watch out:</b> needs lots of training and works with a limited set of actions."],q:"Why do we replace the Q-table with a neural network?",a:"When there are too many states to store in a table, a network can estimate the values instead."},
 42:{t:"Policy Gradient",s:"Policy Gradient learns the policy (the rule for choosing actions) directly, instead of scoring actions first.",e:"A cricket batter plays a shot. If it earns runs, they make that shot slightly more likely next time. If they get out, slightly less likely.",f:["Play using current policy","Collect rewards","Increase chance of actions that paid off","Decrease chance of the others"],k:["The policy gives a <b>probability for each action</b>, which makes exploring natural.","<b>Best for:</b> robots with smooth movements (such as a robot arm), where there are endless possible actions.","<b>Watch out:</b> learning can be noisy and slow."],q:"Q-Learning scores actions. What does Policy Gradient learn?",a:"The policy itself: which action to take, and how likely."}
+,
+101:{l:"P1",t:"Getting Started with Python",s:"Python is a beginner-friendly programming language. Its code reads almost like English, and it is the number one language for AI and ML.",e:"A recipe: you write the steps in order and the computer follows them one by one.",k:["Install Python from python.org, or use <b>Google Colab</b> (nothing to install, runs in your browser).","Save code in a file ending with <code>.py</code> and run it with <code>python file.py</code>.","A line starting with <code>#</code> is a comment. Python ignores it, so you can write notes for yourself.","Python groups code using <b>indentation</b> (spaces at the start of a line), so spacing matters."],q:"Which symbol starts a comment in Python?",a:"The # (hash) symbol."},
+102:{l:"P2",t:"Variables and Data Types",s:"A variable stores a value under a name. Every value has a type, such as whole number, decimal, text or True/False.",e:"A variable is a labelled box. The label is the name and what you put inside is the value.",k:["<b>int</b> whole number, <b>float</b> decimal, <b>str</b> text, <b>bool</b> True or False.","Names are case-sensitive, cannot have spaces and cannot start with a number. Use snake_case like <code>total_marks</code>.","<code>input()</code> always gives text. Convert with <code>int()</code>, <code>float()</code> or <code>str()</code>."],q:"What does int('5') + 1 give?",a:"6. int() converts the text '5' into the number 5."},
+103:{l:"P3",t:"Operators",s:"Operators are symbols that do calculations, compare values or combine conditions.",e:"Like a calculator's buttons: + - * /, plus questions such as 'is 10 bigger than 3?' that answer True or False.",k:["<b>Arithmetic:</b> <code>+ - * / // % **</code> (// is whole-number division, % is the remainder, ** is power).","<b>Comparison:</b> <code>== != &gt; &lt; &gt;= &lt;=</code>. Note that <code>==</code> compares and <code>=</code> stores.","<b>Logical:</b> <code>and</code>, <code>or</code>, <code>not</code>."],q:"What is 17 % 5?",a:"2, the remainder when 17 is divided by 5."},
+104:{l:"P4",t:"Strings (Text)",s:"A string is text inside quotes. You can pick out parts of it, change it and mix it with other values.",e:"A string is a train of coaches. Each character is a coach with a seat number starting from 0.",k:["Index starts at 0, and -1 means the last character.","Slicing <code>s[0:7]</code> gives characters 0 to 6 (the end is not included).","Useful methods: <code>upper()</code>, <code>lower()</code>, <code>replace()</code>, <code>split()</code>, <code>strip()</code>.","<b>f-strings</b> (<code>f'Hi {name}'</code>) are the easiest way to put values inside text."],q:"What is 'python'[1:3]?",a:"'yt'. It takes the characters at index 1 and 2."},
+105:{l:"P5",t:"Conditions (if, elif, else)",s:"Conditions let your program take decisions and run different code depending on whether something is True or False.",e:"If it is raining, take an umbrella. Else if it is sunny, wear a cap. Else go as you are.",k:["Put a colon <code>:</code> after the condition and indent the code inside.","Python checks from the top and runs only the first block that is True.","Short form: <code>x = 'Pass' if marks &gt;= 35 else 'Fail'</code>."],q:"If marks = 60, which block runs in the example: A, B or else?",a:"Block B, because 60 is not 90 or more, but it is 60 or more."},
+106:{l:"P6",t:"Loops (for and while)",s:"A loop repeats code so you don't have to write it again and again.",e:"Sir says 'write this 10 times'. A loop is the machine that writes it 10 times for you.",k:["<b>for</b> goes through a list or a range of numbers.","<b>while</b> repeats as long as a condition stays True. Make sure it eventually becomes False, otherwise it never stops.","<code>break</code> stops the loop and <code>continue</code> skips to the next round.","<code>range(1, 6)</code> gives 1 to 5 (the end is not included)."],q:"How many times does for i in range(5) run?",a:"5 times (i = 0, 1, 2, 3, 4)."},
+107:{l:"P7",t:"Lists",s:"A list stores many values in one variable, in order. You can add, remove and change items.",e:"A school bag with numbered compartments. You can add books, remove them, or swap them.",k:["Written with square brackets: <code>[10, 20, 30]</code>.","<code>append()</code> adds at the end, <code>remove()</code> deletes a value, <code>sort()</code> arranges the list.","Indexing and slicing work like strings.","Lists are used everywhere in ML to hold data."],q:"After marks = [1, 2, 3] and marks.append(4), what is len(marks)?",a:"4."},
+108:{l:"P8",t:"Tuples and Sets",s:"A tuple is like a list that cannot be changed. A set stores only unique items, with no repeats.",e:"A tuple is your date of birth, which never changes. A set is the list of different subjects in your class, where each name appears once.",k:["Tuple uses round brackets <code>(3, 4)</code>. It is safe for fixed data like coordinates.","Set uses curly brackets <code>{1, 2, 3}</code> and removes duplicates automatically.","Sets support union <code>|</code>, common items <code>&amp;</code> and difference <code>-</code>."],q:"What does set([1, 1, 2, 2, 3]) give?",a:"{1, 2, 3}. The duplicates are removed."},
+109:{l:"P9",t:"Dictionaries",s:"A dictionary stores data as key and value pairs, so you look things up by name instead of position.",e:"A phone contact list. You search by name (the key) and get the number (the value).",k:["Written as <code>{'name': 'Riya', 'age': 15}</code>.","Read with <code>d['name']</code> or the safer <code>d.get('phone', 'none')</code>.","Keys must be unique.","JSON data from websites and APIs looks exactly like dictionaries."],q:"How do you get Riya's marks from {'Riya': 92}?",a:"d['Riya'] gives 92."},
+110:{l:"P10",t:"Functions",s:"A function is a block of code with a name. Write it once, use it many times.",e:"A mixer-grinder: you put in ingredients (inputs), press a button, and get the output. You don't rebuild the machine each time.",k:["Define with <code>def</code>, give back a result with <code>return</code>.","Parameters can have default values, like <code>greeting='Hello'</code>.","<code>*numbers</code> accepts any number of inputs.","A <b>lambda</b> is a tiny one-line function."],q:"What is the use of return?",a:"It sends the result of the function back to the place where it was called."},
+111:{l:"P11",t:"Pythonic Tools: Comprehensions, map, filter, zip",s:"Python has shortcuts that do in one line what normally takes a loop of several lines.",e:"Instead of writing each answer separately, you tell Python the rule once: 'give me the square of every number from 1 to 5'.",k:["<b>List comprehension:</b> <code>[x*x for x in range(5)]</code>.","<code>enumerate()</code> gives index and item. <code>zip()</code> walks two lists together.","<code>map()</code> applies a function to every item. <code>filter()</code> keeps the items that pass a test."],q:"What does [x for x in range(10) if x % 2 == 0] give?",a:"The even numbers 0, 2, 4, 6, 8."},
+112:{l:"P12",t:"Modules and Libraries",s:"A module is a ready-made toolbox of code written by others. You import it and use it.",e:"Instead of making a calculator from iron ore, you buy one. Import brings the tool to your desk.",k:["<code>import math</code> then <code>math.sqrt(16)</code>.","<code>from datetime import date</code> imports just one part.","Install outside libraries with <code>pip install name</code>, for example numpy, pandas, scikit-learn.","You can make your own module by saving functions in a <code>.py</code> file."],q:"Which command installs a library?",a:"pip install library_name"},
+113:{l:"P13",t:"Files and Error Handling",s:"Programs can read and write files. Errors will happen, and try/except lets your program handle them instead of crashing.",e:"A car has a spare tyre. If a tyre bursts (error), the journey continues instead of stopping.",k:["<code>with open(...)</code> opens a file and closes it automatically.","Modes: <code>'r'</code> read, <code>'w'</code> write (erases old content), <code>'a'</code> append.","<code>try</code> runs risky code, <code>except</code> runs if there is an error, <code>finally</code> always runs.","Common errors: ValueError, ZeroDivisionError, FileNotFoundError."],q:"Which block runs only when an error happens?",a:"The except block."},
+114:{l:"P14",t:"Object-Oriented Programming (Classes)",s:"A class is a blueprint, and an object is a real thing built from it. A class bundles data (attributes) and actions (methods) together.",e:"A blueprint of a house is the class. Every house built from it is an object, each with its own colour and owner.",k:["<code>__init__</code> runs automatically when an object is created and sets up its data.","<code>self</code> means 'this object'.","scikit-learn models are objects too: <code>model = LinearRegression()</code> then <code>model.fit()</code>."],q:"What is the difference between a class and an object?",a:"A class is the blueprint. An object is one actual thing created from it."},
+115:{l:"P15",t:"Inheritance",s:"Inheritance lets a new class reuse everything from an existing class and add or change things.",e:"A child gets the family surname and some habits from the parents, and still develops their own skills.",k:["<code>class Teacher(Person)</code> means Teacher inherits from Person.","<code>super()</code> calls the parent's version.","<b>Overriding:</b> writing the same method again in the child to change its behaviour."],q:"What does super() do?",a:"It lets the child class use the parent class's methods."},
+116:{l:"P16",t:"Generators and Decorators (Advanced)",s:"Generators produce values one at a time, which saves memory with big data. Decorators add extra behaviour to a function without changing it.",e:"A generator is a tap giving one glass of water at a time, instead of bringing the whole tank. A decorator is gift wrapping around a function.",k:["<code>yield</code> makes a function a generator.","A decorator is written above a function with <code>@name</code>.","Used in real libraries: TensorFlow, PyTorch, Flask and others."],q:"Why use a generator for a file with 10 crore rows?",a:"It gives one row at a time, so the whole file does not need to fit in memory."},
+117:{l:"P17",t:"NumPy: Fast Numbers",s:"NumPy gives fast arrays (grids of numbers), the foundation of almost all ML libraries.",e:"A list is one person doing sums one by one. A NumPy array is a whole classroom answering together.",k:["Maths works on the whole array at once, with no loop: <code>a * 2</code>.","Has 2D arrays (matrices), <code>.shape</code>, <code>.mean()</code>, <code>.T</code> and <code>@</code> for matrix multiplication.","Much faster than normal lists."],q:"What does np.array([1, 2, 3]) * 2 give?",a:"[2 4 6]"},
+118:{l:"P18",t:"Pandas: Working with Tables",s:"Pandas handles table data like an Excel sheet, with rows and columns, inside Python. A table is called a DataFrame.",e:"Excel inside Python, but you can handle a million rows with just a few lines.",k:["Read files with <code>pd.read_csv('file.csv')</code>.","Filter rows, group and average with <code>groupby</code>, add new columns.","<code>isnull().sum()</code> finds missing values, which you learnt about in feature engineering.","Almost every ML project starts with a DataFrame."],q:"Which function loads a CSV file?",a:"pd.read_csv('filename.csv')"},
+119:{l:"P19",t:"Matplotlib: Drawing Charts",s:"Matplotlib draws graphs such as bar charts, line charts and scatter plots, so you can see patterns in data.",e:"A picture is worth a thousand numbers. A bar chart shows who scored the highest at a glance.",k:["<code>plt.bar()</code> bar chart, <code>plt.plot()</code> line chart, <code>plt.scatter()</code> dots, <code>plt.hist()</code> histogram.","Add <code>plt.title()</code> and axis labels, then <code>plt.show()</code>."],q:"Which function displays the chart?",a:"plt.show()"},
+120:{l:"P20",t:"Mini Project: Your First ML Model in Python",s:"Let's join everything: build a table with Pandas, split the data, train a model with scikit-learn and predict marks from study hours.",e:"This is the same idea as Linear Regression and the train/test split from earlier lessons, now in real Python.",k:["Step 1: prepare data. Step 2: split into train and test. Step 3: train. Step 4: check the score. Step 5: predict.","R² near 1 means the model explains the data very well.","Next, try replacing LinearRegression with other algorithms from the lessons above."],q:"Why do we keep some data for testing?",a:"To check how the model performs on data it has never seen."}
+};
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const P=`from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+X, y = load_iris(return_X_y=True)          # small flower dataset
+X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, random_state=42)
+`;
+const C={
+25:`from sklearn.linear_model import LinearRegression
+hours = [[1], [2], [3], [4], [5]]          # input (x)
+marks = [20, 30, 41, 50, 62]               # output (y)
+model = LinearRegression().fit(hours, marks)
+print(model.predict([[6]]))                # predicted marks for 6 hours
+print(model.coef_, model.intercept_)       # m (slope) and c (start value)`,
+26:`from sklearn.datasets import load_breast_cancer
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+X, y = load_breast_cancer(return_X_y=True)
+X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, random_state=42)
+model = LogisticRegression(max_iter=5000).fit(X_tr, y_tr)
+print("Accuracy:", model.score(X_te, y_te))
+print(model.predict_proba(X_te[:1]))       # probability of each class`,
+27:P+`from sklearn.tree import DecisionTreeClassifier, export_text
+model = DecisionTreeClassifier(max_depth=3).fit(X_tr, y_tr)   # depth limit avoids overfitting
+print("Accuracy:", model.score(X_te, y_te))
+print(export_text(model))                  # prints the yes/no questions`,
+28:P+`from sklearn.ensemble import RandomForestClassifier
+model = RandomForestClassifier(n_estimators=100, random_state=42).fit(X_tr, y_tr)  # 100 trees
+print("Accuracy:", model.score(X_te, y_te))
+print(model.feature_importances_)          # which columns mattered most`,
+29:P+`from sklearn.svm import SVC
+model = SVC(kernel="rbf").fit(X_tr, y_tr)  # "rbf" kernel can draw curved boundaries
+print("Accuracy:", model.score(X_te, y_te))
+print(model.support_vectors_.shape)        # the points that decide the boundary`,
+30:P+`from sklearn.neighbors import KNeighborsClassifier
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+model = make_pipeline(StandardScaler(), KNeighborsClassifier(n_neighbors=5))  # scale first!
+model.fit(X_tr, y_tr)
+print("Accuracy:", model.score(X_te, y_te))`,
+31:`from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+mails = ["win free prize now", "free money winner", "meeting at 10 am", "please send the report"]
+labels = [1, 1, 0, 0]                      # 1 = spam, 0 = not spam
+vec = CountVectorizer()                    # words -> numbers (bag of words)
+X = vec.fit_transform(mails)
+model = MultinomialNB().fit(X, labels)
+print(model.predict(vec.transform(["free prize today"])))   # [1] means spam`,
+32:P+`from sklearn.ensemble import AdaBoostClassifier, GradientBoostingClassifier
+for model in [AdaBoostClassifier(), GradientBoostingClassifier()]:
+    model.fit(X_tr, y_tr)
+    print(type(model).__name__, model.score(X_te, y_te))
+# XGBoost (first run: pip install xgboost)
+# from xgboost import XGBClassifier
+# model = XGBClassifier().fit(X_tr, y_tr)`,
+33:`from sklearn.datasets import load_diabetes
+from sklearn.linear_model import LinearRegression, Ridge, Lasso
+X, y = load_diabetes(return_X_y=True)
+for m in [LinearRegression(), Ridge(alpha=1.0), Lasso(alpha=1.0)]:
+    m.fit(X, y)
+    print(type(m).__name__, m.coef_.round(1))   # Lasso pushes some weights to 0`,
+34:`from sklearn.datasets import make_blobs
+from sklearn.cluster import KMeans
+X, _ = make_blobs(n_samples=300, centers=3, random_state=42)   # fake data, 3 groups
+model = KMeans(n_clusters=3, n_init=10, random_state=42).fit(X)
+print(model.labels_[:10])                  # group number of first 10 points
+print(model.cluster_centers_)              # the centroids
+for k in range(1, 7):                      # elbow method: error should drop slowly after K=3
+    print(k, KMeans(n_clusters=k, n_init=10).fit(X).inertia_)`,
+35:`import matplotlib.pyplot as plt
+from sklearn.datasets import make_blobs
+from sklearn.cluster import AgglomerativeClustering
+from scipy.cluster.hierarchy import linkage, dendrogram
+X, _ = make_blobs(n_samples=30, centers=3, random_state=42)
+print(AgglomerativeClustering(n_clusters=3).fit_predict(X))   # cluster of each point
+dendrogram(linkage(X, method="ward"))      # the tree diagram
+plt.show()`,
+36:`from sklearn.datasets import make_moons
+from sklearn.cluster import DBSCAN
+X, _ = make_moons(n_samples=300, noise=0.07, random_state=42)  # two curved shapes
+labels = DBSCAN(eps=0.2, min_samples=5).fit_predict(X)
+print(set(labels))                         # -1 means noise (outlier)`,
+37:`from sklearn.datasets import load_iris
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+X, y = load_iris(return_X_y=True)
+X_scaled = StandardScaler().fit_transform(X)   # scale the data first
+pca = PCA(n_components=2)
+X_2d = pca.fit_transform(X_scaled)
+print(X.shape, "->", X_2d.shape)           # 4 features become 2
+print(pca.explained_variance_ratio_)       # information kept by PC1 and PC2`,
+38:`# First run: pip install mlxtend
+import pandas as pd
+from mlxtend.frequent_patterns import apriori, association_rules
+baskets = pd.DataFrame({"bread": [1, 1, 1, 0, 1],
+                        "butter": [1, 1, 0, 0, 1],
+                        "milk": [0, 1, 1, 1, 0]}).astype(bool)   # each row = one basket
+items = apriori(baskets, min_support=0.4, use_colnames=True)
+print(association_rules(items, metric="confidence", min_threshold=0.6))`,
+39:`import numpy as np
+from sklearn.ensemble import IsolationForest
+X = np.array([[10], [11], [9], [10], [12], [11], [10], [95]])   # 95 is the odd one
+model = IsolationForest(contamination=0.15, random_state=42).fit(X)
+print(model.predict(X))                    # -1 = anomaly, 1 = normal`,
+40:`import numpy as np, random
+n_states = 5                               # a corridor: 0 1 2 3 4 (cheese at 4)
+Q = np.zeros((n_states, 2))                # Q-table: actions 0 = left, 1 = right
+alpha, gamma, eps = 0.1, 0.9, 0.2          # learning rate, discount, explore chance
+for episode in range(500):
+    s = 0
+    while s != 4:
+        if random.random() < eps:
+            a = random.choice([0, 1])      # explore
+        else:
+            a = int(Q[s].argmax())         # exploit best known action
+        s2 = max(0, s - 1) if a == 0 else s + 1
+        r = 10 if s2 == 4 else -1          # reward
+        Q[s, a] += alpha * (r + gamma * Q[s2].max() - Q[s, a])   # update the table
+        s = s2
+print(Q.round(1))                          # 'right' column should score higher`,
+41:`# First run: pip install stable-baselines3 gymnasium
+from stable_baselines3 import DQN
+model = DQN("MlpPolicy", "CartPole-v1", verbose=0)   # a neural network replaces the Q-table
+model.learn(total_timesteps=20000)         # learns to balance a pole on a cart
+env = model.get_env()
+obs = env.reset()
+action, _ = model.predict(obs)             # best action for the current state
+print(action)`,
+42:`# First run: pip install stable-baselines3 gymnasium
+from stable_baselines3 import PPO          # PPO is a popular policy gradient method
+model = PPO("MlpPolicy", "CartPole-v1", verbose=0)   # network outputs action probabilities
+model.learn(total_timesteps=20000)
+env = model.get_env()
+obs = env.reset()
+action, _ = model.predict(obs)             # action chosen by the learned policy
+print(action)`,
+8:`from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+y_true = [1]*40 + [1]*5 + [0]*10 + [0]*45     # the spam example from the notes
+y_pred = [1]*40 + [0]*5 + [1]*10 + [0]*45
+print(confusion_matrix(y_true, y_pred))
+print("Accuracy :", accuracy_score(y_true, y_pred))    # 0.85
+print("Precision:", precision_score(y_true, y_pred))   # 0.80
+print("Recall   :", recall_score(y_true, y_pred))      # 0.89
+print("F1 score :", f1_score(y_true, y_pred))`,
+12:`from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+X, y = load_iris(return_X_y=True)
+# 70% train, 30% left over (stratify keeps class share equal)
+X_tr, X_rest, y_tr, y_rest = train_test_split(X, y, test_size=0.30, stratify=y, random_state=42)
+# split the 30% half-half: 15% validation, 15% test
+X_val, X_te, y_val, y_te = train_test_split(X_rest, y_rest, test_size=0.50, stratify=y_rest, random_state=42)
+print(len(X_tr), len(X_val), len(X_te))`,
+13:`from sklearn.datasets import load_iris
+from sklearn.model_selection import cross_val_score
+from sklearn.ensemble import RandomForestClassifier
+X, y = load_iris(return_X_y=True)
+scores = cross_val_score(RandomForestClassifier(), X, y, cv=5)   # K = 5 folds
+print(scores)                              # one score per fold
+print("Average:", scores.mean())`,
+101:`# My first Python program
+print("Hello, World!")           # show text on the screen
+print(2 + 3)                     # Python can calculate: prints 5
+print("I am", 15, "years old")   # print many things with commas`,
+102:`name = "Riya"          # str   (text)
+age = 15               # int   (whole number)
+height = 5.4           # float (decimal number)
+is_student = True      # bool  (True or False)
+print(type(age))       # <class 'int'>
+
+city = input("Which city? ")                 # input() always gives text
+age_next = int(input("Your age? ")) + 1      # int() converts text to a number
+print(name, "will be", age_next, "next year")`,
+103:`a, b = 10, 3
+print(a + b, a - b, a * b)    # 13 7 30
+print(a / b)                  # 3.3333  normal division
+print(a // b, a % b)          # 3 1     whole part and remainder
+print(a ** 2)                 # 100     power
+print(a > b, a == b)          # True False  (comparison)
+print(a > 5 and b > 5)        # False   (and, or, not join conditions)`,
+104:`s = "machine learning"
+print(len(s))                        # 16
+print(s[0], s[-1])                   # m g  (-1 is the last character)
+print(s[0:7])                        # machine  (start to end-1)
+print(s.upper(), s.title())          # MACHINE LEARNING Machine Learning
+print(s.replace("machine", "deep"))  # deep learning
+print(s.split(" "))                  # ['machine', 'learning']
+name, marks = "Riya", 92
+print(f"{name} scored {marks}%")     # f-string mixes text and values`,
+105:`marks = 72
+if marks >= 90:
+    print("Grade A")
+elif marks >= 60:            # elif means else if
+    print("Grade B")         # this line runs
+else:
+    print("Keep trying")
+
+result = "Pass" if marks >= 35 else "Fail"   # one-line version
+print(result)`,
+106:`for i in range(1, 6):        # 1 to 5
+    print(i)
+
+fruits = ["apple", "mango", "banana"]
+for f in fruits:             # go through each item
+    print(f)
+
+n = 3
+while n > 0:                 # repeat while the condition is True
+    print("Countdown", n)
+    n -= 1                   # same as n = n - 1
+
+for i in range(10):
+    if i == 2:
+        continue             # skip this round
+    if i == 5:
+        break                # stop the loop
+    print(i)                 # 0 1 3 4`,
+107:`marks = [80, 65, 90]
+marks.append(75)             # add at the end
+marks.insert(0, 50)          # add at position 0
+marks.remove(65)             # remove a value
+print(marks, len(marks))     # [50, 80, 90, 75] 4
+print(marks[1:3])            # [80, 90]  slicing works like strings
+print(sorted(marks), max(marks), sum(marks))`,
+108:`point = (3, 4)               # tuple: cannot be changed
+x, y = point                 # unpacking
+print(x, y)
+
+nums = [1, 2, 2, 3, 3, 3]
+unique = set(nums)           # a set keeps only unique items
+print(unique)                # {1, 2, 3}
+
+a, b = {1, 2, 3}, {3, 4}
+print(a | b, a & b, a - b)   # union, common, difference`,
+109:`student = {"name": "Riya", "age": 15, "marks": 92}
+print(student["name"])                      # Riya
+student["city"] = "Delhi"                   # add a new key
+student["marks"] = 95                       # change a value
+print(student.get("phone", "not found"))    # safe way to read
+for key, value in student.items():
+    print(key, "->", value)`,
+110:`def greet(name, greeting="Hello"):      # greeting has a default value
+    return f"{greeting}, {name}!"       # return gives the result back
+
+print(greet("Riya"))                    # Hello, Riya!
+print(greet("Ravi", "Namaste"))         # Namaste, Ravi!
+
+def average(*numbers):                  # *numbers accepts any count of values
+    return sum(numbers) / len(numbers)
+
+print(average(80, 90, 100))             # 90.0
+square = lambda x: x * x                # lambda = tiny one-line function
+print(square(7))                        # 49`,
+111:`squares = [x * x for x in range(1, 6)]         # list comprehension
+print(squares)                                 # [1, 4, 9, 16, 25]
+evens = [x for x in range(10) if x % 2 == 0]   # with a condition
+print(evens)
+
+names = ["Riya", "Ravi"]
+marks = [92, 85]
+for i, n in enumerate(names):                  # index and item together
+    print(i, n)
+for n, m in zip(names, marks):                 # walk two lists together
+    print(n, m)
+
+print(list(map(lambda x: x + 5, marks)))       # [97, 90]  apply to all
+print(list(filter(lambda x: x > 90, marks)))   # [92]      keep matching
+print({n: m for n, m in zip(names, marks)})    # dictionary comprehension`,
+112:`import math
+import random
+from datetime import date
+
+print(math.sqrt(16), math.pi)     # 4.0 3.14159...
+print(random.randint(1, 6))       # a random dice roll
+print(date.today())
+
+# Your own module: save functions in tools.py, then write: import tools
+# Install outside libraries from the terminal: pip install numpy pandas`,
+113:`with open("notes.txt", "w") as f:     # "w" = write; with closes the file for you
+    f.write("Python is fun")
+
+with open("notes.txt") as f:          # read it back
+    print(f.read())
+
+try:
+    number = int(input("Enter a number: "))
+    print(10 / number)
+except ValueError:
+    print("That was not a number")
+except ZeroDivisionError:
+    print("Cannot divide by zero")
+finally:
+    print("Done")                     # always runs`,
+114:`class Student:
+    def __init__(self, name, marks):   # runs when an object is created
+        self.name = name
+        self.marks = marks
+
+    def grade(self):
+        return "Pass" if self.marks >= 35 else "Fail"
+
+s1 = Student("Riya", 92)               # an object made from the class
+print(s1.name, s1.grade())             # Riya Pass`,
+115:`class Person:
+    def __init__(self, name):
+        self.name = name
+    def intro(self):
+        return f"I am {self.name}"
+
+class Teacher(Person):                 # Teacher inherits from Person
+    def __init__(self, name, subject):
+        super().__init__(name)         # reuse the parent's setup
+        self.subject = subject
+    def intro(self):                   # overriding: a new version of intro
+        return super().intro() + f" and I teach {self.subject}"
+
+print(Teacher("Mr. Rao", "Maths").intro())`,
+116:`import time
+
+def count_up(n):
+    for i in range(1, n + 1):
+        yield i                        # gives one value at a time (generator)
+print(list(count_up(3)))               # [1, 2, 3]
+
+def timer(func):                       # decorator: adds behaviour to a function
+    def wrapper(*args):
+        start = time.time()
+        result = func(*args)
+        print("Took", round(time.time() - start, 4), "seconds")
+        return result
+    return wrapper
+
+@timer
+def slow_sum(n):
+    return sum(range(n))
+print(slow_sum(1000000))`,
+117:`import numpy as np
+
+a = np.array([1, 2, 3, 4])
+print(a * 2)                    # [2 4 6 8]  works on all items at once
+print(a.mean(), a.max())
+
+m = np.array([[1, 2], [3, 4]])  # 2D array (matrix)
+print(m.shape, m.T)             # (2, 2) and the transpose
+print(np.zeros((2, 3)))         # a grid of zeros
+print(np.arange(0, 10, 2))      # [0 2 4 6 8]
+print(m @ m)                    # matrix multiplication`,
+118:`import pandas as pd
+
+df = pd.DataFrame({"name": ["Riya", "Ravi", "Anu"],
+                   "marks": [92, 58, 75],
+                   "class": ["A", "B", "A"]})
+print(df.head())
+print(df["marks"].mean())                       # average marks
+print(df[df["marks"] > 70])                     # filter rows
+print(df.groupby("class")["marks"].mean())      # average per class
+df["grade"] = df["marks"].apply(lambda m: "Pass" if m >= 60 else "Fail")
+print(df.isnull().sum())                        # missing values per column
+# df = pd.read_csv("file.csv")   reads a real CSV file`,
+119:`import matplotlib.pyplot as plt
+
+names = ["Riya", "Ravi", "Anu"]
+marks = [92, 58, 75]
+plt.bar(names, marks, color="steelblue")        # bar chart
+plt.title("Class marks")
+plt.ylabel("Marks")
+plt.show()
+
+plt.plot([1, 2, 3, 4], [1, 4, 9, 16], marker="o")   # line chart
+plt.xlabel("x")
+plt.ylabel("x squared")
+plt.show()`,
+120:`import pandas as pd
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+
+data = pd.DataFrame({"hours": [1, 2, 3, 4, 5, 6, 7, 8],
+                     "marks": [22, 31, 40, 52, 58, 71, 78, 88]})
+X, y = data[["hours"]], data["marks"]          # input and output
+X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.25, random_state=1)
+model = LinearRegression().fit(X_tr, y_tr)     # train
+print("Test R2:", model.score(X_te, y_te))     # close to 1 is good
+print("9 hours ->", model.predict(pd.DataFrame({"hours": [9]})))`
 };
 const flat=ORD.flat(),nav=document.getElementById('nav'),view=document.getElementById('view');
 let done=new Set();try{done=new Set(JSON.parse(localStorage.getItem('aimlDone')||'[]'))}catch(e){}
 const save=()=>{try{localStorage.setItem('aimlDone',JSON.stringify([...done]))}catch(e){}};
-nav.innerHTML='<button class="brand" data-go="home">AI &amp; ML<br>Made Easy</button>'+ORD.map((g,i)=>'<h3>'+G[i]+'</h3>'+g.map(n=>'<a href="#t'+n+'" data-n="'+n+'"><b>'+n+'</b><span>'+T[n].t+'</span></a>').join('')).join('');
+nav.innerHTML='<button class="brand" data-go="home">Python, AI<br>&amp; ML Made Easy</button>'+ORD.map((g,i)=>'<h3>'+G[i]+'</h3>'+g.map(n=>'<a href="#t'+n+'" data-n="'+n+'"><b>'+(T[n].l||n)+'</b><span>'+T[n].t+'</span></a>').join('')).join('');
 function mark(){nav.querySelectorAll('a').forEach(a=>a.classList.toggle('done',done.has(+a.dataset.n)))}
 function home(){const p=Math.round(done.size/flat.length*100);
-view.innerHTML='<p class="tag">Based on handwritten notes by Shivam Shrivastava</p><h1>AI &amp; Machine Learning Made Easy</h1><p class="say">Welcome! Each lesson explains one topic from the notes in simple words, with a real-life example and a quick question to check yourself. Pick any topic from the menu, or just start with lesson 1.</p><h2>Your progress: '+done.size+' of '+flat.length+' lessons</h2><div class="bar"><div style="width:'+p+'%"></div></div>'+ORD.map((g,i)=>'<h2>'+G[i]+'</h2><div class="grp">'+g.map(n=>'<a href="#t'+n+'"><b>'+n+'.</b> '+T[n].t+'</a>').join('')+'</div>').join('')+'<div class="nav2"><span></span><a class="btn" href="#t1" style="text-decoration:none">Start lesson 1</a></div>'}
+view.innerHTML='<p class="tag">Based on handwritten notes by Shivam Shrivastava</p><h1>Python, AI &amp; Machine Learning Made Easy</h1><p class="say">Welcome! Each lesson explains one topic from the notes in simple words, with a real-life example and a quick question to check yourself. Pick any topic from the menu, or start with Python lesson P1 if you are a complete beginner.</p><h2>Your progress: '+done.size+' of '+flat.length+' lessons</h2><div class="bar"><div style="width:'+p+'%"></div></div>'+ORD.map((g,i)=>'<h2>'+G[i]+'</h2><div class="grp">'+g.map(n=>'<a href="#t'+n+'"><b>'+(T[n].l||n)+'.</b> '+T[n].t+'</a>').join('')+'</div>').join('')+'<div class="nav2"><span></span><a class="btn" href="#t'+flat[0]+'" style="text-decoration:none">Start from the beginning</a></div>'}
 function lesson(n){const d=T[n],i=flat.indexOf(n),pv=flat[i-1],nx=flat[i+1];
-view.innerHTML='<p class="tag">Lesson '+n+' · '+G[ORD.findIndex(g=>g.includes(n))]+'</p><h1>'+d.t+'</h1><h2>In simple words</h2><p class="say">'+d.s+'</p>'+(d.e?'<h2>Real-life example</h2><p class="ex">'+d.e+'</p>':'')+(d.f?'<h2>Flow</h2>'+flow(d.f):'')+(d.x?d.x:'')+(d.k?'<h2>Key points</h2><ul>'+d.k.map(x=>'<li>'+x+'</li>').join('')+'</ul>':'')+'<details><summary>Quick check: '+d.q+'</summary><p>'+d.a+'</p></details><div class="nav2"><button class="btn" '+(pv?'data-n="'+pv+'"':'data-go="home" ')+'>← '+(pv?'Previous':'Home')+'</button><button class="btn fill" id="doneBtn" aria-pressed="'+done.has(n)+'">'+(done.has(n)?'✓ Done':'Mark as done')+'</button>'+(nx?'<button class="btn" data-n="'+nx+'">Next →</button>':'<span></span>')+'</div>';
+view.innerHTML='<p class="tag">Lesson '+(d.l||n)+' · '+G[ORD.findIndex(g=>g.includes(n))]+'</p><h1>'+d.t+'</h1><h2>In simple words</h2><p class="say">'+d.s+'</p>'+(d.e?'<h2>Real-life example</h2><p class="ex">'+d.e+'</p>':'')+(d.f?'<h2>Flow</h2>'+flow(d.f):'')+(d.x?d.x:'')+(d.k?'<h2>Key points</h2><ul>'+d.k.map(x=>'<li>'+x+'</li>').join('')+'</ul>':'')+(C[n]?'<h2>Python code</h2><p class="tag">Run it in Google Colab or Jupyter. Text after # is a comment that explains the line.</p><div class="code"><button class="btn cp">Copy</button><pre><code>'+esc(C[n])+'</code></pre></div>':'')+'<details><summary>Quick check: '+d.q+'</summary><p>'+d.a+'</p></details><div class="nav2"><button class="btn" '+(pv?'data-n="'+pv+'"':'data-go="home" ')+'>← '+(pv?'Previous':'Home')+'</button><button class="btn fill" id="doneBtn" aria-pressed="'+done.has(n)+'">'+(done.has(n)?'✓ Done':'Mark as done')+'</button>'+(nx?'<button class="btn" data-n="'+nx+'">Next →</button>':'<span></span>')+'</div>';
 document.getElementById('doneBtn').onclick=e=>{done.has(n)?done.delete(n):done.add(n);save();mark();e.target.setAttribute('aria-pressed',done.has(n));e.target.textContent=done.has(n)?'✓ Done':'Mark as done'}}
 function route(){const m=location.hash.match(/^#t(\d+)$/),n=m&&T[+m[1]]?+m[1]:0;
 n?lesson(n):home();mark();nav.querySelectorAll('a').forEach(a=>a.toggleAttribute('aria-current',+a.dataset.n===n)||a.removeAttribute('aria-current'));
 nav.querySelectorAll('a').forEach(a=>{if(+a.dataset.n===n)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
 document.body.classList.remove('open');document.getElementById('menuBtn').setAttribute('aria-expanded','false');window.scrollTo(0,0)}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-n],[data-go]');if(!b||b.tagName==='A')return;location.hash=b.dataset.go?'':'t'+b.dataset.n;if(b.dataset.go)route()});
+document.addEventListener('click',async e=>{const b=e.target.closest('.cp');if(!b)return;const t=b.nextElementSibling.textContent;try{await navigator.clipboard.writeText(t);b.textContent='Copied!'}catch(x){const r=document.createRange();r.selectNodeContents(b.nextElementSibling);getSelection().removeAllRanges();getSelection().addRange(r);b.textContent='Press Ctrl+C'}setTimeout(()=>b.textContent='Copy',1800)});
 document.getElementById('menuBtn').onclick=e=>{const o=document.body.classList.toggle('open');e.target.setAttribute('aria-expanded',o)};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.body.classList.remove('open')});
 window.addEventListener('hashchange',route);route();
