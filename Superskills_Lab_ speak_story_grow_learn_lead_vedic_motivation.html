@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Superskills Lab: speak, story, grow, learn, lead</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F6F9FF;--card:#fff;--ink:#16224A;--soft:#51597A;--line:#D9E1F5;--c:#3D7BFF;--shadow:#16224A;
+--speak:#2455D6;--story:#C2255C;--person:#0B7A5C;--learn:#6A3FE0;--lead:#FFB000;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0E1430;--card:#18214A;--ink:#F2F5FF;--soft:#AEB6DA;--line:#2B366B;--shadow:#000}}
+:root[data-theme="dark"]{--bg:#0E1430;--card:#18214A;--ink:#F2F5FF;--soft:#AEB6DA;--line:#2B366B;--shadow:#000}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Nunito,"Trebuchet MS",system-ui,sans-serif;font-size:1.05rem;line-height:1.6}
+h1,h2,h3{font-family:"Baloo 2","Trebuchet MS",system-ui,sans-serif;line-height:1.1;margin:0}
+.wrap{max-width:1080px;margin:0 auto;padding:0 18px}
+/* hero */
+.hero{padding:44px 0 26px}
+.hero .wrap{display:grid;gap:28px;grid-template-columns:1.15fr .85fr;align-items:center}
+.hero h1{font-size:clamp(2.4rem,7vw,4.4rem);font-weight:800;letter-spacing:-.01em}
+.hero p{color:var(--soft);font-size:1.15rem;max-width:34em;margin:14px 0 0}
+.mic{position:relative;justify-self:center;width:min(100%,320px);aspect-ratio:1}
+.bubble{position:absolute;padding:12px 16px;border:3px solid var(--ink);border-radius:20px;background:var(--card);font-family:"Baloo 2",sans-serif;font-weight:800;font-size:1.05rem;box-shadow:4px 4px 0 var(--shadow)}
+.b1{top:2%;left:0;background:var(--speak);color:#fff;transform:rotate(-5deg)}
+.b2{top:30%;right:0;background:var(--story);color:#fff;transform:rotate(4deg)}
+.b3{bottom:26%;left:6%;background:var(--person);color:#fff;transform:rotate(3deg)}
+.b4{bottom:2%;right:8%;background:var(--learn);color:#fff;transform:rotate(-4deg)}
+.b5{top:46%;left:34%;background:var(--lead);color:#16224A;transform:rotate(-2deg);animation:bob 3s ease-in-out infinite}
+@keyframes bob{50%{transform:rotate(-2deg) translateY(-8px)}}
+/* nav */
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:10px 0;border-bottom:2px solid var(--line)}
+.tabs .wrap{display:flex;gap:10px;overflow-x:auto;scrollbar-width:thin}
+.tab{flex:0 0 auto;border:3px solid var(--ink);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 16px;font:800 1rem "Baloo 2",sans-serif;cursor:pointer;box-shadow:3px 3px 0 var(--shadow);transition:transform .12s,box-shadow .12s}
+.tab:hover{transform:translate(-1px,-1px)}
+.tab[aria-selected="true"]{background:var(--c);color:var(--on,#fff);box-shadow:0 0 0 var(--shadow);transform:translate(3px,3px)}
+:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
+/* panel */
+.panel{padding:30px 0 10px}
+.panel[hidden]{display:none}
+.intro{display:flex;gap:16px;align-items:center;margin-bottom:22px}
+.big{font-size:3.2rem;flex:0 0 auto}
+.intro h2{font-size:clamp(1.9rem,5vw,2.8rem);font-weight:800;color:var(--tt)}
+.intro p{margin:6px 0 0;color:var(--soft)}
+.grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fill,minmax(270px,1fr))}
+details{background:var(--card);border:3px solid var(--ink);border-radius:18px;box-shadow:5px 5px 0 var(--shadow);overflow:hidden}
+summary{list-style:none;cursor:pointer;padding:16px;display:flex;gap:12px;align-items:flex-start}
+summary::-webkit-details-marker{display:none}
+summary .e{font-size:1.9rem;line-height:1}
+summary h3{font-size:1.3rem;font-weight:800}
+summary span.d{display:block;color:var(--soft);font-size:.95rem;margin-top:4px;line-height:1.45}
+summary::after{content:"+";margin-left:auto;font:800 1.6rem "Baloo 2",sans-serif;color:var(--tt)}
+details[open] summary::after{content:"\2212"}
+details[open] summary{border-bottom:2px dashed var(--line)}
+.body{padding:12px 18px 18px}
+.body ol{margin:0;padding-left:1.2em}
+.body li{margin:6px 0}
+.try{margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--c);color:var(--on);font-weight:700;font-size:.95rem}
+/* spinner */
+.lab{margin:46px 0 30px;background:#16224A;color:#fff;border:3px solid var(--line);border-radius:26px;padding:30px 22px;text-align:center}
+[data-k]{--tt:var(--t)}
+[data-k="speak"]{--c:#2455D6;--on:#fff;--t:#2455D6;--td:#8DB0FF}
+[data-k="story"]{--c:#C2255C;--on:#fff;--t:#C2255C;--td:#FF9DBF}
+[data-k="person"]{--c:#0B7A5C;--on:#fff;--t:#0B7A5C;--td:#4FDDB4}
+[data-k="learn"]{--c:#6A3FE0;--on:#fff;--t:#6A3FE0;--td:#B9A1FF}
+[data-k="lead"]{--c:#FFB000;--on:#16224A;--t:#8A5A00;--td:#FFC94D}
+[data-k="speech"]{--c:#0E7490;--on:#fff;--t:#0E7490;--td:#5FD3F0}
+[data-k="vedic"]{--c:#B45309;--on:#fff;--t:#B45309;--td:#FDBA74}
+.ans{width:130px;border:3px solid var(--ink);border-radius:12px;padding:8px 10px;font:800 1.1rem "Baloo 2",sans-serif;background:var(--card);color:var(--ink);text-align:center}
+.qcard{background:var(--card);border:3px solid var(--ink);border-radius:22px;box-shadow:6px 6px 0 var(--shadow);padding:26px 22px;text-align:center;margin-bottom:18px}
+.qcard blockquote{margin:0;font:800 clamp(1.4rem,4.5vw,2.2rem)/1.25 "Baloo 2",sans-serif}
+.qcard cite{display:block;margin-top:10px;color:var(--soft);font-style:normal;font-weight:700}
+.qtip{margin:12px auto 0;max-width:34em;color:var(--soft);font-size:.95rem}
+.qbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.qbtns button{border:3px solid var(--ink);border-radius:999px;padding:8px 18px;font:800 1rem "Baloo 2",sans-serif;cursor:pointer;background:#FFB000;color:#16224A;box-shadow:0 3px 0 var(--shadow)}
+.qbtns button:disabled{background:#0B7A5C;color:#fff;box-shadow:none;cursor:default}
+.qgrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));margin-bottom:40px}
+.qgrid button{text-align:left;background:var(--card);color:var(--ink);border:2px solid var(--line);border-radius:14px;padding:12px 14px;font:700 .95rem/1.4 Nunito,sans-serif;cursor:pointer}
+.qgrid button small{display:block;color:var(--soft);margin-top:4px}
+.qgrid button[aria-current="true"]{border:3px solid var(--ink)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) [data-k]{--tt:var(--td)}}
+:root[data-theme="dark"] [data-k]{--tt:var(--td)}
+.hud{padding-top:18px}
+.hudcard{background:var(--card);border:3px solid var(--ink);border-radius:20px;box-shadow:5px 5px 0 var(--shadow);padding:16px 18px;display:grid;gap:10px}
+.lvl{display:flex;gap:12px;align-items:center}
+.lv{background:#FFB000;color:#16224A;border:3px solid var(--ink);border-radius:14px;padding:4px 12px;font:800 1.3rem "Baloo 2",sans-serif}
+.lvl b{font:800 1.3rem "Baloo 2",sans-serif;display:block;line-height:1.1}
+.lvl small{color:var(--soft)}
+.bar{height:16px;border-radius:99px;background:var(--line);overflow:hidden;border:2px solid var(--ink)}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#14B88A,#2455D6);transition:width .4s}
+.stats{display:flex;flex-wrap:wrap;gap:8px 20px;font-weight:700}
+.donebtn{display:block;margin-top:10px;width:100%;border:3px solid var(--ink);border-radius:12px;background:#FFB000;color:#16224A;font:800 1rem "Baloo 2",sans-serif;padding:8px;cursor:pointer;box-shadow:0 3px 0 var(--shadow)}
+.donebtn:disabled{background:#0B7A5C;color:#fff;cursor:default;box-shadow:none}
+.isdone summary h3::after{content:" \2713";color:var(--tt)}
+.shelf{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.bdg{background:var(--card);border:2px dashed var(--line);border-radius:16px;padding:12px;text-align:center}
+.bdg span{font-size:2rem;display:block}
+.bdg b{font-family:"Baloo 2",sans-serif;display:block;line-height:1.1}
+.bdg small{color:var(--soft);display:block;font-size:.8rem;margin-top:2px}
+.bdg.on{border:3px solid var(--ink);box-shadow:4px 4px 0 var(--shadow)}
+.reset{margin:16px 0 36px;border:2px solid var(--ink);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 18px;font:800 .95rem Nunito,sans-serif;cursor:pointer}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);max-width:min(92vw,520px);background:#16224A;color:#fff;border:3px solid #FFB000;border-radius:16px;padding:12px 16px;font-weight:800;opacity:0;pointer-events:none;transition:.3s;z-index:10;text-align:center}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.lab h2{font-size:clamp(1.7rem,5vw,2.4rem);font-weight:800}
+.lab p{margin:8px auto 18px;max-width:32em;opacity:.85}
+.dice{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));max-width:760px;margin:0 auto 20px}
+.die{background:#fff;color:#16224A;border-radius:16px;padding:14px 10px;min-height:92px;display:flex;flex-direction:column;justify-content:center;font-weight:800}
+.die small{font-weight:700;color:#51597A}
+.die b{font:800 1.25rem "Baloo 2",sans-serif}
+.go{border:0;border-radius:999px;background:var(--lead);color:#16224A;padding:12px 30px;font:800 1.2rem "Baloo 2",sans-serif;cursor:pointer;box-shadow:0 5px 0 #B87A00}
+.go:active{transform:translateY(4px);box-shadow:0 1px 0 #B87A00}
+.timer{margin-top:14px;font:800 1.1rem "Baloo 2",sans-serif;min-height:1.6em}
+.rules{margin:10px 0 40px;display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.rules div{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:14px 16px}
+.rules b{font-family:"Baloo 2",sans-serif;font-size:1.15rem}
+.rules p{margin:4px 0 0;color:var(--soft);font-size:.95rem}
+footer{text-align:center;color:var(--soft);padding:10px 18px 40px;font-size:.95rem}
+@media (max-width:760px){.hero .wrap{grid-template-columns:1fr}.mic{width:min(100%,280px);order:-1;margin:0 auto}.hero{padding-top:24px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header class="hero">
+<div class="wrap">
+<div>
+<h1>Superskills Lab</h1>
+<p>Fun games and challenges for Class 5 and up. Practice speaking, tell better stories, grow your confidence, learn faster and lead your team. Pick a skill below and try one activity today.</p>
+</div>
+<div class="mic" aria-hidden="true">
+<div class="bubble b1">Speak up!</div><div class="bubble b2">Once upon a time…</div><div class="bubble b3">Be kind</div><div class="bubble b4">Learn fast</div><div class="bubble b5">Lead</div>
+</div>
+</div>
+</header>
+
+<section class="wrap hud" aria-label="Your progress"><div class="hudcard"><div class="lvl"><span class="lv" id="lv">Lv 1</span><div><b id="lname">Rookie</b><small id="xptxt">0 XP</small></div></div><div class="bar" id="pbar" role="progressbar" aria-label="XP to next level" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="xpbar"></i></div><div class="stats"><span>🔥 <b id="streak">0</b> day streak</span><span>🏅 <b id="bcount">0</b> badges</span><span>✅ <b id="done">0</b> activities done</span></div></div></section>
+<nav class="tabs" aria-label="Skills"><div class="wrap" role="tablist" id="tabs"></div></nav>
+<main class="wrap">
+<div id="panels"></div>
+
+<section class="lab" aria-labelledby="labt">
+<h2 id="labt">Challenge spinner</h2>
+<p>Roll the dice to get a surprise one-minute speech or story. Say it out loud to a friend, a family member or the mirror.</p>
+<div class="dice">
+<div class="die"><small>Topic</small><b id="d1">?</b></div>
+<div class="die"><small>Style</small><b id="d2">?</b></div>
+<div class="die"><small>Must include</small><b id="d3">?</b></div>
+</div>
+<button class="go" id="roll">Roll the dice</button>
+<div class="timer" id="timer" aria-live="polite"></div>
+</section>
+
+<section aria-labelledby="mh" style="margin-top:40px"><h2 id="mh" style="font-size:1.7rem;margin-bottom:12px">Maths duel ⚔️</h2>
+<div class="qcard"><blockquote id="mq">?</blockquote><p class="qtip" id="mt"></p><div class="qbtns"><input class="ans" id="ma" type="number" inputmode="numeric" aria-label="Your answer"><button id="mc">Check</button><button id="ms">Skip</button></div><p class="qtip" id="mr" aria-live="polite"></p></div></section>
+<section aria-labelledby="qh" style="margin-top:40px"><h2 id="qh" style="font-size:1.7rem;margin-bottom:12px">Quotes to power you up</h2>
+<div class="qcard"><blockquote id="qt"></blockquote><cite id="qa"></cite><p class="qtip">Say it out loud three times: once softly, once clearly, once like a speaker on a big stage.</p><div class="qbtns"><button id="qn">Next quote</button><button id="qd">I said it! +5 XP</button></div></div>
+<div class="qgrid" id="qg"></div></section>
+<section aria-labelledby="bh"><h2 id="bh" style="font-size:1.7rem;margin-bottom:12px">Badge shelf</h2><div class="shelf" id="shelf"></div><button class="reset" id="reset">Reset my progress</button></section>
+<section aria-labelledby="gr">
+<h2 id="gr" style="font-size:1.7rem;margin-bottom:12px">Golden rules for every skill</h2>
+<div class="rules">
+<div><b>Start small</b><p>Five minutes a day beats one long session a month.</p></div>
+<div><b>Mistakes are data</b><p>Every wobble tells you what to practice next.</p></div>
+<div><b>Practice out loud</b><p>Skills live in your mouth and hands, not just your head.</p></div>
+<div><b>Celebrate progress</b><p>Write down one thing you did better than last week.</p></div>
+</div>
+</section>
+</main>
+<footer>Made for curious kids. Ask a parent or teacher to join in the fun!</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+var S=[
+{k:"speak",c:"#3D7BFF",e:"🎤",t:"Public Speaking",i:"Speak clearly, stand tall and make people want to listen.",a:[
+["🔊","Voice gym","Warm up your voice like an athlete.",["Say 'Good morning, everyone!' in a whisper, a normal voice and a stadium voice.","Notice which size feels strongest and clearest.","Aim for the 'classroom back row' volume when you present."],"Tongue twister: 'Red lorry, yellow lorry' five times fast."],
+["🏺","Topic jar","Talk for one minute about anything.",["Write 15 topics on paper slips and drop them in a jar.","Pick one and talk for 60 seconds without stopping.","Use the structure: Start, Middle, End."],"Topics: my favourite festival, a day without phones."],
+["🪞","Mirror talk","Watch yourself like a coach would.",["Stand in front of a mirror and give a 30-second introduction.","Check your posture, smile and hand movements.","Repeat once and fix one thing only."],"Keep feet apart, shoulders relaxed, chin level."],
+["⏸️","Pause power","Silence makes your words stronger.",["Read a short paragraph aloud.","Pause for two beats after each full stop.","Pause before the most important word."],"Count 'one, two' in your head during a pause."],
+["🔦","Lighthouse eyes","Share your eye contact like a lighthouse beam.",["Pick three spots in the room: left, middle and right.","Speak one sentence to each spot, then turn the beam.","Practise with family members as your audience."],"Never stare at the floor or your paper for a full sentence."],
+["🎭","Emotion actor","Say one sentence in many moods.",["Pick a line like 'I found my bag.'","Say it happy, sad, angry, sleepy and super excited.","Ask a friend to guess the mood each time."],"Your speed, pitch and face all change the mood."],
+["📺","Be the news anchor","Present like a TV reporter.",["Write three news headlines about your day.","Sit straight and read them in a clear anchor voice.","Add a 'live report' from a family member."],"Try a weather forecast for your living room!"],
+["🛍️","Sell it!","Persuade with a pitch.",["Pick a boring object like a spoon or a stapler.","Give a 45-second advertisement: problem, product, why buy.","End with a catchy slogan."],"Use the words 'imagine' and 'you'."],
+["🙌","Hand gesture magic","Let your hands help your words.",["Say 'There are three reasons' and show three fingers.","Use wide arms for 'huge' and small gestures for 'tiny'.","Keep your hands still when you finish a point."],"Gestures stay between your shoulders and waist."]]},
+{k:"story",c:"#FF6B9A",e:"📖",t:"Storytelling",i:"Turn ordinary moments into stories people remember.",a:[
+["🎲","Story dice","Build a story from three random things.",["Pick a hero, a place and a problem (use the spinner below!).","Tell the story in under two minutes.","End with how the hero changed."],"Hero: a shy robot. Place: a train. Problem: a lost key."],
+["✋","Five-finger story","A simple plan for every tale.",["Thumb: who is the character?","Index: where are they? Middle: what goes wrong?","Ring: what do they try? Little: how does it end?"],"Tell it to a younger child and watch their face."],
+["🔄","Change the ending","Re-write a story you know.",["Choose a fairy tale or a cartoon episode.","Change the ending completely.","Tell why your ending is better."],"What if the wolf became a chef?"],
+["🧸","Object story","Every object has a secret life.",["Pick any object nearby: a pencil, a bag, a key.","Imagine its journey from where it was made.","Tell the story from the object's point of view."],"Start with 'I was born in a factory far away…'"],
+["⭕","Story circle","One sentence each, together.",["Sit in a circle with friends or family.","One person starts with a sentence.","Each person adds only one sentence and passes it on."],"Rule: always say 'Yes, and…' to the previous idea."],
+["🎬","Movie trailer","Hook people in 30 seconds.",["Choose a story you know or invent one.","Tell it in a deep trailer voice, leaving out the ending.","End with 'Coming soon to a room near you!'"],"Start with 'In a world where…'"],
+["🕵️","Mystery clue box","Make up and tell a mystery.",["Place 3 odd objects on a table, like a button, a feather and a key.","Make up who left them and why.","Reveal the surprise twist last."],"A good twist makes listeners say 'Oh!'"],
+["🗺️","Draw-and-tell map","Draw the story world first.",["Draw a map with a forest, river, castle or town.","Place your hero and the problem on the map.","Tell the story by moving your finger along the path."],"Add a secret place only the hero knows."],
+["👵","Grandparent story hunt","Collect real stories.",["Ask an elder: 'What was your funniest childhood day?'","Note three details like smells, sounds and feelings.","Retell it to your class or family in your own words."],"Details like 'the mango tree squeaked' bring stories alive."]]},
+{k:"person",c:"#14B88A",e:"🌟",t:"Personality Development",i:"Build confidence, kindness and good habits from the inside.",a:[
+["🫙","Compliment jar","Notice the good in others.",["Write one true compliment daily for a family member or friend.","Drop it in a jar or hand it over.","Read the jar together at the end of the week."],"Compliment effort, not only results."],
+["🏆","Wins journal","Collect proof that you can.",["Each night write three things that went well.","Add one thing you learned from a mistake.","Read the old pages when you feel nervous."],"Small wins count: 'I asked a question in class.'"],
+["💛","Kind act of the day","Kindness is a muscle.",["Pick one kind act: help, share, listen or thank.","Do it without expecting a reward.","Notice how you and the other person feel."],"Thank the bus driver, a cleaner or a cook."],
+["🎢","Try-it Tuesday","Do one new thing each week.",["Choose something new: a food, a hobby, a talk with a new classmate.","Try it even if you feel scared.","Rate your bravery from 1 to 5."],"Brave doesn't mean no fear. It means going anyway."],
+["🌦️","Feelings weather report","Name your feelings.",["Say your inner weather: sunny, cloudy, stormy or foggy.","Explain why in one sentence.","Choose one thing that could help: a walk, a hug or a talk."],"Naming a feeling makes it easier to handle."],
+["🦸","Superpower me","Discover your strengths.",["List three things you are good at.","Turn each into a superhero power with a name.","Draw your superhero card and share it."],"'Patient Pencil Power' counts!"],
+["🙏","Gratitude hunt","Spot the good things.",["Find five things to be thankful for before dinner.","Include one tiny thing, like a cool breeze.","Tell one person why you're thankful for them."],"Looking for good makes your brain notice more good."],
+["🧘","Calm-down toolkit","Make your own calm plan.",["Try belly breathing: in for 4, out for 6, five times.","Use it when you feel nervous or angry.","Write your top three calm tools on a card."],"Slow breaths tell your body it's safe."],
+["💬","Self-talk swap","Change the voice in your head.",["Notice a thought like 'I can't do this.'","Replace it with 'I can't do this yet.'","Say the new thought out loud once."],"Try 'I'm learning' instead of 'I'm bad at it'."]]},
+{k:"learn",c:"#8A5CFF",e:"🧠",t:"Fast Learning",i:"Smart tricks to learn more in less time and remember it longer.",a:[
+["🧸","Teach a toy","If you can explain it, you know it.",["Learn a topic for 10 minutes.","Explain it to a toy or sibling in simple words.","Where you get stuck, go back and learn it again."],"No big words allowed. Make it so simple a 5-year-old gets it."],
+["🏠","Memory palace","Hide facts in rooms you know.",["Imagine walking through your home.","Place one thing to remember in each spot, in a funny way.","Walk through again to recall them in order."],"A giant banana on the sofa = 'B' for Brazil's coffee."],
+["🗺️","Mind map","Draw your thinking.",["Write the main topic in the middle of a page.","Draw branches for sub-topics with colours and tiny pictures.","Cover it and redraw from memory."],"Use one keyword per branch, not sentences."],
+["⏱️","20-and-5 focus sprint","Short, focused study bursts.",["Put your phone away and set a timer for 20 minutes.","Study with full focus on one task.","Take a 5-minute stretch break, then repeat."],"After 4 sprints, take a longer 20-minute rest."],
+["❓","Quiz yourself","Testing beats re-reading.",["Close the book after studying.","Write 5 questions and answer them from memory.","Check, then redo the ones you missed tomorrow."],"Revise after 1 day, 3 days and 1 week."],
+["🎵","Rap the facts","Songs stick in memory.",["Pick facts like the planets or a times table.","Put them to a tune or beat you know.","Perform it for someone, keeping the beat with a pencil."],"Rhythm and rhyme make order easy to remember."],
+["🔗","Story chain memory","Link items in a silly story.",["Take a list of 8 things to remember.","Link each to the next in a wild story.","Retell the story to recall the list."],"The sillier the picture, the better it sticks."],
+["🎴","Flashcard battle","Turn revision into a game.",["Make cards with a question on the front and the answer on the back.","Play with a friend: each correct answer earns a point.","Missed cards go back in the pile."],"Try to beat your own record each round."],
+["🔍","Curiosity detective","Ask better questions.",["Choose any topic, like volcanoes.","Write 5 'why' and 'how' questions.","Find the answers in books or ask a trusted adult."],"A good question is half of learning."]]},
+{k:"lead",c:"#FFB000",e:"🚀",t:"Leadership",i:"Great leaders help everyone shine, not just themselves.",a:[
+["👑","Captain for a day","Lead a small task with care.",["Offer to lead a family or group activity, like a game or a clean-up.","Give every person a clear job.","Thank each person at the end."],"Ask: 'What would make this fun for everyone?'"],
+["👂","Listening circle","Leaders listen first.",["Ask a question like 'What was the best part of your day?'","Listen without interrupting for one full minute.","Repeat back what you heard before you reply."],"Eyes on the speaker and phone away."],
+["🧩","Team roles","Every strength matters.",["For a group project, list the jobs: planner, writer, artist, speaker, timekeeper.","Let people choose roles that match their strengths.","Check in halfway and help anyone stuck."],"A good leader asks 'How can I help you?'"],
+["🛠️","Fix-it mission","See a problem and solve it.",["Spot a small problem at school or home.","Brainstorm three solutions with friends.","Pick one, try it for a week and see what happens."],"Examples: tidy book corner, new sharing rule for the playground."],
+["💌","Thank-you notes","Appreciation builds strong teams.",["Write a short thank-you note to a teacher, friend or helper.","Say exactly what they did and how it helped.","Hand it over in person."],"Specific thanks feel much more special."],
+["🏗️","Build-it challenge","Lead a team build.",["Give each group newspapers and tape.","Build the tallest tower in 10 minutes.","Afterwards share what the leader did that helped."],"Plan for 2 minutes before building."],
+["🕊️","Peacemaker","Solve a disagreement fairly.",["Let each person tell their side without interruption.","Repeat each side in your own words.","Find a solution where both get something."],"Say 'I understand that you feel…'"],
+["🌱","Community mini-project","Make your area better.",["Pick a small project: plant a sapling, collect books or clean a lane.","Invite 3 friends and share the tasks.","Take a photo and tell the story of what you did."],"Always ask an adult for permission first."],
+["📣","Two-minute pep talk","Inspire your team.",["Imagine your team is about to play or present.","Say what you believe about them, what to do and one cheer.","Finish with a team chant."],"Be specific: 'You practised hard' beats 'You're great.'"]]},
+{k:"speech",c:"#0E7490",e:"🎙️",t:"Famous Speeches",i:"Watch great speeches with a parent or teacher, then borrow the tricks that made them work.",a:[
+["✊","I Have a Dream","Martin Luther King Jr., 1963: a call for fairness for everyone.",["Watch a short clip with an adult (search the title).","Listen for the phrase he repeats again and again. That trick is called repetition.","Write your own 'I have a dream for my school' in 5 sentences."],"Repeat one power phrase three times in your next talk."],
+["🍎","Three Stories","Steve Jobs, Stanford, 2005: life advice told as three stories.",["Watch a clip with an adult.","Notice how he announces his plan at the start.","Tell three short stories from your life: a surprise, a setback and a lesson."],"Announce your plan first: 'I have three points.'"],
+["📚","One Pen Can Change the World","Malala Yousafzai at the United Nations, 2013, about school for every child.",["Watch a clip with an adult.","Spot the simple words and calm voice that make her message strong.","Finish this line as a one-minute speech: 'Every child should have…'"],"Speak slowly. Strong ideas don't need shouting."],
+["🚀","Dream Big","A.P.J. Abdul Kalam inspired students to dream and work hard.",["Find a short talk or interview clip with an adult.","Notice how he links dreams to action.","Write one dream and three small steps you can take this month."],"End your talks with a challenge for the audience."],
+["🌍","Sisters and Brothers","Swami Vivekananda, Chicago, 1893: a warm greeting that won the crowd.",["Read about this opening with an adult.","Think about why a kind greeting made people listen.","Practise opening a talk with a warm greeting and a smile."],"Your first ten seconds set the mood."],
+["🌈","Fringe Benefits of Failure","J.K. Rowling, Harvard, 2008: what mistakes taught her.",["Watch a clip with an adult.","Notice how she uses real, honest stories.","Share a time you failed and what it taught you, in one minute."],"Honest stories connect more than perfect ones."]]},
+{k:"vedic",c:"#B45309",e:"🧮",t:"Vedic Maths",i:"Fast mental-maths tricks from the Vedic Maths system made popular by Bharati Krishna Tirthaji. Practise until they feel like magic.",a:[
+["✖️","Magic 11","Multiply any 2-digit number by 11 in seconds.",["Take 23 and keep the outer digits: 2 _ 3.","Add them for the middle: 2+3 = 5, so 23 × 11 = 253.","If the middle sum is 10 or more, carry: 48 × 11 → 4 | 12 | 8 → 528."],"Try 35 × 11, 62 × 11 and 77 × 11."],
+["🔲","Squares ending in 5","Square 15, 25, 35… with no calculator.",["Take 35. The tens digit is 3.","Multiply 3 by the next number, 4: 3 × 4 = 12.","Write 25 after it: 35² = 1225."],"Try 65² and 85²."],
+["🔟","All from 9, last from 10","Subtract from 1000 or 10000 with no borrowing.",["Take 1000 − 357.","Subtract each digit except the last from 9: 9−3 = 6, 9−5 = 4.","Subtract the last digit from 10: 10−7 = 3. The answer is 643."],"Try 1000 − 462 and 10000 − 3781."],
+["💯","Near 100 multiplication","Multiply numbers close to 100.",["Take 97 × 94. Each is below 100: 3 short and 6 short.","Cross-subtract: 97 − 6 = 91. That's the left part.","Multiply the shortfalls: 3 × 6 = 18. Join them: 9118."],"Try 98 × 96 and 99 × 93."],
+["🎯","Same tens, units make 10","A speedy trick for numbers like 43 × 47.",["Check: the tens digits match (4 and 4) and the units add to 10 (3+7).","Multiply the tens digit by the next number: 4 × 5 = 20.","Multiply the units: 3 × 7 = 21. Join them: 2021."],"Try 26 × 24, 52 × 58 and 71 × 79."],
+["✨","Vertical and crosswise","Multiply two 2-digit numbers in three small steps.",["Take 12 × 13. Left digits: 1 × 1 = 1.","Cross-multiply and add: 1×3 + 2×1 = 5.","Right digits: 2 × 3 = 6. Join them: 156."],"If a step is 10 or more, carry the extra to the left: 14 × 16 → 1 | 10 | 24 → 224."],
+["✋","Super 5 trick","Multiply and divide by 5 the easy way.",["To multiply by 5, halve the number and add a zero: 48 × 5 → 24 → 240.","For an odd number the half ends in .5, so just multiply by 10: 37 × 5 → 18.5 → 185.","To divide by 5, double the number and cut one zero or digit: 365 ÷ 5 → 730 → 73."],"Try 64 × 5, 86 × 5 and 450 ÷ 5."],
+["💫","Times 9, 99 and 999","Use 'one more zero, minus the number'.",["46 × 99 = 46 × 100 − 46.","4600 − 46 = 4554.","For 9 it works the same: 23 × 9 = 230 − 23 = 207."],"Try 35 × 99 and 12 × 999, then check with a calculator."],
+["✅","Digit-sum answer checker","Check any multiplication with digit sums.",["Add digits until one digit is left: 47 → 11 → 2 and 23 → 5.","Multiply those: 2 × 5 = 10 → 1.","Digit-sum your answer: 1081 → 10 → 1. A match means it's probably right!"],"A mismatch always means a mistake somewhere."]]}
+];
+var tabs=document.getElementById("tabs"),panels=document.getElementById("panels");
+S.forEach(function(s,n){
+ var b=document.createElement("button");b.className="tab";b.setAttribute("role","tab");b.dataset.k=s.k;b.id="t-"+s.k;b.setAttribute("aria-controls","p-"+s.k);b.textContent=s.e+" "+s.t;b.onclick=function(){show(n,true)};tabs.appendChild(b);
+ var p=document.createElement("section");p.className="panel";p.id="p-"+s.k;p.dataset.k=s.k;p.setAttribute("role","tabpanel");p.setAttribute("aria-labelledby","t-"+s.k);
+ var h='<div class="intro"><div class="big" aria-hidden="true">'+s.e+'</div><div><h2>'+s.t+'</h2><p>'+s.i+'</p></div></div><div class="grid">';
+ s.a.forEach(function(a,j){var id=s.k+j;h+='<details><summary><span class="e" aria-hidden="true">'+a[0]+'</span><div><h3>'+a[1]+'</h3><span class="d">'+a[2]+'</span></div></summary><div class="body"><ol>'+a[3].map(function(x){return"<li>"+x+"</li>"}).join("")+'</ol><div class="try">Try this: '+a[4]+'</div><button class="donebtn" data-id="'+id+'"></button></div></details>'});
+ p.innerHTML=h+'</div>';panels.appendChild(p);
+});
+function show(n,scroll){
+ var ts=tabs.children,ps=panels.children;
+ for(var i=0;i<ts.length;i++){var on=i===n;ts[i].setAttribute("aria-selected",on);ts[i].tabIndex=on?0:-1;ps[i].hidden=!on}
+ if(scroll)document.querySelector(".tabs").scrollIntoView({block:"start"});
+}
+tabs.addEventListener("keydown",function(e){var c=[].indexOf.call(tabs.children,document.activeElement);if(c<0)return;var d=e.key==="ArrowRight"?1:e.key==="ArrowLeft"?-1:0;if(d){var n=(c+d+S.length)%S.length;show(n,false);tabs.children[n].focus()}});
+show(0,false);
+var D1=["My best friend","A day with no school","If I were the principal","My hero","A scary moment","The future in 2050","My favourite food","A gadget I would invent","Why sports matter","A lesson I learned"],
+D2=["Like a news reporter","As a funny story","In a whisper-to-loud build-up","Like a movie trailer","As if talking to a younger child","Like a sports commentator","As a mystery"],
+D3=["A surprising fact","A question for the audience","A joke","The word 'because'","A sound effect","A true personal moment","Three examples"];
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+var tm;
+document.getElementById("roll").onclick=function(){
+ var n=0,t=document.getElementById("timer");clearInterval(tm);t.textContent="";
+ var spin=setInterval(function(){d1.textContent=pick(D1);d2.textContent=pick(D2);d3.textContent=pick(D3);if(++n>10){clearInterval(spin);var s=60;t.textContent="Your turn! 60 seconds…";tm=setInterval(function(){s--;t.textContent=s>0?"Time left: "+s+" s":"Time's up! Clap for yourself 👏";if(s<=0){clearInterval(tm);spinDone()}},1000)}},80);
+};
+var P={xp:0,done:{},spins:0,streak:0,last:"",badges:{}},LV=["Rookie","Explorer","Challenger","Rising Star","Champion","Legend"],NM=["Speaking Star","Story Wizard","Confidence Champ","Quick Learner","Team Captain","Speech Explorer","Maths Wizard"];
+function $(i){return document.getElementById(i)}
+function ds(d){return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
+function cnt(k){return Object.keys(P.done).filter(function(x){return P.done[x]&&(!k||x.indexOf(k)===0)}).length}
+var BD=[["👣","First Step","Finish any activity",function(){return cnt()>=1}],["🌈","All-Rounder","Finish one activity in every skill",function(){return S.every(function(s){return cnt(s.k)>0})}],["🔥","3-Day Streak","Practise 3 days in a row",function(){return P.streak>=3}],["🎲","Spinner Pro","Finish 3 spinner speeches",function(){return P.spins>=3}]];
+S.forEach(function(s,i){BD.push([s.e,NM[i],"Finish all "+s.a.length+" "+s.t+" activities",function(){return cnt(s.k)>=s.a.length}])});
+function load(){try{var r=localStorage.getItem("superskills");if(r)P=Object.assign(P,JSON.parse(r))}catch(e){}}
+function save(){try{localStorage.setItem("superskills",JSON.stringify(P))}catch(e){}}
+function lvl(){return Math.min(Math.floor(P.xp/50),LV.length-1)}
+function toast(m){var t=$("toast");t.textContent=m;t.className="toast on";clearTimeout(toast.h);toast.h=setTimeout(function(){t.className="toast"},3200)}
+function award(x,why){var b4=lvl(),t=ds(new Date());P.xp+=x;if(P.last!==t){P.streak=P.last===ds(new Date(Date.now()-864e5))?P.streak+1:1;P.last=t}
+var m=["+"+x+" XP: "+why];if(lvl()>b4)m.push("Level up! You are now a "+LV[lvl()]+" 🎉");
+BD.forEach(function(b,i){if(!P.badges[i]&&b[3]()){P.badges[i]=1;m.push("Badge unlocked: "+b[0]+" "+b[1])}});
+save();render();toast(m.join(" • "))}
+function spinDone(){P.spins++;award(15,"Spinner speech")}
+function render(){var l=lvl(),base=l*50,top=l>=LV.length-1,pct=top?100:(P.xp-base)*2,y=ds(new Date(Date.now()-864e5)),st=(P.last===ds(new Date())||P.last===y)?P.streak:0;
+$("lv").textContent="Lv "+(l+1);$("lname").textContent=LV[l];$("xptxt").textContent=P.xp+" XP · "+(top?"top level!":(base+50-P.xp)+" XP to next level");
+$("xpbar").style.width=pct+"%";$("pbar").setAttribute("aria-valuenow",Math.round(pct));
+$("streak").textContent=st;$("done").textContent=cnt()+"/"+S.reduce(function(n,s){return n+s.a.length},0);$("bcount").textContent=Object.keys(P.badges).length+"/"+BD.length;
+for(var i=0;i<S.length;i++)tabs.children[i].textContent=S[i].e+" "+S[i].t+" "+cnt(S[i].k)+"/"+S[i].a.length;
+document.querySelectorAll(".donebtn").forEach(function(b){var d=P.done[b.dataset.id];b.disabled=!!d;b.textContent=d?"Done ✓":"I did it! +10 XP";b.closest("details").classList.toggle("isdone",!!d)});
+$("shelf").innerHTML=BD.map(function(b,i){var u=P.badges[i];return '<div class="bdg'+(u?' on':'')+'"><span aria-hidden="true">'+(u?b[0]:'🔒')+'</span><b>'+b[1]+'</b><small>'+b[2]+'</small></div>'}).join("")}
+panels.addEventListener("click",function(e){var b=e.target.closest(".donebtn");if(b&&!b.disabled){P.done[b.dataset.id]=1;award(10,"Activity complete")}});
+$("reset").onclick=function(){var r=this;if(r.dataset.s){P={xp:0,done:{},spins:0,streak:0,last:"",badges:{}};save();render();qr();r.textContent="Reset my progress";delete r.dataset.s}else{r.dataset.s=1;r.textContent="Tap again to confirm reset"}};
+var Q=[["The only thing we have to fear is fear itself.","Franklin D. Roosevelt"],["A journey of a thousand miles begins with a single step.","Lao Tzu"],["Fall seven times, stand up eight.","Japanese proverb"],["One child, one teacher, one book, one pen can change the world.","Malala Yousafzai"],["You have to dream before your dreams can come true.","A.P.J. Abdul Kalam"],["Education is the most powerful weapon which you can use to change the world.","Nelson Mandela"],["Arise, awake, and stop not till the goal is reached.","Swami Vivekananda"],["That's one small step for man, one giant leap for mankind.","Neil Armstrong"],["Stay hungry. Stay foolish.","Steve Jobs"],["Where there is a will, there is a way.","Proverb"],["I have a dream today!","Martin Luther King Jr."],["Well begun is half done.","Proverb"]],qi=new Date().getDate()%Q.length;
+function qr(){$("qt").textContent="“"+Q[qi][0]+"”";$("qa").textContent="— "+Q[qi][1];P.q=P.q||{};var b=$("qd");b.disabled=!!P.q[qi];b.textContent=P.q[qi]?"Said it ✓":"I said it! +5 XP";document.querySelectorAll("#qg button").forEach(function(x,i){x.setAttribute("aria-current",i===qi)})}
+$("qg").innerHTML=Q.map(function(q,i){return '<button data-i="'+i+'">“'+q[0]+'”<small>'+q[1]+'</small></button>'}).join("");
+$("qg").onclick=function(e){var b=e.target.closest("button");if(b){qi=+b.dataset.i;qr()}};
+$("qn").onclick=function(){qi=(qi+1)%Q.length;qr()};
+$("qd").onclick=function(){P.q=P.q||{};if(!P.q[qi]){P.q[qi]=1;award(5,"Quote said aloud");qr()}};
+var MD=0,MS=0;
+function rn(a,b){return a+Math.floor(Math.random()*(b-a+1))}
+function mnew(){var t=rn(0,4),q,a,h,n,d,u,x,y;
+if(t==0){n=rn(12,99);q=n+" × 11";a=n*11;h="Hint: Magic 11. Add the digits for the middle."}
+else if(t==1){n=rn(1,9)*10+5;q=n+"²";a=n*n;h="Hint: tens digit × next number, then write 25."}
+else if(t==2){n=rn(101,999);q="1000 − "+n;a=1000-n;h="Hint: all from 9, the last from 10."}
+else if(t==3){d=rn(2,9);u=rn(1,9);x=d*10+u;y=d*10+10-u;q=x+" × "+y;a=x*y;h="Hint: same tens, and the units add up to 10."}
+else{x=rn(94,99);y=rn(94,99);q=x+" × "+y;a=x*y;h="Hint: cross-subtract, then multiply the shortfalls."}
+MD=a;$("mq").textContent=q;$("mt").textContent=h;$("ma").value="";$("mr").textContent=""}
+$("mc").onclick=function(){var v=parseInt($("ma").value,10);if(isNaN(v))return;if(v===MD){MS++;award(5,"Maths duel win");mnew();$("mr").textContent="Correct! 🎉 Duel streak: "+MS}else{MS=0;$("mr").textContent="Not yet. Check the hint and try again!"}};
+$("ma").onkeydown=function(e){if(e.key==="Enter")$("mc").onclick()};
+$("ms").onclick=function(){MS=0;mnew()};
+mnew();
+load();render();qr();
+</script>
+</body>
+</html>
